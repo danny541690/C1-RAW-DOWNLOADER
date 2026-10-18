@@ -1,9 +1,10 @@
 name: JARVIS 2024 Bulk January Real Monthly E2E
 on:
   push:
+    branches:
+      - NEVER_TRIGGER_DISABLED
     paths:
       - '.github/workflows/v093-bulk-january-e2e.yml'
-  workflow_dispatch:
 permissions:
   contents: read
 jobs:
