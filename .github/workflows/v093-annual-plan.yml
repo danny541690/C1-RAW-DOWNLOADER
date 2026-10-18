@@ -26,6 +26,8 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           test "$DRY_RUN" = "true" || { echo 'BLOCKED: download implementation has not been validated'; exit 1; }
+      - name: Test annual planner and safety status
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Generate offline annual plan
         env:
           YEAR: ${{ inputs.year }}
