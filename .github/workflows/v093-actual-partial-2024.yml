@@ -19,6 +19,7 @@ jobs:
       - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
       - name: Capture actual 2024 source responses month-by-month (NOT full market)
         env:
+          PYTHONPATH: .
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
