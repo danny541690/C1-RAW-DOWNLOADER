@@ -26,6 +26,8 @@ class BatchEngineTest(unittest.TestCase):
             r=execute_month(2024,2,[{"key":"k","source":"MOPS"}],fetch,lambda u,d:True,path)
             self.assertEqual(count[0],1)
             self.assertEqual(r["missing"],1)
+            execute_month(2024,2,[{"key":"k","source":"MOPS"}],fetch,lambda u,d:True,path)
+            self.assertEqual(count[0],1)
     def test_month_independence(self):
         with tempfile.TemporaryDirectory() as path:
             u=[{"key":"a","source":"FinMind"}]
