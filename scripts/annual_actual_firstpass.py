@@ -140,7 +140,6 @@ def run():
                     for n in range(used+1,5):
                         attempts+=1
                         put_json(d,checkpoint_dir,key+".json",{"unit":key,"status":"IN_PROGRESS","total_attempts":n})
-                        attempts=n
                         try:
                             raw=fetch(url);valid(source,raw,kind)
                             d.put(target,saved_name,raw,"application/json" if kind=="json" else "text/html")
@@ -151,19 +150,24 @@ def run():
                             if isinstance(e,(ValueError,json.JSONDecodeError)):break
                             if n<4:time.sleep(min(2**(n-1),4))
                     if status=="PENDING":status="DEFERRED_MISSING"
-                unit={"unit":key,"source":source,"status":status,"attempts_this_run":attempts,
+                unit={"unit":key,"key":key,"source":source,"status":status,"attempts":used+attempts,"attempts_this_run":attempts,
                       "total_attempts":used+attempts,
-                      "error":reason,"source_url":url,"is_full_market":False}
+                      "last_error":reason,"error":reason,"source_url":url,"is_full_market":False,
+                      "bytes":len(existing) if existing is not None and status=="SAVED_BASIC_VALID" else (len(raw) if status=="SAVED_BASIC_VALID" else 0)}
                 report["units"].append(unit)
                 put_json(d,checkpoint_dir,key+".json",unit)
                 print(json.dumps({"month":month,"source":source,"unit":label,"status":status,"attempts":attempts}),flush=True)
         report["saved_basic_valid"]=sum(u["status"]=="SAVED_BASIC_VALID" for u in report["units"])
         report["missing"]=sum(u["status"]!="SAVED_BASIC_VALID" for u in report["units"])
         report["coverage_complete"]=False
-        put_json(d,report_dir,f"2024-{month:02d}_MONTHLY_PROGRESS.json",report)
+        from scripts.monthly_reporting import build_month
+        generated=build_month(YEAR,month,report["units"])
+        for filename,body in generated.items():
+            d.put(report_dir,f"{YEAR}-{month:02d}_"+filename,body.encode("utf-8"),"text/plain",overwrite=True)
         gaps=[u for u in report["units"] if u["status"]!="SAVED_BASIC_VALID"]
         put_json(d,report_dir,f"2024-{month:02d}_REPAIR_QUEUE.json",gaps)
         print(json.dumps({"month":month,"saved":report["saved_basic_valid"],"missing":report["missing"],
                            "coverage_complete":False}),flush=True)
+    put_json(d,report_dir,"2024_ANNUAL_STATUS.json",{"year":YEAR,"months_processed":12,"mode":"PARTIAL_SAMPLE_ONLY","market_coverage_complete":False,"numeric_verified":False,"pit_verified":False})
     print("2024 FIRST-PASS SOURCE SAMPLES FINISHED; FULL-MARKET DATA NOT VERIFIED",flush=True)
 if __name__=="__main__":run()
