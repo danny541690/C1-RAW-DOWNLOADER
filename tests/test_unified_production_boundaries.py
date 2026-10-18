@@ -1,6 +1,10 @@
 import unittest
 import ast, pathlib, calendar, datetime, urllib.parse, urllib
-from scripts.bulk_monthly_capture import url_for
+bulk_source=pathlib.Path("scripts/bulk_monthly_capture.py").read_text()
+url_node=next(n for n in ast.parse(bulk_source).body if isinstance(n,ast.FunctionDef) and n.name=="url_for")
+url_scope={"urllib":urllib,"datetime":datetime}
+exec(compile(ast.Module(body=[url_node],type_ignores=[]),"<bulk-url>","exec"),url_scope)
+url_for=url_scope["url_for"]
 import sys,types
 # Optional Google SDK is irrelevant for offline schedule checks.
 # Extract candidates without importing its Drive client.
