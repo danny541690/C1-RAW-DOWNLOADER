@@ -1,0 +1,25 @@
+name: JARVIS 2024 Bounded Actual Source First Pass (PARTIAL)
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-actual-partial-2024.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v093-2024-partial
+  cancel-in-progress: false
+jobs:
+  actual-source-first-pass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Capture actual 2024 source responses month-by-month (NOT full market)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: python3 -u scripts/annual_actual_firstpass.py
