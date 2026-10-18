@@ -1,0 +1,32 @@
+name: JARVIS v0.93 Unified Four-Source Annual Downloader Integration
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-unified-annual-integration.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile integrated modules and test twelve-month four-source schedule
+        env:
+          PYTHONPATH: .
+        run: |
+          python3 -m py_compile scripts/unified_annual_downloader.py scripts/bulk_monthly_capture.py scripts/annual_actual_firstpass.py scripts/monthly_reporting.py
+          python3 -m unittest discover -s tests -p 'test_*.py' -q
+          python3 - <<'PY'
+          from scripts.unified_annual_downloader import plan
+          import json
+          counts={}
+          for month in range(1,13):
+              units=plan(2024,month)
+              names={u["source"] for u in units}
+              assert names=={"TWSE","TPEx","MOPS","FinMind"},(month,names)
+              assert len({u["key"] for u in units})==len(units)
+              counts[month]=len(units)
+          print(json.dumps({"result":"PASS","mode":"PLAN_ONLY","months":12,"sources":4,"scheduled_sample_units":sum(counts.values()),"units_by_month":counts,"capture_started":False,"full_market_verified":False}))
+          PY
