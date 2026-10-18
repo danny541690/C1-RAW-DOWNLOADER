@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+*.token
+*.key
+credentials*.json
+service-account*.json
+raw/
+private/
+output/
+*.csv
+*.parquet
+*.sqlite
