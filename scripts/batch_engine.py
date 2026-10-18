@@ -2,6 +2,7 @@
 import csv
 import json
 from pathlib import Path
+import os
 
 TRANSIENT = {"TIMEOUT", "HTTP_429", "HTTP_500", "HTTP_502", "HTTP_503", "HTTP_504"}
 MAX_ATTEMPTS = 4
@@ -12,6 +13,15 @@ def execute_month(year, month, units, fetch, persist, root):
     out.mkdir(parents=True, exist_ok=True)
     ledger_path = out / "checkpoint.json"
     ledger = json.loads(ledger_path.read_text()) if ledger_path.exists() else {}
+    def save_checkpoint():
+        temp = ledger_path.with_suffix(".tmp")
+        with temp.open("w", encoding="utf-8") as fh:
+            json.dump(ledger, fh, indent=2, sort_keys=True)
+            fh.write("\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(temp, ledger_path)
+
     for unit in units:
         key = unit["key"]
         prior = ledger.get(key, {})
@@ -25,6 +35,7 @@ def execute_month(year, month, units, fetch, persist, root):
                 if response.get("ok"):
                     if persist(unit, response["data"]):
                         ledger[key] = {"status":"SAVED_BASIC_VALID","attempts":attempts}
+                        save_checkpoint()
                         break
                     error = "NOT_PERSISTED"
                 else:
@@ -33,10 +44,12 @@ def execute_month(year, month, units, fetch, persist, root):
                 error = "UNEXPECTED_EXCEPTION"
             ledger[key] = {"status": "FAILED_RETRY_LIMIT" if attempts >= MAX_ATTEMPTS else "FAILED_ATTEMPT",
                            "attempts": attempts, "last_error": error}
+            save_checkpoint()
             if error not in TRANSIENT and error != "NOT_PERSISTED":
                 ledger[key]["status"] = "SOURCE_HOLD"
+                save_checkpoint()
                 break
-        ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+        save_checkpoint()
     scheduled = len(units)
     saved = sum(ledger.get(u["key"], {}).get("status") == "SAVED_BASIC_VALID" for u in units)
     missing = [dict(u, **ledger.get(u["key"], {"status":"PENDING","attempts":0})) for u in units
