@@ -28,7 +28,7 @@ class AnnualPlanTest(unittest.TestCase):
 
     def test_unverified_fourth_source_is_blocked(self):
         d = build_plan(2023)
-        self.assertIn("Source_04_UNVERIFIED", d["sources"])
+        self.assertIn("MOPS", d["sources"])
         self.assertTrue(any("Fourth source" in b for b in d["blockers"]))
 
 if __name__ == "__main__":
