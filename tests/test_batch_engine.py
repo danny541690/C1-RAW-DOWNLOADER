@@ -123,5 +123,22 @@ class BatchEngineTest(unittest.TestCase):
             self.assertEqual(calls[0],4)
             self.assertEqual(result["missing"],1)
 
+    def test_success_receipt_sha_bytes_are_durable_and_not_qa_verified(self):
+        import hashlib,json
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as path:
+            calls=[0]
+            def fetch(u):
+                calls[0]+=1
+                return {"ok":True,"data":b"raw-example"}
+            units=[{"key":"sha-unit","source":"TWSE"}]
+            execute_month(2024,8,units,fetch,lambda u,d:True,path)
+            receipt=json.loads((Path(path)/"2024"/"08"/"checkpoint.json").read_text())["sha-unit"]
+            self.assertEqual(receipt["sha256"],hashlib.sha256(b"raw-example").hexdigest())
+            self.assertEqual(receipt["bytes"],11)
+            self.assertEqual(receipt["validation_level"],"BASIC_ONLY")
+            execute_month(2024,8,units,fetch,lambda u,d:True,path)
+            self.assertEqual(calls[0],1)
+
 if __name__=="__main__":
     unittest.main()
