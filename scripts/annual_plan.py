@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-SOURCES = ("TWSE", "TPEx", "FinMind", "Source_04_UNVERIFIED")
+SOURCES = ("TWSE", "TPEx", "FinMind", "MOPS")
 
 def build_plan(year):
     if not 1990 <= year <= datetime.now(timezone.utc).year:
@@ -29,7 +29,6 @@ def build_plan(year):
         ],
         "blockers": [
             "Four source API contracts and implementation must be verified",
-            "Fourth source has not been specified and independently validated",
             "Google Drive write authorization/checkpoint persistence not configured",
             "Historical market scope, listing history and PIT QA not implemented"
         ],
