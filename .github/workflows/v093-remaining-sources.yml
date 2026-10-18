@@ -1,0 +1,22 @@
+name: JARVIS v0.93 TPEx MOPS and Drive Contract Tests
+on:
+  push:
+    paths:
+      - 'scripts/multi_source_canary.py'
+      - 'scripts/drive_storage.py'
+      - 'tests/test_multi_source_canary.py'
+      - 'tests/test_drive_storage.py'
+      - '.github/workflows/v093-remaining-sources.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-and-drive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: All unit tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: TPEx and MOPS real archive sample
+        run: python3 scripts/multi_source_canary.py
