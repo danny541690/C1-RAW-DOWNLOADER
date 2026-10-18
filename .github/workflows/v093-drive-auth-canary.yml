@@ -1,0 +1,20 @@
+name: JARVIS v0.93 Google Drive Authorization Canary
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  google-drive-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Google API dependencies
+        run: python3 -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Verify permission with tiny upload and SHA256 readback
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: python3 scripts/drive_auth_canary.py
