@@ -28,8 +28,15 @@ def execute_month(year, month, units, fetch, persist, root):
         if prior.get("status") in {"SAVED_BASIC_VALID", "SOURCE_HOLD", "FAILED_RETRY_LIMIT"}:
             continue
         attempts = prior.get("attempts", 0)
+        if attempts >= MAX_ATTEMPTS:
+            ledger[key] = {**prior, "status":"FAILED_RETRY_LIMIT"}
+            save_checkpoint()
+            continue
         while attempts < MAX_ATTEMPTS:
             attempts += 1
+            # Commit the request budget BEFORE network I/O. A killed runner must not reset attempts.
+            ledger[key] = {"status":"IN_PROGRESS", "attempts":attempts}
+            save_checkpoint()
             try:
                 response = fetch(unit)
                 if response.get("ok"):
