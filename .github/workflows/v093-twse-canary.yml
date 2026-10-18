@@ -1,5 +1,10 @@
 name: JARVIS v0.93 TWSE 2024 Public API Canary
 on:
+  push:
+    paths:
+      - 'scripts/source_canary.py'
+      - 'tests/test_source_canary.py'
+      - '.github/workflows/v093-twse-canary.yml'
   workflow_dispatch:
 permissions:
   contents: read
