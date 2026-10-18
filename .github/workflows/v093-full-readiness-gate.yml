@@ -1,0 +1,112 @@
+name: JARVIS v0.93 FULL Annual Download Readiness Gate
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-full-readiness-gate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: All offline tests (single suite)
+        id: unit
+        continue-on-error: true
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Source TWSE
+        id: twse
+        continue-on-error: true
+        run: python3 scripts/source_canary.py --year 2024 --month 1 --stock 2330
+      - name: Sources TPEx plus MOPS
+        id: tpex_mops
+        continue-on-error: true
+        run: python3 scripts/multi_source_canary.py
+      - name: Source FinMind
+        id: finmind
+        continue-on-error: true
+        run: python3 scripts/finmind_canary.py
+      - name: Audit production architecture and gaps
+        if: always()
+        id: architecture
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import ast,json,pathlib
+          root=pathlib.Path('.')
+          p=root/'scripts/annual_actual_firstpass.py'
+          src=p.read_text() if p.exists() else ''
+          checks={
+            'actual_downloader_exists':p.exists(),
+            'single_ticker_only':('stockNo=2330' in src and 'data_id":"2330"' in src),
+            'tpex_first_week_only':('min(last,7)' in src),
+            'production_annual_workflow_present':(root/'.github/workflows/v093-annual-production.yml').exists(),
+            'cross_job_production_resume_present':False,
+            'validated_full_market_universe':False,
+            'repair_queue_on_drive':False,
+            'year_first_source_month_paths':False,
+            'numeric_and_pit_validation':False,
+            'chatgpt_direct_dispatch_verified':False
+          }
+          (root/'output').mkdir(exist_ok=True)
+          (root/'output/production_architecture.json').write_text(json.dumps(checks,indent=2)+'\n')
+          print(json.dumps(checks))
+          PY
+      - name: Readiness report - no false GO
+        if: always()
+        env:
+          UNIT: ${{ steps.unit.outcome }}
+          TWSE: ${{ steps.twse.outcome }}
+          TPEx_MOPS: ${{ steps.tpex_mops.outcome }}
+          FINMIND: ${{ steps.finmind.outcome }}
+          ARCH: ${{ steps.architecture.outcome }}
+        run: |
+          python3 - <<'PY'
+          import json,os,pathlib
+          arch=json.loads(pathlib.Path("output/production_architecture.json").read_text())
+          result={"year":2024,"test_results":{k:os.environ[k] for k in ("UNIT","TWSE","TPEx_MOPS","FINMIND","ARCH")}, "production_gate":"BLOCKED","full_market_data_downloaded":False,"missing_production_requirements":[k for k,v in arch.items() if k not in ("single_ticker_only","tpex_first_week_only") and not v],"known_partial_coverage":{"single_ticker_only":arch["single_ticker_only"],"tpex_first_week_only":arch["tpex_first_week_only"]}}
+          pathlib.Path("output/FULL_READINESS_REPORT.json").write_text(json.dumps(result,indent=2)+"\n")
+          print(json.dumps(result,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 2024-FULL-READINESS-REPORT-${{ github.run_id }}
+          path: output/*json
+          retention-days: 30
+      - name: Mark actual production readiness as blocked
+        if: always()
+        run: |
+          echo 'Production NO-GO: canary passes never imply the four-source full-market annual downloader is ready.'
+          exit 1
+  google-drive-write:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Actual Drive canary and checkpoint
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          MODE: write
+        run: python3 scripts/drive_checkpoint_canary.py
+  google-drive-resume:
+    needs: google-drive-write
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Cross-job readback and skip
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          MODE: resume
+        run: python3 scripts/drive_checkpoint_canary.py
