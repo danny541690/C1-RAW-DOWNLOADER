@@ -1,0 +1,91 @@
+name: JARVIS v0.93 Unified 2024 Preflight
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-unified-preflight.yml'
+      - 'scripts/**'
+      - 'tests/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  four-source-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Offline retry/date/persistence/monthly-report checks
+        id: unit
+        continue-on-error: true
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: TWSE 2024 historical actual response
+        id: twse
+        continue-on-error: true
+        run: python3 scripts/source_canary.py --year 2024 --month 1 --stock 2330
+      - name: TPEx and MOPS 2024 historical actual responses
+        id: tpex_mops
+        continue-on-error: true
+        run: python3 scripts/multi_source_canary.py
+      - name: FinMind 2024 historical actual response
+        id: finmind
+        continue-on-error: true
+        run: python3 scripts/finmind_canary.py
+      - name: Write transparent preflight summary
+        if: always()
+        env:
+          UNIT: ${{ steps.unit.outcome }}
+          TWSE: ${{ steps.twse.outcome }}
+          TPEX_MOPS: ${{ steps.tpex_mops.outcome }}
+          FINMIND: ${{ steps.finmind.outcome }}
+        run: |
+          mkdir -p output
+          python3 - <<'PY'
+          import json,os
+          x={k:os.environ[k] for k in ("UNIT","TWSE","TPEX_MOPS","FINMIND")}
+          x.update(year=2024,scope="CANARY_ONLY",source_contracts_production_verified=False,annual_download_started=False)
+          with open("output/preflight.json","w") as f: json.dump(x,f,indent=2)
+          print(json.dumps(x))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v093-preflight-2024-${{ github.run_id }}
+          path: output/preflight.json
+          retention-days: 14
+      - name: Fail closed if any source is not ready
+        if: always()
+        env:
+          UNIT: ${{ steps.unit.outcome }}
+          TWSE: ${{ steps.twse.outcome }}
+          TPEX_MOPS: ${{ steps.tpex_mops.outcome }}
+          FINMIND: ${{ steps.finmind.outcome }}
+        run: test "$UNIT" = success && test "$TWSE" = success && test "$TPEX_MOPS" = success && test "$FINMIND" = success
+  drive-write:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Real Drive unit and checkpoint upload
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          MODE: write
+        run: python3 scripts/drive_checkpoint_canary.py
+  drive-resume:
+    needs: drive-write
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Verify checkpoint from separate runner job
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          MODE: resume
+        run: python3 scripts/drive_checkpoint_canary.py
