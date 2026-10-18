@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - '.github/workflows/v093-full-readiness-gate.yml'
+      - 'scripts/**'
+      - 'tests/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -48,6 +50,7 @@ jobs:
             'repair_queue_on_drive':False,
             'year_first_source_month_paths':False,
             'numeric_and_pit_validation':False,
+            'year_first_folder_contract_unit_test':(root/'scripts/production_gates.py').exists(),
             'chatgpt_direct_dispatch_verified':False
           }
           (root/'output').mkdir(exist_ok=True)
