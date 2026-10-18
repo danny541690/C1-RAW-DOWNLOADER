@@ -87,5 +87,41 @@ class BatchEngineTest(unittest.TestCase):
             self.assertEqual(calls[0],3)
             self.assertEqual(r["saved_basic_valid"],1)
 
+    def test_interrupted_request_does_not_reset_retry_budget(self):
+        import json
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as path:
+            calls=[0]
+            def fetch(u):
+                calls[0]+=1
+                if calls[0] <= 3:
+                    raise KeyboardInterrupt("simulated runner killed during HTTP request")
+                return {"ok":True,"data":b"payload"}
+            unit=[{"key":"interrupted","source":"TWSE"}]
+            for n in range(3):
+                with self.assertRaises(KeyboardInterrupt):
+                    execute_month(2024,6,unit,fetch,lambda u,d:True,path)
+                saved=json.loads((Path(path)/"2024"/"06"/"checkpoint.json").read_text())
+                self.assertEqual(saved["interrupted"]["attempts"],n+1)
+            result=execute_month(2024,6,unit,fetch,lambda u,d:True,path)
+            self.assertEqual(calls[0],4)
+            self.assertEqual(result["saved_basic_valid"],1)
+            execute_month(2024,6,unit,fetch,lambda u,d:True,path)
+            self.assertEqual(calls[0],4)
+
+    def test_four_killed_requests_are_not_retried_on_next_run(self):
+        with tempfile.TemporaryDirectory() as path:
+            calls=[0]
+            def fetch(u):
+                calls[0]+=1
+                raise KeyboardInterrupt("simulated job termination")
+            unit=[{"key":"maxed","source":"TPEx"}]
+            for _ in range(4):
+                with self.assertRaises(KeyboardInterrupt):
+                    execute_month(2024,7,unit,fetch,lambda u,d:True,path)
+            result=execute_month(2024,7,unit,fetch,lambda u,d:True,path)
+            self.assertEqual(calls[0],4)
+            self.assertEqual(result["missing"],1)
+
 if __name__=="__main__":
     unittest.main()
