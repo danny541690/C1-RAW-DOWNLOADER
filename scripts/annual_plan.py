@@ -44,7 +44,7 @@ def main():
     payload = build_plan(args.year)
     path = Path(args.output)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + chr(10), encoding="utf-8")
     print(f"PLAN_ONLY year={args.year} units={len(payload['units'])} verified=0 downloaded=0")
     print("No network fetch, no Google Drive upload, no private strategy access")
 
