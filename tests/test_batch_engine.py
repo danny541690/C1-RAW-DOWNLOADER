@@ -34,5 +34,23 @@ class BatchEngineTest(unittest.TestCase):
             self.assertEqual(one["missing"],1)
             self.assertEqual(two["saved_basic_valid"],1)
 
+    def test_interruption_keeps_prior_saved_unit(self):
+        calls={}
+        units=[{"key":"first","source":"TWSE"},{"key":"second","source":"TPEx"}]
+        def fetch(u):
+            calls[u["key"]]=calls.get(u["key"],0)+1
+            return {"ok":True,"data":b"payload"}
+        def interrupted_persist(u,d):
+            if u["key"]=="second":
+                raise KeyboardInterrupt("simulated runner cancellation")
+            return True
+        with tempfile.TemporaryDirectory() as path:
+            with self.assertRaises(KeyboardInterrupt):
+                execute_month(2024,3,units,fetch,interrupted_persist,path)
+            resumed=execute_month(2024,3,units,fetch,lambda u,d:True,path)
+            self.assertEqual(resumed["saved_basic_valid"],2)
+            self.assertEqual(calls["first"],1)
+            self.assertEqual(calls["second"],2)
+
 if __name__=="__main__":
     unittest.main()
