@@ -22,6 +22,7 @@ def plan(year,month):
         if year!=2024:continue
         for label,url,kind in candidates(month,source):
             units.append({"source":source,"key":f"{source}_{label}_{year}-{month:02d}","kind":kind,"url":url})
+    # Source coverage manifest: missing datasets are explicitly blocked, never counted as captured.
     return units
 def fetch(url):
     request=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 JARVIS/0.93"})
