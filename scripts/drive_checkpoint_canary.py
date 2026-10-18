@@ -18,7 +18,7 @@ def main():
     folder_name="JARVIS_V093_CHECKPOINT_CANARY_"+os.environ["GITHUB_RUN_ID"]
     def children(parent_id,name):
         q="name = '"+name.replace("'","\\'")+"' and '"+parent_id+"' in parents and trashed = false"
-        matches=api.files().list(q=q,fields="files(id,name,mimeType),nextPageToken",page_size=100).execute().get("files",[])
+        matches=api.files().list(q=q,fields="files(id,name,mimeType),nextPageToken",pageSize=100).execute().get("files",[])
         if len(matches)>1: raise ValueError("duplicate checkpoint object")
         return matches
     folders=children(parent,folder_name)
