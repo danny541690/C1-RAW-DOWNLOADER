@@ -1,14 +1,21 @@
 """Bounded 2024 public canaries: TPEx OTC OHLC and MOPS monthly revenue."""
 import json
 import urllib.request
+import http.client
+import time
 from datetime import date
 
 def get(url):
     req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 JARVIS-v093-canary"})
-    with urllib.request.urlopen(req,timeout=25) as resp:
-        data=resp.read(2000001)
-    if len(data)>2000000: raise ValueError("size cap")
-    return data
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(req,timeout=25) as resp:
+                data=resp.read(2000001)
+            if len(data)>2000000: raise ValueError("size cap")
+            return data
+        except (http.client.IncompleteRead, TimeoutError, ConnectionError) as exc:
+            if attempt==3: raise
+            time.sleep(min(2 ** attempt, 4))
 
 def inspect_tpex(body):
     payload=json.loads(body)
