@@ -25,7 +25,7 @@ def execute_month(year, month, units, fetch, persist, root):
     for unit in units:
         key = unit["key"]
         prior = ledger.get(key, {})
-        if prior.get("status") == "SAVED_BASIC_VALID":
+        if prior.get("status") in {"SAVED_BASIC_VALID", "SOURCE_HOLD", "FAILED_RETRY_LIMIT"}:
             continue
         attempts = prior.get("attempts", 0)
         while attempts < MAX_ATTEMPTS:
