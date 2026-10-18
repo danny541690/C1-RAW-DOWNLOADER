@@ -1,0 +1,42 @@
+name: JARVIS v0.93 Production Gap Evidence Test
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-production-gap-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check actual implementation, without hardcoded readiness outcomes
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,ast
+          p=pathlib.Path('scripts/unified_annual_downloader.py')
+          source=p.read_text()
+          tree=ast.parse(source)
+          imports=[n for n in ast.walk(tree) if isinstance(n,(ast.Import,ast.ImportFrom))]
+          workflow=pathlib.Path('.github/workflows')
+          files=list(workflow.glob('*.yml'))
+          scheduling=[f.name for f in files if ('schedule:' in f.read_text() or 'repository_dispatch:' in f.read_text()) and ('annual' in f.name or 'production' in f.name)]
+          findings={
+            'unified_downloader_compiles':bool(compile(source,str(p),'exec')),
+            'four_sources_in_plan':all(x in source for x in ('TWSE','TPEx','MOPS','FinMind')),
+            'monthly_drive_checkpoint_implemented':'_CHECKPOINTS' in source,
+            'bounded_attempts_implemented':'range(attempted+1,5)' in source,
+            'finmind_full_universe_implemented':not ('2330' in source or 'candidates(month,source)' in source),
+            'mops_full_financial_datasets_implemented':not ('candidates(month,source)' in source),
+            'automatic_annual_continuation_workflow_found':bool(scheduling),
+            'full_year_production_ready':False
+          }
+          findings['full_year_production_ready']=all(findings[k] for k in ('unified_downloader_compiles','four_sources_in_plan','monthly_drive_checkpoint_implemented','bounded_attempts_implemented','finmind_full_universe_implemented','mops_full_financial_datasets_implemented','automatic_annual_continuation_workflow_found'))
+          print(json.dumps(findings,indent=2))
+          pathlib.Path('gap_evidence.json').write_text(json.dumps(findings,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v093-production-gap-evidence
+          path: gap_evidence.json
