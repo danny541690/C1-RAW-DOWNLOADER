@@ -49,10 +49,17 @@ def main():
       ("MOPS","https://mopsov.twse.com.tw/nas/t21/sii/t21sc03_113_1_0.html",inspect_mops)]
     for name,url,fn in probes:
         try:
-            result=fn(get(url))
+            raw=get(url)
+            if name=="TPEx":
+                try:
+                    obj=json.loads(raw)
+                    print(json.dumps({"source":"TPEx","debug_top_keys":list(obj.keys())[:12], "date_field":str(obj.get("date",""))[:20], "data_type":type(obj.get("data")).__name__, "tables_type":type(obj.get("tables")).__name__}))
+                except ValueError:
+                    pass
+            result=fn(raw)
             print(json.dumps(result,ensure_ascii=False));results.append(result)
         except Exception as exc:
-            print(json.dumps({"source":name,"result":"CANARY_FAIL","error_type":type(exc).__name__}))
+            print(json.dumps({"source":name,"result":"CANARY_FAIL","error_type":type(exc).__name__,"reason":str(exc)[:100]}))
             results.append(None)
     if any(x is None for x in results): raise SystemExit(1)
 
