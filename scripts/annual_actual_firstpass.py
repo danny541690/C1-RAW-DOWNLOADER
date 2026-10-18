@@ -83,24 +83,34 @@ def put_json(d,p,name,obj):
     d.put(p,name,(json.dumps(obj,ensure_ascii=False,indent=2)+"\n").encode(),"application/json",overwrite=True)
 def run():
     d=Drive(service());root=os.environ["GOOGLE_DRIVE_FOLDER_ID"]
-    checkpoint_dir=d.folder(root,"_CHECKPOINTS")
-    report_dir=d.folder(root,"_REPORTS")
+    year_root=d.folder(root,str(YEAR))
+    checkpoint_dir=d.folder(year_root,"_CHECKPOINTS")
+    report_dir=d.folder(year_root,"_REPORTS")
     for month in range(1,13):
         report={"year":YEAR,"month":month,"coverage":"PARTIAL_SOURCE_SAMPLES_NOT_FULL_MARKET",
                 "numeric_verified":False,"pit_verified":False,"units":[]}
         for source in SOURCES:
-            target=d.folder(d.folder(root,source),f"{YEAR}-{month:02d}")
+            target=d.folder(d.folder(year_root,source),f"{YEAR}-{month:02d}")
             for label,url,kind in candidates(month,source):
                 key=f"{source}_{YEAR}_{month:02d}_{label}"
                 saved_name=label+"."+kind
                 status="PENDING";reason="";attempts=0
+                previous_raw=d.read(checkpoint_dir,key+".json")
+                previous=json.loads(previous_raw) if previous_raw else {}
+                used=int(previous.get("total_attempts",0))
+                if previous.get("status") in ("DEFERRED_MISSING","SOURCE_HOLD","EXISTING_FILE_UNVERIFIED"):
+                    status=previous["status"];reason=previous.get("error","")
                 # Checking the remote raw file provides durable continuation even if checkpoint upload failed.
                 existing=d.read(target,saved_name)
                 if existing is not None:
                     try:valid(source,existing,kind);status="SAVED_BASIC_VALID";reason="previously persisted"
                     except Exception as e:status="EXISTING_FILE_UNVERIFIED";reason=type(e).__name__
+                if status=="PENDING" and used>=4:
+                    status="DEFERRED_MISSING";reason="TOTAL_RETRY_BUDGET_EXHAUSTED"
                 if status=="PENDING":
-                    for n in range(1,5):
+                    for n in range(used+1,5):
+                        attempts+=1
+                        put_json(d,checkpoint_dir,key+".json",{"unit":key,"status":"IN_PROGRESS","total_attempts":n})
                         attempts=n
                         try:
                             raw=fetch(url);valid(source,raw,kind)
@@ -113,6 +123,7 @@ def run():
                             if n<4:time.sleep(min(2**(n-1),4))
                     if status=="PENDING":status="DEFERRED_MISSING"
                 unit={"unit":key,"source":source,"status":status,"attempts_this_run":attempts,
+                      "total_attempts":used+attempts,
                       "error":reason,"source_url":url,"is_full_market":False}
                 report["units"].append(unit)
                 put_json(d,checkpoint_dir,key+".json",unit)
@@ -121,6 +132,8 @@ def run():
         report["missing"]=sum(u["status"]!="SAVED_BASIC_VALID" for u in report["units"])
         report["coverage_complete"]=False
         put_json(d,report_dir,f"2024-{month:02d}_MONTHLY_PROGRESS.json",report)
+        gaps=[u for u in report["units"] if u["status"]!="SAVED_BASIC_VALID"]
+        put_json(d,report_dir,f"2024-{month:02d}_REPAIR_QUEUE.json",gaps)
         print(json.dumps({"month":month,"saved":report["saved_basic_valid"],"missing":report["missing"],
                            "coverage_complete":False}),flush=True)
     print("2024 FIRST-PASS SOURCE SAMPLES FINISHED; FULL-MARKET DATA NOT VERIFIED",flush=True)
