@@ -1,0 +1,73 @@
+name: JARVIS v0.93 One-Shot Combined Preproduction Acceptance
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-one-shot-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  plan-and-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Full offline suite and all twelve monthly 4-source plans
+        env:
+          PYTHONPATH: .
+        run: |
+          python3 -m unittest discover -s tests -p 'test_*.py' -q
+          python3 - <<'PY'
+          from scripts.unified_annual_downloader import plan
+          for month in range(1,13):
+              units=plan(2024,month)
+              assert set(u["source"] for u in units)=={"TWSE","TPEx","MOPS","FinMind"}
+              assert len(set(u["key"] for u in units))==len(units)
+          print("ANNUAL_FOUR_SOURCE_PLAN_PASS; CAPTURE_NOT_STARTED; FULL_MARKET_NOT_VERIFIED")
+          PY
+  real-four-source-drive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Actual four-source historical samples and Google Drive SHA256
+        env:
+          PYTHONPATH: .
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: python3 -u scripts/four_source_mini_e2e.py
+  real-bulk-cross-job-write:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Historical official TWSE TPEx full-day bulk save and receipt
+        env:
+          PYTHONPATH: .
+          MODE: write
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: python3 scripts/bulk_drive_e2e.py
+  real-bulk-cross-job-resume:
+    needs: real-bulk-cross-job-write
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Separate job verifies SHA256 and zero source refetch
+        env:
+          PYTHONPATH: .
+          MODE: resume
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: python3 scripts/bulk_drive_e2e.py
