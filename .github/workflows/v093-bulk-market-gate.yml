@@ -1,0 +1,19 @@
+name: JARVIS Official Bulk Market Daily Source Gate
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-bulk-market-gate.yml'
+      - 'scripts/bulk_market_canary.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bulk-market-real:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: TWSE plus TPEx real 2024 one-day bulk coverage probe
+        env:
+          PYTHONPATH: .
+        run: python3 -u scripts/bulk_market_canary.py
