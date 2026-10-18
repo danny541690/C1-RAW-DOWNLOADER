@@ -1,0 +1,60 @@
+{
+  "request_id": "V093-ANNUAL-2024-001",
+  "requested_on": "2026-10-18",
+  "year": 2024,
+  "mode": "annual",
+  "spec": "C1_0.93",
+  "sources": [
+    "TWSE",
+    "TPEx",
+    "MOPS",
+    "FinMind"
+  ],
+  "months": [
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12"
+  ],
+  "target_storage": "Google Drive / ChatGPT資料存取 / C1_0.93 / 01_RAW / 2024 / {source} / 2024-{month}",
+  "retry_policy": {
+    "retries_after_first_failure": 3,
+    "maximum_attempts_per_unit": 4,
+    "after_exhaustion": "record_missing_and_continue",
+    "subsequent_repair": "explicit_user_command_only"
+  },
+  "fallback_sources": {
+    "allowed": true,
+    "requires_contract_validation": true,
+    "preserve_provenance": true,
+    "no_silent_override": true
+  },
+  "monthly_outputs": [
+    "MONTHLY_PROGRESS.json",
+    "MONTHLY_PROGRESS.md",
+    "MISSING_UNITS.csv"
+  ],
+  "checkpoint": "after_each_download_unit",
+  "persist_and_verify_before_success": true,
+  "full_year_progression": true,
+  "required_gate": "four_source_adapters_drive_write_and_resume_tests",
+  "status": "BLOCKED_NOT_STARTED",
+  "blockers": [
+    "Public workflow remains dry-run and prevents live capture",
+    "Connected GitHub tools have no initial workflow-dispatch action",
+    "GitHub Actions Google Drive write authentication has not been configured and tested",
+    "Source adapters and cross-run checkpoint reconciliation not yet implemented"
+  ],
+  "downloaded_units": 0,
+  "verified_units": 0,
+  "drive_persisted_units": 0,
+  "notes": "This is an auditable request record, not a claim of started processing."
+}
