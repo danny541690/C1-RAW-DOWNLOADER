@@ -3,7 +3,7 @@ The two bulk quote feeds alone do NOT represent all four-source full-market data
 """
 import argparse,calendar,csv,hashlib,io,json,os,time,urllib.parse,urllib.error,datetime
 from scripts.annual_actual_firstpass import Drive,service
-from scripts.bulk_drive_e2e import fetch
+import urllib.request
 from scripts.bulk_market_canary import measure
 def url_for(source,day):
     iso=day.isoformat()
@@ -43,7 +43,8 @@ def run(year,month):
                         used=n
                         d.put(control,cpname,json.dumps({"status":"IN_PROGRESS","attempts_total":n}).encode(),"application/json",overwrite=True)
                         try:
-                            raw=fetch(url_for(source,day))
+                            with urllib.request.urlopen(urllib.request.Request(url_for(source,day),headers={"User-Agent":"Mozilla/5.0"}),timeout=40) as response:
+                                raw=response.read(15000000)
                             obj=json.loads(raw)
                             if source=="TWSE" and obj.get("stat")!="OK":
                                 status="MARKET_CLOSED" if "沒有符合條件" in str(obj.get("stat")) else "DEFERRED_MISSING"
