@@ -1,5 +1,5 @@
 """One-day whole-market endpoint preflight. Never claims full-year completeness."""
-import json,urllib.request,urllib.parse
+import json,urllib.request,urllib.parse,http.client,socket,time
 DATE="20240102"
 URLS={
 "TWSE":"https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=20240102&type=ALLBUT0999&response=json",
@@ -22,7 +22,13 @@ def run():
     for source,url in URLS.items():
         try:
             req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0"})
-            with urllib.request.urlopen(req,timeout=35) as r:raw=r.read(10000000)
+            for attempt in range(4):
+                try:
+                    with urllib.request.urlopen(req,timeout=35) as r:raw=r.read(10000000)
+                    break
+                except (http.client.IncompleteRead,TimeoutError,socket.timeout,ConnectionError,OSError):
+                    if attempt==3:raise
+                    time.sleep(min(2**attempt,4))
             print(json.dumps(measure(source,raw)))
         except Exception as e:
             print(json.dumps({"source":source,"error_type":type(e).__name__,"result":"FAIL"}))
