@@ -1,0 +1,15 @@
+name: JARVIS v0.93 TWSE 2024 Public API Canary
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  twse-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify local parser and period assertions
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Query 2024-01 TWSE 2330 sample only
+        run: python3 scripts/source_canary.py --year 2024 --month 1 --stock 2330
