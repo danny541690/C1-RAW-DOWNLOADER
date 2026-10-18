@@ -95,3 +95,5 @@ jobs:
           GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
           MODE: resume
         run: python3 scripts/drive_checkpoint_canary.py
+
+# consolidated acceptance rerun requested 2026-10-19
