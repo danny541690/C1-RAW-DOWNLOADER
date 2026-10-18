@@ -1,0 +1,38 @@
+name: JARVIS v0.93 Annual Capture Plan
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Calendar year to plan (no download yet)"
+        required: true
+        default: "2023"
+        type: string
+      dry_run:
+        description: "Safety mode — true only until data adapters are validated"
+        required: true
+        default: true
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  annual-plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail closed on non-dry-run request
+        shell: bash
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          test "$DRY_RUN" = "true" || { echo 'BLOCKED: download implementation has not been validated'; exit 1; }
+      - name: Generate offline annual plan
+        env:
+          YEAR: ${{ inputs.year }}
+        run: python3 scripts/annual_plan.py --year "$YEAR" --output output/annual_manifest.json --dry-run true
+      - name: Upload plan artifact (NOT raw data)
+        uses: actions/upload-artifact@v4
+        with:
+          name: annual-plan-${{ inputs.year }}
+          path: output/annual_manifest.json
+          retention-days: 7
