@@ -1,12 +1,13 @@
 """2024 first-pass actual source capture. Partial coverage is explicitly NOT certified as full-market.
 All successful raw source responses saved immediately to Drive; failures deferred.
 """
-import csv, hashlib, io, json, os, time, urllib.request, urllib.parse, urllib.error
+import csv, hashlib, io, json, os, time, urllib.request, urllib.parse, urllib.error, socket, random
 from datetime import date
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
+from googleapiclient.errors import HttpError
 
 YEAR=2024
 SOURCES=("TWSE","TPEx","MOPS","FinMind")
@@ -18,10 +19,21 @@ def service():
     c.refresh(Request())
     return build("drive","v3",credentials=c,cache_discovery=False)
 class Drive:
+    @staticmethod
+    def call(make_request):
+        for n in range(4):
+            try:
+                return make_request().execute(num_retries=0)
+            except (TimeoutError, socket.timeout, ConnectionError, OSError, HttpError) as exc:
+                status=getattr(getattr(exc,"resp",None),"status",None)
+                if isinstance(exc,HttpError) and status not in (429,500,502,503,504):
+                    raise
+                if n==3:raise
+                time.sleep(min(2**n,6)+random.random())
     def __init__(self,api):self.api=api
     def find(self,parent,name):
         q="name = '"+name.replace("\\","\\\\").replace("'","\\'")+"' and '"+parent+"' in parents and trashed = false"
-        x=self.api.files().list(q=q,fields="nextPageToken,files(id,name,mimeType)",pageSize=100).execute()
+        x=self.call(lambda:self.api.files().list(q=q,fields="nextPageToken,files(id,name,mimeType)",pageSize=100))
         if x.get("nextPageToken"):raise ValueError("ambiguous folder pagination")
         f=x.get("files",[])
         if len(f)>1:raise ValueError("duplicate remote names")
@@ -31,11 +43,11 @@ class Drive:
         if f:
             if f["mimeType"]!="application/vnd.google-apps.folder":raise ValueError("name collides with file")
             return f["id"]
-        return self.api.files().create(body={"name":name,"parents":[parent],
-          "mimeType":"application/vnd.google-apps.folder"},fields="id").execute()["id"]
+        return self.call(lambda:self.api.files().create(body={"name":name,"parents":[parent],
+          "mimeType":"application/vnd.google-apps.folder"},fields="id"))["id"]
     def read(self,parent,name):
         f=self.find(parent,name)
-        return self.api.files().get_media(fileId=f["id"]).execute() if f else None
+        return self.call(lambda:self.api.files().get_media(fileId=f["id"])) if f else None
     def put(self,parent,name,raw,mime="application/octet-stream",overwrite=False):
         old=self.find(parent,name)
         if old and not overwrite:
@@ -43,8 +55,25 @@ class Drive:
                 raise ValueError("existing remote file SHA mismatch")
             return
         media=MediaIoBaseUpload(io.BytesIO(raw),mimetype=mime,resumable=False)
-        if old:self.api.files().update(fileId=old["id"],media_body=media).execute()
-        else:self.api.files().create(body={"name":name,"parents":[parent]},media_body=media,fields="id").execute()
+        for n in range(4):
+            try:
+                media=MediaIoBaseUpload(io.BytesIO(raw),mimetype=mime,resumable=False)
+                if old:
+                    self.api.files().update(fileId=old["id"],media_body=media).execute(num_retries=0)
+                else:
+                    self.api.files().create(body={"name":name,"parents":[parent]},media_body=media,fields="id").execute(num_retries=0)
+                break
+            except (TimeoutError, socket.timeout, ConnectionError, OSError, HttpError) as exc:
+                status=getattr(getattr(exc,"resp",None),"status",None)
+                if isinstance(exc,HttpError) and status not in (429,500,502,503,504):raise
+                # A create may have reached Drive even when its response timed out.
+                found=self.find(parent,name)
+                if found:
+                    saved=self.read(parent,name)
+                    if saved is not None and hashlib.sha256(saved).digest()==hashlib.sha256(raw).digest():break
+                    if not old:old=found
+                if n==3:raise
+                time.sleep(min(2**n,6)+random.random())
         readback=self.read(parent,name)
         if hashlib.sha256(readback).digest()!=hashlib.sha256(raw).digest():
             raise ValueError("Google Drive readback hash differs")
