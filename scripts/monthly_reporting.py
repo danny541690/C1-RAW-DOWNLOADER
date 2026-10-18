@@ -23,6 +23,6 @@ def build_month(year,month,units,expected_by_source=None):
     cols=["key","source","status","attempts","last_error"]
     w=csv.DictWriter(f,fieldnames=cols,extrasaction="ignore")
     w.writeheader();w.writerows(missing)
-    md=f"# {year}-{month:02d} 月度下載報告\\n\\n基本保存：{report['saved_basic_valid']}/{report['scheduled']}；缺漏：{len(missing)}；全市場涵蓋率：未驗證。\\n"
+    md=f"# {year}-{month:02d} 月度下載報告\n\n基本保存：{report['saved_basic_valid']}/{report['scheduled']}；缺漏：{len(missing)}；全市場涵蓋率：未驗證。\n"
     return {"MONTHLY_PROGRESS.json":json.dumps(report,ensure_ascii=False,indent=2)+"\n",
             "MISSING_UNITS.csv":f.getvalue(),"MONTHLY_PROGRESS.md":md}
