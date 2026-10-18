@@ -54,5 +54,38 @@ class BatchEngineTest(unittest.TestCase):
             self.assertEqual(calls["first"],1)
             self.assertEqual(calls["second"],2)
 
+    def test_persist_failure_never_counts_as_saved(self):
+        with tempfile.TemporaryDirectory() as path:
+            calls=[0]
+            def fetch(u):
+                calls[0]+=1
+                return {"ok":True,"data":b"real-bytes-not-saved"}
+            r=execute_month(2024,4,[{"key":"missing-upload","source":"TWSE"}],
+                            fetch,lambda u,d:False,path)
+            self.assertEqual(calls[0],4)
+            self.assertEqual(r["saved_basic_valid"],0)
+            self.assertEqual(r["missing"],1)
+            import json
+            from pathlib import Path
+            ledger=json.loads((Path(path)/"2024"/"04"/"checkpoint.json").read_text())
+            self.assertEqual(ledger["missing-upload"]["status"],"FAILED_RETRY_LIMIT")
+            self.assertEqual(ledger["missing-upload"]["last_error"],"NOT_PERSISTED")
+            execute_month(2024,4,[{"key":"missing-upload","source":"TWSE"}],
+                          fetch,lambda u,d:True,path)
+            self.assertEqual(calls[0],4)
+
+    def test_retryable_failure_then_success(self):
+        with tempfile.TemporaryDirectory() as path:
+            calls=[0]
+            def fetch(u):
+                calls[0]+=1
+                if calls[0] < 3:
+                    return {"ok":False,"error":"HTTP_503"}
+                return {"ok":True,"data":b"payload"}
+            r=execute_month(2024,5,[{"key":"recovered","source":"TPEx"}],
+                            fetch,lambda u,d:True,path)
+            self.assertEqual(calls[0],3)
+            self.assertEqual(r["saved_basic_valid"],1)
+
 if __name__=="__main__":
     unittest.main()
