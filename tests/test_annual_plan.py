@@ -26,10 +26,11 @@ class AnnualPlanTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 build_plan(y)
 
-    def test_unverified_fourth_source_is_blocked(self):
+    def test_four_named_sources_and_capture_remains_blocked(self):
         d = build_plan(2023)
         self.assertIn("MOPS", d["sources"])
-        self.assertTrue(any("Fourth source" in b for b in d["blockers"]))
+        self.assertEqual(set(d["sources"]), {"TWSE", "TPEx", "FinMind", "MOPS"})
+        self.assertTrue(any("Google Drive" in b for b in d["blockers"]))
 
 if __name__ == "__main__":
     unittest.main()
