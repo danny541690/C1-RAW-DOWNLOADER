@@ -1,9 +1,10 @@
 name: JARVIS 2024 Bulk Quotes Combined Feb-Dec Capture
 on:
   push:
+    branches:
+      - NEVER_TRIGGER_DISABLED
     paths:
       - '.github/workflows/v093-bulk-feb-dec-combined.yml'
-  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
