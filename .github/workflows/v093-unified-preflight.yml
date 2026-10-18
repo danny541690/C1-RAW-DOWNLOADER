@@ -26,6 +26,10 @@ jobs:
         id: tpex_mops
         continue-on-error: true
         run: python3 scripts/multi_source_canary.py
+      - name: Official TWSE and TPEx historical daily bulk market
+        id: bulk
+        continue-on-error: true
+        run: python3 scripts/bulk_market_canary.py
       - name: FinMind 2024 historical actual response
         id: finmind
         continue-on-error: true
@@ -37,11 +41,12 @@ jobs:
           TWSE: ${{ steps.twse.outcome }}
           TPEX_MOPS: ${{ steps.tpex_mops.outcome }}
           FINMIND: ${{ steps.finmind.outcome }}
+          BULK: ${{ steps.bulk.outcome }}
         run: |
           mkdir -p output
           python3 - <<'PY'
           import json,os
-          x={k:os.environ[k] for k in ("UNIT","TWSE","TPEX_MOPS","FINMIND")}
+          x={k:os.environ[k] for k in ("UNIT","TWSE","TPEX_MOPS","FINMIND","BULK")}
           x.update(year=2024,scope="CANARY_ONLY",source_contracts_production_verified=False,annual_download_started=False)
           with open("output/preflight.json","w") as f: json.dump(x,f,indent=2)
           print(json.dumps(x))
@@ -59,7 +64,7 @@ jobs:
           TWSE: ${{ steps.twse.outcome }}
           TPEX_MOPS: ${{ steps.tpex_mops.outcome }}
           FINMIND: ${{ steps.finmind.outcome }}
-        run: test "$UNIT" = success && test "$TWSE" = success && test "$TPEX_MOPS" = success && test "$FINMIND" = success
+        run: test "$UNIT" = success && test "$TWSE" = success && test "$TPEX_MOPS" = success && test "$FINMIND" = success && test "$BULK" = success
   drive-write:
     runs-on: ubuntu-latest
     timeout-minutes: 6
