@@ -1,0 +1,127 @@
+"""2024 first-pass actual source capture. Partial coverage is explicitly NOT certified as full-market.
+All successful raw source responses saved immediately to Drive; failures deferred.
+"""
+import csv, hashlib, io, json, os, time, urllib.request, urllib.parse, urllib.error
+from datetime import date
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+
+YEAR=2024
+SOURCES=("TWSE","TPEx","MOPS","FinMind")
+SCOPES=["https://www.googleapis.com/auth/drive"]
+def service():
+    c=Credentials(token=None,refresh_token=os.environ["GOOGLE_REFRESH_TOKEN"],
+        token_uri="https://oauth2.googleapis.com/token",client_id=os.environ["GOOGLE_CLIENT_ID"],
+        client_secret=os.environ["GOOGLE_CLIENT_SECRET"],scopes=SCOPES)
+    c.refresh(Request())
+    return build("drive","v3",credentials=c,cache_discovery=False)
+class Drive:
+    def __init__(self,api):self.api=api
+    def find(self,parent,name):
+        q="name = '"+name.replace("\\","\\\\").replace("'","\\'")+"' and '"+parent+"' in parents and trashed = false"
+        x=self.api.files().list(q=q,fields="nextPageToken,files(id,name,mimeType)",pageSize=100).execute()
+        if x.get("nextPageToken"):raise ValueError("ambiguous folder pagination")
+        f=x.get("files",[])
+        if len(f)>1:raise ValueError("duplicate remote names")
+        return f[0] if f else None
+    def folder(self,parent,name):
+        f=self.find(parent,name)
+        if f:
+            if f["mimeType"]!="application/vnd.google-apps.folder":raise ValueError("name collides with file")
+            return f["id"]
+        return self.api.files().create(body={"name":name,"parents":[parent],
+          "mimeType":"application/vnd.google-apps.folder"},fields="id").execute()["id"]
+    def read(self,parent,name):
+        f=self.find(parent,name)
+        return self.api.files().get_media(fileId=f["id"]).execute() if f else None
+    def put(self,parent,name,raw,mime="application/octet-stream",overwrite=False):
+        old=self.find(parent,name)
+        if old and not overwrite:
+            if hashlib.sha256(self.read(parent,name)).digest()!=hashlib.sha256(raw).digest():
+                raise ValueError("existing remote file SHA mismatch")
+            return
+        media=MediaIoBaseUpload(io.BytesIO(raw),mimetype=mime,resumable=False)
+        if old:self.api.files().update(fileId=old["id"],media_body=media).execute()
+        else:self.api.files().create(body={"name":name,"parents":[parent]},media_body=media,fields="id").execute()
+        readback=self.read(parent,name)
+        if hashlib.sha256(readback).digest()!=hashlib.sha256(raw).digest():
+            raise ValueError("Google Drive readback hash differs")
+def fetch(url, limit=8000000):
+    req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 JARVIS-C1-0.93/annual-raw","Accept":"*/*"})
+    with urllib.request.urlopen(req,timeout=35) as r:
+        data=r.read(limit+1)
+        if len(data)>limit:raise ValueError("response exceeds size cap")
+        return data
+def candidates(month,source):
+    last=(date(2024+(month==12),month%12+1,1)-date.resolution).day
+    if source=="TWSE":
+        # Monthly 2330 history only: NOT whole market.
+        yield "STOCK_DAY_2330",f"https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date=2024{month:02d}02&stockNo=2330&response=json","json"
+    if source=="TPEx":
+        # Official OTC snapshot for first calendar day; can be holiday.
+        for day in range(1, min(last,7)+1):
+            d=f"2024/{month:02d}/{day:02d}"
+            yield "OTC_DAILY_QUOTES_"+str(day).zfill(2),"https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotes?"+urllib.parse.urlencode({"response":"json","date":d}),"json"
+    if source=="MOPS":
+        for market in ("sii","otc"):
+            yield "MONTHLY_REVENUE_"+market,f"https://mopsov.twse.com.tw/nas/t21/{market}/t21sc03_113_{month}_0.html","html"
+    if source=="FinMind":
+        yield "TaiwanStockPrice_2330","https://api.finmindtrade.com/api/v4/data?"+urllib.parse.urlencode({
+            "dataset":"TaiwanStockPrice","data_id":"2330","start_date":f"2024-{month:02d}-01",
+            "end_date":f"2024-{month:02d}-{last:02d}"}),"json"
+def valid(source,raw,kind):
+    if kind=="html":
+        if len(raw)<800 or b"<table" not in raw.lower():raise ValueError("HTML missing table")
+    else:
+        x=json.loads(raw.decode("utf-8-sig"))
+        if source=="TWSE" and (x.get("stat")!="OK" or not x.get("data")):raise ValueError("TWSE no history")
+        if source=="FinMind" and (x.get("status")!=200 or not x.get("data")):raise ValueError("FinMind missing rows")
+        if source=="TPEx" and not (x.get("aaData") or x.get("data") or x.get("tables")):raise ValueError("TPEx no data")
+def put_json(d,p,name,obj):
+    d.put(p,name,(json.dumps(obj,ensure_ascii=False,indent=2)+"\n").encode(),"application/json",overwrite=True)
+def run():
+    d=Drive(service());root=os.environ["GOOGLE_DRIVE_FOLDER_ID"]
+    checkpoint_dir=d.folder(root,"_CHECKPOINTS")
+    report_dir=d.folder(root,"_REPORTS")
+    for month in range(1,13):
+        report={"year":YEAR,"month":month,"coverage":"PARTIAL_SOURCE_SAMPLES_NOT_FULL_MARKET",
+                "numeric_verified":False,"pit_verified":False,"units":[]}
+        for source in SOURCES:
+            target=d.folder(d.folder(root,source),f"{YEAR}-{month:02d}")
+            for label,url,kind in candidates(month,source):
+                key=f"{source}_{YEAR}_{month:02d}_{label}"
+                saved_name=label+"."+kind
+                status="PENDING";reason="";attempts=0
+                # Checking the remote raw file provides durable continuation even if checkpoint upload failed.
+                existing=d.read(target,saved_name)
+                if existing is not None:
+                    try:valid(source,existing,kind);status="SAVED_BASIC_VALID";reason="previously persisted"
+                    except Exception as e:status="EXISTING_FILE_UNVERIFIED";reason=type(e).__name__
+                if status=="PENDING":
+                    for n in range(1,5):
+                        attempts=n
+                        try:
+                            raw=fetch(url);valid(source,raw,kind)
+                            d.put(target,saved_name,raw,"application/json" if kind=="json" else "text/html")
+                            status="SAVED_BASIC_VALID";reason=""
+                            break
+                        except Exception as e:
+                            reason=type(e).__name__+":"+str(e)[:120]
+                            if isinstance(e,(ValueError,json.JSONDecodeError)):break
+                            if n<4:time.sleep(min(2**(n-1),4))
+                    if status=="PENDING":status="DEFERRED_MISSING"
+                unit={"unit":key,"source":source,"status":status,"attempts_this_run":attempts,
+                      "error":reason,"source_url":url,"is_full_market":False}
+                report["units"].append(unit)
+                put_json(d,checkpoint_dir,key+".json",unit)
+                print(json.dumps({"month":month,"source":source,"unit":label,"status":status,"attempts":attempts}),flush=True)
+        report["saved_basic_valid"]=sum(u["status"]=="SAVED_BASIC_VALID" for u in report["units"])
+        report["missing"]=sum(u["status"]!="SAVED_BASIC_VALID" for u in report["units"])
+        report["coverage_complete"]=False
+        put_json(d,report_dir,f"2024-{month:02d}_MONTHLY_PROGRESS.json",report)
+        print(json.dumps({"month":month,"saved":report["saved_basic_valid"],"missing":report["missing"],
+                           "coverage_complete":False}),flush=True)
+    print("2024 FIRST-PASS SOURCE SAMPLES FINISHED; FULL-MARKET DATA NOT VERIFIED",flush=True)
+if __name__=="__main__":run()
