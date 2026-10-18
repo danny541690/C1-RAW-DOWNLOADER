@@ -1,0 +1,39 @@
+name: JARVIS v0.93 Drive Cross-Job Checkpoint Canary
+on:
+  push:
+    paths:
+      - 'scripts/drive_checkpoint_canary.py'
+      - '.github/workflows/v093-drive-checkpoint-canary.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  write-checkpoint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Write real Drive canary and checkpoint
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          MODE: write
+        run: python3 scripts/drive_checkpoint_canary.py
+  resume-from-another-job:
+    needs: write-checkpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Read remote checkpoint and skip persisted unit
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          MODE: resume
+        run: python3 scripts/drive_checkpoint_canary.py
