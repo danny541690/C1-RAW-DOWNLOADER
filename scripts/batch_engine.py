@@ -1,5 +1,6 @@
 """Offline testable unit orchestrator; no live market or Drive writes."""
 import csv
+import hashlib
 import json
 from pathlib import Path
 import os
@@ -41,7 +42,7 @@ def execute_month(year, month, units, fetch, persist, root):
                 response = fetch(unit)
                 if response.get("ok"):
                     if persist(unit, response["data"]):
-                        ledger[key] = {"status":"SAVED_BASIC_VALID","attempts":attempts}
+                        ledger[key] = {"status":"SAVED_BASIC_VALID","attempts":attempts, "sha256":hashlib.sha256(response["data"]).hexdigest(), "bytes":len(response["data"]), "validation_level":"BASIC_ONLY"}
                         save_checkpoint()
                         break
                     error = "NOT_PERSISTED"
