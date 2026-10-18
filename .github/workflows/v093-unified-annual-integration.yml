@@ -12,6 +12,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+      - name: Install Google Drive client for import verification
+        run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
       - name: Compile integrated modules and test twelve-month four-source schedule
         env:
           PYTHONPATH: .
