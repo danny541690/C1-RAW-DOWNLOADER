@@ -18,6 +18,13 @@ def inspect_tpex(body):
         rows=next((t.get("data") for t in tables if isinstance(t,dict) and t.get("data")),None)
     if rows is None: rows=payload.get("data")
     if not isinstance(rows,list) or not rows: raise ValueError("no TPEx historical rows")
+    header_date=str(payload.get("date",""))
+    if len(header_date)==8 and header_date.isdigit():
+        value=date(int(header_date[:4]),int(header_date[4:6]),int(header_date[6:]))
+        if (value.year,value.month)!=(2024,1): raise ValueError("TPEx wrong report date")
+        return {"source":"TPEx","dataset":"OTC_DAILY_QUOTES","records":len(rows),
+                "report_date":value.isoformat(),"result":"STRUCTURE_DATE_PASS",
+                "numeric_verified":False,"pit_verified":False,"drive_uploaded":False}
     dates=[]
     for row in rows:
         if not isinstance(row,(list,tuple)) or not row: raise ValueError("invalid historical row")
