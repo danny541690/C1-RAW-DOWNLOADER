@@ -1,0 +1,31 @@
+name: JARVIS 2024 Four-Source Annual Actual Capture
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-2024-four-source-annual-capture.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v093-2024-four-source-annual-actual
+  cancel-in-progress: false
+jobs:
+  monthly-capture:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        month: [1,2,3,4,5,6,7,8,9,10,11,12]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Drive client
+        run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Capture 2024 four-source available raw datasets month by month
+        env:
+          PYTHONPATH: .
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: python3 -u scripts/unified_annual_downloader.py --year 2024 --month ${{ matrix.month }} --mode capture
