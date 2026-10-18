@@ -13,9 +13,14 @@ def get(url):
 def inspect_tpex(body):
     payload=json.loads(body)
     rows=payload.get("aaData")
+    if rows is None:
+        tables=payload.get("tables",[])
+        rows=next((t.get("data") for t in tables if isinstance(t,dict) and t.get("data")),None)
+    if rows is None: rows=payload.get("data")
     if not isinstance(rows,list) or not rows: raise ValueError("no TPEx historical rows")
     dates=[]
     for row in rows:
+        if not isinstance(row,(list,tuple)) or not row: raise ValueError("invalid historical row")
         parts=str(row[0]).split("/")
         if len(parts)!=3: raise ValueError("TPEx unknown date format")
         y,m,d=map(int,parts)
@@ -40,7 +45,7 @@ def inspect_mops(body):
 def main():
     results=[]
     probes=[
-      ("TPEx","https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php?d=113/01&stkno=6488",inspect_tpex),
+      ("TPEx","https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotes?response=json&date=2024%2F01%2F02",inspect_tpex),
       ("MOPS","https://mopsov.twse.com.tw/nas/t21/sii/t21sc03_113_1_0.html",inspect_mops)]
     for name,url,fn in probes:
         try:
