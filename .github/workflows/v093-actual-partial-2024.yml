@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/v093-actual-partial-2024.yml'
+      - 'scripts/annual_actual_firstpass.py'
   workflow_dispatch:
 permissions:
   contents: read
