@@ -3,7 +3,6 @@ on:
   push:
     paths:
       - '.github/workflows/v093-bulk-market-gate.yml'
-      - 'scripts/bulk_market_canary.py'
   workflow_dispatch:
 permissions:
   contents: read
