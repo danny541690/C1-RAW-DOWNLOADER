@@ -64,6 +64,7 @@ jobs:
           TWSE: ${{ steps.twse.outcome }}
           TPEX_MOPS: ${{ steps.tpex_mops.outcome }}
           FINMIND: ${{ steps.finmind.outcome }}
+          BULK: ${{ steps.bulk.outcome }}
         run: test "$UNIT" = success && test "$TWSE" = success && test "$TPEX_MOPS" = success && test "$FINMIND" = success && test "$BULK" = success
   drive-write:
     runs-on: ubuntu-latest
