@@ -1,0 +1,24 @@
+name: JARVIS v0.93 Layer02 Governance Policy Sync
+on:
+  push:
+    paths:
+      - .github/workflows/v093-layer02-governance-policy-sync.yml
+  workflow_dispatch:
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Save frozen policy to C1_0.93/00_System/Policies
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_layer02_publish_policy
