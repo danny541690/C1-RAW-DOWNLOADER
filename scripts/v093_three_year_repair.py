@@ -4,7 +4,7 @@ Existing raw is immutable. Date evidence comes from payloads, never filenames.
 ZIP CRC is storage integrity only; numeric/PIT/universe approval stays false.
 """
 import argparse, calendar, collections, datetime as dt, hashlib, html, io, json
-import os, re, time, urllib.error, urllib.parse, urllib.request, zipfile
+import os, re, time, urllib.error, urllib.parse, urllib.request, zipfile, csv
 from pathlib import Path
 from scripts.annual_actual_firstpass import Drive, service
 
@@ -94,7 +94,24 @@ def validate(raw,source,cat,period):
   codes=set(re.findall(r'<td[^>]*>\s*([1-9]\d{3})\s*</td>',text,re.I))
   if not codes:raise ValueError('NO_COMPANY_ROWS')
   return {'rows':len(codes),'codes':sorted(codes),'period':period}
- obj=json.loads(raw.decode('utf-8-sig'))
+ try:obj=json.loads(raw.decode('utf-8-sig'))
+ except (ValueError,UnicodeDecodeError):
+  if len(period)!=10:raise ValueError('NON_JSON_PERIOD_REQUIRES_SEPARATE_VALIDATION')
+  for enc in ('utf-8-sig','cp950'):
+   try:
+    text=raw.decode(enc)
+    mt=re.search(r'(\d{3,4})[/年](\d{1,2})[/月](\d{1,2})',text[:600])
+    if not mt or normdate('/'.join(mt.groups()))!=period:continue
+    rows=list(csv.reader(io.StringIO(text)))
+    hi=next(i for i,r in enumerate(rows) if any(f in r for f in ('代號','股票代號','證券代號')))
+    fields=rows[hi];ix=next(i for i,f in enumerate(fields) if f in ('代號','股票代號','證券代號'))
+    data=[r for r in rows[hi+1:] if len(r)>ix and re.fullmatch(r'[A-Za-z0-9]{4,12}',r[ix].strip())]
+    if not data or any(len(r)!=len(fields) for r in data):raise ValueError('CSV_TABLE_WIDTH_OR_ROWS')
+    codes={r[ix].strip() for r in data if re.fullmatch(r'[1-9]\d{3}',r[ix].strip())}
+    if cat in ('prices','prices_indices') and len(codes)<300:raise ValueError('CSV_NOT_FULL_MARKET')
+    return {'rows':len(data),'codes':sorted(codes),'period':period,'encoding':enc,'format':'OFFICIAL_CSV'}
+   except (UnicodeDecodeError,StopIteration):continue
+  raise ValueError('NON_JSON_OR_CSV_DATE_UNPROVEN')
  if not isinstance(obj,dict):raise ValueError('NOT_JSON_OBJECT')
  if str(obj.get('stat','')).lower()!='ok':raise ValueError('SOURCE_STATUS:'+str(obj.get('stat',''))[:100])
  rows,codes,issues=tabular(obj)

@@ -1,9 +1,9 @@
-import ast, pathlib, unittest, json, re, datetime as dt, html
+import ast, pathlib, unittest, json, re, datetime as dt, html, csv, io
 
 src=pathlib.Path('scripts/v093_three_year_repair.py').read_text()
 tree=ast.parse(src)
 nodes=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in ('normdate','actual_date','category','tabular','validate')]
-ns={'re':re,'dt':dt,'json':json,'html':html,
+ns={'re':re,'dt':dt,'json':json,'html':html,'csv':csv,'io':io,
     'DAILY':{'TWSE':[('prices_indices','',{}),('margin','',{})],'TPEx':[('prices','',{})]},
     'EVENTS':{'TWSE':[('capital_reduction','')],'TPEx':[]}}
 exec(compile(ast.Module(body=nodes,type_ignores=[]),'contracts','exec'),ns)
@@ -33,5 +33,9 @@ class Contracts(unittest.TestCase):
   self.assertEqual(ns['category']('2024-01-02_HISTORICAL_CORRECTED_R3.json','TPEx'),'prices')
   self.assertEqual(ns['category']('revenue_sii_2025-01_0_abc.raw','MOPS'),'revenue_sii_0')
   self.assertEqual(ns['category']('THREE_YEAR_OFFICIAL_GAPS_20261019_R1_revenue_otc_1_2025-01_abc.html','MOPS'),'revenue_otc_1')
+ def test_official_csv_date_and_table(self):
+  raw=('113/01/02\n代號,收盤價\n'+''.join(str(1000+i)+',10\n' for i in range(300))).encode('cp950')
+  self.assertEqual(ns['validate'](raw,'TPEx','prices','2024-01-02')['rows'],300)
+  with self.assertRaisesRegex(ValueError,'DATE_UNPROVEN'):ns['validate'](raw,'TPEx','prices','2024-01-03')
 
 if __name__=='__main__':unittest.main()
