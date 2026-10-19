@@ -1,0 +1,29 @@
+name: JARVIS v0.93 Layer02 Native Formats Probe
+on:
+  push:
+    paths: [.github/workflows/v093-layer02-format-probe.yml]
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      max-parallel: 2
+      matrix:
+        include:
+          - year: 2025
+            month: 1
+          - year: 2026
+            month: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install google-api-python-client google-auth google-auth-httplib2 pyarrow
+      - name: Probe RAW native response shapes
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_standard_probe --year ${{ matrix.year }} --month ${{ matrix.month }}
