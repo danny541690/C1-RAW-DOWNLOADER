@@ -1,0 +1,25 @@
+name: JARVIS v0.93 2026 FinMind FREE Canary
+on:
+  push:
+    paths:
+      - .github/workflows/v093-finmind-free-2026-canary.yml
+  workflow_dispatch:
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Validate only documented FREE API datasets before download
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+        run: python -u -m scripts.v093_finmind_free_2026_canary
