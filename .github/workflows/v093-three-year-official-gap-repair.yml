@@ -1,0 +1,36 @@
+name: JARVIS 2024-2026 Official Audit and Gap Repair
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/v093-three-year-official-gap-repair.yml
+concurrency:
+  group: v093-three-year-official-gap-repair
+  cancel-in-progress: false
+jobs:
+  audit-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        year: [2024, 2025, 2026]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Audit payload dates and storage, repair only official source gaps, upload and reread
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_three_year_repair --year ${{ matrix.year }} --repair
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: three-year-repair-${{ matrix.year }}
+          path: run_reports/
+          if-no-files-found: ignore
