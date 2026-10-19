@@ -1,4 +1,5 @@
 name: JARVIS 2026 FinMind FREE All-Year Backfill
+# Manual continuation requested: resume at durable Drive cursor, existing monthly paths unchanged.
 on:
   push:
     paths:
