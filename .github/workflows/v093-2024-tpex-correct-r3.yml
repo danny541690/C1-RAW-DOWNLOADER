@@ -1,0 +1,27 @@
+name: JARVIS 2024 TPEx Correct Historical R3 Resume
+on:
+  push:
+    paths:
+      - .github/workflows/v093-2024-tpex-correct-r3.yml
+  workflow_dispatch:
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        month: [1,2,3,4,5,6,7,8,9,10,11,12]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Resume invalid/missing TPEx historical files, preserve original RAW
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_2024_tpex_repair_r3 --month ${{ matrix.month }}
