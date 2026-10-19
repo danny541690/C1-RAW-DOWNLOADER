@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - .github/workflows/v093-layer02-governance-policy-sync.yml
+      - scripts/v093_layer02_publish_policy.py
+      - docs/v093_layer02_incremental_governance_r1.md
   workflow_dispatch:
 jobs:
   policy:
