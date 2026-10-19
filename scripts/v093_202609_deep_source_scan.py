@@ -4,7 +4,7 @@ No network source API calls, no modifying raw data, no phantom completeness.
 """
 import collections,datetime,hashlib,io,json,re,zipfile
 from scripts.annual_actual_firstpass import Drive,service
-YEAR_FOLDER="1kow1Aj-swUC30u3rSw6EwUeIMvjuT5QN"
+YEAR_FOLDER="1CAlRsbDEKTrb9BJlJ604SwYwQWRU3lpK"
 REPORT_PARENT="1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit"
 PERIOD="2026-09"
 SOURCES=("TWSE","TPEx","MOPS","FinMind")
