@@ -60,7 +60,10 @@ def main(max_requests):
  symbols=stocklist(d,ctrl)
  tasks=[(ds,stock) for ds in DATASETS for stock in symbols]
  state=get_json(d,ctrl,"BACKFILL_2026_FREE_CURSOR_R1.json") or {"cursor":0,"runs_completed":0,"permanent_failures":[],"version":"FREE_BACKFILL_2026_R1"}
- # Repair the single initial cursor move caused by the old token-required preflight (zero successful API calls).\n if state.get("cursor")==1 and state.get("runs_completed")==1 and len(state.get("permanent_failures",[]))==1 and "FINMIND_TOKEN_REQUIRED_FOR_QUOTA" in state["permanent_failures"][0].get("error",""):\n  state["cursor"]=0;state["permanent_failures"]=[];state["runs_completed"]=0\n start=int(state["cursor"]);stop=min(len(tasks),start+min(max_requests,BATCH))
+ # Repair the single initial cursor move caused by the old token-required preflight (zero successful API calls).
+ if state.get("cursor")==1 and state.get("runs_completed")==1 and len(state.get("permanent_failures",[]))==1 and "FINMIND_TOKEN_REQUIRED_FOR_QUOTA" in state["permanent_failures"][0].get("error",""):
+  state["cursor"]=0;state["permanent_failures"]=[];state["runs_completed"]=0
+ start=int(state["cursor"]);stop=min(len(tasks),start+min(max_requests,BATCH))
  if start>=len(tasks):
   print(json.dumps({"state":"BACKFILL_CURRENT_STOCK_DATASET_TASKS_COMPLETE","total_tasks":len(tasks),"cursor":start,"missing_retries":len(state["permanent_failures"]),"year_complete":False}),flush=True);return
  batch_id=f"B{start:06d}_{stop-1:06d}";monthly=collections.defaultdict(list)
