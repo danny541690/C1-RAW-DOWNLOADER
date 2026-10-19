@@ -1,0 +1,156 @@
+{
+  "schema_version": "C1-0.93-history-1",
+  "objective": "MAX_AVAILABLE_HISTORY_WITH_POINT_IN_TIME_PROVENANCE",
+  "history_policy": {
+    "global_discovery_floor": "1990-01-01",
+    "end_date": "latest_published",
+    "never_infer_absence_from_failed_request": true,
+    "retain_delisted": true,
+    "retain_emerging_raw_only": true,
+    "source_raw_immutable": true,
+    "raw_and_adjusted_prices_separate": true,
+    "publication_time_required_for_pit": true,
+    "unknown_pit_label": "PIT_UNVERIFIED",
+    "original_and_revised_filings_separate": true,
+    "do_not_merge_unverified_old_versions": true
+  },
+  "sources": [
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockFinancialStatements",
+      "documented_start": "1990-03-01",
+      "access": "FREE_PER_STOCK",
+      "verified_live_start": false,
+      "priority": 2
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "documented_start": "1994-10-01",
+      "access": "FREE_PER_STOCK",
+      "verified_live_start": false,
+      "priority": 1
+    },
+    {
+      "source": "TPEx",
+      "dataset": "IndividualDailyInfo",
+      "documented_start": "1994-01-01",
+      "start_precision": "month",
+      "access": "PUBLIC_WEB",
+      "verified_live_start": false,
+      "priority": 1
+    },
+    {
+      "source": "TPEx",
+      "dataset": "DailyQuotesBulk",
+      "documented_start": "2003-08-01",
+      "start_precision": "month",
+      "access": "PUBLIC_WEB_ARCHIVE",
+      "verified_live_start": false,
+      "priority": 1
+    },
+    {
+      "source": "TWSE",
+      "dataset": "STOCK_DAY",
+      "documented_start": "2010-01-04",
+      "access": "PUBLIC_WEB",
+      "verified_live_start": false,
+      "priority": 1
+    },
+    {
+      "source": "TWSE",
+      "dataset": "MI_INDEX_BULK",
+      "documented_start": null,
+      "access": "PUBLIC_WEB",
+      "verified_live_start": false,
+      "priority": 1
+    },
+    {
+      "source": "MOPS",
+      "dataset": "MonthlyRevenue",
+      "documented_start": null,
+      "access": "PUBLIC_WEB",
+      "verified_live_start": false,
+      "priority": 2
+    },
+    {
+      "source": "MOPS",
+      "dataset": "FinancialStatements",
+      "documented_start": null,
+      "access": "PUBLIC_WEB",
+      "verified_live_start": false,
+      "priority": 2
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockMonthRevenue",
+      "documented_start": "2002-02-01",
+      "access": "FREE_PER_STOCK",
+      "verified_live_start": false,
+      "priority": 2
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockCashFlowsStatement",
+      "documented_start": "2008-06-01",
+      "access": "FREE_PER_STOCK",
+      "verified_live_start": false,
+      "priority": 2
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockBalanceSheet",
+      "documented_start": "2011-12-01",
+      "access": "FREE_PER_STOCK",
+      "verified_live_start": false,
+      "priority": 2
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockInstitutionalInvestorsBuySell",
+      "documented_start": "2005-01-01",
+      "access": "FREE_PER_STOCK_CHECK",
+      "verified_live_start": false,
+      "priority": 3
+    }
+  ],
+  "execution": {
+    "backfill_order": [
+      "2010-2023",
+      "2025-latest",
+      "1990-2009"
+    ],
+    "batch_unit": "source_dataset_year_month",
+    "max_source_requests_per_unit": 4,
+    "successful_unit_never_refetch": true,
+    "checkpoint_on_drive": true,
+    "failures_deferred": true,
+    "rate_limit_policy": "respect_provider_limits_no_bypass",
+    "incremental_daily": true,
+    "periodic_revision_scan": true,
+    "bulk_first": true,
+    "financial_budget_policy": "FREE_FIRST_PAID_ONLY_AFTER_REQUEST_VOLUME_ESTIMATE",
+    "launch_history_backfill_automatically": false
+  },
+  "storage": {
+    "raw_path": "01_RAW/{year}/{source}/{YYYY-MM}",
+    "history_manifest": "00_CONTROL/history_source_registry.json",
+    "quality_states": [
+      "NOT_YET_PUBLISHED",
+      "NOT_LISTED",
+      "MARKET_CLOSED",
+      "NOT_AVAILABLE_FROM_SOURCE",
+      "DEFERRED_MISSING",
+      "SOURCE_HOLD",
+      "SAVED_BASIC_VALID",
+      "PIT_UNVERIFIED",
+      "QA_VERIFIED"
+    ],
+    "money_display_unit": "NTD_100_MILLION"
+  },
+  "notes": [
+    "Documented start is NOT confirmed free API reachability or all-ticker coverage.",
+    "Existing 2024 capture remains independent; do not interrupt or replace.",
+    "Do not mark complete until actual stock universe, delisted securities, PIT and data quality are verified."
+  ]
+}
