@@ -171,6 +171,10 @@ class History:
   return max(0,cap-shared-sum(x['count'] for x in own)),own,token
  def finmind(self,max_tasks):
   budget,ledger,token=self.quota();budget=min(budget,max_tasks);tasks=self.state.get('finmind_tasks',[])
+  confirmed_dates={e['period'] for e in self.state['units'].values() if e.get('status')=='SAVED_BASIC_VERIFIED' and e.get('category') in ('prices','prices_indices')}
+  for task in tasks:
+   if task['kind']=='daily_month' and not set(task.get('official_missing_dates',[]))&confirmed_dates and key(task) not in self.state['finmind_units']:
+    self.state['finmind_units'][key(task)]=dict(task,unit_id=key(task),attempts=0,status='TRADING_DATE_UNCONFIRMED_NOT_REQUESTED',reason='No official price snapshot proves these dates were trading dates; retained as unresolved without full-universe API calls')
   pending=[t for t in tasks if key(t) not in self.state['finmind_units']]
   for task in pending[:budget]:
    if time.monotonic()>self.until:return False
@@ -223,8 +227,12 @@ class History:
   return report
  def dashboard(self):
   x=self.checkpoint;idx=x['month_index'];body={'run':RUN,'order':'2023-12 descending to 2014-01','total_months':120,'months_primary_processed':idx,'primary_month_progress_percent':round(idx/120*100,2),'active_month':self.active,'mode':x['mode'],'finished_months':x['finished_months'],'last_update_utc':stamp(),'run_source_requests':dict(self.request_counts),'done':x.get('done',False),'numeric_verified':False,'pit_verified':False,'full_market_complete':False}
+  active=getattr(self,'state',{})
+  body['active_month_phase']=active.get('phase')
+  body['active_core_counts']=dict(collections.Counter(e['status'] for e in active.get('units',{}).values()))
+  body['active_financial_groups_processed']=len(active.get('financial_units',{}))
   putj(self.d,self.control,'PROGRESS.json',body)
-  text=f'# 2014–2023 十年歷史下載進度\n\n更新：{body["last_update_utc"]}\n\n倒序：2023-12 → 2023-11 → … → 2014-01。\n\n已完成官方主流程月結：{idx}/120（{body["primary_month_progress_percent"]}%）；目前月份：{self.active}；階段：{x["mode"]}。\n\n這是月份處理進度，不是全市場資料完整率。各月 REPORT.md、DOWNLOAD_LOG.json、MISSING_AND_PENDING.json 保留成功、缺漏與尚未請求事項。FinMind額度不足時先保留補充佇列，官方月份繼續倒序處理。\n'
+  text=f'# 2014–2023 十年歷史下載進度\n\n更新：{body["last_update_utc"]}\n\n倒序：2023-12 → 2023-11 → … → 2014-01。\n\n已完成官方主流程月結：{idx}/120（{body["primary_month_progress_percent"]}%）；目前月份：{self.active}；階段：{x["mode"]}／{body["active_month_phase"]}。\n\n目前月份核心單元：{json.dumps(body["active_core_counts"],ensure_ascii=False)}；已處理財報分組：{body["active_financial_groups_processed"]}。\n\n這是月份處理進度，不是全市場資料完整率。各月 REPORT.md、DOWNLOAD_LOG.json、MISSING_AND_PENDING.json 保留成功、缺漏與尚未請求事項。FinMind額度不足時先保留補充佇列，官方月份繼續倒序處理。\n'
   self.d.put(self.control,'PROGRESS.md',text.encode(),'text/markdown',overwrite=True)
  def run(self):
   if self.checkpoint.get('done'):
