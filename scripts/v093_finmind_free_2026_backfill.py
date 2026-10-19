@@ -30,9 +30,9 @@ def stocklist(d,ctrl):
 def fetch(ds,stock,end):
  params={"dataset":ds,"data_id":stock,"start_date":"2026-01-01","end_date":end}
  token=os.environ.get("FINMIND_TOKEN","").strip() or os.environ.get("FINMIND_API_TOKEN","").strip()
- if not token:raise ValueError("FINMIND_TOKEN_REQUIRED_FOR_QUOTA")
+ # Anonymous Free requests remain supported at 300/hr; token raises quota to 600/hr.
  # Official quickstart uses token parameter; do not log token or URL
- params["token"]=token
+ if token:params["token"]=token
  req=urllib.request.Request("https://api.finmindtrade.com/api/v4/data?"+urllib.parse.urlencode(params),
   headers={"User-Agent":"JARVIS-0.93-FinMind-Free-2026-Batch/1.0","Accept":"application/json"})
  with urllib.request.urlopen(req,timeout=55) as f:b=f.read(18000001)
@@ -60,7 +60,7 @@ def main(max_requests):
  symbols=stocklist(d,ctrl)
  tasks=[(ds,stock) for ds in DATASETS for stock in symbols]
  state=get_json(d,ctrl,"BACKFILL_2026_FREE_CURSOR_R1.json") or {"cursor":0,"runs_completed":0,"permanent_failures":[],"version":"FREE_BACKFILL_2026_R1"}
- start=int(state["cursor"]);stop=min(len(tasks),start+min(max_requests,BATCH))
+ # Repair the single initial cursor move caused by the old token-required preflight (zero successful API calls).\n if state.get("cursor")==1 and state.get("runs_completed")==1 and len(state.get("permanent_failures",[]))==1 and "FINMIND_TOKEN_REQUIRED_FOR_QUOTA" in state["permanent_failures"][0].get("error",""):\n  state["cursor"]=0;state["permanent_failures"]=[];state["runs_completed"]=0\n start=int(state["cursor"]);stop=min(len(tasks),start+min(max_requests,BATCH))
  if start>=len(tasks):
   print(json.dumps({"state":"BACKFILL_CURRENT_STOCK_DATASET_TASKS_COMPLETE","total_tasks":len(tasks),"cursor":start,"missing_retries":len(state["permanent_failures"]),"year_complete":False}),flush=True);return
  batch_id=f"B{start:06d}_{stop-1:06d}";monthly=collections.defaultdict(list)
