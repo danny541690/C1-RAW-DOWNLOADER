@@ -1,0 +1,100 @@
+name: JARVIS Layer02 R3 2025-2026 Parser Repair and Structural QA
+on:
+  push:
+    paths: [.github/workflows/v093-layer02-r3-2025-2026.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: layer02-r3-2025-2026
+  cancel-in-progress: false
+jobs:
+  parser-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyarrow lxml google-api-python-client google-auth google-auth-httplib2
+      - run: python -m unittest discover -s tests -p test_v093_standard_r3.py -v
+  pilot:
+    needs: parser-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - {year: 2025, month: 1}
+          - {year: 2026, month: 9}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyarrow lxml google-api-python-client google-auth google-auth-httplib2
+      - name: Repair pilot month and persist per-input receipts
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_standard_r3 --year ${{ matrix.year }} --month ${{ matrix.month }}
+  remaining-months:
+    needs: pilot
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - {year: 2025, month: 2}
+          - {year: 2025, month: 3}
+          - {year: 2025, month: 4}
+          - {year: 2025, month: 5}
+          - {year: 2025, month: 6}
+          - {year: 2025, month: 7}
+          - {year: 2025, month: 8}
+          - {year: 2025, month: 9}
+          - {year: 2025, month: 10}
+          - {year: 2025, month: 11}
+          - {year: 2025, month: 12}
+          - {year: 2026, month: 1}
+          - {year: 2026, month: 2}
+          - {year: 2026, month: 3}
+          - {year: 2026, month: 4}
+          - {year: 2026, month: 5}
+          - {year: 2026, month: 6}
+          - {year: 2026, month: 7}
+          - {year: 2026, month: 8}
+          - {year: 2026, month: 10}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyarrow lxml google-api-python-client google-auth google-auth-httplib2
+      - name: Convert and check one month with durable resume
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_standard_r3 --year ${{ matrix.year }} --month ${{ matrix.month }}
+  summary:
+    if: always()
+    needs: [parser-tests, pilot, remaining-months]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pyarrow lxml google-api-python-client google-auth google-auth-httplib2
+      - name: Persist actual monthly results without approval claims
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_standard_r3 --summary
