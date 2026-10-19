@@ -29,9 +29,12 @@ class HistoryContracts(unittest.TestCase):
   h=object.__new__(H);h.active='2023-12';h.state={'financial_units':{'x':{'codes':['2330','2317'],'codes_found':['2330'],'category':'IncomeStatement','period':'2023-12-31','unit_id':'x'}},'units':{},'market_codes':{}}
   tasks=h.fm_plan([]);self.assertEqual(len(tasks),1);self.assertEqual(tasks[0]['stock_id'],'2317')
  def test_multiple_missing_dates_collapse_to_one_stock_month_request(self):
-  h=object.__new__(H);h.active='2023-12';h.state={'financial_units':{},'units':{},'market_codes':{'TWSE':['2330']}}
+  h=object.__new__(H);h.active='2023-12';h.state={'financial_units':{},'units':{str(i):{'status':'SAVED_BASIC_VERIFIED','category':'prices','period':d} for i,d in enumerate(['2023-12-01','2023-12-04'])},'market_codes':{'TWSE':['2330']}}
   jobs=[{'source':'TWSE','category':'prices_indices','period':d} for d in ['2023-12-01','2023-12-04']]
   tasks=h.fm_plan(jobs);self.assertEqual(len(tasks),1);self.assertEqual(len(tasks[0]['official_missing_dates']),2)
+ def test_unconfirmed_closed_day_does_not_launch_full_market_finmind_queries(self):
+  h=object.__new__(H);h.active='2023-01';h.state={'financial_units':{},'units':{},'market_codes':{'TWSE':['2330','2317']}}
+  self.assertEqual(h.fm_plan([{'source':'TWSE','category':'prices_indices','period':'2023-01-02'}]),[])
  def test_recovery_from_archive_before_checkpoint_write(self):
   h=object.__new__(H);h.d=object();h.folder=lambda s,m:s
   raw=b'original';r={'source':'TWSE','unit_id':'abc','month':'2023-12','bucket':'units','status':'SAVED_BASIC_VERIFIED','sha256':ns['sha'](raw),'codes_found':['2330']}

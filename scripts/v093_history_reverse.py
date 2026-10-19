@@ -141,6 +141,7 @@ class History:
   return jobs
  def fm_plan(self,core):
   tasks={}
+  confirmed_dates={e['period'] for e in self.state['units'].values() if e.get('status')=='SAVED_BASIC_VERIFIED' and e.get('category') in ('prices','prices_indices')}
   # All explicit residual financial company/report/quarter pairs, no silent sampling.
   for e in self.state['financial_units'].values():
    for code in e['codes']:
@@ -149,7 +150,7 @@ class History:
   mapping={'prices':'TaiwanStockPrice','prices_indices':'TaiwanStockPrice','institutional':'TaiwanStockInstitutionalInvestorsBuySell','margin':'TaiwanStockMarginPurchaseShortSale','valuation':'TaiwanStockPER','foreign_holdings':'TaiwanStockShareholding'}
   for j in core:
    e=self.state['units'].get(key(j),{})
-   if e.get('status')=='SAVED_BASIC_VERIFIED' or j['category'] not in mapping:continue
+   if e.get('status')=='SAVED_BASIC_VERIFIED' or j['category'] not in mapping or j['period'] not in confirmed_dates:continue
    for code in self.state['market_codes'].get(j['source'],[]):
     t={'source':'FinMind','category':j['category'],'dataset':mapping[j['category']],'stock_id':code,'period':self.active,'month':self.active,'kind':'daily_month','official_missing_dates':[],'raw_only_not_cross_source_aligned':True}
     k=key(t)
@@ -252,7 +253,8 @@ class History:
    self.checkpoint['mode']='FINMIND_BACKLOG';index=self.checkpoint['backlog_month_index']
    while index<120 and time.monotonic()<self.until:
     month=MONTHS[index];ctrl=self.d.folder(self.control,month);self.restore(month,ctrl)
-    if not self.finmind(240):self.save_state();break
+    if not self.finmind(240):
+     self.save_state();holder=object.__new__(Audit);core=Audit.jobs(holder,month,self.calendar(int(month[:4])));self.month_report(core);break
     self.state['phase']='PROCESSED_WITH_RECORDED_GAPS';self.save_state()
     holder=object.__new__(Audit);core=Audit.jobs(holder,month,self.calendar(int(month[:4])));self.month_report(core)
     index+=1;self.checkpoint['backlog_month_index']=index;self.save_cursor()
