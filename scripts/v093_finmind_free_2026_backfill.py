@@ -9,7 +9,18 @@ DATASETS=("TaiwanStockPrice","TaiwanStockInstitutionalInvestorsBuySell",
  "TaiwanStockMarginPurchaseShortSale","TaiwanStockMonthRevenue",
  "TaiwanStockFinancialStatements","TaiwanStockBalanceSheet",
  "TaiwanStockCashFlowsStatement","TaiwanStockPER","TaiwanStockShareholding")
-BATCH=120
+BATCH=270
+def quota_budget(state, now, has_token):
+ # Keep a rolling hour across runners; reserve headroom for other small queries.
+ cap=540 if has_token else 270
+ ledger=state.get("request_ledger")
+ if ledger is None:
+  # Legacy batches had no ledger. Conservatively reserve a full window after
+  # their last commit so migration cannot burst past the anonymous allowance.
+  updated=state.get("updated_utc")
+  ledger=[{"at":datetime.datetime.fromisoformat(updated).timestamp(),"count":cap}] if updated else []
+ recent=[x for x in ledger if now-float(x["at"])<3600]
+ return max(0,cap-sum(int(x["count"]) for x in recent)),recent,cap
 def ls(d,p):
  out=[];tok=None
  while True:
@@ -63,9 +74,16 @@ def main(max_requests):
  # Repair the single initial cursor move caused by the old token-required preflight (zero successful API calls).
  if state.get("cursor")==1 and state.get("runs_completed")==1 and len(state.get("permanent_failures",[]))==1 and "FINMIND_TOKEN_REQUIRED_FOR_QUOTA" in state["permanent_failures"][0].get("error",""):
   state["cursor"]=0;state["permanent_failures"]=[];state["runs_completed"]=0
- start=int(state["cursor"]);stop=min(len(tasks),start+min(max_requests,BATCH))
+ token=os.environ.get("FINMIND_TOKEN","").strip() or os.environ.get("FINMIND_API_TOKEN","").strip()
+ budget,ledger,hourly_cap=quota_budget(state,time.time(),bool(token))
+ start=int(state["cursor"])
+ limit=min(max(0,max_requests),BATCH,270 if token else 120,budget)
+ stop=min(len(tasks),start+limit)
  if start>=len(tasks):
   print(json.dumps({"state":"BACKFILL_CURRENT_STOCK_DATASET_TASKS_COMPLETE","total_tasks":len(tasks),"cursor":start,"missing_retries":len(state["permanent_failures"]),"year_complete":False}),flush=True);return
+ print(json.dumps({"state":"QUOTA_PREFLIGHT","token_present":bool(token),"hourly_budget":hourly_cap,"available_requests":budget,"batch_limit":limit,"cursor":start}),flush=True)
+ if not limit:
+  print(json.dumps({"state":"WAIT_FOR_ROLLING_QUOTA","cursor":start}),flush=True);return
  batch_id=f"B{start:06d}_{stop-1:06d}";monthly=collections.defaultdict(list)
  failures=[];zero=[];worked=[];data_rows=0;response_bytes=0
  for i in range(start,stop):
@@ -119,6 +137,9 @@ def main(max_requests):
  state["cursor"]=stop;state["runs_completed"]+=1
  state["permanent_failures"]+=failures
  state["last_batch"]=rname;state["updated_utc"]=receipt["saved_at_utc"]
+ # Completion timestamps intentionally overestimate recent usage, keeping
+ # back-to-back push/manual/scheduled runs within the same rolling allowance.
+ state["request_ledger"]=ledger+[{"at":time.time(),"count":len(worked)+len(failures)}]
  d.put(ctrl,"BACKFILL_2026_FREE_CURSOR_R1.json",json.dumps(state,ensure_ascii=False,indent=2).encode(),"application/json",overwrite=True)
  print(json.dumps({"state":"BATCH_COMMITTED","batch_id":batch_id,"cursor":stop,"total_tasks":len(tasks),
  "percent":round(stop/max(len(tasks),1)*100,3),"successful":len(worked),"empty":len(zero),"deferred":len(failures),"rows":data_rows,
@@ -126,3 +147,4 @@ def main(max_requests):
  "fully_downloaded":False},ensure_ascii=False),flush=True)
 if __name__=="__main__":
  p=argparse.ArgumentParser();p.add_argument("--max-requests",type=int,default=BATCH);a=p.parse_args();main(a.max_requests)
+
