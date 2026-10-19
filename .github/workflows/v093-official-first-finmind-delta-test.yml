@@ -1,0 +1,24 @@
+name: C1 v0.93 Official First FinMind Delta Test
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-official-first-finmind-delta-test.yml'
+  workflow_dispatch:
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Inspect existing official and FinMind archive samples
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_official_first_finmind_delta_test
