@@ -1,0 +1,586 @@
+{
+  "version": "C1-v0.93-cross-asset-pilot",
+  "period": "2026-09",
+  "drive_folder_id": "1yCThJ7FAfjfMyjDLte1jREHVINFROnRM",
+  "root_folder_id": "1JYfWVG-tVwhiTYoo8gml29hUW_bjoSlG",
+  "status": "SOURCE_CANDIDATES_UNVERIFIED",
+  "notes": "Candidate endpoints are unverified until response passes QA; do not equate missing data with success. FRED candidates may be discontinued or monthly frequency.",
+  "indicators": [
+    {
+      "id": "SP500",
+      "group": "美股與全球股市",
+      "source": "FRED",
+      "dataset": "SP500",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "NASDAQ",
+      "group": "美股與全球股市",
+      "source": "FRED",
+      "dataset": "NASDAQCOM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "DOW",
+      "group": "美股與全球股市",
+      "source": "FRED",
+      "dataset": "DJIA",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "RUSSELL2000",
+      "group": "美股與全球股市",
+      "source": "FRED",
+      "dataset": "RU2000PR",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "SOX",
+      "group": "美股與全球股市",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "MSCI_EM",
+      "group": "美股與全球股市",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "NIKKEI225",
+      "group": "美股與全球股市",
+      "source": "FRED",
+      "dataset": "NIKKEI225",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "KOSPI",
+      "group": "美股與全球股市",
+      "source": "FRED",
+      "dataset": "KOSPI",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "UST2Y",
+      "group": "利率與風險",
+      "source": "FinMind",
+      "dataset": "GovernmentBondsYield",
+      "data_id": "United States 2-Year",
+      "source_verified": false
+    },
+    {
+      "id": "UST5Y",
+      "group": "利率與風險",
+      "source": "FinMind",
+      "dataset": "GovernmentBondsYield",
+      "data_id": "United States 5-Year",
+      "source_verified": false
+    },
+    {
+      "id": "UST10Y",
+      "group": "利率與風險",
+      "source": "FinMind",
+      "dataset": "GovernmentBondsYield",
+      "data_id": "United States 10-Year",
+      "source_verified": false
+    },
+    {
+      "id": "UST30Y",
+      "group": "利率與風險",
+      "source": "FinMind",
+      "dataset": "GovernmentBondsYield",
+      "data_id": "United States 30-Year",
+      "source_verified": false
+    },
+    {
+      "id": "FEDFUNDS",
+      "group": "利率與風險",
+      "source": "FinMind",
+      "dataset": "InterestRate",
+      "data_id": "FED",
+      "source_verified": false
+    },
+    {
+      "id": "VIX",
+      "group": "利率與風險",
+      "source": "FRED",
+      "dataset": "VIXCLS",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "HY_SPREAD",
+      "group": "利率與風險",
+      "source": "FRED",
+      "dataset": "BAMLH0A0HYM2",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "DXY",
+      "group": "利率與風險",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "USDTWD",
+      "group": "匯率",
+      "source": "FinMind",
+      "dataset": "TaiwanExchangeRate",
+      "data_id": "USD",
+      "source_verified": false
+    },
+    {
+      "id": "USDJPY",
+      "group": "匯率",
+      "source": "FinMind",
+      "dataset": "TaiwanExchangeRate",
+      "data_id": "JPY",
+      "source_verified": false
+    },
+    {
+      "id": "USDCNY",
+      "group": "匯率",
+      "source": "FinMind",
+      "dataset": "TaiwanExchangeRate",
+      "data_id": "CNY",
+      "source_verified": false
+    },
+    {
+      "id": "USDKRW",
+      "group": "匯率",
+      "source": "FinMind",
+      "dataset": "TaiwanExchangeRate",
+      "data_id": "KRW",
+      "source_verified": false
+    },
+    {
+      "id": "EURUSD",
+      "group": "匯率",
+      "source": "FinMind",
+      "dataset": "TaiwanExchangeRate",
+      "data_id": "EUR",
+      "source_verified": false
+    },
+    {
+      "id": "DOLLAR_BROAD",
+      "group": "匯率",
+      "source": "FRED",
+      "dataset": "DTWEXBGS",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "DRAM",
+      "group": "半導體電子",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "NAND",
+      "group": "半導體電子",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "SEMI_EQUIPMENT",
+      "group": "半導體電子",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "GLOBAL_SEMI_SALES",
+      "group": "半導體電子",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "TW_ELECTRONICS",
+      "group": "半導體電子",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "TW_SEMI",
+      "group": "半導體電子",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "COPPER_ELEC",
+      "group": "半導體電子",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "SILICON_WAFER",
+      "group": "半導體電子",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "BDI",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "BCI",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "BPI",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "BSI",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "SCFI",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "CCFI",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "SCFIS_EU",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "AIR_FREIGHT",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "BUNKER_FUEL",
+      "group": "航運物流",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "WTI",
+      "group": "能源塑化",
+      "source": "FinMind",
+      "dataset": "CrudeOilPrices",
+      "data_id": "WTI",
+      "source_verified": false
+    },
+    {
+      "id": "BRENT",
+      "group": "能源塑化",
+      "source": "FinMind",
+      "dataset": "CrudeOilPrices",
+      "data_id": "Brent",
+      "source_verified": false
+    },
+    {
+      "id": "NATGAS",
+      "group": "能源塑化",
+      "source": "FRED",
+      "dataset": "DHHNGSP",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "COAL",
+      "group": "能源塑化",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "NAPHTHA",
+      "group": "能源塑化",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "ETHYLENE",
+      "group": "能源塑化",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "PROPYLENE",
+      "group": "能源塑化",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "PX",
+      "group": "能源塑化",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "PTA",
+      "group": "能源塑化",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "PVC",
+      "group": "能源塑化",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "GOLD",
+      "group": "金屬材料",
+      "source": "FinMind",
+      "dataset": "GoldPrice",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "SILVER",
+      "group": "金屬材料",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "COPPER",
+      "group": "金屬材料",
+      "source": "FRED",
+      "dataset": "PCOPPUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "ALUMINUM",
+      "group": "金屬材料",
+      "source": "FRED",
+      "dataset": "PALUMUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "NICKEL",
+      "group": "金屬材料",
+      "source": "FRED",
+      "dataset": "PNICKUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "ZINC",
+      "group": "金屬材料",
+      "source": "FRED",
+      "dataset": "PZINCUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "IRON_ORE",
+      "group": "金屬材料",
+      "source": "FRED",
+      "dataset": "PIORECRUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "HRC_STEEL",
+      "group": "金屬材料",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "RARE_EARTH",
+      "group": "金屬材料",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "COTTON",
+      "group": "紡織農業景氣",
+      "source": "FRED",
+      "dataset": "PCOTTINDUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "POLYESTER_STAPLE",
+      "group": "紡織農業景氣",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "PET",
+      "group": "紡織農業景氣",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "SOYBEANS",
+      "group": "紡織農業景氣",
+      "source": "FRED",
+      "dataset": "PSOYBUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "CORN",
+      "group": "紡織農業景氣",
+      "source": "FRED",
+      "dataset": "PMAIZMTUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "WHEAT",
+      "group": "紡織農業景氣",
+      "source": "FRED",
+      "dataset": "PWHEAMTUSDM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "RUBBER",
+      "group": "紡織農業景氣",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "WOOD_PULP",
+      "group": "紡織農業景氣",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "GLOBAL_PMI",
+      "group": "紡織農業景氣",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "US_ISM",
+      "group": "紡織農業景氣",
+      "source": "FRED",
+      "dataset": "NAPM",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "US_NEW_ORDERS",
+      "group": "紡織農業景氣",
+      "source": "FRED",
+      "dataset": "AMTMNO",
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "TW_EXPORT_YOY",
+      "group": "紡織農業景氣",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "TW_EXPORT_ORDERS_YOY",
+      "group": "紡織農業景氣",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    },
+    {
+      "id": "TW_BUSINESS_SIGNAL",
+      "group": "紡織農業景氣",
+      "source": "SOURCE_DISCOVERY",
+      "dataset": null,
+      "data_id": null,
+      "source_verified": false
+    }
+  ]
+}
