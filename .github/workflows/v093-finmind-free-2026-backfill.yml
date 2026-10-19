@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - .github/workflows/v093-finmind-free-2026-backfill.yml
+      - scripts/v093_finmind_free_2026_backfill.py
   workflow_dispatch:
   schedule:
     - cron: '17 * * * *'
