@@ -1,0 +1,31 @@
+name: JARVIS v0.93 Layer 02 STANDARD R1 Pilot
+on:
+  push:
+    paths:
+      - .github/workflows/v093-layer02-standard-r1-pilot.yml
+  workflow_dispatch:
+jobs:
+  layer02-standard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - year: 2025
+            month: 1
+          - year: 2026
+            month: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install google-api-python-client google-auth google-auth-httplib2 pyarrow
+      - name: Parse existing ZIP and stage safely identifiable rows as Parquet
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_standard_r1 --year ${{ matrix.year }} --month ${{ matrix.month }}
