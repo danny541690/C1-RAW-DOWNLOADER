@@ -4,7 +4,7 @@ No RAW, STANDARD Parquet, QA or release pointer changes.
 from pathlib import Path
 import hashlib,json,datetime
 from scripts.annual_actual_firstpass import Drive,service
-from scripts.v093_standard_r1 import C1
+C1="1Tnxlu3BVvzUV-yM2Fe0HbwPHvQaHdePC"
 def main():
  d=Drive(service())
  policy=d.folder(d.folder(C1,"00_System"),"Policies")
