@@ -1,0 +1,47 @@
+name: JARVIS Three-Year Monthly Gap Continuation
+on:
+  workflow_dispatch:
+  push:
+    paths: [.github/workflows/v093-three-year-monthly-continuation.yml]
+concurrency:
+  group: v093-three-year-monthly-gap-continuation
+  cancel-in-progress: false
+jobs:
+  resume-month:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        year: [2024, 2025, 2026]
+        month: [1,2,3,4,5,6,7,8,9,10,11,12]
+        exclude:
+          - {year: 2026, month: 11}
+          - {year: 2026, month: 12}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Resume recorded missing units and atomically upload raw with receipt
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_three_year_resume_month --year ${{ matrix.year }} --month ${{ matrix.month }}
+  collect:
+    needs: resume-month
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install google-api-python-client google-auth google-auth-httplib2
+      - env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_three_year_resume_month --collect

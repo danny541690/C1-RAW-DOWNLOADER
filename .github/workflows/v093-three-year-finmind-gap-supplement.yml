@@ -2,7 +2,7 @@ name: JARVIS Three-Year Verified Financial Gap Supplement
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ['JARVIS 2024-2026 Official Audit and Gap Repair']
+    workflows: ['JARVIS 2024-2026 Official Audit and Gap Repair', 'JARVIS Three-Year Monthly Gap Continuation']
     types: [completed]
 concurrency:
   group: v093-three-year-finmind-gap-supplement
