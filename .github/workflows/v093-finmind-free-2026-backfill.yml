@@ -1,18 +1,14 @@
-name: JARVIS 2026 FinMind FREE All-Year Backfill
-# Resume at durable Drive cursor; rolling-hour request budget shared across runs.
+name: RETIRED - FinMind 2026 Full Backfill
+# Retired 2026-10-19: official sources first; FinMind only for verified gaps.
+# Preserve this workflow and downloader for audit; no full-universe executions.
 on:
-  push:
-    paths:
-      - .github/workflows/v093-finmind-free-2026-backfill.yml
-      - scripts/v093_finmind_free_2026_backfill.py
   workflow_dispatch:
-  schedule:
-    - cron: '17,47 * * * *'
 concurrency:
   group: finmind-free-2026-backfill
   cancel-in-progress: false
 jobs:
   ingest-batch:
+    if: ${{ false }} # Full-universe ingestion superseded by official-first gap policy.
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
