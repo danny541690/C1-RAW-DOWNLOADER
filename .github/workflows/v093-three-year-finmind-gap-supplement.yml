@@ -9,6 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   supplement:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:

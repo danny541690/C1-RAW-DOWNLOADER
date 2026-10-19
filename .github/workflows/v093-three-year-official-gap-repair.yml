@@ -6,16 +6,16 @@ on:
       - .github/workflows/v093-three-year-official-gap-repair.yml
 concurrency:
   group: v093-three-year-official-gap-repair
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   audit-repair:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 3
       matrix:
-        year: [2024, 2025, 2026]
+        year: [2026, 2025, 2024]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

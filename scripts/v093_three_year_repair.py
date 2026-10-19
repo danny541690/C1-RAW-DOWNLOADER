@@ -218,7 +218,7 @@ class Audit:
    self.audit.append(evidence)
   emit({'phase':'SCAN','year':self.year,'month':month,'source':source,'files':len(files),'verified_units':len(self.cover)})
  def calendar(self):
-  url='https://www.twse.com.tw/holidaySchedule/holidaySchedule?'+urllib.parse.urlencode({'response':'json','queryYear':self.year})
+  url='https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule?'+urllib.parse.urlencode({'response':'json','queryYear':self.year})
   info={'url':url,'year':self.year,'verified':False,'closed':[]}
   try:
    self.requests['TWSE']+=1;b=request(url);x=json.loads(b);rows=x.get('data') or []
@@ -254,11 +254,20 @@ class Audit:
   ext='html' if source=='MOPS' and j['category'].startswith('revenue_') else 'json'
   name=f"{PASS}_{j['category']}_{j['period']}_{digest[:12]}.{ext}"
   receipt=dict(j,sha256=digest,bytes=len(raw),rows=stats.get('rows'),saved_at_utc=stamp(),validation='CONTENT_DATE_STRUCTURE_AND_REMOTE_SHA',numeric_verified=False,pit_verified=False,legacy_import=False)
-  self.d.put(folder,name,raw,'text/html' if ext=='html' else 'application/json',overwrite=False)
-  self.d.put(folder,name+'.receipt.json',json.dumps(receipt,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=False)
-  # Drive.put independently rereads both uploads and compares SHA.
+  member=j['category']+'_'+j['period']+'.'+ext
+  meta=dict(receipt,file=member,name=j['category']+'_'+j['period'])
+  if len(j['period'])==10:meta['date']=j['period']
+  buf=io.BytesIO()
+  with zipfile.ZipFile(buf,'w',zipfile.ZIP_DEFLATED) as z:
+   z.writestr(member,raw);z.writestr('manifest.json',json.dumps({'source':source,'month':j['month'],'units':[meta]},ensure_ascii=False))
+  archive=buf.getvalue()
+  with zipfile.ZipFile(io.BytesIO(archive)) as z:
+   if z.testzip():raise ValueError('NEW_ARCHIVE_CRC_FAILED')
+  name=name.rsplit('.',1)[0]+'.zip'
+  # Raw and receipt are committed atomically in one ZIP; original API bytes unchanged.
+  self.d.put(folder,name,archive,'application/zip',overwrite=False)
   self.output.append(dict(receipt,file=name));self.codes.update(stats.get('codes',[]))
-  self.cover[(source,j['category'],j['period'])]={'location':name,'sha256':digest,'rows':stats.get('rows')}
+  self.cover[(source,j['category'],j['period'])]={'location':name+':'+member,'sha256':digest,'rows':stats.get('rows')}
   return name
  def repair_unit(self,j):
   e=dict(j,status='MISSING',attempts=0,numeric_verified=False,pit_verified=False)
@@ -274,7 +283,10 @@ class Audit:
    e.update(status='REPAIRED_REMOTE_READBACK_VERIFIED',file=self.save(j,raw,stats),rows=stats['rows'])
    self.circuit[scope]=0
   except Exception as exc:
-   e.update(status='DEFERRED_GAP',error=type(exc).__name__+':'+str(exc)[:200]);self.circuit[scope]+=1
+   error=type(exc).__name__+':'+str(exc)[:200]
+   e.update(status='DEFERRED_GAP',error=error)
+   # No-data on a holiday is a date-level ambiguity, not an endpoint outage.
+   if not any(x in error for x in ('EMPTY_RESPONSE','EMPTY_EVENT','沒有符合條件','查無資料')):self.circuit[scope]+=1
   time.sleep(.3);return e
  def run(self):
   closed=self.calendar();months=[];alljobs=[]
@@ -286,7 +298,7 @@ class Audit:
    for n,j in enumerate(jobs,1):
     e=self.repair_unit(j);results.append(e)
     if n%50==0:emit({'phase':'OFFICIAL_REPAIR','year':self.year,'month':month,'done':n,'total':len(jobs),'last':e['status']})
-    if e['status']=='REPAIRED_REMOTE_READBACK_VERIFIED':putj(self.d,self.ctrl,month+'_checkpoint.json',{'done':n,'total':len(jobs),'results':results})
+    if n%20==0:putj(self.d,self.ctrl,month+'_checkpoint.json',{'done':n,'total':len(jobs),'results':results})
    report={'year':self.year,'month':month,'expected_units':len(jobs),'counts':dict(collections.Counter(e['status'] for e in results)),'units':results,'all_market_complete':False,'numeric_verified':False,'pit_verified':False}
    putj(self.d,self.ctrl,month+'_result.json',report);months.append(report);alljobs.extend(results)
    putj(self.d,self.ctrl,'file_integrity_audit.json',self.audit)
