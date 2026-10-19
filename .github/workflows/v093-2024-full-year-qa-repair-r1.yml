@@ -1,0 +1,36 @@
+name: JARVIS v0.93 2024 Full Year RAW QA and Targeted Repair
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-2024-full-year-qa-repair-r1.yml'
+  workflow_dispatch:
+    inputs:
+      repair:
+        description: Attempt to fetch only missing real trading-day source files
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true','false']
+jobs:
+  validate-and-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        month: [1,2,3,4,5,6,7,8,9,10,11,12]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install google-api-python-client google-auth google-auth-httplib2
+      - name: Audit receipts, hashes and stock table and repair missing trading days
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -u -m scripts.v093_2024_calendar_raw_qa_r1 --month ${{ matrix.month }} --repair
