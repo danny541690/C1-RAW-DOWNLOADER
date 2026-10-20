@@ -192,6 +192,7 @@ def run(year,mo,sources=None,max_minutes=20):
     scope_suffix='' if selected==SOURCES else '_'+('_'.join(selected))
     rname=partition+'_'+VERSION+scope_suffix+'_AUDIT.json'
     def persist():
+        registry.flush()
         report['updated_at']=dt.datetime.now(dt.timezone.utc).isoformat()
         d.put(qa,rname,json.dumps(report,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
     persist()

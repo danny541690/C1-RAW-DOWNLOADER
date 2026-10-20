@@ -49,21 +49,29 @@ def main(mode='monitor'):
     std=registry.folder(C1,'02_STANDARD');year=registry.folder(std,'2025')
     july=registry.folder(year,'2025-07')
     status={'version':'OPERATIONS_V1_20261020','as_of':dt.datetime.now(dt.timezone.utc).isoformat(),'mode':mode,'production_ready':False,'july_path':'CANONICAL_REGISTERED_NO_FILES_MOVED','blockers':['SOURCE_CONTRACTS_AND_UNITS','HISTORICAL_UNIVERSE','PIT','FEATURE_GOLDEN','EVIDENCE_BACKED_RELEASE_NOT_PUBLISHED'],'run_id':os.environ.get('GITHUB_RUN_ID'),'code_commit':os.environ.get('GITHUB_SHA')}
+    def heartbeat(stage):
+        registry.flush()
+        d.put(ops,'RUNNING.json',json.dumps({'run_id':os.environ.get('GITHUB_RUN_ID'),'stage':stage,'heartbeat':dt.datetime.now(dt.timezone.utc).isoformat(),'production_ready':False}).encode(),'application/json',overwrite=True)
+        print(json.dumps({'stage':stage,'production_ready':False}),flush=True)
+    heartbeat('READING_WORKER_STATUS')
     try:state=github_jobs()
     except Exception as exc:state={'status':'READ_FAILED','active_staging':True,'reason':type(exc).__name__}
     status['workers']=state
     raw=d.read(ops,'TARGETED_REPAIR_QUEUE_V1.json');queue=json.loads(raw) if raw else {'version':VERSION,'items':repair_plan()}
     if queue.get('version')!=VERSION:raise ValueError('REPAIR_QUEUE_VERSION_CONFLICT')
     if mode in ('bootstrap','auto','daily'):
+        heartbeat('DAILY_OFFICIAL_SHADOW')
         try:
             shadow=capture(d,registry,qa)
             status['daily_shadow']={'trade_date':shadow['trade_date'],'status':shadow['status'],'sources':{s:{k:r.get(k) for k in ('status','attempts','staged_cells','reason')} for s,r in shadow['sources'].items()}}
         except Exception as exc:status['daily_shadow']={'status':'ERROR','reason':type(exc).__name__+':'+str(exc)[:150]}
     if mode=='bootstrap':
+        heartbeat('SEPTEMBER_FEATURE_SHADOW')
         try:status['feature_pilot']=pilot(d,registry,qa)
         except Exception as exc:status['feature_pilot']={'status':'BLOCKED','reason':type(exc).__name__+':'+str(exc)[:180],'approved':False}
     # Do not add a fourth long-running worker while the old R3 matrix is active.
     if mode in ('auto','repair') and not state['active_staging']:
+        heartbeat('BOUNDED_TARGETED_REPAIR')
         item=next((i for i in queue['items'] if i['status'] not in ('STAGING_REPAIR_COMPLETE','BLOCKED_INPUT_ERROR')),None)
         if item:
             item.update(status='RUNNING',run_id=os.environ.get('GITHUB_RUN_ID'),started_at=dt.datetime.now(dt.timezone.utc).isoformat())
@@ -74,6 +82,7 @@ def main(mode='monitor'):
             except (Exception,SystemExit) as exc:item.update(status='BLOCKED_INPUT_ERROR',reason=str(exc)[:180])
     status['repair_queue']={'complete':sum(i['status']=='STAGING_REPAIR_COMPLETE' for i in queue['items']),'total':len(queue['items']),'items':queue['items'],'deferred_for_active_R3':state['active_staging']}
     d.put(ops,'TARGETED_REPAIR_QUEUE_V1.json',json.dumps(queue,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
+    heartbeat('READING_MONTHLY_PROGRESS')
     reports=[]
     for f in ls(d,qa):
         if 'NATIVE_R3_20261020_1_AUDIT' in f['name'] or ('NATIVE_R4_20261020_1' in f['name'] and f['name'].endswith('_AUDIT.json')):
@@ -101,6 +110,7 @@ def main(mode='monitor'):
     text+='- 尚待：來源欄位與單位、歷史母體、PIT、指標Golden及暖機、完整發布證據。\n'
     text+='- 當前資源：'+('R3仍在執行，長時間R4修復延後。' if state['active_staging'] else '可處理一個有界R4修復單元。')+'\n'
     d.put(ops,'LATEST.md',text.encode(),'text/markdown',overwrite=True)
+    heartbeat('COMPLETE')
     public={'status':'CONTROL_UPDATED','r3_months_processed':complete,'r4_targeted_months_processed':status['repair_queue']['complete'],'historical_months_processed':len(completed),'production_ready':False,'daily_shadow':status.get('daily_shadow'),'feature_pilot':{k:status.get('feature_pilot',{}).get(k) for k in ('status','rows','instruments_observed_not_universe','reason')},'deferred_for_active_R3':state['active_staging']}
     print(json.dumps(public,ensure_ascii=False),flush=True)
     if os.environ.get('GITHUB_STEP_SUMMARY'):

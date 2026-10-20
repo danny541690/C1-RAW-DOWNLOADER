@@ -53,5 +53,5 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
-          MODE: ${{ github.event.inputs.mode || (github.event_name == 'push' && 'bootstrap' || 'auto') }}
+          MODE: ${{ github.event.inputs.mode || (github.event_name == 'push' && 'monitor' || 'auto') }}
         run: python -u -m scripts.v093_operations --mode "$MODE"

@@ -1,4 +1,6 @@
 import datetime as dt,hashlib,json,unittest
+from unittest.mock import patch
+from scripts.v093_folder_registry import FolderRegistry
 from scripts.v093_folder_registry import choose_folder
 from scripts.v093_standard_r4 import parse_member,SCHEMA
 from scripts.v093_layer02_governance import compare_candidates,GateBlocked,REQUIRED_QA,gate_release
@@ -34,6 +36,17 @@ class OperationalFixes(unittest.TestCase):
   with self.assertRaises(ValueError):choose_folder([{'id':'a'},{'id':'b'}],{'a':1,'b':1})
  def test_stale_folder_registry_blocked(self):
   with self.assertRaises(ValueError):choose_folder([{'id':'a'}],{},'deleted')
+ def test_registry_flush_preserves_other_registered_paths(self):
+  class D:
+   raw=None
+   def read(self,*a):return self.raw
+   def put(self,p,n,b,*a,**k):self.raw=b
+  d=D();a=FolderRegistry(d,'control');b=FolderRegistry(d,'control')
+  def listing(_d,parent):return [{'id':parent+'-id','name':parent,'mimeType':'application/vnd.google-apps.folder'}]
+  with patch('scripts.v093_folder_registry.ls',side_effect=listing):
+   a.folder('a','a');b.folder('b','b')
+  b.flush();a.flush();saved=json.loads(d.raw)
+  self.assertEqual(set(saved['entries']),{'a/a','b/b'})
  def manifest(self):
   sha=hashlib.sha256(b'candidate').hexdigest()
   return {'kind':'APPROVED_STANDARD','qa':{k:True for k in REQUIRED_QA},'generation_id':'fixture-gen','parquet_sha256':sha,'input_digests':[sha],'scope':{'markets':['TWSE'],'fields':['close'],'from':'2025-01-02','to':'2025-01-02','expected_universe':1},'data_folder':'data','data_name':'candidate'}

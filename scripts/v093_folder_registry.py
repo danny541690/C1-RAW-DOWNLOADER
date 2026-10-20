@@ -16,12 +16,21 @@ class FolderRegistry:
     def __init__(self,drive,control):
         self.d=drive;self.control=control;self.name='FOLDER_ID_REGISTRY_V1.json'
         raw=drive.read(control,self.name);self.data=json.loads(raw) if raw else {'version':1,'entries':{}}
-        self.cache={}
+        self.cache={};self.pending={}
+    def flush(self):
+        if not self.pending:return
+        latest=self.d.read(self.control,self.name)
+        data=json.loads(latest) if latest else {'version':1,'entries':{}}
+        for key,record in self.pending.items():
+            saved=data['entries'].get(key,{})
+            if saved.get('canonical_id') not in (None,record['canonical_id']):raise ValueError('CANONICAL_REGISTRY_CONFLICT')
+            data['entries'][key]=record
+        data['updated_at']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+        self.d.put(self.control,self.name,json.dumps(data,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
+        self.data=data;self.pending={}
     def folder(self,parent,name,create=False):
         key=parent+'/'+name
         if key in self.cache:return self.cache[key]
-        current=self.d.read(self.control,self.name)
-        if current:self.data=json.loads(current)
         found=[x for x in ls(self.d,parent) if x['name']==name and x['mimeType']=='application/vnd.google-apps.folder']
         if not found:
             if not create:raise FileNotFoundError(name)
@@ -32,13 +41,9 @@ class FolderRegistry:
         chosen,reason=choose_folder(found,counts,existing.get('canonical_id'))
         record={'canonical_id':chosen,'alias_ids':sorted(x['id'] for x in found if x['id']!=chosen),'reason':reason,'child_counts':counts}
         if existing.get('canonical_id')!=chosen or existing.get('alias_ids')!=record['alias_ids']:
-            # Another registry object in this serialized process may have added entries.
-            latest=self.d.read(self.control,self.name)
-            if latest:self.data=json.loads(latest)
-            saved=self.data['entries'].get(key,{})
-            if saved.get('canonical_id') not in (None,chosen):raise ValueError('CANONICAL_REGISTRY_CONFLICT')
             self.data['entries'][key]=record
-            self.data['updated_at']=datetime.datetime.now(datetime.timezone.utc).isoformat()
-            self.d.put(self.control,self.name,json.dumps(self.data,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
+            self.pending[key]=record
+            # Resolve aliases durably before any output write. Batch ordinary IDs.
+            if len(found)>1:self.flush()
         self.cache[key]=chosen
         return chosen
