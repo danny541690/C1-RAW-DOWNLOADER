@@ -1,0 +1,52 @@
+name: JARVIS v0.93 Independent RAW Resume 2026-2000
+on:
+  workflow_run:
+    workflows: ['JARVIS v0.93 Merged Quick Launch Gate']
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '11 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-v093-independent-raw-resume-single-writer
+  cancel-in-progress: false
+jobs:
+  raw-capture:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Fail closed without a successful merged launch gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import json,os,urllib.request
+          repo=os.environ['GITHUB_REPOSITORY']
+          url='https://api.github.com/repos/'+repo+'/actions/workflows/v093-merged-quick-gate.yml/runs?status=success&branch=main&per_page=5'
+          req=urllib.request.Request(url,headers={'Authorization':'Bearer '+os.environ['GITHUB_TOKEN'],'Accept':'application/vnd.github+json'})
+          with urllib.request.urlopen(req,timeout=25) as response:
+              runs=json.load(response).get('workflow_runs',[])
+          if not runs:raise SystemExit('MERGED_LAUNCH_GATE_NOT_YET_PASSED; RAW_CAPTURE_NOT_STARTED')
+          print('MERGED_LAUNCH_GATE_EVIDENCE',runs[0]['id'],runs[0]['head_sha'])
+          PY
+      - name: Repeat offline safety acceptance on current code
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Independent RAW official-first resume (bounded 40 min)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+        run: python3 -u -m scripts.v093_independent_raw --minutes 40
