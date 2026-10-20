@@ -157,3 +157,25 @@ already finished legacy feature job does not block it behind financial work.
 Future feature runs use one dedicated concurrency group. Feature completion
 refreshes the existing unified controller. The consolidated suite passes 130
 checks including this handoff; data/release approval rules remain unchanged.
+
+## 2024 full-year conversion continuation
+
+User authorized continuing Layer02 conversion for all of 2024 after the current
+2025/2026 repair scope completed. Verified current shards: July 1/1 and financial
+21/21 structurally processed, still unapproved. Verified RAW/2024 year folder and
+TWSE/TPEx/MOPS/FinMind month directories; December contains existing input files.
+Directory presence is not proof of complete market/source coverage.
+
+The existing parallel workflow adds a `2024` lane, ordered December to January.
+It uses four-source R4 conversion with the new metadata index, throttled aggregate
+checkpoints, immediate per-input receipts and unchanged content verification.
+The lane owns REPAIR_QUEUE_2024_V2.json and a 2024-specific folder registry. It
+cannot migrate or overwrite the completed 2025/2026 queues. Queue key/year/month/
+source identity is checked before execution. Existing RAW is read only; no older
+project data is migrated and no source redownload is performed by this task.
+
+A month with no convertible input writes a blocked report and raises a durable
+input exception instead of being counted complete. Other months can continue.
+Missing sources and unresolved items remain explicit; all output is unapproved.
+The existing controller now publishes separate 2024 progress out of 12 months.
+The consolidated local suite passes 140 tests including year/scope isolation.

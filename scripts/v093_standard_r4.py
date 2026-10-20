@@ -286,7 +286,11 @@ def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
                 timed('receipt_write',lambda:d.put(dest,receipt_name,json.dumps(entry,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True))
             except Exception as exc:entry.update(status='INPUT_ERROR',reason=str(exc)[:180])
             persist(force=entry['status']=='INPUT_ERROR');print(json.dumps({'period':partition,'source':source,'input':name,'status':entry['status'],'cells':entry.get('cells',0),'unresolved':entry.get('unresolved_members',0)},ensure_ascii=False),flush=True)
-    entries=report['archives']+report['standalone_files'];report['status']='STAGING_NOT_APPROVED'
+    entries=report['archives']+report['standalone_files']
+    if not entries:
+        report['status']='BLOCKED_NO_CONVERTIBLE_INPUTS';persist(force=True)
+        raise ValueError('NO_CONVERTIBLE_RAW_INPUTS')
+    report['status']='STAGING_NOT_APPROVED'
     report['total_staged_cells']=sum(e.get('cells',0) for e in entries)
     report['unresolved_member_occurrences']=sum(e.get('unresolved_members',0) for e in entries)
     report['input_errors']=sum(e['status']=='INPUT_ERROR' for e in entries)
@@ -311,7 +315,7 @@ def summarize():
         with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('## Layer02 R3 staging audit\n\n```json\n'+json.dumps(result,ensure_ascii=False,indent=2)+'\n```\n')
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--year',type=int,choices=(2025,2026));p.add_argument('--month',type=int,choices=range(1,13));p.add_argument('--summary',action='store_true');p.add_argument('--source',action='append',choices=SOURCES)
+    p=argparse.ArgumentParser();p.add_argument('--year',type=int,choices=(2024,2025,2026));p.add_argument('--month',type=int,choices=range(1,13));p.add_argument('--summary',action='store_true');p.add_argument('--source',action='append',choices=SOURCES)
     a=p.parse_args()
     if a.summary:summarize()
     elif a.year and a.month:run(a.year,a.month,a.source)
