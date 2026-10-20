@@ -205,3 +205,13 @@ mutable status and all writes still reject duplicate names. No deletion or renam
 The known blocked June/September queue items get one retry after this code revision,
 then remain isolated if still failing. The same single-writer concurrency group keeps
 this revision from overlapping the current continuation worker.
+
+### 22:56 add parallel 2023 STANDARD conversion
+
+Enabled a separately serialized 2023 workflow alongside 2024, without changing the
+existing repair matrix parallelism. 2023 owns REPAIR_QUEUE_2023_V2.json and registry namespace 2023,
+processes December through January, and converts the already captured four-source
+RAW without additional source downloads. The controller includes 2023 progress;
+audit backlog expands to 46 months. No production approval is inferred. The separate 2023 writer does not wait for the active 2024 batch or write its queue.
+RAW backfill, two STANDARD year lanes, and short audit/control jobs can coexist;
+GitHub runner availability and Drive throttling still determine actual concurrency.

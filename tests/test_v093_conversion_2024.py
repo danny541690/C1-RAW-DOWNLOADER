@@ -47,3 +47,17 @@ class DuplicateRecoveryQueueTests(unittest.TestCase):
         self.assertEqual([i['status'] for i in q['items']],['PENDING','STAGING_REPAIR_COMPLETE','CHECKPOINTED'])
         q['items'][0]['status']='BLOCKED_INPUT_ERROR';requeue_duplicate_recovery(q)
         self.assertEqual(q['items'][0]['status'],'BLOCKED_INPUT_ERROR')
+
+class ParallelYearConversionTests(unittest.TestCase):
+    def test_year_lanes_are_disjoint_and_keep_checkpoint_order(self):
+        from scripts.v093_operations import conversion_plan_year
+        a=conversion_plan_year(2023);b=conversion_plan_year(2024)
+        a[0]['status']='CHECKPOINTED'
+        self.assertEqual([i['key'] for i in partition_items(a+b+repair_plan(),'2023')],[f'2023-{m:02d}' for m in range(12,0,-1)])
+        self.assertEqual(len(partition_items(a+b+repair_plan(),'financial')),21)
+        with self.assertRaisesRegex(ValueError,'UNAUTHORIZED'):conversion_plan_year(2022)
+    def test_status_reader_rejects_other_year_queue(self):
+        from scripts.v093_operations import read_conversion_year,conversion_plan_year
+        class D:
+            def read(self,*args):return json.dumps({'version':VERSION,'lane':'2024','items':conversion_plan_year(2024)})
+        with self.assertRaisesRegex(ValueError,'SCOPE_CONFLICT'):read_conversion_year(D(),'ops',2023)

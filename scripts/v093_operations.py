@@ -34,17 +34,25 @@ def repair_plan():
     months=[(2025,7)]+[(2026,9)]+[(2025,m) for m in range(1,13) if m!=7]+[(2026,m) for m in range(1,11) if m!=9]
     return [{'key':f'{y}-{m:02d}', 'year':y,'month':m,'sources':['TWSE','TPEx','MOPS','FinMind'] if (y,m)==(2025,7) else ['MOPS','FinMind'],'status':'PENDING'} for y,m in months]
 
+def conversion_plan_year(year):
+    if year not in (2023,2024):raise ValueError('UNAUTHORIZED_CONVERSION_YEAR')
+    return [{'key':f'{year}-{m:02d}','year':year,'month':m,'sources':['TWSE','TPEx','MOPS','FinMind'],'status':'PENDING'} for m in range(12,0,-1)]
+
 def conversion_plan_2024():
-    return [{'key':f'2024-{m:02d}','year':2024,'month':m,'sources':['TWSE','TPEx','MOPS','FinMind'],'status':'PENDING'} for m in range(12,0,-1)]
+    return conversion_plan_year(2024)
+
+def read_conversion_year(d,ops,year):
+    plan=conversion_plan_year(year);lane=str(year)
+    raw=d.read(ops,'REPAIR_QUEUE_'+lane+'_V2.json')
+    queue=json.loads(raw) if raw else {'version':VERSION,'lane':lane,'items':plan}
+    expected={i['key'] for i in plan}
+    if queue.get('version')!=VERSION or queue.get('lane')!=lane or {i['key'] for i in queue['items']}!=expected:raise ValueError('YEAR'+lane+'_QUEUE_SCOPE_CONFLICT')
+    canonical={i['key']:i for i in plan}
+    if len(queue['items'])!=12 or any(any(i.get(k)!=canonical[i['key']][k] for k in ('year','month','sources')) for i in queue['items']):raise ValueError('YEAR'+lane+'_QUEUE_UNIT_CONFLICT')
+    return {'complete':sum(i['status']=='STAGING_REPAIR_COMPLETE' for i in queue['items']),'total':12,'items':queue['items'],'approved':False,'updated_at':queue.get('updated_at')}
 
 def read_conversion_2024(d,ops):
-    raw=d.read(ops,'REPAIR_QUEUE_2024_V2.json')
-    queue=json.loads(raw) if raw else {'version':VERSION,'lane':'2024','items':conversion_plan_2024()}
-    expected={i['key'] for i in conversion_plan_2024()}
-    if queue.get('version')!=VERSION or queue.get('lane')!='2024' or {i['key'] for i in queue['items']}!=expected:raise ValueError('YEAR2024_QUEUE_SCOPE_CONFLICT')
-    canonical={i['key']:i for i in conversion_plan_2024()}
-    if len(queue['items'])!=12 or any(any(i.get(k)!=canonical[i['key']][k] for k in ('year','month','sources')) for i in queue['items']):raise ValueError('YEAR2024_QUEUE_UNIT_CONFLICT')
-    return {'complete':sum(i['status']=='STAGING_REPAIR_COMPLETE' for i in queue['items']),'total':12,'items':queue['items'],'approved':False,'updated_at':queue.get('updated_at')}
+    return read_conversion_year(d,ops,2024)
 
 def merged_repair_queue(d,ops,legacy):
     """Workers exclusively own shards; the controller reads them without writing back."""
@@ -134,6 +142,7 @@ def main(mode='monitor'):
     # R4 work is owned by dedicated lanes; old queue is retained for migration only.
     status['repair_queue']={'complete':sum(i['status']=='STAGING_REPAIR_COMPLETE' for i in queue['items']),'total':len(queue['items']),'items':queue['items'],'deferred_for_active_R3':state['active_staging'],'execution':'INDEPENDENT_LANES'}
     status['conversion_2024']=read_conversion_2024(d,ops)
+    status['conversion_2023']=read_conversion_year(d,ops,2023)
     raw=d.read(ops,'FEATURE_WARMUP_V2.json')
     if raw:status['feature_warmup']=json.loads(raw)
     heartbeat('READING_MONTHLY_PROGRESS')
@@ -160,6 +169,7 @@ def main(mode='monitor'):
     text+='- 歷史原始資料月份主流程：'+str(len(completed))+'/120；不代表完整率。\n'
     text+='- R3 暫存轉換已走完月份：'+str(complete)+'/22；不代表數值/PIT核准。\n'
     text+='- R4 定向修復：'+str(status['repair_queue']['complete'])+'/22；其他來源候選保留。\n'
+    text+='- 2023年第二層轉換：'+str(status['conversion_2023']['complete'])+'/12；獨立年份工作線，尚未核准。\n'
     text+='- 2024年第二層轉換：'+str(status['conversion_2024']['complete'])+'/12；十二月往一月續跑，尚未核准。\n'
     if status.get('feature_warmup'):
         fw=status['feature_warmup'];text+='- 指標歷史長度準備：'+str(sum(v=='INPUTS_PREPARED' for v in fw.get('periods',{}).values()))+'/13個月；'+fw.get('status','UNKNOWN')+'，尚未核准。\n'

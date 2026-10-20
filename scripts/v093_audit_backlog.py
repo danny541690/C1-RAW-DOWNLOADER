@@ -13,7 +13,7 @@ BLOCKERS=['SOURCE_FIELD_UNIT_CONTRACT','HISTORICAL_UNIVERSE_AND_CALENDAR',
           'INDEPENDENT_OFFICIAL_SOURCE_GOLDEN','END_TO_END_RELEASE_ACCEPTANCE']
 
 def report_specs(period):
-    if period.startswith('2024-') or period=='2025-07':
+    if period.startswith(('2024-','2023-')) or period=='2025-07':
         return [(f'{period}_{R4}_AUDIT.json',SOURCES)]
     return [(f'{period}_{R3}_AUDIT.json',('TWSE','TPEx')),
             (f'{period}_{R4}_MOPS_FinMind_AUDIT.json',('MOPS','FinMind'))]
@@ -58,7 +58,7 @@ def main(minutes=12):
     d=Drive(service());raw=d.read(OPS,NAME)
     state=json.loads(raw) if raw else {'version':'AUDIT_BACKLOG_V1','next_index':0,'months':{}}
     if state.get('version')!='AUDIT_BACKLOG_V1':raise ValueError('BACKLOG_VERSION_MISMATCH')
-    periods=[f'2025-{m:02d}' for m in range(1,13)]+[f'2026-{m:02d}' for m in range(1,11)]+[f'2024-{m:02d}' for m in range(12,0,-1)]
+    periods=[f'2025-{m:02d}' for m in range(1,13)]+[f'2026-{m:02d}' for m in range(1,11)]+[f'2024-{m:02d}' for m in range(12,0,-1)]+[f'2023-{m:02d}' for m in range(12,0,-1)]
     deadline=time.monotonic()+minutes*60;processed=0
     while processed<len(periods) and time.monotonic()<deadline:
         index=state['next_index'];period=periods[index]

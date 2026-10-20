@@ -3,15 +3,15 @@ import argparse,datetime as dt,json,os,time,urllib.request
 from scripts.v093_standard_r1 import Drive,service,C1,folder
 from scripts.v093_folder_registry import FolderRegistry
 from scripts.v093_standard_r4 import run as repair,VERSION,PARSER_REVISION
-from scripts.v093_operations import repair_plan,conversion_plan_2024,github_jobs,run_bounded_repairs
+from scripts.v093_operations import repair_plan,conversion_plan_2024,conversion_plan_year,github_jobs,run_bounded_repairs
 
-LANES=('july','financial','features','2024')
+LANES=('july','financial','features','2024','2023')
 
 def partition_items(items,lane):
-    if lane not in ('july','financial','2024'):raise ValueError('INVALID_REPAIR_LANE')
-    if lane=='2024':chosen=[dict(i) for i in items if i.get('year')==2024]
-    else:chosen=[dict(i) for i in items if i.get('year')!=2024 and (i['key']=='2025-07')==(lane=='july')]
-    if lane=='2024':return sorted(chosen,key=lambda i:i['month'],reverse=True)
+    if lane not in ('july','financial','2024','2023'):raise ValueError('INVALID_REPAIR_LANE')
+    if lane in ('2024','2023'):chosen=[dict(i) for i in items if i.get('year')==int(lane)]
+    else:chosen=[dict(i) for i in items if i.get('year') in (2025,2026) and (i['key']=='2025-07')==(lane=='july')]
+    if lane in ('2024','2023'):return sorted(chosen,key=lambda i:i['month'],reverse=True)
     # Give untouched financial months a turn rather than blocking behind a large month.
     return sorted(chosen,key=lambda i:(i['status']=='CHECKPOINTED',i.get('finished_at','')))
 
@@ -60,13 +60,13 @@ def main(lane,minutes=35):
             queue=json.loads(raw)
             if queue.get('version')!=VERSION or queue.get('lane')!=lane:raise ValueError('QUEUE_IDENTITY_CONFLICT')
         else:
-            raw=d.read(ops,'TARGETED_REPAIR_QUEUE_V1.json') if lane!='2024' else None
-            prior=json.loads(raw) if raw else {'version':VERSION,'items':conversion_plan_2024() if lane=='2024' else repair_plan()}
+            raw=d.read(ops,'TARGETED_REPAIR_QUEUE_V1.json') if lane not in ('2024','2023') else None
+            prior=json.loads(raw) if raw else {'version':VERSION,'items':conversion_plan_year(int(lane)) if lane in ('2024','2023') else repair_plan()}
             if prior.get('version')!=VERSION:raise ValueError('MIGRATION_VERSION_CONFLICT')
             queue={'version':VERSION,'lane':lane,'items':partition_items(prior['items'],lane)}
-        expected={i['key'] for i in partition_items(conversion_plan_2024() if lane=='2024' else repair_plan(),lane)}
+        expected={i['key'] for i in partition_items(conversion_plan_year(int(lane)) if lane in ('2024','2023') else repair_plan(),lane)}
         if {i['key'] for i in queue['items']}!=expected:raise ValueError('QUEUE_SCOPE_CONFLICT')
-        canonical={i['key']:i for i in (conversion_plan_2024() if lane=='2024' else repair_plan())}
+        canonical={i['key']:i for i in (conversion_plan_year(int(lane)) if lane in ('2024','2023') else repair_plan())}
         if len(queue['items'])!=len(expected) or any(any(i.get(k)!=canonical[i['key']][k] for k in ('year','month','sources')) for i in queue['items']):raise ValueError('QUEUE_UNIT_IDENTITY_CONFLICT')
         queue=requeue_duplicate_recovery(upgrade_parser_queue(queue))
         queue['items']=partition_items(queue['items'],lane)
