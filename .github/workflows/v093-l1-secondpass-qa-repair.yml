@@ -1,9 +1,8 @@
 name: JARVIS v0.93 L1 RAW Second-pass QA and Gap Repair
 on:
-  workflow_run:
-    workflows:
-      - JARVIS v0.93 RAW Layer 1 Backfill 2015-2000
-    types: [completed]
+  push:
+    paths:
+      - '.github/workflows/v093-l1-secondpass-qa-repair.yml'
   workflow_dispatch:
   schedule:
     - cron: '29 * * * *'
@@ -11,11 +10,10 @@ permissions:
   contents: read
   actions: write
 concurrency:
-  group: jarvis-v093-independent-raw-resume-single-writer
+  group: jarvis-v093-l1-qa-201504-plus-single-writer
   cancel-in-progress: false
 jobs:
   second-pass-qa-and-targeted-repair:
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -31,7 +29,7 @@ jobs:
         run: |
           python3 -m py_compile scripts/v093_l1_secondpass_qa_repair.py
           python3 -m unittest discover -s tests -p 'test_*.py' -q
-      - name: Gate on first-pass completion then audit and repair RAW months
+      - name: Immediately audit and repair latest-to-2015-04 RAW months
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
