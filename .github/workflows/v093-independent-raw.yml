@@ -1,8 +1,10 @@
-name: JARVIS Independent RAW 2025-2000
+name: JARVIS Independent RAW Latest-2000
 on:
   push:
     paths: ['.github/workflows/v093-independent-raw.yml']
   workflow_dispatch:
+  schedule:
+    - cron: '13,43 * * * *'
 permissions:
   contents: read
   actions: write
@@ -10,14 +12,16 @@ concurrency:
   group: jarvis-independent-raw-202512-to-200001
   cancel-in-progress: false
 jobs:
-  replace_previous:
+  independent_raw:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 55
     steps:
-      - name: Disable and stop the superseded capture-only schedule
+      - name: Keep only this replacement workflow enabled
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+          OWN_RUN: ${{ github.run_id }}
         run: |
           python3 - <<'PY'
           import json,os,time,urllib.request,urllib.error
@@ -30,14 +34,50 @@ jobs:
               except urllib.error.HTTPError as e:
                   if e.code in (404,409,422):return {}
                   raise
-          workflow='/actions/workflows/v093-raw-firstpass.yml'
-          api(workflow+'/disable','PUT')
-          for attempt in range(20):
-              runs=[r for r in api(workflow+'/runs?per_page=100').get('workflow_runs',[]) if r['status']!='completed']
+          workflows=[];page=1
+          while True:
+              batch=api('/actions/workflows?per_page=100&page='+str(page)).get('workflows',[])
+              workflows+=batch
+              if len(batch)<100:break
+              page+=1
+          for w in workflows:
+              if w['state']=='active' and not w['path'].endswith('/v093-independent-raw.yml'):
+                  api('/actions/workflows/'+str(w['id'])+'/disable','PUT')
+          def running():
+              found={}
+              for status in ('in_progress','queued','pending','waiting','requested'):
+                  page=1
+                  while True:
+                      batch=api('/actions/runs?status='+status+'&per_page=100&page='+str(page)).get('workflow_runs',[])
+                      for r in batch:
+                          if str(r['id'])!=os.environ['OWN_RUN']:found[r['id']]=r
+                      if len(batch)<100:break
+                      page+=1
+              return list(found.values())
+          for attempt in range(24):
+              runs=running()
               if not runs:break
-              for r in runs:
-                  api('/actions/runs/'+str(r['id'])+('/force-cancel' if attempt>1 else '/cancel'),'POST')
+              for r in runs:api('/actions/runs/'+str(r['id'])+('/force-cancel' if attempt>1 else '/cancel'),'POST')
               time.sleep(5)
-          else:raise SystemExit('SUPERSEDED_CAPTURE_STILL_STOPPING')
-          print('SUPERSEDED_CAPTURE_DISABLED_AND_STOPPED',flush=True)
+          else:raise SystemExit('PREVIOUS_WORK_STILL_STOPPING')
+          print('PREVIOUS_WORKFLOWS_DISABLED_AND_STOPPED',flush=True)
           PY
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Consolidated acceptance on deployment only
+        if: github.event_name == 'push'
+        run: python -m unittest discover -s tests -p 'test_*.py'
+      - name: Independent monthly inventory, official capture, and FinMind gap supplement
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN || secrets.FINMIND_API_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -u -m scripts.v093_independent_raw --minutes 40
