@@ -11,7 +11,8 @@ def partition_items(items,lane):
     if lane not in ('july','financial','2024'):raise ValueError('INVALID_REPAIR_LANE')
     if lane=='2024':chosen=[dict(i) for i in items if i.get('year')==2024]
     else:chosen=[dict(i) for i in items if i.get('year')!=2024 and (i['key']=='2025-07')==(lane=='july')]
-    # Give untouched months a turn rather than blocking behind one large month.
+    if lane=='2024':return sorted(chosen,key=lambda i:i['month'],reverse=True)
+    # Give untouched financial months a turn rather than blocking behind a large month.
     return sorted(chosen,key=lambda i:(i['status']=='CHECKPOINTED',i.get('finished_at','')))
 
 def upgrade_parser_queue(queue):

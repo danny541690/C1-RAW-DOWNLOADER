@@ -178,4 +178,4 @@ A month with no convertible input writes a blocked report and raises a durable
 input exception instead of being counted complete. Other months can continue.
 Missing sources and unresolved items remain explicit; all output is unapproved.
 The existing controller now publishes separate 2024 progress out of 12 months.
-The consolidated local suite passes 140 tests including year/scope isolation.
+The consolidated local suite passes 141 tests including year/scope isolation and checkpointed-month ordering.

@@ -33,4 +33,8 @@ class Year2024Conversion(unittest.TestCase):
         plan[0]['year']=2024;plan[0]['sources']=['FinMind']
         with self.assertRaisesRegex(ValueError,'UNIT_CONFLICT'):read_conversion_2024(D(),'ops')
 
+    def test_checkpointed_december_keeps_priority_before_november(self):
+        plan=conversion_plan_2024();plan[0]['status']='CHECKPOINTED';plan[0]['finished_at']='2026-10-20'
+        self.assertEqual(partition_items(plan,'2024')[0]['key'],'2024-12')
+
 if __name__=='__main__':unittest.main()
