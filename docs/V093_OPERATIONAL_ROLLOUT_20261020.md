@@ -179,3 +179,19 @@ input exception instead of being counted complete. Other months can continue.
 Missing sources and unresolved items remain explicit; all output is unapproved.
 The existing controller now publishes separate 2024 progress out of 12 months.
 The consolidated local suite passes 141 tests including year/scope isolation and checkpointed-month ordering.
+
+### Independent audit backlog schedule
+
+Added `JARVIS Data Audit Backlog`: hourly at minute 41 UTC, also after consolidated
+CI and conversion worker completion. One writer, 12-minute processing budget,
+20-minute job limit. Reads existing monthly audit JSON only; preserves RAW and
+STANDARD and writes only `OPERATIONS/AUDIT_BACKLOG_V1.json` with readback checking.
+Covers 2025 Jan-Dec, 2026 Jan-Oct, then 2024 Dec-Jan, saving after each month and
+resuming the cursor. Uses R4 for repaired financial sources and R3 only for
+unrepaired TWSE/TPEx scopes, so stale pre-repair errors are not counted twice.
+Missing/in-progress reports are waiting states, never passes. Lists input errors,
+unresolved/quarantined members, no-output inputs, OHLC problems and unmet release
+contracts. This is inventory evidence, not a new independent numerical/source
+acceptance or automatic gap-download implementation. Official-source gap filling,
+unit/PIT/calendar/universe contracts, independent Golden comparisons, first daily
+selection/report and release acceptance remain implementation work.
