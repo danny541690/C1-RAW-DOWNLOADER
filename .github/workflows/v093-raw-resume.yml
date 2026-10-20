@@ -1,10 +1,6 @@
 name: JARVIS v0.93 Independent RAW Resume 2026-2000
 on:
-  push:
-    paths: ['.github/workflows/v093-raw-resume.yml']
   workflow_dispatch:
-  schedule:
-    - cron: '11 * * * *'
 permissions:
   contents: read
   actions: write
