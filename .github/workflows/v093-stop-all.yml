@@ -1,0 +1,68 @@
+name: JARVIS Stop All Workflows
+on:
+  push:
+    paths: ['.github/workflows/v093-stop-all.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  stop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Disable automatic work and cancel queued or active runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          OWN_RUN: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,time
+          base='https://api.github.com/repos/'+os.environ['REPO']
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          def api(path,method='GET'):
+              req=urllib.request.Request(base+path,headers=headers,method=method,data=b'' if method!='GET' else None)
+              try:
+                  with urllib.request.urlopen(req,timeout=25) as r:
+                      b=r.read();return json.loads(b) if b else {}
+              except urllib.error.HTTPError as e:
+                  if e.code==409 and method=='POST':return {}
+                  raise
+          workflows=[];page=1
+          while True:
+              batch=api('/actions/workflows?per_page=100&page='+str(page))['workflows']
+              workflows+=batch
+              if len(batch)<100:break
+              page+=1
+          for w in workflows:
+              if w['state']=='active':
+                  api('/actions/workflows/'+str(w['id'])+'/disable','PUT')
+                  print('DISABLED',w['id'],w['name'],flush=True)
+          def active():
+              result={}
+              for status in ('in_progress','queued','pending','waiting','requested'):
+                  page=1
+                  while True:
+                      batch=api('/actions/runs?status='+status+'&per_page=100&page='+str(page))['workflow_runs']
+                      for r in batch:
+                          if str(r['id'])!=os.environ['OWN_RUN']:result[r['id']]=r
+                      if len(batch)<100:break
+                      page+=1
+              return list(result.values())
+          for attempt in range(8):
+              runs=active()
+              if not runs:break
+              for r in runs:
+                  api('/actions/runs/'+str(r['id'])+'/cancel','POST')
+                  if attempt>=2:api('/actions/runs/'+str(r['id'])+'/force-cancel','POST')
+                  print('CANCEL_REQUESTED',r['id'],r['name'],flush=True)
+              time.sleep(5)
+          remaining=active()
+          states=api('/actions/workflows?per_page=100')['workflows']
+          enabled=[w['name'] for w in states if w['state']=='active']
+          result={'remaining_runs':[r['id'] for r in remaining],'enabled_workflows':enabled,'raw_and_checkpoints_preserved':True}
+          print(json.dumps(result),flush=True)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(json.dumps(result,indent=2))
+          if remaining or enabled:raise SystemExit('STOP_NOT_FULLY_CONFIRMED')
+          PY
