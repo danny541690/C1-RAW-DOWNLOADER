@@ -72,3 +72,24 @@ The consolidated suite now passes 118 tests. Remaining unresolved items include
 market-wide totals without individual security IDs and latest-only snapshots
 without proven historical dates; these must not be silently assigned a date or
 stock ID merely to reduce the unresolved count.
+
+### Real-data acceptance follow-up
+
+- Read back two live feature caches for 2025-10 (1,043 and 1,046 rows).
+  All 2,089 rows matched saved byte hashes, receipt row counts and source digests;
+  all dates belonged to the stated month and all extracted prices were finite
+  and positive. These are bounded samples, not full-market acceptance.
+- Downloaded the immutable real archive
+  `FinMind_FREE_2026_B000120_000239_2026-09.zip` (105,143 bytes), SHA-256
+  `6ee851dbf6256c7a85068335ed0539925f3034610c0e1faa4cdba7db3e5150bf`.
+  Archive hash and all 105 native member hashes matched the saved audit.
+- New parser extracted 2,096 original rows and 16,768 numeric cells from all
+  105 previously unresolved monthly slices. Stock ID, month and exact native
+  record context matched each envelope; unit and PIT approval stayed false.
+- Seven stock/date observations for code 1594 violate the OHLC relationship,
+  including zero/low-volume records. All 56 numeric cells from those observations
+  remain `QUARANTINE_OHLC`, with original values intact. This is a validation
+  exception requiring market/source-definition review, not proof of a provider
+  error. Do not fix prices, substitute zero, or infer trading status automatically.
+- No production release was created by these checks. Current old-code workers
+  remain active; the parser upgrade is pending for the next serialized batch.
