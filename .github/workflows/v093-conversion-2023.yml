@@ -1,11 +1,6 @@
 name: JARVIS 2023 Layer02 Conversion
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '12,42 * * * *'
-  workflow_run:
-    workflows: ['JARVIS v0.93 Offline Engine Tests', 'JARVIS Parallel Repair and Feature Preparation']
-    types: [completed]
 permissions:
   contents: read
   actions: read
