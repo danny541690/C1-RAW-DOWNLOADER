@@ -1,0 +1,48 @@
+name: JARVIS v0.93 L1 Third-pass Gated RAW Repair
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-l1-thirdpass-gated-repair.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '41 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-l1-thirdpass-gated-repair-single-writer
+  cancel-in-progress: false
+jobs:
+  third-pass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - name: Install locked dependencies
+        run: pip install -r requirements-qa.lock
+      - name: Check third-pass scope and second-pass gate offline
+        run: |
+          python3 -m py_compile scripts/v093_l1_thirdpass_gated_repair.py
+          python3 - <<'PY'
+          from scripts.v093_l1_thirdpass_gated_repair import months_through, END, VALID_SECOND, eligible_month
+          import datetime as dt
+          months = months_through(dt.date(2026,10,21))
+          assert months[0] == '2026-10' and months[-1] == END == '2015-04'
+          assert len(months) == 139
+          assert eligible_month(None, 'unused', '2026-10', set()) is None
+          assert VALID_SECOND
+          print('THIRD_PASS_GATE_AND_SCOPE_PASS')
+          PY
+          python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Process only month with completed second-pass audit
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -u -m scripts.v093_l1_thirdpass_gated_repair --minutes 40
