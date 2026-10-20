@@ -9,7 +9,7 @@ from scripts.v093_three_year_repair import ROOT,REPORT_ROOT,Audit,listing,read,s
 from scripts.v093_three_year_finmind_gaps import financial_rows,MAP
 
 RUN='INDEPENDENT_RAW_2026_LATEST_TO_200001_V1'
-WORKFLOW='v093-independent-raw.yml'
+WORKFLOW='v093-raw-resume.yml'
 SOURCES=('TWSE','TPEx','MOPS','FinMind')
 PRICE_FIELDS={'開盤價':'open','開盤':'open','最高價':'max','最高':'max','最低價':'min','最低':'min','收盤價':'close','收盤':'close'}
 
