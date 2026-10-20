@@ -178,12 +178,12 @@ def parse_member(source,name,raw,partition):
 
 SCHEMA=pa.schema([(k,pa.int64() if k=='row_index' else pa.bool_() if k in ('date_content_verified','unit_verified','numeric_semantics_verified','pit_verified','ohlc_violation') else pa.string()) for k in ('observation_period','date','stock_id','source','native_archive','native_sha256','native_member','native_member_sha256','native_table','row_index','native_field','native_metric','native_type','native_origin_name','native_unit','statement_scope','native_record_json','raw_value','numeric_decimal_text','date_proof','date_content_verified','unit_verified','numeric_semantics_verified','pit_verified','ohlc_violation','status')])
 
-def run(year,mo,sources=None,max_minutes=20):
+def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
     deadline=time.monotonic()+max_minutes*60
     d=Drive(service());partition=f'{year}-{mo:02d}'
     strict_folder=globals()['folder']
     qa=strict_folder(d,strict_folder(d,C1,'05_CONTROL'),'STANDARD_QA')
-    registry=FolderRegistry(d,qa)
+    registry=FolderRegistry(d,qa,namespace=registry_namespace)
     def folder(_d,parent,name,create=False):return registry.folder(parent,name,create)
     base=folder(d,ROOT,str(year))
     dest=folder(d,folder(d,folder(d,folder(d,C1,'02_STANDARD'),str(year),True),partition,True),VERSION,True)

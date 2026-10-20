@@ -40,3 +40,18 @@ automatic historical correction scanning remains a production gate.
 The current baseline has one history worker and up to two old R3 workers.
 The controller may do a short status/shadow task, but will not start another
 long R4 rebuild until the R3 matrix completes. All data remain in Drive.
+
+## Parallel rollout V2
+
+- Keep the historical RAW workflow unchanged, including its single writer and reverse month cursor.
+- The operational controller now owns only daily shadow and unified progress publication. It reads V2 repair shards and never writes worker queues. Old V1 queue is retained as a migration checkpoint.
+- A separate workflow starts isolated July and financial repair jobs together, each with its own queue and folder registry. The financial queue rotates checkpointed months behind untouched months. A legacy controller still running old code blocks new workers until it exits.
+- A third worker prepares TWSE native close history from 2025-09 through 2026-09. Input Parquet bytes must match R3 receipt hashes; small extracted close caches have readback hashes. It computes target September indicators after history preparation. Corporate action basis, calendar, universe and independent market-data Golden remain blocking; this is not a production signal.
+- Worker wakeups run at :05/:25/:45. Workflow concurrency permits one batch at a time. Repair budgets are 35 minutes per lane, feature preparation 25 minutes, with checkpoints and a margin before job timeout. A queued wakeup cannot interrupt active work. Scheduler timing is not guaranteed.
+- Folder registries are worker-specific and initially seeded from the canonical controller registry. Output ownership is disjoint by month/work type; no worker writes LATEST or an approved pointer.
+- Worker completion triggers a short unified status refresh. Reporting stays grouped into data, feature and operational acceptance, with exceptions expanded as needed.
+- This rollout adds execution capacity and indicator preparation. Complete stock selection, a two-page investment report and backtesting are still outstanding implementation work. No paid resources or new data subscriptions are enabled.
+
+Validation: one consolidated offline suite passes 114 tests, including migration,
+queue ownership, checkpoint fairness, old-writer handoff, numerical window Golden,
+no future observation dependence, conflict quarantine and verified cache roundtrip.

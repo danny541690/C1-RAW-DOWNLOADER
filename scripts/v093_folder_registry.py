@@ -13,9 +13,11 @@ def choose_folder(candidates, child_counts, registered_id=None):
     raise ValueError('AMBIGUOUS_FOLDER_IDS_REQUIRE_RECONCILIATION')
 
 class FolderRegistry:
-    def __init__(self,drive,control):
-        self.d=drive;self.control=control;self.name='FOLDER_ID_REGISTRY_V1.json'
-        raw=drive.read(control,self.name);self.data=json.loads(raw) if raw else {'version':1,'entries':{}}
+    def __init__(self,drive,control,namespace=None):
+        self.d=drive;self.control=control;self.name='FOLDER_ID_REGISTRY_V1'+('_'+namespace if namespace else '')+'.json'
+        raw=drive.read(control,self.name)
+        if not raw and namespace:raw=drive.read(control,'FOLDER_ID_REGISTRY_V1.json')
+        self.data=json.loads(raw) if raw else {'version':1,'entries':{}}
         self.cache={};self.pending={}
     def flush(self):
         if not self.pending:return

@@ -1,6 +1,6 @@
 """Single operational entry point for status, targeted repair and daily shadow.
 
-All callers use one GitHub concurrency group. Older staging never becomes approval.
+Only this controller publishes LATEST. Independent workers own separate queues.
 """
 import argparse,datetime as dt,json,os,time,urllib.request
 import hashlib
@@ -33,6 +33,19 @@ def repair_plan():
     # Repair the known failed month first; only semantic sources need regeneration elsewhere.
     months=[(2025,7)]+[(2026,9)]+[(2025,m) for m in range(1,13) if m!=7]+[(2026,m) for m in range(1,11) if m!=9]
     return [{'key':f'{y}-{m:02d}', 'year':y,'month':m,'sources':['TWSE','TPEx','MOPS','FinMind'] if (y,m)==(2025,7) else ['MOPS','FinMind'],'status':'PENDING'} for y,m in months]
+
+def merged_repair_queue(d,ops,legacy):
+    """Workers exclusively own shards; the controller reads them without writing back."""
+    by_key={i['key']:dict(i) for i in legacy['items']}
+    for lane in ('july','financial'):
+        raw=d.read(ops,'REPAIR_QUEUE_'+lane.upper()+'_V2.json')
+        if not raw:continue
+        shard=json.loads(raw)
+        if shard.get('version')!=VERSION or shard.get('lane')!=lane:raise ValueError('REPAIR_SHARD_IDENTITY_CONFLICT')
+        expected={i['key'] for i in repair_plan() if (i['key']=='2025-07')==(lane=='july')}
+        if {i['key'] for i in shard['items']}!=expected:raise ValueError('REPAIR_SHARD_SCOPE_CONFLICT')
+        for item in shard['items']:by_key[item['key']]=item
+    return {'version':VERSION,'items':[by_key[i['key']] for i in repair_plan()]}
 
 def aggregate_reports(reports):
     monthly={}
@@ -81,6 +94,7 @@ def main(mode='monitor'):
     except Exception as exc:state={'status':'READ_FAILED','active_staging':True,'reason':type(exc).__name__}
     status['workers']=state
     raw=d.read(ops,'TARGETED_REPAIR_QUEUE_V1.json');queue=json.loads(raw) if raw else {'version':VERSION,'items':repair_plan()}
+    queue=merged_repair_queue(d,ops,queue)
     if queue.get('version')!=VERSION:raise ValueError('REPAIR_QUEUE_VERSION_CONFLICT')
     if mode in ('bootstrap','auto','daily'):
         heartbeat('DAILY_OFFICIAL_SHADOW')
@@ -105,13 +119,10 @@ def main(mode='monitor'):
     if not status.get('feature_pilot'):
         raw=d.read(qa,'2026-09_PRICE_SHADOW_V1_RESULT.json')
         if raw:status['feature_pilot']=json.loads(raw)
-    # Do not add a fourth long-running worker while the old R3 matrix is active.
-    if mode in ('auto','repair') and not state['active_staging']:
-        heartbeat('BOUNDED_TARGETED_REPAIR')
-        def save_queue():d.put(ops,'TARGETED_REPAIR_QUEUE_V1.json',json.dumps(queue,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
-        run_bounded_repairs(queue,repair,save_queue)
-    status['repair_queue']={'complete':sum(i['status']=='STAGING_REPAIR_COMPLETE' for i in queue['items']),'total':len(queue['items']),'items':queue['items'],'deferred_for_active_R3':state['active_staging']}
-    d.put(ops,'TARGETED_REPAIR_QUEUE_V1.json',json.dumps(queue,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
+    # R4 work is owned by dedicated lanes; old queue is retained for migration only.
+    status['repair_queue']={'complete':sum(i['status']=='STAGING_REPAIR_COMPLETE' for i in queue['items']),'total':len(queue['items']),'items':queue['items'],'deferred_for_active_R3':state['active_staging'],'execution':'INDEPENDENT_LANES'}
+    raw=d.read(ops,'FEATURE_WARMUP_V2.json')
+    if raw:status['feature_warmup']=json.loads(raw)
     heartbeat('READING_MONTHLY_PROGRESS')
     reports=[]
     for f in ls(d,qa):
@@ -136,9 +147,11 @@ def main(mode='monitor'):
     text+='- 歷史原始資料月份主流程：'+str(len(completed))+'/120；不代表完整率。\n'
     text+='- R3 暫存轉換已走完月份：'+str(complete)+'/22；不代表數值/PIT核准。\n'
     text+='- R4 定向修復：'+str(status['repair_queue']['complete'])+'/22；其他來源候選保留。\n'
+    if status.get('feature_warmup'):
+        fw=status['feature_warmup'];text+='- 指標歷史長度準備：'+str(sum(v=='INPUTS_PREPARED' for v in fw.get('periods',{}).values()))+'/13個月；'+fw.get('status','UNKNOWN')+'，尚未核准。\n'
     text+='- 正式核准版本：'+('存在，依版本限定範圍' if pointer else '尚未發布')+'。\n'
     text+='- 尚待：來源欄位與單位、歷史母體、PIT、指標Golden及暖機、完整發布證據。\n'
-    text+='- 當前資源：'+('R3仍在執行，長時間R4修復延後。' if state['active_staging'] else '可處理一個有界R4修復單元。')+'\n'
+    text+='- 當前資源：'+('R3仍在執行，長時間R4修復延後。' if state['active_staging'] else '7月與其他月份由獨立修復線處理。')+'\n'
     d.put(ops,'LATEST.md',text.encode(),'text/markdown',overwrite=True)
     heartbeat('COMPLETE')
     public={'status':'CONTROL_UPDATED','r3_months_processed':complete,'r4_targeted_months_processed':status['repair_queue']['complete'],'historical_months_processed':len(completed),'production_ready':False,'daily_shadow':status.get('daily_shadow'),'feature_pilot':{k:status.get('feature_pilot',{}).get(k) for k in ('status','rows','instruments_observed_not_universe','reason')},'deferred_for_active_R3':state['active_staging']}

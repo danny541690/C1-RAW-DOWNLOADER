@@ -14,7 +14,7 @@ on:
   schedule:
     - cron: '17 * * * *'
   workflow_run:
-    workflows: ['JARVIS Layer02 R3 2025-2026 Parser Repair and Structural QA']
+    workflows: ['JARVIS Layer02 R3 2025-2026 Parser Repair and Structural QA', 'JARVIS Parallel Repair and Feature Preparation']
     types: [completed]
 permissions:
   contents: read
@@ -54,5 +54,5 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
-          MODE: ${{ github.event.inputs.mode || (github.event_name == 'push' && 'monitor' || 'auto') }}
+          MODE: ${{ github.event.inputs.mode || ((github.event_name == 'push' || github.event_name == 'workflow_run') && 'monitor' || 'daily') }}
         run: python -u -m scripts.v093_operations --mode "$MODE"
