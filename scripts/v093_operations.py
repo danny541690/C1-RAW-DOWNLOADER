@@ -7,7 +7,7 @@ import hashlib
 from scripts.v093_standard_r1 import Drive,service,C1,folder,ls
 from scripts.v093_folder_registry import FolderRegistry
 from scripts.v093_standard_r4 import run as repair,VERSION
-from scripts.v093_daily_shadow import capture
+from scripts.v093_daily_shadow import capture,target_day
 from scripts.v093_feature_shadow import pilot
 
 R3_WORKFLOW='v093-layer02-r3-2025-2026.yml'
@@ -42,9 +42,16 @@ def aggregate_reports(reports):
         monthly.setdefault(period,{})[version]={'status':r.get('status'),'scope':r.get('source_scope',['TWSE','TPEx','MOPS','FinMind']),'cells':sum(e.get('cells',0) for e in entries),'unresolved_occurrences':sum(e.get('unresolved_members',0) for e in entries),'input_errors':sum(e.get('status')=='INPUT_ERROR' for e in entries),'ohlc_violations':sum(e.get('checks',{}).get('OHLC_VIOLATIONS',0) for e in entries),'approved':False,'updated_at':r.get('updated_at')}
     return monthly
 
+def retain_completed_outputs(previous,current):
+    result=dict(current)
+    for key in ('daily_shadow','feature_pilot'):
+        if result.get(key) is None and previous.get(key) is not None:result[key]=previous[key]
+    return result
+
 def main(mode='monitor'):
     d=Drive(service());control=folder(d,C1,'05_CONTROL');qa=folder(d,control,'STANDARD_QA')
     registry=FolderRegistry(d,qa);ops=registry.folder(control,'OPERATIONS',True)
+    previous_raw=d.read(ops,'LATEST.json');previous=json.loads(previous_raw) if previous_raw else {}
     # Seed a verified path alias, retaining both original folders and all payloads.
     std=registry.folder(C1,'02_STANDARD');year=registry.folder(std,'2025')
     july=registry.folder(year,'2025-07')
@@ -69,6 +76,19 @@ def main(mode='monitor'):
         heartbeat('SEPTEMBER_FEATURE_SHADOW')
         try:status['feature_pilot']=pilot(d,registry,qa)
         except Exception as exc:status['feature_pilot']={'status':'BLOCKED','reason':type(exc).__name__+':'+str(exc)[:180],'approved':False}
+    status=retain_completed_outputs(previous,status)
+    # Monitor-only runs must retain evidence produced by earlier bootstrap runs.
+    if not status.get('daily_shadow'):
+        try:
+            daily_dir=registry.folder(qa,'DAILY_SHADOW')
+            raw=d.read(daily_dir,target_day().isoformat()+'_OFFICIAL_SHADOW_V1.json')
+            if raw:
+                shadow=json.loads(raw)
+                status['daily_shadow']={'trade_date':shadow['trade_date'],'status':shadow['status'],'sources':{s:{k:r.get(k) for k in ('status','attempts','staged_cells','reason')} for s,r in shadow['sources'].items()}}
+        except FileNotFoundError:pass
+    if not status.get('feature_pilot'):
+        raw=d.read(qa,'2026-09_PRICE_SHADOW_V1_RESULT.json')
+        if raw:status['feature_pilot']=json.loads(raw)
     # Do not add a fourth long-running worker while the old R3 matrix is active.
     if mode in ('auto','repair') and not state['active_staging']:
         heartbeat('BOUNDED_TARGETED_REPAIR')

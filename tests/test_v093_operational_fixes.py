@@ -7,7 +7,7 @@ from scripts.v093_layer02_governance import compare_candidates,GateBlocked,REQUI
 from scripts.v093_release_publisher import validate_evidence,publish
 from scripts.v093_daily_shadow import target_day
 from scripts.v093_feature_shadow import compute_features
-from scripts.v093_operations import repair_plan,aggregate_reports
+from scripts.v093_operations import repair_plan,aggregate_reports,retain_completed_outputs
 
 class OperationalFixes(unittest.TestCase):
  def candidate(self,value):
@@ -97,5 +97,11 @@ class OperationalFixes(unittest.TestCase):
  def test_processing_is_not_approval(self):
   r=aggregate_reports([('2025-01_NATIVE_R3_20261020_1_AUDIT.json',{'period':'2025-01','status':'STAGING_NOT_APPROVED','archives':[{'status':'STRUCTURAL_READBACK_PASS','cells':100,'unresolved_members':2}]})])
   self.assertFalse(r['2025-01']['R3']['approved']);self.assertEqual(r['2025-01']['R3']['unresolved_occurrences'],2)
+ def test_monitor_retains_success_and_new_errors_remain_visible(self):
+  prior={'daily_shadow':{'status':'SHADOW_NOT_APPROVED','trade_date':'2026-10-19'},'feature_pilot':{'rows':100,'approved':False}}
+  result=retain_completed_outputs(prior,{'mode':'monitor'})
+  self.assertEqual(result['feature_pilot']['rows'],100);self.assertEqual(result['daily_shadow']['trade_date'],'2026-10-19')
+  current=retain_completed_outputs(prior,{'daily_shadow':{'status':'ERROR'}})
+  self.assertEqual(current['daily_shadow']['status'],'ERROR')
 
 if __name__=='__main__':unittest.main()
