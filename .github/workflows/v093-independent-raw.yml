@@ -1,83 +1,72 @@
-name: JARVIS Independent RAW Latest-2000
+name: JARVIS Pause All Workflows
 on:
   push:
     paths: ['.github/workflows/v093-independent-raw.yml']
   workflow_dispatch:
-  schedule:
-    - cron: '13,43 * * * *'
 permissions:
   contents: read
   actions: write
 concurrency:
   group: jarvis-independent-raw-202512-to-200001
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
-  independent_raw:
+  stop:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 10
     steps:
-      - name: Keep only this replacement workflow enabled
-        if: github.event_name == 'push'
+      - name: Disable automatic work and cancel queued or active runs
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           OWN_RUN: ${{ github.run_id }}
         run: |
           python3 - <<'PY'
-          import json,os,time,urllib.request,urllib.error
+          import os,json,urllib.request,urllib.error,time
           base='https://api.github.com/repos/'+os.environ['REPO']
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
           def api(path,method='GET'):
-              r=urllib.request.Request(base+path,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'},method=method,data=b'' if method!='GET' else None)
+              req=urllib.request.Request(base+path,headers=headers,method=method,data=b'' if method!='GET' else None)
               try:
-                  with urllib.request.urlopen(r,timeout=25) as response:
-                      raw=response.read();return json.loads(raw) if raw else {}
+                  with urllib.request.urlopen(req,timeout=25) as r:
+                      b=r.read();return json.loads(b) if b else {}
               except urllib.error.HTTPError as e:
-                  if e.code in (404,409,422):return {}
+                  if e.code==409 and method=='POST':return {}
                   raise
           workflows=[];page=1
           while True:
-              batch=api('/actions/workflows?per_page=100&page='+str(page)).get('workflows',[])
+              batch=api('/actions/workflows?per_page=100&page='+str(page))['workflows']
               workflows+=batch
               if len(batch)<100:break
               page+=1
           for w in workflows:
-              if w['state']=='active' and not w['path'].endswith('/v093-independent-raw.yml'):
+              if w['state']=='active':
                   api('/actions/workflows/'+str(w['id'])+'/disable','PUT')
-          def running():
-              found={}
+                  print('DISABLED',w['id'],w['name'],flush=True)
+          def active():
+              result={}
               for status in ('in_progress','queued','pending','waiting','requested'):
                   page=1
                   while True:
-                      batch=api('/actions/runs?status='+status+'&per_page=100&page='+str(page)).get('workflow_runs',[])
+                      batch=api('/actions/runs?status='+status+'&per_page=100&page='+str(page))['workflow_runs']
                       for r in batch:
-                          if str(r['id'])!=os.environ['OWN_RUN']:found[r['id']]=r
+                          if str(r['id'])!=os.environ['OWN_RUN']:result[r['id']]=r
                       if len(batch)<100:break
                       page+=1
-              return list(found.values())
+              return list(result.values())
           for attempt in range(24):
-              runs=running()
+              runs=active()
               if not runs:break
-              for r in runs:api('/actions/runs/'+str(r['id'])+('/force-cancel' if attempt>1 else '/cancel'),'POST')
+              for r in runs:
+                  api('/actions/runs/'+str(r['id'])+'/cancel','POST')
+                  if attempt>=2:api('/actions/runs/'+str(r['id'])+'/force-cancel','POST')
+                  print('CANCEL_REQUESTED',r['id'],r['name'],flush=True)
               time.sleep(5)
-          else:raise SystemExit('PREVIOUS_WORK_STILL_STOPPING')
-          print('PREVIOUS_WORKFLOWS_DISABLED_AND_STOPPED',flush=True)
+          remaining=active()
+          states=api('/actions/workflows?per_page=100')['workflows']
+          enabled=[w['name'] for w in states if w['state']=='active']
+          result={'remaining_runs':[r['id'] for r in remaining],'enabled_workflows':enabled,'raw_and_checkpoints_preserved':True}
+          print(json.dumps(result),flush=True)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(json.dumps(result,indent=2))
+          if remaining or enabled:raise SystemExit('STOP_NOT_FULLY_CONFIRMED')
           PY
 
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: pip install -r requirements-qa.lock
-      - name: Consolidated acceptance on deployment only
-        if: github.event_name == 'push'
-        run: python -m unittest discover -s tests -p 'test_*.py'
-      - name: Independent monthly inventory, official capture, and FinMind gap supplement
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN || secrets.FINMIND_API_TOKEN }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python -u -m scripts.v093_independent_raw --minutes 40
