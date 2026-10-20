@@ -1,0 +1,43 @@
+name: JARVIS Independent RAW 2025-2000
+on:
+  push:
+    paths: ['.github/workflows/v093-independent-raw.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-independent-raw-202512-to-200001
+  cancel-in-progress: false
+jobs:
+  replace_previous:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Disable and stop the superseded capture-only schedule
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import json,os,time,urllib.request,urllib.error
+          base='https://api.github.com/repos/'+os.environ['REPO']
+          def api(path,method='GET'):
+              r=urllib.request.Request(base+path,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'},method=method,data=b'' if method!='GET' else None)
+              try:
+                  with urllib.request.urlopen(r,timeout=25) as response:
+                      raw=response.read();return json.loads(raw) if raw else {}
+              except urllib.error.HTTPError as e:
+                  if e.code in (404,409,422):return {}
+                  raise
+          workflow='/actions/workflows/v093-raw-firstpass.yml'
+          api(workflow+'/disable','PUT')
+          for attempt in range(20):
+              runs=[r for r in api(workflow+'/runs?per_page=100').get('workflow_runs',[]) if r['status']!='completed']
+              if not runs:break
+              for r in runs:
+                  api('/actions/runs/'+str(r['id'])+('/force-cancel' if attempt>1 else '/cancel'),'POST')
+              time.sleep(5)
+          else:raise SystemExit('SUPERSEDED_CAPTURE_STILL_STOPPING')
+          print('SUPERSEDED_CAPTURE_DISABLED_AND_STOPPED',flush=True)
+          PY
