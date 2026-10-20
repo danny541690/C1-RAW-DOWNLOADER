@@ -1,11 +1,6 @@
 name: JARVIS Parallel Repair and Feature Preparation
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '5,25,45 * * * *'
-  workflow_run:
-    workflows: ['JARVIS v0.93 Offline Engine Tests', 'JARVIS Layer02 R3 2025-2026 Parser Repair and Structural QA']
-    types: [completed]
 permissions:
   contents: read
   actions: read
