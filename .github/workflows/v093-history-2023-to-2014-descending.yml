@@ -1,10 +1,6 @@
 name: JARVIS 2023-2014 Descending Monthly Raw Backfill
 on:
   workflow_dispatch:
-  push:
-    paths: [.github/workflows/v093-history-2023-to-2014-descending.yml]
-  schedule:
-    - cron: '8,23,38,53 * * * *'
 concurrency:
   group: v093-history-202312-to-201401
   cancel-in-progress: false
