@@ -27,7 +27,14 @@ jobs:
         run: pip install -r requirements-qa.lock
       - name: Offline scope and code sanity
         run: |
-          python3 -m py_compile scripts/v093_l1_secondpass_qa_repair.py
+          python3 -m py_compile scripts/v093_l1_secondpass_qa_repair.py scripts/v093_independent_raw.py
+          python3 - <<'PY'
+          from scripts.v093_l1_secondpass_qa_repair import SecondPass, END_MONTH
+          import scripts.v093_independent_raw as raw
+          assert SecondPass.expected_end_month == END_MONTH == '2015-04'
+          assert getattr(raw.Independent, 'expected_end_month', '2000-01') == '2000-01'
+          print('TWO_RAW_SCOPES_INDEPENDENT_PASS')
+          PY
           python3 -m unittest discover -s tests -p 'test_*.py' -q
       - name: Immediately audit and repair latest-to-2015-04 RAW months
         env:
