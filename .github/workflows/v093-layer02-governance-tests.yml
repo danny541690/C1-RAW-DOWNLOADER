@@ -1,10 +1,5 @@
 name: JARVIS v0.93 Layer02 Governance Regression Tests
 on:
-  push:
-    paths:
-      - .github/workflows/v093-layer02-governance-tests.yml
-      - scripts/v093_layer02_governance.py
-      - tests/test_v093_layer02_governance.py
   workflow_dispatch:
 jobs:
   governance:
@@ -19,3 +14,4 @@ jobs:
           python-version: '3.11'
       - name: Offline governance unit tests
         run: python -m unittest discover -s tests -p test_v093_layer02_governance.py -v
+

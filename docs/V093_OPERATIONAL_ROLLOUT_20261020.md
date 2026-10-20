@@ -104,3 +104,25 @@ All 24,876 formula/null comparisons passed, including 5,457 numeric comparisons;
 excluded. Adding a future observation did not change prior-period results.
 This is an independent implementation check, not an independent market-source
 Golden, nor trading-calendar/corporate-action/universe/PIT approval.
+
+## Consolidated execution acceptance
+
+Offline Engine Tests is now the single automatic full-suite entry point for
+scripts, tests, dependency-lock and workflow changes. The separate governance
+suite remains manual for diagnostics. Scheduled repair/features and operational
+control no longer install dependencies and run the full suite in an extra
+validation job before every batch.
+
+A lightweight standard-library code gate reuses successful main-branch offline
+acceptance for either the exact commit or matching Git blob signatures across
+scripts, tests, workflow definitions and requirements-qa.lock. Documentation-only
+commits can reuse that result. Failed tests, a different branch, changed runtime
+inputs, incomplete Git trees or unreadable evidence cannot authorize workers.
+Offline suite completion wakes scheduled workers and control automatically;
+workers retain their existing serialized concurrency groups and checkpoints.
+
+This removes repeated code regression work, not data checks: each new RAW,
+STANDARD and feature batch retains provenance, readback and quarantine checks.
+Production approval remains separate and blocked without required evidence.
+The consolidated suite passes 124 tests locally, including acceptance reuse and
+rejection of stale, failed, wrong-branch and incomplete-tree evidence.
