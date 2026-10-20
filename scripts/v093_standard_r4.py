@@ -9,6 +9,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from scripts.v093_standard_r1 import Drive, service, ROOT, C1, folder, ls, LIMIT_ARCHIVE, LIMIT_MEMBER, MAX_ZIP_UNCOMPRESSED
 from scripts.v093_folder_registry import FolderRegistry
+from scripts.v093_indexed_drive import IndexedDrive,CheckpointThrottle
 
 VERSION = 'NATIVE_R4_20261020_1'
 PARSER_REVISION = 'FINMIND_MONTH_SLICE_ROWS_V1'
@@ -192,8 +193,13 @@ def receipt_key(source,raw_sha):
     return hashlib.sha256((source+VERSION+(PARSER_REVISION if source=='FinMind' else '')+raw_sha).encode()).hexdigest()
 
 def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
-    deadline=time.monotonic()+max_minutes*60
-    d=Drive(service());partition=f'{year}-{mo:02d}'
+    started=time.monotonic();deadline=started+max_minutes*60
+    phases=collections.Counter();throttle=CheckpointThrottle()
+    def timed(label,fn):
+        tick=time.monotonic()
+        try:return fn()
+        finally:phases[label]+=time.monotonic()-tick
+    d=IndexedDrive(service());partition=f'{year}-{mo:02d}'
     strict_folder=globals()['folder']
     qa=strict_folder(d,strict_folder(d,C1,'05_CONTROL'),'STANDARD_QA')
     registry=FolderRegistry(d,qa,namespace=registry_namespace)
@@ -204,17 +210,19 @@ def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
     report={'version':VERSION,'period':partition,'source_scope':list(selected),'started_at':dt.datetime.now(dt.timezone.utc).isoformat(),'status':'IN_PROGRESS','archives':[],'standalone_files':[],'sources_missing':[],'quality':{'PIT_PASS':False,'COVERAGE_PASS':False,'NUMERIC_PASS':False,'GOLDEN_COPY_PUBLISHED':False}}
     scope_suffix='' if selected==SOURCES else '_'+('_'.join(selected))
     rname=partition+'_'+VERSION+scope_suffix+'_AUDIT.json'
-    def persist():
+    def persist(force=False):
+        if not throttle.due(force):return
         registry.flush()
+        report['performance']={'wall_seconds':time.monotonic()-started,'phase_seconds':dict(phases),'drive':dict(d.stats),'checkpoint_policy':'10_INPUTS_OR_60_SECONDS_PLUS_BOUNDARIES'}
         report['updated_at']=dt.datetime.now(dt.timezone.utc).isoformat()
-        d.put(qa,rname,json.dumps(report,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
+        timed('checkpoint_report_write',lambda:d.put(qa,rname,json.dumps(report,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True))
     persist()
     for source in selected:
         try:files=ls(d,folder(d,folder(d,base,source),partition))
         except FileNotFoundError:report['sources_missing'].append(source);persist();continue
         for f in sorted(files,key=lambda x:x['name']):
             if time.monotonic()>=deadline:
-                report['status']='CHECKPOINTED_TIME_BUDGET';persist();return report
+                report['status']='CHECKPOINTED_TIME_BUDGET';persist(force=True);return report
             name=f['name'];iszip=name.lower().endswith('.zip')
             if not iszip and not name.lower().endswith(('.raw','.json','.jsonl','.csv','.html')):continue
             if any(x in name.lower() for x in ('manifest','receipt','checkpoint','metadata','audit','report')):continue
@@ -222,15 +230,15 @@ def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
             report['archives' if iszip else 'standalone_files'].append(entry)
             try:
                 if int(f.get('size',0))>LIMIT_ARCHIVE:raise ValueError('ARCHIVE_SIZE_LIMIT')
-                raw=d.call(lambda:d.api.files().get_media(fileId=f['id']));sha=hashlib.sha256(raw).hexdigest()
+                raw=timed('raw_download',lambda:d.call(lambda:d.api.files().get_media(fileId=f['id'])));sha=hashlib.sha256(raw).hexdigest()
                 key=receipt_key(source,sha);receipt_name=key+'.receipt.json'
-                saved=d.read(dest,receipt_name)
+                saved=timed('receipt_read',lambda:d.read(dest,receipt_name))
                 if saved:
                     old=json.loads(saved)
                     if old.get('status')=='NO_STAGED_OUTPUT' and old.get('raw_sha256')==sha and old.get('version')==VERSION:
                         entry.update(old);entry['resumed']=True;persist();continue
                     if old.get('status')=='STRUCTURAL_READBACK_PASS':
-                        data=d.read(dest,old['parquet_name']) if old.get('parquet_name') else None
+                        data=timed('existing_output_readback',lambda:d.read(dest,old['parquet_name'])) if old.get('parquet_name') else None
                         if data is not None and hashlib.sha256(data).hexdigest()==old['parquet_sha256'] and pq.read_metadata(io.BytesIO(data)).num_rows==old['cells']:
                             entry.update(old);entry['resumed']=True;persist();continue
                 entry.update({'raw_sha256':sha,'version':VERSION,'members':[],'cells':0})
@@ -255,13 +263,13 @@ def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
                                 payload=z.read(m) if m else raw;mh=hashlib.sha256(payload).hexdigest();ent['sha256']=mh
                                 if mh in seen_members:ent['status']='IDENTICAL_BYTES_ALIAS_SKIPPED';continue
                                 seen_members.add(mh)
-                                rows,counts,enc=parse_member(source,mn,payload,partition);counters.update(counts)
+                                rows,counts,enc=timed('native_parse',lambda:parse_member(source,mn,payload,partition));counters.update(counts)
                                 ent.update({'status':'STAGED' if rows else 'UNRESOLVED','counts':counts,'encoding':enc})
                                 if rows:
                                     for r in rows:r.update(native_archive=name,native_sha256=sha,native_member_sha256=mh)
-                                    table=pa.Table.from_pylist(rows,schema=SCHEMA)
+                                    table=timed('arrow_encode',lambda:pa.Table.from_pylist(rows,schema=SCHEMA))
                                     if writer is None:writer=pq.ParquetWriter(path,SCHEMA,compression='zstd')
-                                    writer.write_table(table);entry['cells']+=len(rows)
+                                    timed('parquet_write_local',lambda:writer.write_table(table));entry['cells']+=len(rows)
                             except Exception as exc:ent.update(status='QUARANTINED',reason=str(exc)[:180])
                         if z:z.close()
                     finally:
@@ -270,20 +278,20 @@ def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
                     entry['unresolved_members']=sum(e['status'] in ('UNRESOLVED','QUARANTINED') for e in entry['members'])
                     if path.exists():
                         data=path.read_bytes();assert pq.read_metadata(path).num_rows==entry['cells']
-                        pname=source+'_'+key+'.parquet';d.put(dest,pname,data)
-                        readback=d.read(dest,pname)
+                        pname=source+'_'+key+'.parquet';timed('output_write_and_internal_readback',lambda:d.put(dest,pname,data))
+                        readback=timed('explicit_output_readback',lambda:d.read(dest,pname))
                         if hashlib.sha256(readback).digest()!=hashlib.sha256(data).digest() or pq.read_metadata(io.BytesIO(readback)).num_rows!=entry['cells']:raise ValueError('READBACK_FAIL')
                         entry.update(parquet_name=pname,parquet_sha256=hashlib.sha256(data).hexdigest(),status='STRUCTURAL_READBACK_PASS')
                     else:entry['status']='NO_STAGED_OUTPUT'
-                d.put(dest,receipt_name,json.dumps(entry,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
+                timed('receipt_write',lambda:d.put(dest,receipt_name,json.dumps(entry,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True))
             except Exception as exc:entry.update(status='INPUT_ERROR',reason=str(exc)[:180])
-            persist();print(json.dumps({'period':partition,'source':source,'input':name,'status':entry['status'],'cells':entry.get('cells',0),'unresolved':entry.get('unresolved_members',0)},ensure_ascii=False),flush=True)
+            persist(force=entry['status']=='INPUT_ERROR');print(json.dumps({'period':partition,'source':source,'input':name,'status':entry['status'],'cells':entry.get('cells',0),'unresolved':entry.get('unresolved_members',0)},ensure_ascii=False),flush=True)
     entries=report['archives']+report['standalone_files'];report['status']='STAGING_NOT_APPROVED'
     report['total_staged_cells']=sum(e.get('cells',0) for e in entries)
     report['unresolved_member_occurrences']=sum(e.get('unresolved_members',0) for e in entries)
     report['input_errors']=sum(e['status']=='INPUT_ERROR' for e in entries)
     report['cross_archive_duplicates']='PRESERVED_WITH_LINEAGE_NOT_APPROVED_OR_MERGED'
-    persist();print(json.dumps({k:v for k,v in report.items() if k not in ('archives','standalone_files')},ensure_ascii=False),flush=True)
+    persist(force=True);print(json.dumps({k:v for k,v in report.items() if k not in ('archives','standalone_files')},ensure_ascii=False),flush=True)
     if report['input_errors']:raise SystemExit('PARTIAL_WITH_INPUT_ERRORS; inspect durable monthly report')
     return report
 
