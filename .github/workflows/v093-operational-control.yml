@@ -1,5 +1,5 @@
 name: JARVIS Operational Control and Bounded Recovery
-# Monitoring preserves the last completed shadow evidence across invocations.
+# Preserve completed evidence and share one time budget across short repair units.
 on:
   push:
     paths:

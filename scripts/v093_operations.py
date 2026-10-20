@@ -2,7 +2,7 @@
 
 All callers use one GitHub concurrency group. Older staging never becomes approval.
 """
-import argparse,datetime as dt,json,os,urllib.request
+import argparse,datetime as dt,json,os,time,urllib.request
 import hashlib
 from scripts.v093_standard_r1 import Drive,service,C1,folder,ls
 from scripts.v093_folder_registry import FolderRegistry
@@ -19,7 +19,9 @@ def github_jobs():
         req=urllib.request.Request('https://api.github.com/repos/'+repo+path,headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'})
         with urllib.request.urlopen(req,timeout=25) as response:return json.load(response)
     runs=get('/actions/runs?per_page=30').get('workflow_runs',[])
-    matched=[r for r in runs if r.get('path','').endswith(R3_WORKFLOW) and r['status']!='completed']
+    # Query this workflow directly; a long matrix must not disappear behind newer runs.
+    staging_runs=get('/actions/workflows/'+R3_WORKFLOW+'/runs?per_page=10').get('workflow_runs',[])
+    matched=[r for r in staging_runs if r['status']!='completed']
     active=False;details=[]
     for r in matched:
         jobs=get('/actions/runs/'+str(r['id'])+'/jobs?per_page=100').get('jobs',[])
@@ -47,6 +49,20 @@ def retain_completed_outputs(previous,current):
     for key in ('daily_shadow','feature_pilot'):
         if result.get(key) is None and previous.get(key) is not None:result[key]=previous[key]
     return result
+
+def run_bounded_repairs(queue,run_one,save,seconds=18*60,clock=time.monotonic):
+    deadline=clock()+seconds
+    for item in queue['items']:
+        if item['status'] in ('STAGING_REPAIR_COMPLETE','BLOCKED_INPUT_ERROR'):continue
+        remaining=deadline-clock()
+        if remaining<60:break
+        item.update(status='RUNNING',run_id=os.environ.get('GITHUB_RUN_ID'),started_at=dt.datetime.now(dt.timezone.utc).isoformat());save()
+        try:
+            result=run_one(item['year'],item['month'],item['sources'],max_minutes=remaining/60)
+            item.update(status='STAGING_REPAIR_COMPLETE' if result['status']=='STAGING_NOT_APPROVED' else 'CHECKPOINTED',unresolved=result.get('unresolved_member_occurrences'),finished_at=dt.datetime.now(dt.timezone.utc).isoformat(),approved=False)
+        except (Exception,SystemExit) as exc:item.update(status='BLOCKED_INPUT_ERROR',reason=str(exc)[:180])
+        save()
+        if item['status']=='CHECKPOINTED':break
 
 def main(mode='monitor'):
     d=Drive(service());control=folder(d,C1,'05_CONTROL');qa=folder(d,control,'STANDARD_QA')
@@ -92,14 +108,8 @@ def main(mode='monitor'):
     # Do not add a fourth long-running worker while the old R3 matrix is active.
     if mode in ('auto','repair') and not state['active_staging']:
         heartbeat('BOUNDED_TARGETED_REPAIR')
-        item=next((i for i in queue['items'] if i['status'] not in ('STAGING_REPAIR_COMPLETE','BLOCKED_INPUT_ERROR')),None)
-        if item:
-            item.update(status='RUNNING',run_id=os.environ.get('GITHUB_RUN_ID'),started_at=dt.datetime.now(dt.timezone.utc).isoformat())
-            d.put(ops,'TARGETED_REPAIR_QUEUE_V1.json',json.dumps(queue,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
-            try:
-                result=repair(item['year'],item['month'],item['sources'],max_minutes=18)
-                item.update(status='STAGING_REPAIR_COMPLETE' if result['status']=='STAGING_NOT_APPROVED' else 'CHECKPOINTED',unresolved=result.get('unresolved_member_occurrences'),finished_at=dt.datetime.now(dt.timezone.utc).isoformat(),approved=False)
-            except (Exception,SystemExit) as exc:item.update(status='BLOCKED_INPUT_ERROR',reason=str(exc)[:180])
+        def save_queue():d.put(ops,'TARGETED_REPAIR_QUEUE_V1.json',json.dumps(queue,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
+        run_bounded_repairs(queue,repair,save_queue)
     status['repair_queue']={'complete':sum(i['status']=='STAGING_REPAIR_COMPLETE' for i in queue['items']),'total':len(queue['items']),'items':queue['items'],'deferred_for_active_R3':state['active_staging']}
     d.put(ops,'TARGETED_REPAIR_QUEUE_V1.json',json.dumps(queue,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
     heartbeat('READING_MONTHLY_PROGRESS')

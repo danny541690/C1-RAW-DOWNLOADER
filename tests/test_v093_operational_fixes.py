@@ -1,4 +1,4 @@
-import datetime as dt,hashlib,json,unittest
+import datetime as dt,hashlib,io,json,unittest
 from unittest.mock import patch
 from scripts.v093_folder_registry import FolderRegistry
 from scripts.v093_folder_registry import choose_folder
@@ -7,7 +7,7 @@ from scripts.v093_layer02_governance import compare_candidates,GateBlocked,REQUI
 from scripts.v093_release_publisher import validate_evidence,publish
 from scripts.v093_daily_shadow import target_day
 from scripts.v093_feature_shadow import compute_features
-from scripts.v093_operations import repair_plan,aggregate_reports,retain_completed_outputs
+from scripts.v093_operations import repair_plan,aggregate_reports,retain_completed_outputs,github_jobs,run_bounded_repairs
 
 class OperationalFixes(unittest.TestCase):
  def candidate(self,value):
@@ -103,5 +103,18 @@ class OperationalFixes(unittest.TestCase):
   self.assertEqual(result['feature_pilot']['rows'],100);self.assertEqual(result['daily_shadow']['trade_date'],'2026-10-19')
   current=retain_completed_outputs(prior,{'daily_shadow':{'status':'ERROR'}})
   self.assertEqual(current['daily_shadow']['status'],'ERROR')
+ def test_old_active_matrix_is_detected_beyond_recent_run_page(self):
+  def urlopen(req,**kwargs):
+   if '/actions/workflows/' in req.full_url:data={'workflow_runs':[{'id':1,'status':'queued'}]}
+   elif '/actions/runs/1/jobs' in req.full_url:data={'jobs':[{'name':'month','status':'in_progress','conclusion':None}]}
+   else:data={'workflow_runs':[]}
+   return io.BytesIO(json.dumps(data).encode())
+  with patch.dict('os.environ',{'GITHUB_TOKEN':'test-token','GITHUB_REPOSITORY':'test/repo'}),patch('scripts.v093_operations.urllib.request.urlopen',side_effect=urlopen):
+   self.assertTrue(github_jobs()['active_staging'])
+ def test_short_repairs_share_one_budget_and_do_not_wait_an_hour_each(self):
+  q={'items':repair_plan()[:3]};ticks=[0];saved=[]
+  def run(*args,**kwargs):ticks[0]+=40;return {'status':'STAGING_NOT_APPROVED','unresolved_member_occurrences':0}
+  run_bounded_repairs(q,run,lambda:saved.append(True),seconds=120,clock=lambda:ticks[0])
+  self.assertEqual([i['status'] for i in q['items']],['STAGING_REPAIR_COMPLETE','STAGING_REPAIR_COMPLETE','PENDING']);self.assertEqual(len(saved),4)
 
 if __name__=='__main__':unittest.main()
