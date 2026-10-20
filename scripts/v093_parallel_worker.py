@@ -38,7 +38,12 @@ def main(lane,minutes=35):
     ops=registry.folder(folder(d,C1,'05_CONTROL'),'OPERATIONS')
     if lane=='features':
         from scripts.v093_feature_warmup import prepare
-        result=prepare(d,registry,qa,ops,minutes)
+        try:result=prepare(d,registry,qa,ops,minutes)
+        except Exception as exc:
+            raw=d.read(ops,'FEATURE_WARMUP_V2.json');failed=json.loads(raw) if raw else {'version':'FEATURE_WARMUP_V2'}
+            failed.update(status='BLOCKED_INPUT_ERROR',reason=type(exc).__name__+':'+str(exc)[:180],approved=False,updated_at=dt.datetime.now(dt.timezone.utc).isoformat())
+            d.put(ops,'FEATURE_WARMUP_V2.json',json.dumps(failed,ensure_ascii=False,indent=2).encode(),'application/json',overwrite=True)
+            raise
     else:
         name='REPAIR_QUEUE_'+lane.upper()+'_V2.json';raw=d.read(ops,name)
         if raw:

@@ -6,7 +6,7 @@ against the R3 receipt before extraction. All output remains explicitly unapprov
 import collections,datetime as dt,decimal,hashlib,io,json,time
 import pyarrow as pa,pyarrow.parquet as pq
 from scripts.v093_feature_shadow import compute_features
-from scripts.v093_standard_r1 import C1
+from scripts.v093_standard_r1 import C1,ls
 from scripts.v093_standard_r4 import basekey
 
 PERIODS=tuple(['2025-'+str(m).zfill(2) for m in range(9,13)]+['2026-'+str(m).zfill(2) for m in range(1,10)])
@@ -23,6 +23,22 @@ def warmup_rows(points,target='2026-09'):
         for row in compute_features(sorted(rows)):
             if row['date'].startswith(target):output.append({**row,'stock_id':symbol,'status':'SHADOW_NOT_APPROVED','price_basis':'UNADJUSTED_NATIVE','window_basis':'VALID_OBSERVATIONS_NOT_VERIFIED_CALENDAR'})
     return output,len(conflicts)
+
+def read_verified_cache(d,parent,name,receipt=None):
+    """Identical aliases are safe; conflicting bytes remain blocking, never deleted."""
+    try:return d.read(parent,name),[]
+    except ValueError as exc:
+        if str(exc)!='duplicate remote names':raise
+    candidates=sorted((f for f in ls(d,parent) if f['name']==name),key=lambda f:f['id'])
+    if not candidates:raise ValueError('CACHE_ALIASES_DISAPPEARED')
+    payload=None;digest=None
+    for item in candidates:
+        body=d.call(lambda:d.api.files().get_media(fileId=item['id']))
+        current=hashlib.sha256(body).hexdigest()
+        if digest is not None and current!=digest:raise ValueError('CONFLICTING_CACHE_ALIASES')
+        if receipt and current!=receipt['cache_sha256']:raise ValueError('FEATURE_CACHE_HASH_MISMATCH')
+        payload=body;digest=current
+    return payload,[f['id'] for f in candidates]
 
 def prepare(d,registry,qa,ops,minutes=20):
     deadline=time.monotonic()+minutes*60
@@ -46,10 +62,15 @@ def prepare(d,registry,qa,ops,minutes=20):
             if time.monotonic()>=deadline:save('CHECKPOINTED_INPUT_PREPARATION');return {'status':state['status'],'periods_prepared':sum(v=='INPUTS_PREPARED' for v in state['periods'].values()),'total_periods':len(PERIODS),'approved':False}
             digest=entry.get('parquet_sha256')
             if not digest or len(digest)!=64:raise ValueError('MISSING_INPUT_HASH')
-            key=period+'_'+digest;cached=d.read(cache,key+'.json');receipt=state['inputs'].get(key)
+            key=period+'_'+digest;receipt=state['inputs'].get(key)
+            cached,aliases=read_verified_cache(d,cache,key+'.json',receipt)
             if cached and receipt:
                 if hashlib.sha256(cached).hexdigest()!=receipt['cache_sha256']:raise ValueError('FEATURE_CACHE_HASH_MISMATCH')
-                rows=json.loads(cached)['points']
+                decoded=json.loads(cached)
+                if decoded.get('input_sha256')!=digest:raise ValueError('CACHE_INPUT_BINDING_MISMATCH')
+                rows=decoded['points']
+                if len(rows)!=receipt['rows']:raise ValueError('CACHE_ROW_COUNT_MISMATCH')
+                if aliases:receipt['identical_alias_ids']=aliases
             else:
                 payload=d.read(src,entry['parquet_name'])
                 if not payload or hashlib.sha256(payload).hexdigest()!=digest:raise ValueError('INPUT_HASH_MISMATCH')
@@ -62,10 +83,12 @@ def prepare(d,registry,qa,ops,minutes=20):
                         value=decimal.Decimal(row['numeric_decimal_text'])
                         if value.is_finite() and value>0:rows.append({'stock_id':row['stock_id'],'date':row['date'],'close':str(value)})
                 body=json.dumps({'input_sha256':digest,'points':rows},ensure_ascii=False).encode()
-                d.put(cache,key+'.json',body,'application/json')
-                back=d.read(cache,key+'.json')
+                if cached:
+                    if hashlib.sha256(cached).digest()!=hashlib.sha256(body).digest():raise ValueError('UNRECEIPTED_CACHE_CONTENT_CONFLICT')
+                else:d.put(cache,key+'.json',body,'application/json')
+                back,aliases=read_verified_cache(d,cache,key+'.json')
                 if not back or hashlib.sha256(back).digest()!=hashlib.sha256(body).digest():raise ValueError('CACHE_READBACK_FAILED')
-                state['inputs'][key]={'cache_sha256':hashlib.sha256(body).hexdigest(),'rows':len(rows)}
+                state['inputs'][key]={'cache_sha256':hashlib.sha256(body).hexdigest(),'rows':len(rows),'identical_alias_ids':aliases}
                 save('PREPARING_INPUTS')
             points.extend(rows);digests.append(digest)
         state['periods'][period]='INPUTS_PREPARED';save('PREPARING_INPUTS')

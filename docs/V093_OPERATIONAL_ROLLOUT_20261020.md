@@ -126,3 +126,19 @@ STANDARD and feature batch retains provenance, readback and quarantine checks.
 Production approval remains separate and blocked without required evidence.
 The consolidated suite passes 124 tests locally, including acceptance reuse and
 rejection of stale, failed, wrong-branch and incomplete-tree evidence.
+
+### Cache resume repair
+
+The first resumed feature job stopped at Drive's strict duplicate-name check.
+Existing prepared periods and hashes were intact. Cache reads now inspect all
+same-name aliases only after that exact duplicate-name error: every alias must
+match the recorded byte digest (or all aliases must have identical bytes before
+recomputation against the source). Differing bytes remain a blocking exception;
+no file is deleted or overwritten. Input digest and cached row count are also
+bound to the saved receipt. An identical unreceipted cache must match a fresh
+extraction from the source before a receipt is recovered. Worker failures now
+write a durable blocked status while preserving prepared-period progress.
+
+The consolidated offline suite passes 126 tests including identical-alias resume
+and rejection of conflicting aliases. This patch does not certify cache/source
+market completeness or release readiness.

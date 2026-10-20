@@ -1,7 +1,7 @@
 import datetime as dt,json,unittest,hashlib,io
 from unittest.mock import patch
 import pyarrow as pa,pyarrow.parquet as pq
-from scripts.v093_feature_warmup import prepare
+from scripts.v093_feature_warmup import prepare,read_verified_cache
 from scripts.v093_operations import repair_plan,merged_repair_queue
 from scripts.v093_parallel_worker import partition_items,legacy_controller_active,upgrade_parser_queue
 from scripts.v093_feature_warmup import warmup_rows
@@ -90,5 +90,25 @@ class ParallelAcceptance(unittest.TestCase):
         q['items'][0]['status']='STAGING_REPAIR_COMPLETE';upgrade_parser_queue(q);self.assertEqual(q['items'][0]['status'],'STAGING_REPAIR_COMPLETE')
         raw_sha='a'*64;self.assertEqual(receipt_key('TWSE',raw_sha),hashlib.sha256(('TWSE'+VERSION+raw_sha).encode()).hexdigest())
         self.assertNotEqual(receipt_key('FinMind',raw_sha),hashlib.sha256(('FinMind'+VERSION+raw_sha).encode()).hexdigest())
+
+    def alias_drive(self,bodies):
+        class API:
+            def files(self):return self
+            def get_media(self,fileId):return bodies[fileId]
+        class D:
+            api=API()
+            def read(self,*args):raise ValueError('duplicate remote names')
+            def call(self,fn):return fn()
+        return D()
+    def test_identical_live_cache_aliases_resume_by_recorded_hash(self):
+        payload=b'{"input_sha256":"original","points":[]}'
+        d=self.alias_drive({'one':payload,'two':payload});receipt={'cache_sha256':hashlib.sha256(payload).hexdigest()}
+        with patch('scripts.v093_feature_warmup.ls',return_value=[{'name':'cache.json','id':'two'},{'name':'cache.json','id':'one'}]):
+            body,ids=read_verified_cache(d,'folder','cache.json',receipt)
+        self.assertEqual(body,payload);self.assertEqual(ids,['one','two'])
+    def test_conflicting_cache_aliases_are_not_chosen_arbitrarily(self):
+        d=self.alias_drive({'one':b'correct','two':b'changed'})
+        with patch('scripts.v093_feature_warmup.ls',return_value=[{'name':'cache.json','id':'one'},{'name':'cache.json','id':'two'}]):
+            with self.assertRaisesRegex(ValueError,'CONFLICTING_CACHE_ALIASES'):read_verified_cache(d,'folder','cache.json')
 
 if __name__=='__main__':unittest.main()
