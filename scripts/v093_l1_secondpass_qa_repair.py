@@ -1,5 +1,5 @@
 """Independent L1 second-pass: re-inventory actual Drive RAW bytes, retry gaps, and preserve provenance.
-Not a numeric/PIT certification. Triggered only after 2015-2000 first-pass cursor is done.
+Not a numeric/PIT certification. Independently audits latest Taiwan month down to 2015-04.
 """
 import argparse
 import collections
@@ -9,30 +9,22 @@ import os
 from scripts.annual_actual_firstpass import Drive, service
 import scripts.v093_history_reverse as engine
 import scripts.v093_independent_raw as raw
-from scripts.v093_three_year_repair import REPORT_ROOT, stamp
+from scripts.v093_three_year_repair import stamp
+from scripts.v093_folder_registry import FolderRegistry
 
-RUN = "L1_RAW_QA_REPAIR_2026_TO_200001_V1"
-FIRST = "RAW_201503_TO_200001_V1"
+RUN = "L1_RAW_QA_REPAIR_LATEST_TO_201504_V2"
+END_MONTH = "2015-04"
 WORKFLOW = "v093-l1-secondpass-qa-repair.yml"
 
-def first_pass_complete():
-    d = Drive(service())
-    folder = d.find(REPORT_ROOT, FIRST)
-    if not folder:
-        return False, "FIRST_PASS_CONTROL_NOT_FOUND"
-    cursor = engine.getj(d, folder["id"], "CURSOR.json")
-    if not cursor:
-        return False, "FIRST_PASS_CURSOR_NOT_FOUND"
-    if cursor.get("version") != FIRST:
-        return False, "FIRST_PASS_VERSION_CONFLICT"
-    finished = {x.get("month") for x in cursor.get("finished_months", [])}
-    expected = {f"{y}-{m:02d}" for y in range(2000, 2016) for m in range(1, 13)
-                if "2000-01" <= f"{y}-{m:02d}" <= "2015-03"}
-    complete = bool(cursor.get("done")) and len(finished & expected) == len(expected)
-    return complete, ("FIRST_PASS_DONE" if complete else
-                      f"FIRST_PASS_PENDING_{len(finished & expected)}_OF_{len(expected)}")
-
 class SecondPass(raw.Independent):
+    def __init__(self, minutes):
+        super().__init__(minutes)
+        # The first-pass 2015-03..2000-01 may still be running.
+        # Isolate this pass's folder registry writes from the other run.
+        self.registry = FolderRegistry(self.d, '10_k6r3pRGKYUp5YbyD3UA1oWw6DngHlO',
+                                       namespace='L1_SECOND_PASS_201504_PLUS')
+        assert self.months[-1] == END_MONTH
+        assert len(self.months) == len(set(self.months))
     def report(self, core):
         summary = super().report(core)
         units = list(self.state.get("units", {}).values())
@@ -67,16 +59,18 @@ class SecondPass(raw.Independent):
         return summary
 
 def run(minutes):
-    complete, reason = first_pass_complete()
-    print("SECOND_PASS_GATE " + reason, flush=True)
-    if not complete:
-        return
     today = dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date()
+    start_month = f"{today.year}-{today.month:02d}"
+    months = [f"{y}-{m:02d}" for y in range(today.year, 2014, -1)
+              for m in range(12, 0, -1)
+              if END_MONTH <= f"{y}-{m:02d}" <= start_month]
+    assert months and months[0] == start_month and months[-1] == END_MONTH
+    assert all(months[i] > months[i+1] for i in range(len(months)-1))
     raw.RUN = RUN
     raw.WORKFLOW = WORKFLOW
-    raw.month_plan = lambda ignored: [f"{y}-{m:02d}" for y in range(today.year, 1999, -1)
-                                     for m in range(12, 0, -1)
-                                     if (y, m) <= (today.year, today.month)]
+    raw.month_plan = lambda ignored: list(months)
+    print("SECOND_PASS_SCOPE " + json.dumps({"start": start_month, "end": END_MONTH,
+          "months": len(months), "first_pass_wait": False}), flush=True)
     SecondPass(minutes).run()
 
 if __name__ == "__main__":
