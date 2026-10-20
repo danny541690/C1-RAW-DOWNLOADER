@@ -93,3 +93,14 @@ stock ID merely to reduce the unresolved count.
   error. Do not fix prices, substitute zero, or infer trading status automatically.
 - No production release was created by these checks. Current old-code workers
   remain active; the parser upgrade is pending for the next serialized batch.
+
+### Independent formula crosscheck on real prices
+
+The reusable read-only verifier `scripts/v093_price_sql_acceptance.py` compares
+Python Decimal feature output against SQLite AVG/COUNT/LAG windows. The real
+105-member archive produced 2,073 usable price observations across 105 codes.
+All 24,876 formula/null comparisons passed, including 5,457 numeric comparisons;
+7 OHLC-conflicting stock/date observations and 16 other nonpositive closes were
+excluded. Adding a future observation did not change prior-period results.
+This is an independent implementation check, not an independent market-source
+Golden, nor trading-calendar/corporate-action/universe/PIT approval.
