@@ -74,7 +74,7 @@ class Independent(engine.History):
         super().__init__(minutes)
         plan=engine.getj(self.d,self.control,'PLAN.json')
         self.months=plan['months'] if plan else month_plan(self.today)
-        if not self.months or self.months[-1]!='2000-01' or len(self.months)!=len(set(self.months)):raise ValueError('MONTH_PLAN_CONFLICT')
+        if not self.months or self.months[-1]!=getattr(self,'expected_end_month','2000-01') or len(self.months)!=len(set(self.months)):raise ValueError('MONTH_PLAN_CONFLICT')
         self.batch_alerts=[]
         self.registry=FolderRegistry(self.d,'10_k6r3pRGKYUp5YbyD3UA1oWw6DngHlO',namespace='INDEPENDENT_RAW')
     def folder(self,source,month):
