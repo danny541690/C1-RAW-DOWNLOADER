@@ -1,10 +1,5 @@
 name: JARVIS v0.93 Unified 2024 Preflight
 on:
-  push:
-    paths:
-      - '.github/workflows/v093-unified-preflight.yml'
-      - 'scripts/**'
-      - 'tests/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,6 +9,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
       - name: Offline retry/date/persistence/monthly-report checks
         id: unit
         continue-on-error: true
@@ -97,3 +98,4 @@ jobs:
         run: python3 scripts/drive_checkpoint_canary.py
 
 # consolidated acceptance rerun requested 2026-10-19
+
