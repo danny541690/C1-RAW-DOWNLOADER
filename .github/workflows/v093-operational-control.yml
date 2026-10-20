@@ -11,7 +11,7 @@ on:
   schedule:
     - cron: '17 * * * *'
   workflow_run:
-    workflows: ['JARVIS v0.93 Offline Engine Tests', 'JARVIS Layer02 R3 2025-2026 Parser Repair and Structural QA', 'JARVIS Parallel Repair and Feature Preparation']
+    workflows: ['JARVIS v0.93 Offline Engine Tests', 'JARVIS Layer02 R3 2025-2026 Parser Repair and Structural QA', 'JARVIS Parallel Repair and Feature Preparation', 'JARVIS Independent Feature History']
     types: [completed]
 permissions:
   contents: read

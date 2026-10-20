@@ -52,23 +52,3 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           LANE: ${{ matrix.lane }}
         run: python -u -m scripts.v093_parallel_worker --lane "$LANE" --minutes 35
-  features:
-    needs: code_gate
-    if: needs.code_gate.outputs.ready == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: pip install -r requirements-qa.lock
-      - name: Prepare cached price history and feature shadow
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python -u -m scripts.v093_parallel_worker --lane features --minutes 25

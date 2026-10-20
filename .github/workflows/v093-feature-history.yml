@@ -1,0 +1,51 @@
+name: JARVIS Independent Feature History
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,27,47 * * * *'
+  workflow_run:
+    workflows: ['JARVIS v0.93 Offline Engine Tests', 'JARVIS Parallel Repair and Feature Preparation']
+    types: [completed]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: jarvis-feature-history-single-writer
+  cancel-in-progress: false
+jobs:
+  code_gate:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      ready: ${{ steps.evidence.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reuse consolidated code acceptance
+        id: evidence
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_ci_gate
+  features:
+    needs: code_gate
+    if: needs.code_gate.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Resume independent feature preparation
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -u -m scripts.v093_feature_lane

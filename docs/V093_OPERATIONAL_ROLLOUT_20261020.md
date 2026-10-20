@@ -142,3 +142,18 @@ write a durable blocked status while preserving prepared-period progress.
 The consolidated offline suite passes 126 tests including identical-alias resume
 and rejection of conflicting aliases. This patch does not certify cache/source
 market completeness or release readiness.
+
+## Independent feature scheduling
+
+Feature history now has its own serialized workflow, so a long financial repair
+cannot hold its retry behind the entire repair batch. The parallel repair
+workflow contains only the two existing repair lanes. Both reuse the same
+successful code acceptance; no extra full-suite test job was introduced.
+
+The feature handoff checks only the two observed pre-split workflow definitions.
+It cancels only queued/pending legacy definitions with no jobs, leaving active
+RAW and repair jobs intact. An active legacy feature job blocks handoff; an
+already finished legacy feature job does not block it behind financial work.
+Future feature runs use one dedicated concurrency group. Feature completion
+refreshes the existing unified controller. The consolidated suite passes 130
+checks including this handoff; data/release approval rules remain unchanged.
