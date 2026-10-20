@@ -17,6 +17,7 @@ END_MONTH = "2015-04"
 WORKFLOW = "v093-l1-secondpass-qa-repair.yml"
 
 class SecondPass(raw.Independent):
+    expected_end_month = END_MONTH
     def __init__(self, minutes):
         super().__init__(minutes)
         # The first-pass 2015-03..2000-01 may still be running.
