@@ -3,7 +3,7 @@
 Use only within an already serialized writer. New names always get a fresh query;
 existing duplicate names in a folder snapshot remain blocking.
 """
-import collections,time
+import collections,time,hashlib
 from scripts.annual_actual_firstpass import Drive
 
 class IndexedDrive(Drive):
@@ -38,6 +38,17 @@ class IndexedDrive(Drive):
         found=super().find(parent,name)
         if found:self.indexes[parent][name]=[found]
         return found
+    def read(self,parent,name):
+        try:return super().read(parent,name)
+        except ValueError as exc:
+            if str(exc)!='duplicate remote names' or not name.endswith(('.receipt.json','.parquet')):raise
+            # Only immutable conversion artifacts qualify. Never select by recency.
+            items=self.indexes[parent][name]
+            bodies=[self.call(lambda item=item:self.api.files().get_media(fileId=item['id'])) for item in items]
+            if len({hashlib.sha256(body).digest() for body in bodies})!=1:
+                raise ValueError('DUPLICATE_IMMUTABLE_CONTENT_CONFLICT '+name)
+            self.stats['identical_duplicate_reads_verified']+=1
+            return bodies[0]
     def put(self,*args,**kwargs):
         self.stats['put_calls']+=1;started=time.perf_counter()
         try:return super().put(*args,**kwargs)

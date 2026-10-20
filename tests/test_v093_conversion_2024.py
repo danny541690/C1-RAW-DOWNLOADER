@@ -38,3 +38,12 @@ class Year2024Conversion(unittest.TestCase):
         self.assertEqual(partition_items(plan,'2024')[0]['key'],'2024-12')
 
 if __name__=='__main__':unittest.main()
+
+class DuplicateRecoveryQueueTests(unittest.TestCase):
+    def test_requeue_known_blocked_months_only_once(self):
+        from scripts.v093_parallel_worker import requeue_duplicate_recovery
+        q={'lane':'2024','items':[{'key':'2024-09','status':'BLOCKED_INPUT_ERROR'},{'key':'2024-06','status':'STAGING_REPAIR_COMPLETE'},{'key':'2024-01','status':'CHECKPOINTED'}]}
+        requeue_duplicate_recovery(q)
+        self.assertEqual([i['status'] for i in q['items']],['PENDING','STAGING_REPAIR_COMPLETE','CHECKPOINTED'])
+        q['items'][0]['status']='BLOCKED_INPUT_ERROR';requeue_duplicate_recovery(q)
+        self.assertEqual(q['items'][0]['status'],'BLOCKED_INPUT_ERROR')

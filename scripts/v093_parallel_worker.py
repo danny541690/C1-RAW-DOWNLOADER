@@ -24,6 +24,14 @@ def upgrade_parser_queue(queue):
     queue['parser_revision']=PARSER_REVISION
     return queue
 
+def requeue_duplicate_recovery(queue):
+    if queue.get('lane')!='2024' or queue.get('duplicate_recovery_revision')=='IDENTICAL_ARTIFACT_READ_V1':return queue
+    for item in queue['items']:
+        if item['key'] in ('2024-09','2024-06') and item['status']=='BLOCKED_INPUT_ERROR':
+            item.update(status='PENDING',requeue_reason='VERIFY_IDENTICAL_DUPLICATE_ARTIFACTS')
+    queue['duplicate_recovery_revision']='IDENTICAL_ARTIFACT_READ_V1'
+    return queue
+
 def legacy_controller_active(runs,head):
     return any(r.get('path','').endswith('/v093-operational-control.yml') and r['status']!='completed' and r.get('head_sha')!=head for r in runs)
 
@@ -60,7 +68,7 @@ def main(lane,minutes=35):
         if {i['key'] for i in queue['items']}!=expected:raise ValueError('QUEUE_SCOPE_CONFLICT')
         canonical={i['key']:i for i in (conversion_plan_2024() if lane=='2024' else repair_plan())}
         if len(queue['items'])!=len(expected) or any(any(i.get(k)!=canonical[i['key']][k] for k in ('year','month','sources')) for i in queue['items']):raise ValueError('QUEUE_UNIT_IDENTITY_CONFLICT')
-        queue=upgrade_parser_queue(queue)
+        queue=requeue_duplicate_recovery(upgrade_parser_queue(queue))
         queue['items']=partition_items(queue['items'],lane)
         def save():
             queue['updated_at']=dt.datetime.now(dt.timezone.utc).isoformat()

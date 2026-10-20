@@ -33,6 +33,15 @@ class IndexedDriveAcceptance(unittest.TestCase):
     def test_duplicate_names_remain_blocking(self):
         d=IndexedDrive(API([self.item(),self.item(id='b')]))
         with self.assertRaisesRegex(ValueError,'duplicate remote names'):d.find('parent','existing')
+    def test_identical_immutable_duplicates_require_all_bytes_to_match(self):
+        api=API([self.item('x.receipt.json'),self.item('x.receipt.json','b')]);api.bodies['b']=api.bodies['a']
+        d=IndexedDrive(api);self.assertEqual(d.read('parent','x.receipt.json'),api.bodies['a'])
+        api.bodies['b']=b'conflicting bytes'
+        with self.assertRaisesRegex(ValueError,'CONTENT_CONFLICT'):d.read('parent','x.receipt.json')
+        with self.assertRaisesRegex(ValueError,'duplicate remote names'):d.find('parent','x.receipt.json')
+    def test_mutable_duplicate_reports_stay_blocked_even_when_identical(self):
+        api=API([self.item('LATEST.json'),self.item('LATEST.json','b')]);api.bodies['b']=api.bodies['a']
+        with self.assertRaisesRegex(ValueError,'duplicate remote names'):IndexedDrive(api).read('parent','LATEST.json')
     def test_checkpoint_limit_and_forced_error_or_boundary_flush(self):
         now=[0];throttle=CheckpointThrottle(seconds=60,items=10,clock=lambda:now[0]);self.assertTrue(throttle.due())
         for _ in range(9):self.assertFalse(throttle.due())

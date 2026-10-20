@@ -195,3 +195,13 @@ contracts. This is inventory evidence, not a new independent numerical/source
 acceptance or automatic gap-download implementation. Official-source gap filling,
 unit/PIT/calendar/universe contracts, independent Golden comparisons, first daily
 selection/report and release acceptance remain implementation work.
+
+### 22:52 continuation and duplicate recovery
+
+Resumed the existing 2024 worker immediately from its saved January checkpoint.
+Added narrowly scoped recovery for duplicate immutable receipts/parquets: read every
+same-name file and require identical SHA-256 bytes. Conflicting contents stay blocked;
+mutable status and all writes still reject duplicate names. No deletion or renaming.
+The known blocked June/September queue items get one retry after this code revision,
+then remain isolated if still failing. The same single-writer concurrency group keeps
+this revision from overlapping the current continuation worker.
