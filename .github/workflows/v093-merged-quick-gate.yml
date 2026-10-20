@@ -1,0 +1,113 @@
+name: JARVIS v0.93 Merged Quick Launch Gate
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-merged-quick-gate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-merged-quick-gate
+  cancel-in-progress: false
+jobs:
+  merged-readonly-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Entire offline suite (one execution)
+        id: unit
+        continue-on-error: true
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Combined RAW schedule safety contract
+        id: policy
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import datetime as dt, json
+          from scripts.v093_independent_raw import month_plan, retry_candidates, price_checks
+          from scripts.v093_history_reverse import key
+          months=month_plan(dt.date(2026,10,21))
+          assert months[0]=='2026-10' and months[-1]=='2000-01'
+          assert len(months)==322 and len(months)==len(set(months))
+          j={'source':'TWSE','category':'prices','period':'2026-10-20'}
+          k=key(j)
+          assert retry_candidates([j],{},{} )==[j]
+          assert retry_candidates([j],{k:{'status':'SAVED_BASIC_VERIFIED'}},{k:0})==[]
+          assert retry_candidates([j],{k:{'status':'FAILED'}},{k:2})==[j]
+          assert retry_candidates([j],{k:{'status':'FAILED'}},{k:3})==[]
+          def payload(lo,hi,op,cl):
+              return json.dumps({'fields':['證券代號','開盤價','最高價','最低價','收盤價'],
+                  'data':[['2330',str(op),str(hi),str(lo),str(cl)]]}).encode()
+          good=price_checks(payload(90,110,100,105),'TWSE','2026-10-20')
+          bad=price_checks(payload(90,110,120,105),'TWSE','2026-10-20')
+          assert good['checked_rows']==1 and not good['ohlc_violations']
+          assert len(bad['ohlc_violations'])==1
+          print('RAW_POLICY_PASS: descending_months=322, retry_cap=3, reused_success_skip, OHLC quarantine')
+          print('SCOPE: offline policy only; no download, no Drive write, no PIT or production approval')
+          PY
+      - name: TWSE historical source canary
+        id: twse
+        continue-on-error: true
+        run: python3 scripts/source_canary.py --year 2024 --month 1 --stock 2330
+      - name: TPEx and MOPS historical source canaries
+        id: tpex_mops
+        continue-on-error: true
+        run: python3 scripts/multi_source_canary.py
+      - name: FinMind free historical source canary
+        id: finmind
+        continue-on-error: true
+        run: python3 scripts/finmind_canary.py
+      - name: Whole-market one-day read-only canary
+        id: bulk
+        continue-on-error: true
+        run: python3 scripts/bulk_market_canary.py
+      - name: Write transparent combined result
+        if: always()
+        env:
+          UNIT: ${{ steps.unit.outcome }}
+          POLICY: ${{ steps.policy.outcome }}
+          TWSE: ${{ steps.twse.outcome }}
+          TPEX_MOPS: ${{ steps.tpex_mops.outcome }}
+          FINMIND: ${{ steps.finmind.outcome }}
+          BULK: ${{ steps.bulk.outcome }}
+        run: |
+          mkdir -p output
+          python3 - <<'PY'
+          import json,os,pathlib
+          checks={k:os.environ[k] for k in ('UNIT','POLICY','TWSE','TPEX_MOPS','FINMIND','BULK')}
+          passed=all(v=='success' for v in checks.values())
+          result={'version':'V093_MERGED_QUICK_GATE_1','checks':checks,
+                  'canary_gate_passed':passed,'full_market_verified':False,
+                  'numeric_verified':False,'pit_verified':False,
+                  'production_ready':False,'drive_modified':False,
+                  'historical_schedule_started':False,
+                  'next_action':'review live canary failures before enabling a dedicated RAW schedule'}
+          pathlib.Path('output/v093_merged_quick_gate.json').write_text(json.dumps(result,indent=2)+'\n')
+          print(json.dumps(result,indent=2))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## JARVIS merged quick gate\n\n' + json.dumps(result,indent=2) + '\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v093-merged-quick-gate-${{ github.run_id }}
+          path: output/v093_merged_quick_gate.json
+          retention-days: 30
+      - name: Fail closed if any check failed
+        if: always()
+        env:
+          UNIT: ${{ steps.unit.outcome }}
+          POLICY: ${{ steps.policy.outcome }}
+          TWSE: ${{ steps.twse.outcome }}
+          TPEX_MOPS: ${{ steps.tpex_mops.outcome }}
+          FINMIND: ${{ steps.finmind.outcome }}
+          BULK: ${{ steps.bulk.outcome }}
+        run: |
+          test "$UNIT" = success && test "$POLICY" = success && test "$TWSE" = success && test "$TPEX_MOPS" = success && test "$FINMIND" = success && test "$BULK" = success
