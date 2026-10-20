@@ -42,6 +42,28 @@ def price_checks(raw,source,period):
                 bad.append({'stock_id':code,'date':period})
     return {'checked_rows':count,'ohlc_violations':bad,'null_cells':missing,'status':'BASIC_OHLC_CHECK_ONLY_NOT_FULL_NUMERIC_ACCEPTANCE'}
 
+def classify_finmind_price_payload(raw):
+    """Keep legitimate zero-volume/zero-price rows as RAW, never as a valid price."""
+    payload=json.loads(raw)
+    rows=payload.get('data')
+    if not isinstance(rows,list) or not rows:raise ValueError('FINMIND_PRICE_ROWS_ABSENT')
+    no_trade_dates=[];checked=0
+    for row in rows:
+        values={k:Decimal(str(row[k])) for k in ('open','max','min','close')}
+        if all(v==0 for v in values.values()):
+            volume=Decimal(str(row.get('Trading_Volume','-1')))
+            turnover=Decimal(str(row.get('Trading_money','-1')))
+            if volume==0 and turnover==0:
+                no_trade_dates.append(str(row.get('date','')))
+                continue
+        if any(not v.is_finite() or v<=0 for v in values.values()):
+            raise ValueError('MISSING_OR_INVALID_PRICE')
+        if not values['min']<=values['open']<=values['max'] or not values['min']<=values['close']<=values['max']:
+            raise ValueError('OHLC_RELATIONSHIP_VIOLATION')
+        checked+=1
+    return {'positive_price_rows':checked,'no_trade_zero_price_dates':sorted(set(no_trade_dates)),
+            'no_trade_prices_are_missing_not_valid':True}
+
 def retry_candidates(jobs,state,ledger):
     return [j for j in jobs if state.get(engine.key(j),{}).get('status')!='SAVED_BASIC_VERIFIED' and ledger.get(engine.key(j),0)<3]
 
@@ -85,11 +107,8 @@ class Independent(engine.History):
                         if str(row.get('revenue_year'))!=self.active[:4] or int(row.get('revenue_month',0))!=int(self.active[5:]):raise ValueError('FINMIND_REVENUE_MONTH_UNPROVEN')
                     elif date[:7]!=self.active:raise ValueError('FINMIND_DATE_MONTH_UNPROVEN')
                     dates[code].add(date)
-                if dataset=='TaiwanStockPrice':
-                    for row in rows:
-                        values={k:Decimal(str(row[k])) for k in ('open','max','min','close')}
-                        if any(not v.is_finite() or v<=0 for v in values.values()) or not values['min']<=values['open']<=values['max'] or not values['min']<=values['close']<=values['max']:raise ValueError('FINMIND_EXISTING_OHLC_UNVERIFIED')
-                for code,ds in dates.items():self.state['existing_finmind'].append({'dataset':dataset,'stock_id':code,'dates':sorted(ds),'file':file_ref,'sha256':sha(payload)})
+                price_audit=classify_finmind_price_payload(payload) if dataset=='TaiwanStockPrice' else {}
+                for code,ds in dates.items():self.state['existing_finmind'].append({'dataset':dataset,'stock_id':code,'dates':sorted(ds),'file':file_ref,'sha256':sha(payload),'price_audit':price_audit})
                 return
             except Exception as exc:raise ValueError('FINMIND_EXISTING_UNVERIFIED:'+str(exc))
         if not cat:raise ValueError('UNMAPPED_NATIVE_DATASET')
@@ -158,11 +177,10 @@ class Independent(engine.History):
             for task,e,raw in results:
                 if e.get('status')=='SAVED_BASIC_VERIFIED' and task.get('dataset')=='TaiwanStockPrice':
                     try:
-                        rows=json.loads(raw)['data']
-                        for row in rows:
-                            values={k:Decimal(str(row[k])) for k in ('open','max','min','close')}
-                            if any(not v.is_finite() or v<=0 for v in values.values()):raise ValueError('MISSING_OR_INVALID_PRICE')
-                            if not values['min']<=values['open']<=values['max'] or not values['min']<=values['close']<=values['max']:raise ValueError('OHLC_RELATIONSHIP_VIOLATION')
+                        audit=classify_finmind_price_payload(raw)
+                        e['price_audit']=audit
+                        e['unresolved_no_trade_dates']=audit['no_trade_zero_price_dates']
+                        e['numeric_verified']=False
                     except Exception as exc:e.update(status='FINMIND_PRICE_QUARANTINED',error=str(exc)[:160])
         super().flush(results,bucket)
     def fetch_one(self,j,bucket):
@@ -207,7 +225,7 @@ class Independent(engine.History):
                            ((task['kind']=='daily_month' and set(task.get('official_missing_dates',[])).issubset(e['dates'])) or
                             (task['kind']=='financial' and task['period'] in e['dates']) or task['kind']=='revenue')),None)
             if existing:
-                self.state['finmind_units'][k]=dict(task,unit_id=k,status='SAVED_BASIC_VERIFIED',reused_existing=True,evidence=existing,numeric_verified=False,pit_verified=False);self.save_state();completed+=1;continue
+                self.state['finmind_units'][k]=dict(task,unit_id=k,status='SAVED_BASIC_VERIFIED',reused_existing=True,evidence=existing,unresolved_no_trade_dates=existing.get('price_audit',{}).get('no_trade_zero_price_dates',[]),numeric_verified=False,pit_verified=False);self.save_state();completed+=1;continue
             budget,_,_=self.quota()
             if budget<=0:return False
             self.state['fm_attempts'][k]=self.state['fm_attempts'].get(k,0)+1;self.save_state()
@@ -228,7 +246,7 @@ class Independent(engine.History):
                 'expected_core_units':len(core),'state_counts':dict(collections.Counter(e['status'] for e in records)),
                 'reused_units':sum(bool(e.get('reused_existing')) for e in records),'inventory_files':len(self.state['inventory']),
                 'inventory_issues':self.state['inventory_errors'],'failed_or_unverified_units':failures,'finmind_pending':len(pending),
-                'numeric_checks':self.state['numeric_checks'],'archives':self.state['archives'],
+                'numeric_checks':self.state['numeric_checks'],'unresolved_no_trade_dates_by_unit':{e['unit_id']:e['unresolved_no_trade_dates'] for e in records if e.get('unresolved_no_trade_dates')},'archives':self.state['archives'],
                 'source_priority':['TWSE','TPEx','MOPS','FinMind_FREE_GAP_ONLY'],'source_native_separate_no_silent_patch':True,
                 'calendar_verified':False,'historical_universe_verified':False,'field_unit_contract_verified':False,
                 'full_market_complete':False,'numeric_verified':False,'pit_verified':False,'production_ready':False}
