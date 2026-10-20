@@ -1,0 +1,35 @@
+name: JARVIS RAW First Capture Only 2026-2000
+on:
+  push:
+    paths: ['.github/workflows/v093-raw-firstpass.yml']
+  workflow_dispatch:
+  schedule:
+    - cron: '11,41 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-raw-firstpass-only-single-writer
+  cancel-in-progress: false
+jobs:
+  capture_only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Consolidated offline acceptance on deployment only
+        if: github.event_name == 'push'
+        run: python -m unittest discover -s tests -p 'test_*.py'
+      - name: Capture once, log failures, skip existing months, never repair or fill gaps
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -u -m scripts.v093_raw_firstpass --minutes 40
