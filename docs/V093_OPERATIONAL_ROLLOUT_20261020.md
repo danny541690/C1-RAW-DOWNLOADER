@@ -55,3 +55,20 @@ long R4 rebuild until the R3 matrix completes. All data remain in Drive.
 Validation: one consolidated offline suite passes 114 tests, including migration,
 queue ownership, checkpoint fairness, old-writer handoff, numerical window Golden,
 no future observation dependence, conflict quarantine and verified cache roundtrip.
+
+### Live follow-up: FinMind monthly slice contract
+
+Live reports confirmed that FinMind_FREE_2026 archives used the downloader's
+`rows` envelope, while the parser only consumed `data`/table containers. Added
+explicit envelope support with stock-scope and API-response-digest checks. The
+native rows and monthly archive lineage remain intact; no unit/PIT approval is
+inferred. The parser invalidates FinMind receipt keys only, keeping all previous
+bytes and other source receipts. Worker queues requeue structurally completed
+months once per parser revision, so an earlier zero-output receipt cannot hide
+this repair. Already-running workers finish with their original code; the next
+serialized batch applies the new revision without overlapping writers.
+
+The consolidated suite now passes 118 tests. Remaining unresolved items include
+market-wide totals without individual security IDs and latest-only snapshots
+without proven historical dates; these must not be silently assigned a date or
+stock ID merely to reduce the unresolved count.

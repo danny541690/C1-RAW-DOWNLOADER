@@ -11,6 +11,7 @@ from scripts.v093_standard_r1 import Drive, service, ROOT, C1, folder, ls, LIMIT
 from scripts.v093_folder_registry import FolderRegistry
 
 VERSION = 'NATIVE_R4_20261020_1'
+PARSER_REVISION = 'FINMIND_MONTH_SLICE_ROWS_V1'
 SYMBOLS = ('stock_id','SecuritiesCompanyCode','股票代號','證券代號','代號','公司代號','公司代碼','Code','StockCode','stockNo')
 DATES = ('date','Date','trade_date','資料日期','日期','年月日')
 PERIODS = ('資料年月','營收年月','revenue_month','年月')
@@ -120,6 +121,14 @@ def parse_member(source,name,raw,partition):
         if isinstance(obj,list):add('records',obj)
         elif isinstance(obj,dict):
             response_date=day(get(obj,DATES))
+            # Monthly free-download slices retain native API rows under `rows`.
+            # Accept only the downloader's explicit envelope, with matching IDs.
+            if source=='FinMind' and 'rows' in obj:
+                if not isinstance(obj['rows'],list) or not obj.get('dataset') or obj.get('status')!='RAW_MONTH_SLICE_NOT_PIT_VERIFIED':raise ValueError('INVALID_FINMIND_SLICE_ENVELOPE')
+                if not re.fullmatch(r'[0-9A-Za-z]{4,8}',str(obj.get('stock_id',''))) or not re.fullmatch(r'[0-9a-f]{64}',str(obj.get('response_sha256',''))):raise ValueError('INVALID_FINMIND_SLICE_PROVENANCE')
+                if any(not isinstance(r,dict) or str(r.get('stock_id',''))!=str(obj['stock_id']) for r in obj['rows']):raise ValueError('FINMIND_SLICE_STOCK_SCOPE_MISMATCH')
+                if isinstance(obj.get('data'),list) and obj['data']:raise ValueError('AMBIGUOUS_FINMIND_ROW_CONTAINERS')
+                add('monthly_slice:'+str(obj['dataset']),obj['rows'])
             add('data',obj.get('data'),obj.get('fields'),response_date)
             add('aaData',obj.get('aaData'),obj.get('fields'),response_date)
             for j,t in enumerate(obj.get('tables') or []):
@@ -178,6 +187,10 @@ def parse_member(source,name,raw,partition):
 
 SCHEMA=pa.schema([(k,pa.int64() if k=='row_index' else pa.bool_() if k in ('date_content_verified','unit_verified','numeric_semantics_verified','pit_verified','ohlc_violation') else pa.string()) for k in ('observation_period','date','stock_id','source','native_archive','native_sha256','native_member','native_member_sha256','native_table','row_index','native_field','native_metric','native_type','native_origin_name','native_unit','statement_scope','native_record_json','raw_value','numeric_decimal_text','date_proof','date_content_verified','unit_verified','numeric_semantics_verified','pit_verified','ohlc_violation','status')])
 
+def receipt_key(source,raw_sha):
+    # Invalidate only FinMind receipts; retain all prior immutable payloads.
+    return hashlib.sha256((source+VERSION+(PARSER_REVISION if source=='FinMind' else '')+raw_sha).encode()).hexdigest()
+
 def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
     deadline=time.monotonic()+max_minutes*60
     d=Drive(service());partition=f'{year}-{mo:02d}'
@@ -210,7 +223,7 @@ def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
             try:
                 if int(f.get('size',0))>LIMIT_ARCHIVE:raise ValueError('ARCHIVE_SIZE_LIMIT')
                 raw=d.call(lambda:d.api.files().get_media(fileId=f['id']));sha=hashlib.sha256(raw).hexdigest()
-                key=hashlib.sha256((source+VERSION+sha).encode()).hexdigest();receipt_name=key+'.receipt.json'
+                key=receipt_key(source,sha);receipt_name=key+'.receipt.json'
                 saved=d.read(dest,receipt_name)
                 if saved:
                     old=json.loads(saved)

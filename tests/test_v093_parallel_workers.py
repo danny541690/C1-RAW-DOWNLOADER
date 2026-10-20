@@ -3,9 +3,9 @@ from unittest.mock import patch
 import pyarrow as pa,pyarrow.parquet as pq
 from scripts.v093_feature_warmup import prepare
 from scripts.v093_operations import repair_plan,merged_repair_queue
-from scripts.v093_parallel_worker import partition_items,legacy_controller_active
+from scripts.v093_parallel_worker import partition_items,legacy_controller_active,upgrade_parser_queue
 from scripts.v093_feature_warmup import warmup_rows
-from scripts.v093_standard_r4 import VERSION
+from scripts.v093_standard_r4 import VERSION,PARSER_REVISION,parse_member,receipt_key
 from scripts.v093_folder_registry import FolderRegistry
 
 class ParallelAcceptance(unittest.TestCase):
@@ -68,5 +68,27 @@ class ParallelAcceptance(unittest.TestCase):
         key=next(k for k in d.data if k[1].endswith('.json') and 'CACHE' in k[0]);d.data[key]=b'changed'
         with patch('scripts.v093_feature_warmup.PERIODS',('2026-09',)):
             with self.assertRaisesRegex(ValueError,'CACHE_HASH_MISMATCH'):prepare(d,Registry(),'qa','ops')
+
+    def slice_envelope(self):
+        return {'dataset':'TaiwanStockPrice','stock_id':'2330','response_sha256':'a'*64,'annual_query_dates':['2026-01-01','2026-10-19'],'query_source':'FinMind_Free_Token','status':'RAW_MONTH_SLICE_NOT_PIT_VERIFIED','rows':[{'date':'2026-09-01','stock_id':'2330','open':100,'max':103,'min':99,'close':102,'Trading_Volume':2000}]}
+    def test_actual_downloader_slice_contract_retains_native_rows(self):
+        obj=self.slice_envelope();out,stats,_=parse_member('FinMind','TaiwanStockPrice/2330.json',json.dumps(obj).encode(),'2026-09')
+        self.assertEqual(stats['NATIVE_RECORDS'],1);self.assertEqual(stats['OHLC_CHECKED_ROWS'],1)
+        close=next(r for r in out if r['native_field']=='close');self.assertEqual(close['numeric_decimal_text'],'102');self.assertEqual(json.loads(close['native_record_json']),obj['rows'][0]);self.assertFalse(close['pit_verified'])
+    def test_slice_rejects_scope_conflict_and_outside_month(self):
+        obj=self.slice_envelope();obj['rows'][0]['stock_id']='1101'
+        with self.assertRaisesRegex(ValueError,'SCOPE_MISMATCH'):parse_member('FinMind','2330.json',json.dumps(obj).encode(),'2026-09')
+        obj=self.slice_envelope();out,stats,_=parse_member('FinMind','2330.json',json.dumps(obj).encode(),'2026-08')
+        self.assertEqual(out,[]);self.assertEqual(stats['OUTSIDE_PARTITION'],1)
+    def test_slice_requires_provenance_and_unambiguous_container(self):
+        for change in ({'response_sha256':'invalid'},{'data':[{'stock_id':'2330'}]},{'status':'APPROVED'}):
+            obj=self.slice_envelope();obj.update(change)
+            with self.assertRaises(ValueError):parse_member('FinMind','2330.json',json.dumps(obj).encode(),'2026-09')
+    def test_parser_upgrade_requeues_completed_finmind_once_and_keeps_other_receipts(self):
+        q={'items':[{'status':'STAGING_REPAIR_COMPLETE'},{'status':'CHECKPOINTED','run_id':'saved'}]}
+        upgrade_parser_queue(q);self.assertEqual(q['items'][0]['status'],'PENDING');self.assertEqual(q['items'][1]['run_id'],'saved')
+        q['items'][0]['status']='STAGING_REPAIR_COMPLETE';upgrade_parser_queue(q);self.assertEqual(q['items'][0]['status'],'STAGING_REPAIR_COMPLETE')
+        raw_sha='a'*64;self.assertEqual(receipt_key('TWSE',raw_sha),hashlib.sha256(('TWSE'+VERSION+raw_sha).encode()).hexdigest())
+        self.assertNotEqual(receipt_key('FinMind',raw_sha),hashlib.sha256(('FinMind'+VERSION+raw_sha).encode()).hexdigest())
 
 if __name__=='__main__':unittest.main()

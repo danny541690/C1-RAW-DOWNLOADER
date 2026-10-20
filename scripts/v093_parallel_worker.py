@@ -2,7 +2,7 @@
 import argparse,datetime as dt,json,os,time,urllib.request
 from scripts.v093_standard_r1 import Drive,service,C1,folder
 from scripts.v093_folder_registry import FolderRegistry
-from scripts.v093_standard_r4 import run as repair,VERSION
+from scripts.v093_standard_r4 import run as repair,VERSION,PARSER_REVISION
 from scripts.v093_operations import repair_plan,github_jobs,run_bounded_repairs
 
 LANES=('july','financial','features')
@@ -12,6 +12,15 @@ def partition_items(items,lane):
     chosen=[dict(i) for i in items if (i['key']=='2025-07')==(lane=='july')]
     # Give untouched months a turn rather than blocking behind one large month.
     return sorted(chosen,key=lambda i:(i['status']=='CHECKPOINTED',i.get('finished_at','')))
+
+def upgrade_parser_queue(queue):
+    if queue.get('parser_revision')==PARSER_REVISION:return queue
+    # Completed structural runs can still contain unparsed slice envelopes.
+    for item in queue['items']:
+        if item['status']=='STAGING_REPAIR_COMPLETE':
+            item['status']='PENDING';item['requeue_reason']='FINMIND_ROWS_PARSER_UPGRADE'
+    queue['parser_revision']=PARSER_REVISION
+    return queue
 
 def legacy_controller_active(runs,head):
     return any(r.get('path','').endswith('/v093-operational-control.yml') and r['status']!='completed' and r.get('head_sha')!=head for r in runs)
@@ -42,6 +51,7 @@ def main(lane,minutes=35):
             queue={'version':VERSION,'lane':lane,'items':partition_items(prior['items'],lane)}
         expected={i['key'] for i in partition_items(repair_plan(),lane)}
         if {i['key'] for i in queue['items']}!=expected:raise ValueError('QUEUE_SCOPE_CONFLICT')
+        queue=upgrade_parser_queue(queue)
         queue['items']=partition_items(queue['items'],lane)
         def save():
             queue['updated_at']=dt.datetime.now(dt.timezone.utc).isoformat()
