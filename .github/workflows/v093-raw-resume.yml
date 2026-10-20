@@ -1,8 +1,7 @@
 name: JARVIS v0.93 Independent RAW Resume 2026-2000
 on:
-  workflow_run:
-    workflows: ['JARVIS v0.93 Merged Quick Launch Gate']
-    types: [completed]
+  push:
+    paths: ['.github/workflows/v093-raw-resume.yml']
   workflow_dispatch:
   schedule:
     - cron: '11 * * * *'
@@ -14,7 +13,6 @@ concurrency:
   cancel-in-progress: false
 jobs:
   raw-capture:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
