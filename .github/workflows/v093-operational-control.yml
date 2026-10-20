@@ -8,11 +8,6 @@ on:
         type: choice
         options: [bootstrap, auto, monitor, daily, repair]
         default: bootstrap
-  schedule:
-    - cron: '17 * * * *'
-  workflow_run:
-    workflows: ['JARVIS 2023 Layer02 Conversion', 'JARVIS v0.93 Offline Engine Tests', 'JARVIS Layer02 R3 2025-2026 Parser Repair and Structural QA', 'JARVIS Parallel Repair and Feature Preparation', 'JARVIS Independent Feature History']
-    types: [completed]
 permissions:
   contents: read
   actions: read
