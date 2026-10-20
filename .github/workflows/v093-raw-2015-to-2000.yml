@@ -1,0 +1,44 @@
+name: JARVIS v0.93 RAW Layer 1 Backfill 2015-2000
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-raw-2015-to-2000.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-v093-independent-raw-resume-single-writer
+  cancel-in-progress: false
+jobs:
+  official-first-monthly-backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - name: Install locked QA dependencies
+        run: pip install -r requirements-qa.lock
+      - name: Verify monthly scope and offline safety before download
+        run: |
+          python3 - <<'PY'
+          from scripts.v093_raw_2015_to_2000 import MONTHS, START, END
+          assert len(MONTHS)==183 and MONTHS[0]=='2015-03' and MONTHS[-1]=='2000-01'
+          assert all(MONTHS[i]>MONTHS[i+1] for i in range(len(MONTHS)-1))
+          print('RAW_SCOPE_PASS', START, END, len(MONTHS))
+          PY
+          python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: RAW layer 1 capture and explicit FinMind gaps (40 min cap)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+        run: python3 -u -m scripts.v093_raw_2015_to_2000 --minutes 40
