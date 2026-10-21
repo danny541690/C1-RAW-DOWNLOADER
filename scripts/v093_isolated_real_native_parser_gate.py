@@ -34,6 +34,7 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
             report["sources"][source]={"status":"NO_BOUNDED_ZIP_SAMPLE","stats":{},"errors":[]}
             continue
         arc=archives[0]
+        archive_candidates=[{"name":x["name"],"bytes":int(x.get("size",0))} for x in archives[:20]]
         raw=d.call(lambda:d.api.files().get_media(fileId=arc["id"]))
         if len(raw)>max_archive:raise ValueError("ARCHIVE_TOO_LARGE")
         with zipfile.ZipFile(io.BytesIO(raw)) as z:
