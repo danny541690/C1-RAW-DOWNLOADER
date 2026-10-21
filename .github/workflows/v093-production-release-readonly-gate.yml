@@ -1,0 +1,43 @@
+name: JARVIS v0.93 Production Release Readonly Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-production-release-readonly-gate.yml'
+permissions:
+  contents: read
+jobs:
+  release-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Run complete regression suite
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Inspect real production workflow and Drive helper safety gates
+        run: |
+          python3 - <<'PY'
+          import pathlib,re,json,ast
+          root=pathlib.Path('.github/workflows')
+          names=['v093-raw-2015-to-2000.yml','v093-l1-secondpass-qa-repair.yml','v093-l1-thirdpass-gated-repair.yml']
+          workflows=[(root/n).read_text() for n in names]
+          groups=[re.search(r'(?m)^  group:\s*(\S+)',w).group(1) for w in workflows]
+          crons=[re.search(r"cron:\s*'([^']+)'",w).group(1) for w in workflows]
+          assert len(set(groups))==3
+          assert crons==['17 * * * *','29 * * * *','41 * * * *']
+          assert all('cancel-in-progress: false' in w for w in workflows)
+          source=pathlib.Path('scripts/annual_actual_firstpass.py').read_text()
+          tree=ast.parse(source)
+          drive=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name=='Drive')
+          put=next(n for n in drive.body if isinstance(n,ast.FunctionDef) and n.name=='put')
+          put_source=ast.get_source_segment(source,put)
+          find_before_create=put_source.index('self.find(')<put_source.index('files().create(')
+          update_without_cas='files().update(fileId=old["id"],media_body=media)' in put_source
+          assert find_before_create and update_without_cas
+          print('LIVE_SCHEDULER_RELEASE_AUDIT_PASS '+json.dumps({'live_workflows':3,'independent_concurrency_groups':3,'hourly_crons':crons,'cross_workflow_mutex':False,'overlap_possible':True,'drive_find_then_create_race':find_before_create,'drive_mutable_update_without_cas':update_without_cas,'production_workflows_modified':False,'real_drive_writes':0},sort_keys=True),flush=True)
+          print('PRODUCTION_RELEASE_GATE=BLOCKED_CROSS_WORKFLOW_MUTEX_AND_DRIVE_ATOMIC_COMMIT')
+          PY
