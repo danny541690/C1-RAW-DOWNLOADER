@@ -51,9 +51,9 @@ def mops_revenue_header_evidence(html):
    if t:self.parts.append(t)
  p=Text();p.feed(html)
  header=" ".join(p.parts[:100])
- period_match=re.search(r"(?:上市|上櫃)公司\\s*(\\d{2,3})年\\s*(\\d{1,2})月份",header)
- export_match=re.search(r"出表日期\\s*[:：]\\s*(\\d{2,3})/(\\d{1,2})/(\\d{1,2})",header)
- unit_match=re.search(r"單位\\s*[:：]\\s*(千元|仟元|元|百萬元|億元)",header)
+ period_match=re.search(r"(?:上市|上櫃)公司\s*(\d{2,3})年\s*(\d{1,2})月份",header)
+ export_match=re.search(r"出表日期\s*[:：]\s*(\d{2,3})/(\d{1,2})/(\d{1,2})",header)
+ unit_match=re.search(r"單位\s*[:：]\s*(千元|仟元|元|百萬元|億元)",header)
  def roc_date(m):
   if not m:return None
   try:return datetime.date(int(m.group(1))+1911,int(m.group(2)),int(m.group(3))).isoformat()
