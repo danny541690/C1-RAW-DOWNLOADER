@@ -10,12 +10,14 @@ from scripts.v093_standard_r2 import parse
 from scripts.v093_native_numeric_sanity import audit as native_audit
 from scripts.v093_source_pit_unit_evidence import mops_html_evidence
 from scripts.v093_twse_disclosure_pit import disclosure_evidence,audit_disclosure_rows
+from scripts.v093_cross_source_numeric_audit import compare_rows,PRICE_FIELDS
 FOLDER="application/vnd.google-apps.folder"
 def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
     y=[x for x in ls(d,ROOT) if x.get("name")==month[:4] and x.get("mimeType")==FOLDER]
     if len(y)!=1:raise ValueError("YEAR_AMBIGUOUS")
     sources={x["name"]:x for x in ls(d,y[0]["id"]) if x.get("mimeType")==FOLDER}
     report={"month":month,"sources":{},"certified":False,"drive_writes":0}
+    close_rows=collections.defaultdict(list)
     for source in SOURCES:
         sf=sources.get(source)
         if sf is None:raise ValueError("SOURCE_MISSING_"+source)
@@ -46,6 +48,9 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                 stats["members_attempted"]+=1
                 try:
                     rows,invalid,encoding=parse(source,arc["name"],item.filename,z.read(item),month)
+                    close_field=PRICE_FIELDS["close"].get(source)
+                    if close_field:
+                        close_rows[source].extend(row for row in rows if row.get("native_field")==close_field)
                     sanity=native_audit(rows,month)
                     for field in ("invalid_date","invalid_stock_id","nonfinite_numeric","identifier_as_numeric","premature_verification","premature_publication","duplicate_lineage_key"):
                         stats["sanity_"+field]+=sanity[field]
@@ -105,4 +110,5 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                         entry["html_structure"]={"tables":p.tables,"rows":p.rows,"cells":p.cells,"text_preview":p.text}
                     errors.append(entry)
         report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"stats":dict(stats),"errors":errors[:10],"zero_cell_diagnostics":zero_cell_diagnostics,"oversize_members":oversize_members}
+    report["cross_source_close"]=compare_rows(close_rows)
     return report
