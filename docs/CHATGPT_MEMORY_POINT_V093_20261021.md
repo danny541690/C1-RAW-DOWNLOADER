@@ -1,3 +1,11 @@
+# 最新執行狀態：五排程已啟用，RAW 已實際保存新資料
+
+2026-10-21 啟動紀錄：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39613119269 。五個正式 workflow 均已啟用，涵蓋 2026-10 往回至 2000-01 的 322 個月。已觀察到至少三個 2026-10-21 新 RAW 單元保存並回讀核對；下游首次結果仍待確認。這不是全部歷史完成、數值或 PIT 核准。舊排程維持停用。
+
+接續先讀 `requests/V093_FIVE_STAGE_202610_TO_200001_20261021.json`、`scripts/v093_live_five_stage.py` 與最新分階段 STATUS.json；採納政策不變。下方前置測試文字屬歷史快照，不能用來否認目前已啟動的下載器。
+
+---
+
 # ChatGPT 跨對話接續記憶摘要 — 賈維斯五排程
 
 使用者於2026-10-21明確採納 `V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021`，要求後續下載遵循，並存入Google Drive與GitHub。
