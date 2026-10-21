@@ -1,0 +1,111 @@
+name: JARVIS v0.93 Shared Lease and Adapter Combined Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-shared-lease-adapter-integrated.yml'
+permissions:
+  contents: write
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  seed:
+    runs-on: ubuntu-latest
+    outputs:
+      path: ${{ steps.s.outputs.path }}
+    steps:
+      - id: s
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,urllib.request
+          path='.github/test-state/lease-adapter-'+os.environ['RUN_ID']+'.json'
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'}
+          body={'message':'test: seed shared lease','content':base64.b64encode(b'{"jobs":{}}').decode()}
+          with urllib.request.urlopen(urllib.request.Request('https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+path,data=json.dumps(body).encode(),method='PUT',headers=h),timeout=30) as r:assert r.status==201
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('path='+path+'\n')
+          print('DURABLE_LEASE_SEED_PASS',flush=True)
+          PY
+  owner-one:
+    needs: seed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Claim lease then let it expire without commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MANIFEST: ${{ needs.seed.outputs.path }}
+        run: |
+          python3 - <<'PY'
+          import os,json
+          from scripts.v093_five_stage_durable_gate import acquire
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+os.environ['MANIFEST']
+          fence=acquire(url,os.environ['GH_TOKEN'],'2026-10:ohlc:RAW','owner-one',now=100,ttl=10)
+          assert fence==1
+          print('OWNER_ONE_CLAIM_PASS '+json.dumps({'fence':fence,'expires_at':110}),flush=True)
+          PY
+  owner-two:
+    needs: [seed,owner-one]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject early takeover, fence stale owner and commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MANIFEST: ${{ needs.seed.outputs.path }}
+        run: |
+          python3 - <<'PY'
+          import os,json,hashlib
+          from scripts.v093_five_stage_durable_gate import acquire,commit,LeaseBusy,LeaseConflict
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+os.environ['MANIFEST']
+          token=os.environ['GH_TOKEN'];key='2026-10:ohlc:RAW'
+          try:acquire(url,token,key,'owner-two',now=105,ttl=10)
+          except LeaseBusy:pass
+          else:raise AssertionError('EARLY_TAKEOVER_ALLOWED')
+          fence=acquire(url,token,key,'owner-two',now=111,ttl=20)
+          assert fence==2
+          digest=hashlib.sha256(key.encode()).hexdigest()
+          try:commit(url,token,key,'owner-one',1,digest,now=112)
+          except LeaseConflict:pass
+          else:raise AssertionError('STALE_OWNER_COMMITTED')
+          assert commit(url,token,key,'owner-two',fence,digest,now=112)
+          print('CROSS_RUNNER_DURABLE_FENCED_COMMIT_PASS '+json.dumps({'runners':2,'early_takeover_blocked':True,'stale_owner_rejected':True,'fence':2,'real_drive_writes':0}),flush=True)
+          PY
+  verify:
+    needs: [seed,owner-two,regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Independent readback and adapter gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MANIFEST: ${{ needs.seed.outputs.path }}
+        run: |
+          python3 - <<'PY'
+          import os,json,hashlib
+          from scripts.v093_five_stage_durable_gate import _read,decide_adapter
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+os.environ['MANIFEST']
+          _,obj=_read(url,os.environ['GH_TOKEN'])
+          key='2026-10:ohlc:RAW';row=obj['jobs'][key]
+          assert row['sha256']==hashlib.sha256(key.encode()).hexdigest()
+          assert row['last_fence']==2 and row['status']=='DATA_PRESENT_PENDING_QA'
+          assert row['certified'] is False
+          raw={'sha256':row['sha256']};qa={'raw_sha256':row['sha256']}
+          for stage in ('PRICE','FINANCIAL','CHIP'):
+              assert decide_adapter(stage,raw,qa,{'schema_ok':True})=='BLOCKED_UNIT_OK'
+          print('FIVE_STAGE_DURABLE_LEASE_ADAPTER_INTEGRATED_PASS '+json.dumps({'cross_runner_fencing':True,'data_manifest_readback':True,'premature_certifications':0,'unverified_adapters_blocked':3,'drive_atomic_commit_integrated':False,'real_drive_writes':0}),flush=True)
+          print('PRODUCTION_GATE=BLOCKED_DRIVE_ATOMIC_COMMIT_AND_HISTORICAL_ADAPTER_COVERAGE')
+          PY
