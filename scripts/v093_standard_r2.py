@@ -8,13 +8,15 @@ from scripts.v093_standard_r1 import Drive,service,ROOT,C1,folder,ls,LIMIT_ARCHI
 SOURCES=("TWSE","TPEx","MOPS","FinMind")
 def normalize_date(s):
  s=str(s or "").strip()
- m=re.fullmatch(r"(20\d\d)(\d\d)(\d\d)",s)
- if m:return "-".join(m.groups())
- m=re.fullmatch(r"(20\d\d)[/-](\d\d)[/-](\d\d)",s)
- if m:return "-".join(m.groups())
- m=re.fullmatch(r"(1\d\d)[/-]?(\d\d)[/-]?(\d\d)",s)
- if m:return f"{int(m.group(1))+1911}-{m.group(2)}-{m.group(3)}"
- return None
+ for pat,roc in ((r"(20\d\d)(\d\d)(\d\d)",False),
+                 (r"(20\d\d)[/-](\d\d)[/-](\d\d)",False),
+                 (r"(1\d\d)[/-]?(\d\d)[/-]?(\d\d)",True)):
+  m=re.fullmatch(pat,s)
+  if not m:continue
+  y,mo,day=map(int,m.groups())
+  if roc:y+=1911
+  try:return datetime.date(y,mo,day).isoformat()
+  except ValueError:return None
 def period_date(s):
  m=re.fullmatch(r"(20\d\d)[/-]?(\d\d)",str(s or "").strip())
  if m:return m.group(1)+"-"+m.group(2)
@@ -39,7 +41,7 @@ def source_date(name,obj=None):
   for k in ("date","Date","trade_date","資料日期"):
    d=normalize_date(obj.get(k))
    if d:return d,"RESPONSE"
- m=re.search(r"(?<!\d)(20(?:25|26)[01]\d[0-3]\d)(?!\d)",name)
+ m=re.search(r"(?<!\d)(20\d{2}[01]\d[0-3]\d)(?!\d)",name)
  if m:return normalize_date(m.group(1)),"FILENAME_ONLY"
  return None,"NONE"
 def rows_to_long(source,archive,member,period,records):
