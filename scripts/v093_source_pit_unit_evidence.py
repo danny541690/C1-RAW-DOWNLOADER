@@ -5,7 +5,7 @@ establish comparable unit, point-in-time availability or source agreement.
 """
 import datetime,re
 UNIT_FACTORS={"NTD":1,"NTD_THOUSANDS":1000,"NTD_MILLIONS":1000000,"NTD_100M":100000000}
-def assess_evidence(source,stock_id,report_period,release_date,unit,comparison=None):
+def assess_evidence(source,stock_id,report_period,release_date,unit,comparison=None,*,metric=None):
  issues=[]
  if not re.fullmatch(r"[1-9][0-9]{3}",str(stock_id or "")):issues.append("STOCK_ID_NOT_PROVEN")
  try:
@@ -24,10 +24,15 @@ def assess_evidence(source,stock_id,report_period,release_date,unit,comparison=N
  if comparison is not None:
   # Both sources must identify the same company, reported period, semantic
   # field, and original unit; value agreement alone is not proof.
-  for key in ("stock_id","report_period","metric","unit","source_sha256"):
+  for key in ("source","stock_id","report_period","metric","unit","source_sha256"):
    if not comparison.get(key):issues.append("COMPARISON_"+key.upper()+"_MISSING")
   if comparison.get("source")==source:issues.append("COMPARISON_NOT_INDEPENDENT")
-  comparable=not any(x.startswith("COMPARISON_") for x in issues)
+  if not metric:issues.append("COMPARISON_PRIMARY_METRIC_MISSING")
+  for key,expected in (("stock_id",str(stock_id)),("report_period",period),("metric",metric),("unit",unit)):
+   if comparison.get(key)!=expected:issues.append("COMPARISON_"+key.upper()+"_MISMATCH")
+  if not re.fullmatch(r"[0-9a-fA-F]{64}",str(comparison.get("source_sha256",""))):
+   issues.append("COMPARISON_SOURCE_SHA256_INVALID")
+  comparable=not issues
  return {"source":source,"pit_evidence_complete":pub is not None and period is not None and "PUBLICATION_PRECEDES_REPORT_PERIOD" not in issues,"unit_evidence_complete":unit in UNIT_FACTORS,"cross_source_metadata_comparable":comparable,"verified":False,"issues":issues}
 def mops_html_evidence(html):
  """Inspect HTML for hints, not claims of official report identity or PIT."""
