@@ -67,4 +67,5 @@ class ReplanTests(unittest.TestCase):
         self.assertEqual(plan.lease_ttl_for(60),5400)
         self.assertGreater(plan.lease_ttl_for(60),plan.PLAN['consumer_workflow_timeout_minutes']*60)
         self.assertEqual(plan.lease_ttl_for(24),3600)
-        self.assertEqual(plan.PLAN['worker_budgets_minutes']['RAW'],24)
+        self.assertEqual(plan.PLAN['worker_budgets_minutes']['RAW'],60)
+        self.assertGreater(plan.lease_ttl_for(60),plan.PLAN['raw_workflow_timeout_minutes']*60)

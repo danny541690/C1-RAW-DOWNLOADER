@@ -2,7 +2,7 @@
   "request_id": "V093_FIVE_STAGE_202610_TO_200001_20261021",
   "authorized_by": "USER_2026-10-21_ASIA_TAIPEI",
   "policy_version": "V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021",
-  "requested_action": "SET_FOUR_INDEPENDENT_CONSUMERS_TO_60_MINUTES",
+  "requested_action": "SET_RAW_TO_HOURLY_60_MINUTES_ALL_FIVE_60M",
   "stages": [
     "RAW",
     "QA1",
@@ -72,15 +72,15 @@
     "latest_capacity_run": 39690225723
   },
   "current_schedules": {
-    "verified_at": "2026-10-21T22:58:22Z",
+    "verified_at": null,
     "timezone": "Asia/Taipei",
     "entries": [
       {
         "stage": "RAW",
         "workflow": ".github/workflows/v093-v2-01-raw.yml",
-        "cron_utc": "1,31 * * * *",
-        "taipei_trigger": "每小時 1,31 分",
-        "worker_budget_minutes": 24,
+        "cron_utc": "1 * * * *",
+        "taipei_trigger": "每小時01分",
+        "worker_budget_minutes": 60,
         "concurrency_pool": "RAW"
       },
       {
@@ -120,8 +120,9 @@
     "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
     "max_heavy_workers": null,
     "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
-    "state": "SIXTY_MINUTE_CONFIG_ENABLED",
-    "downstream_budget_minutes_per_hour": 240
+    "state": "ALL_FIVE_60M_PENDING_RAW_ACTIVATION",
+    "downstream_budget_minutes_per_hour": 240,
+    "total_worker_budget_minutes_per_hour": 300
   },
   "previous_generation_evidence": {
     "activation_run": 39613119269,
@@ -181,7 +182,7 @@
   },
   "execution_plan": {
     "revision": "RAW_201404_AUDIT_202610_V1",
-    "authorized_by": "USER_20261022_FOUR_CONSUMERS_60M",
+    "authorized_by": "USER_20261022_RAW_60M_ALL_FIVE_HOURLY",
     "download_policy_unchanged": true,
     "raw_history_start": "2014-04",
     "raw_history_end": "2000-01",
@@ -195,7 +196,7 @@
     "max_heavy_workers": null,
     "lease_suffix": "_REPLAN_201404_V1",
     "worker_budgets_minutes": {
-      "RAW": 24,
+      "RAW": 60,
       "QA1": 60,
       "PRICE": 60,
       "FINANCIAL": 60,
@@ -204,7 +205,7 @@
     "downstream_budget_minutes_per_hour": 240,
     "downstream_cadence": "HOURLY_INDEPENDENT_PARALLEL",
     "cron_utc": {
-      "RAW": "1,31 * * * *",
+      "RAW": "1 * * * *",
       "QA1": "0 * * * *",
       "PRICE": "30 * * * *",
       "FINANCIAL": "40 * * * *",
@@ -218,7 +219,10 @@
       "CHIP": "_CHIP_REPLAN_201404_V1"
     },
     "consumer_workflow_timeout_minutes": 75,
-    "consumer_lease_ttl_seconds": 5400
+    "consumer_lease_ttl_seconds": 5400,
+    "raw_workflow_timeout_minutes": 75,
+    "raw_lease_ttl_seconds": 5400,
+    "total_worker_budget_minutes_per_hour": 300
   },
   "execution_control": {
     "paused": false,
@@ -232,29 +236,22 @@
     "automatic_restart_allowed": false
   },
   "capacity_change": {
-    "authorized_by": "USER_20261022_FOUR_CONSUMERS_60M",
+    "authorized_by": "USER_20261022_RAW_60M_ALL_FIVE_HOURLY",
     "global_two_worker_cap_removed": true,
     "per_stage_limit": 1,
-    "downstream_worker_budgets_minutes": {
+    "worker_budgets_minutes": {
+      "RAW": 60,
       "QA1": 60,
       "PRICE": 60,
       "FINANCIAL": 60,
       "CHIP": 60
     },
-    "raw_budget_unchanged": true,
+    "raw_budget_unchanged": false,
     "checkpoint_reset": false,
-    "state": "ENABLED_VERIFIED",
+    "state": "PENDING_RAW_CLOUD_DISPATCH",
     "workflow_timeout_minutes": 75,
     "lease_ttl_seconds": 5400,
-    "in_flight_30_minute_runs": "FINISH_THEN_RESUME_WITH_60_MINUTES",
-    "activation_run": 39690225723,
-    "first_60_minute_runs": {
-      "QA1": 39690259579,
-      "PRICE": 39690261646,
-      "FINANCIAL": 39690263836,
-      "CHIP": 39690265883
-    },
-    "tests_passed": 281
+    "inflight_policy": "FINISH_EXISTING_RAW_BATCH_THEN_RESUME_60M"
   },
   "previous_capacity_change": {
     "authorized_by": "USER_20261022_REMOVE_TWO_WORKER_CAP_AND_30M_DOWNSTREAM",
@@ -278,5 +275,30 @@
       "CHIP": 39688542058
     },
     "policy_sha256": "299dec982d6ae3919e06843387cc477f78e87495fef83ab680807b7d5a0931c8"
+  },
+  "previous_consumer_capacity_change": {
+    "authorized_by": "USER_20261022_FOUR_CONSUMERS_60M",
+    "global_two_worker_cap_removed": true,
+    "per_stage_limit": 1,
+    "downstream_worker_budgets_minutes": {
+      "QA1": 60,
+      "PRICE": 60,
+      "FINANCIAL": 60,
+      "CHIP": 60
+    },
+    "raw_budget_unchanged": true,
+    "checkpoint_reset": false,
+    "state": "ENABLED_VERIFIED",
+    "workflow_timeout_minutes": 75,
+    "lease_ttl_seconds": 5400,
+    "in_flight_30_minute_runs": "FINISH_THEN_RESUME_WITH_60_MINUTES",
+    "activation_run": 39690225723,
+    "first_60_minute_runs": {
+      "QA1": 39690259579,
+      "PRICE": 39690261646,
+      "FINANCIAL": 39690263836,
+      "CHIP": 39690265883
+    },
+    "tests_passed": 281
   }
 }
