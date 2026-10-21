@@ -24,3 +24,11 @@ Requested source conversation: FinMind 2026 下載驗收. Conversation retrieval
 6. A comment-only retired v093-queue-stress-trigger.yml still produces invalid-workflow failures; this is separate from the parser acceptance run and must not be counted as a passed stress test.
 
 Release remains BLOCKED. No cron activation and no production Drive writes were performed by this continuation.
+
+## Second continuation — cross-source metadata guard
+- Code commit: 18d08d059ae1332df479b1130bd0065e912a59c1.
+- Found and fixed: assess_evidence previously checked presence of comparison metadata without verifying equality against the primary company, period, metric and unit. It also accepted missing independent source and arbitrary digest strings.
+- Comparability now requires exact identity/semantic/unit agreement, an explicitly supplied primary metric, a different nonempty source, a 64-hex source digest and complete primary evidence. Metadata agreement alone still leaves verified=false.
+- Local full regression: 247/247 PASS; five-stage workflow contract remains BLOCKED with no cron.
+- Cloud run 39588075481 started for the exact code commit. Check final logs before claiming cloud PASS.
+- These checks exercise the evidence guard. They do not verify real financial values or establish company publication dates. Prior real source-coverage and five-stage implementation blockers remain open.
