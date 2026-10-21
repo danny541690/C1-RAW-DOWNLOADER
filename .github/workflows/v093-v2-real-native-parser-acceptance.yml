@@ -74,7 +74,7 @@ jobs:
           from scripts.v093_isolated_real_native_parser_gate import run
           month=os.environ['MONTH']
           # Expand real TWSE/TPEx ZIP member inspection, bounded to 30 MB.
-          r=run(Drive(service()),month,max_archive=50_000_000,max_member=30_000_000,max_members=12) if month=='2026-09' else run(Drive(service()),month)
+          r=run(Drive(service()),month,max_archive=50_000_000,max_member=30_000_000,max_members=60) if month=='2026-09' else run(Drive(service()),month)
           with open('reports/native-parser.json','w') as f:json.dump(r,f,ensure_ascii=False,indent=2)
           print('REAL_NATIVE_PARSER_ACCEPTANCE '+json.dumps(r,ensure_ascii=False,sort_keys=True),flush=True)
           assert r['certified'] is False and r['drive_writes']==0
