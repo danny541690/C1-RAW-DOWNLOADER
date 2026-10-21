@@ -1,1 +1,1 @@
-{"jobs":{"probe":{"certified":false,"last_fence":2,"lease":{"expires_at":1792584107,"fence":3,"owner":"39596112752-resumed"},"sha256":"f123f447de8c6ddafca0b617198f9d9d248a60c30cdd6743df223e5e345f4e89","status":"DATA_PRESENT_PENDING_QA"}}}
+{"jobs":{"probe":{"certified":false,"last_fence":3,"lease":null,"sha256":"f123f447de8c6ddafca0b617198f9d9d248a60c30cdd6743df223e5e345f4e89","status":"DATA_PRESENT_PENDING_QA"}}}
