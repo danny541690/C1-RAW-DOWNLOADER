@@ -15,6 +15,13 @@ def matches_native_field(native_field,expected):
  """Array-field suffixes preserve original column positions; never use substrings."""
  return native_field==expected or bool(re.fullmatch(re.escape(expected)+r"__col_\d{2,4}",str(native_field or "")))
 
+def is_mapped_native_field(source,metric,native_field):
+ expected=PRICE_FIELDS.get(metric,{}).get(source)
+ if expected and matches_native_field(native_field,expected):return True
+ # TPEx's daily price tables use 收盤; older tables use 收盤價.
+ # Neither is the ex-dividend event field 除權息前收盤價.
+ return source=="TPEx" and metric=="close" and matches_native_field(native_field,"收盤")
+
 def compare_rows(rows_by_source,metric="close",abs_tol=0.01):
  if metric not in PRICE_FIELDS:raise ValueError("METRIC_NOT_MAPPED")
  mapping=PRICE_FIELDS[metric]
@@ -24,7 +31,7 @@ def compare_rows(rows_by_source,metric="close",abs_tol=0.01):
   if not field:
    unmapped[source]+=len(rows);continue
   for r in rows:
-   if not matches_native_field(r.get("native_field"),field):
+   if not is_mapped_native_field(source,metric,r.get("native_field")):
     continue
    if r.get("source")!=source or not r.get("date") or not r.get("stock_id"):
     unmapped[source]+=1;continue
