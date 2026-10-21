@@ -1,0 +1,52 @@
+name: JARVIS v0.93 Five Stage Combined Launch Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-five-stage-combined-launch-gate.yml'
+permissions:
+  contents: read
+jobs:
+  integrated-five-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Test five stage dependencies and entire regression suite
+        run: |
+          python3 -m unittest discover -s tests -p 'test_*.py' -q
+          python3 - <<'PY'
+          from dataclasses import replace
+          import hashlib,json
+          from scripts.v093_five_stage_scheduler_gate import Work,STAGES,OWNERS,eligible,claim,can_publish,validate_partition
+          assert STAGES==('RAW','QA1','PRICE','FINANCIAL','CHIP')
+          assert len(set().union(*OWNERS.values()))==sum(len(x) for x in OWNERS.values())
+          months=[f'2026-{m:02d}' for m in range(12,0,-1)]
+          validate_partition(months)
+          count=0
+          for month in months:
+              rawsha=hashlib.sha256((month+':raw').encode()).hexdigest()
+              qasha=hashlib.sha256((month+':qa').encode()).hexdigest()
+              raw=Work(month,'RAW','ohlc')
+              assert eligible(raw)
+              assert not eligible(Work(month,'QA1','ohlc'))
+              assert not eligible(Work(month,'PRICE','ohlc',raw_committed=True,raw_sha256=rawsha))
+              assert not can_publish(replace(raw,done=True))
+              qa=Work(month,'QA1','ohlc',raw_committed=True,raw_sha256=rawsha)
+              assert eligible(qa)
+              for stage,datasets in OWNERS.items():
+                  for dataset in datasets:
+                      w=Work(month,stage,dataset,raw_committed=True,raw_sha256=rawsha,qa_complete=True,qa_sha256=qasha)
+                      assert eligible(w)
+                      lease=claim(w,None,worker='isolated-test',now=100,ttl=30)
+                      assert lease['owner']=='isolated-test'
+                      assert not can_publish(replace(w,done=True))
+                      assert can_publish(replace(w,done=True,certified=True))
+                      count+=1
+          print('FIVE_STAGE_COMBINED_GATE_PASS '+json.dumps({'stages':list(STAGES),'months':len(months),'downstream_work_items':count,'ownership_disjoint':True,'premature_publish_blocked':True,'production_writes':0}),flush=True)
+          print('RELEASE_GATE=BLOCKED_DURABLE_SHARED_LEASE_AND_DRIVE_COMMIT_NOT_INTEGRATED')
+          PY
