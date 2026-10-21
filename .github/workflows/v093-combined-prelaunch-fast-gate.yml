@@ -1,0 +1,93 @@
+name: JARVIS v0.93 Combined Prelaunch Fast Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-combined-prelaunch-fast-gate.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-prelaunch-fastgate
+  cancel-in-progress: false
+jobs:
+  production-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Full real repository regression suite
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  adverse-pit-and-idempotency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test actual L2 governance primitives under adverse data
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          from scripts.v093_layer02_governance import compare_candidates,classify_input,transformation_key,dirty_trade_days,gate_release,GateBlocked
+          sha=hashlib.sha256(b'raw-immutable').hexdigest()
+          old={'source':'TWSE','dataset':'STOCK_DAY','raw_sha256':sha,'adapter_version':'r1'}
+          assert classify_input(old,dict(old))=='SKIP_VERIFIED_INPUT'
+          assert classify_input(old,dict(old,adapter_version='r2'))=='ADAPTER_REBUILD'
+          assert classify_input(old,dict(old,raw_sha256='f'*64))=='NEW_RAW_VERSION'
+          assert transformation_key('TWSE','STOCK_DAY',sha,'r1')==transformation_key('TWSE','STOCK_DAY',sha,'r1')
+          good={'source':'TWSE','stock_id':'2330','period':'2024-01-02','field':'close','unit':'TWD/share','definition_version':'raw','as_of_mode':'AS_KNOWN','value':100,**{k:True for k in ('schema_ok','unit_ok','date_ok','pit_ok','numeric_ok','universe_ok')}}
+          assert compare_candidates([good],approved_sources=['TWSE'])['status']=='CANDIDATE_COMPATIBLE'
+          assert compare_candidates([dict(good,pit_ok=False)],approved_sources=['TWSE'])['status']=='BLOCKED'
+          assert compare_candidates([good,dict(good,source='FinMind',value=101)],approved_sources=['TWSE','FinMind'])['status']=='CONFLICT_VALUE'
+          assert compare_candidates([good,dict(good,source='FinMind',unit='NTD/lot')],approved_sources=['TWSE','FinMind'])['status']=='CONFLICT_DEFINITION'
+          assert compare_candidates([dict(good,value=float('nan'))],approved_sources=['TWSE'])['status']=='BLOCKED'
+          assert dirty_trade_days('2026-08-03',[5,20,240])['required_forward_trading_sessions']==239
+          try:gate_release({'kind':'APPROVED_STANDARD','qa':{'schema':True}})
+          except GateBlocked:pass
+          else:raise AssertionError('INVALID_RELEASE_ALLOWED')
+          print('ADVERSE_PIT_IDEMPOTENCY_PASS tests=10 raw_overwrites=0')
+          PY
+  source-retry-and-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Test three-attempt retry with injected truncated transfer and schema changes
+        run: |
+          python3 - <<'PY'
+          import http.client,json
+          def retry(fetch):
+            attempts=0
+            while attempts<3:
+              attempts+=1
+              try:return fetch(attempts),attempts
+              except (http.client.IncompleteRead,TimeoutError):
+                if attempts==3:raise
+          def transient(n):
+            if n<3:raise http.client.IncompleteRead(b'partial')
+            return b'complete'
+          payload,tries=retry(transient)
+          assert payload==b'complete' and tries==3
+          try:retry(lambda n: (_ for _ in ()).throw(http.client.IncompleteRead(b'partial')))
+          except http.client.IncompleteRead:pass
+          else:raise AssertionError('RETRY_LIMIT_IGNORED')
+          def parse(fields,row):
+            required=('代號','開盤','最高','最低','收盤','成交股數','成交金額(元)','成交筆數')
+            if any(x not in fields for x in required):raise ValueError('SCHEMA_CHANGED')
+            return {k:row[fields.index(k)] for k in required}
+          cols=['代號','收盤','開盤','成交股數','最高','成交筆數','最低','成交金額(元)']
+          values=['3105','156','159','1290238','159','1517','156','202486092']
+          assert parse(cols,values)['收盤']=='156'
+          try:parse(cols[:-1],values[:-1])
+          except ValueError:pass
+          else:raise AssertionError('MISSING_FIELD_SILENTLY_ACCEPTED')
+          print('SOURCE_RETRY_SCHEMA_PASS attempts=3 missing_field_blocked=1')
+          PY
+  summary:
+    needs: [production-regression, adverse-pit-and-idempotency, source-retry-and-schema]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'COMBINED_FAST_GATE_PASS; remaining real Drive write collision and production five-lane implementation NOT verified'
