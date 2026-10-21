@@ -1,0 +1,92 @@
+name: JARVIS v0.93 Consolidated Repair Triage and Real ZIP QA
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-consolidated-repair-triage-qa.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download successful historical source inventory without rescanning Drive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p parts
+          gh run download 39549532792 --repo "$GITHUB_REPOSITORY" -p 'file-metadata-*' -D parts
+          test "$(find parts -name shard.json | wc -l)" -eq 4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Classify 690 empty source-months and duplicate names by source and year
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import glob,json
+          from scripts.v093_isolated_repair_triage import classify
+          paths=glob.glob('parts/*/shard.json')
+          assert len(paths)==4,paths
+          report=classify([json.load(open(p)) for p in paths])
+          assert report['status_counts']['EMPTY_MONTH_FOLDER']==690
+          assert report['status_counts']['FILES_PRESENT_PENDING_QA']==598
+          assert report['files']==15783
+          assert report['queue_sizes']['DUPLICATE_NAME_QUARANTINE']==7
+          with open('reports/triage.json','w') as f:json.dump(report,f,ensure_ascii=False,indent=2)
+          print('HISTORICAL_322_MONTH_REPAIR_TRIAGE_PASS '+json.dumps({'months':report['months'],'source_month_pairs':report['source_month_pairs'],'queue_sizes':report['queue_sizes'],'by_source':report['by_source'],'by_year':report['by_year'],'certified_months':0,'production_writes':0},sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v093-322-month-repair-triage-by-source-year
+          path: reports/triage.json
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Real Drive SHA CRC manifest sample QA and historical empty month confirmation
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_historical_repair_inventory import inspect_month
+          assert all(os.environ.get(k) for k in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'))
+          d=Drive(service())
+          reports={}
+          for month in ('2026-09','2025-01','2000-01'):
+              r=inspect_month(d,month)
+              reports[month]=r
+              print('REAL_ZIP_SAMPLE_MONTH '+json.dumps({'month':month,'sources':{s:{'status':v['status'],'zip_count':v['zip_count'],'non_zip_count':v.get('non_zip_count',0),'sample_members':v['sample']['members'] if v['sample'] else None,'has_manifest':v['sample']['has_manifest'] if v['sample'] else None} for s,v in r['sources'].items()},'certified':False},sort_keys=True),flush=True)
+          assert all(not r['certified'] for r in reports.values())
+          with open('reports/zip-samples.json','w') as f:json.dump(reports,f,ensure_ascii=False,indent=2)
+          print('REAL_DRIVE_SAMPLED_ZIP_SHA_CRC_GATE_PASS '+json.dumps({'sample_months':3,'sha_crc_pass':sum(v['status']=='ZIP_SAMPLE_HASH_CRC_PASS_PENDING_DEEP_QA' for r in reports.values() for v in r['sources'].values()),'certified_months':0,'drive_writes':0}),flush=True)
+          print('PRODUCTION_GATE=BLOCKED_ALL_FILE_SHA_NUMERIC_PIT_AND_TRANSFORM_QA')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v093-real-zip-sample-checks
+          path: reports/zip-samples.json
