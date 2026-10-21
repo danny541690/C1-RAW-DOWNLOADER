@@ -3,7 +3,7 @@
 Never infer that native fields with different names or units mean the same
 metric. Report comparisons only for explicitly mapped semantics and proven units.
 """
-import collections,math
+import collections,math,re
 # Explicit names only. No speculative financial field mappings.
 PRICE_FIELDS={
  "open":{"FinMind":"open","TWSE":"開盤價","TPEx":"開盤價"},
@@ -11,6 +11,10 @@ PRICE_FIELDS={
  "low":{"FinMind":"min","TWSE":"最低價","TPEx":"最低價"},
  "close":{"FinMind":"close","TWSE":"收盤價","TPEx":"收盤價"},
 }
+def matches_native_field(native_field,expected):
+ """Array-field suffixes preserve original column positions; never use substrings."""
+ return native_field==expected or bool(re.fullmatch(re.escape(expected)+r"__col_\\d{2,4}",str(native_field or "")))
+
 def compare_rows(rows_by_source,metric="close",abs_tol=0.01):
  if metric not in PRICE_FIELDS:raise ValueError("METRIC_NOT_MAPPED")
  mapping=PRICE_FIELDS[metric]
@@ -20,7 +24,7 @@ def compare_rows(rows_by_source,metric="close",abs_tol=0.01):
   if not field:
    unmapped[source]+=len(rows);continue
   for r in rows:
-   if r.get("native_field")!=field:
+   if not matches_native_field(r.get("native_field"),field):
     continue
    if r.get("source")!=source or not r.get("date") or not r.get("stock_id"):
     unmapped[source]+=1;continue
