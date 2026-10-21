@@ -1,0 +1,43 @@
+name: JARVIS v0.93 Drive Concurrency Release Audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-drive-concurrency-release-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Run all regression tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Read-only audit of actual Drive write implementation and three production cron jobs
+        run: |
+          python3 - <<'PY'
+          import ast,json,pathlib,re
+          path=pathlib.Path('scripts/annual_actual_firstpass.py')
+          src=path.read_text()
+          module=ast.parse(src)
+          klass=next(x for x in module.body if isinstance(x,ast.ClassDef) and x.name=='Drive')
+          put=next(x for x in klass.body if isinstance(x,ast.FunctionDef) and x.name=='put')
+          code=ast.get_source_segment(src,put)
+          flags={
+            'find_then_create': 'old=self.find(parent,name)' in code and 'files().create(' in code,
+            'update_without_cas': 'files().update(' in code and 'If-Match' not in code and 'ifGenerationMatch' not in code,
+            'sha_readback': 'readback=self.read(parent,name)' in code,
+            'overwrite_option': 'overwrite=False' in code,
+            'production_distributed_lock_present': False
+          }
+          assert flags['find_then_create'] and flags['update_without_cas'] and flags['sha_readback']
+          print('DRIVE_WRITE_AUDIT '+json.dumps(flags,sort_keys=True),flush=True)
+          print('RELEASE_GATE BLOCKED_NEEDS_DURABLE_ATOMIC_LEASE_AND_COMMIT',flush=True)
+          PY
