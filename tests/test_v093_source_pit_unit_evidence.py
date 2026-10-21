@@ -1,6 +1,16 @@
 import unittest
-from scripts.v093_source_pit_unit_evidence import assess_evidence,mops_html_evidence
+from scripts.v093_source_pit_unit_evidence import assess_evidence,mops_html_evidence,mops_revenue_header_evidence
 class SourcePITUnitEvidenceTests(unittest.TestCase):
+ def test_mops_roc_period_unit_and_export_not_pit(self):
+  html="<table><tr><td>上市公司115年9月份(累計與當月)營業收入統計表</td></tr><tr><td>出表日期：115/10/16</td></tr><tr><td>單位：千元</td></tr></table>"
+  x=mops_revenue_header_evidence(html)
+  self.assertEqual(x["report_period"],"2026-09")
+  self.assertEqual(x["export_date"],"2026-10-16")
+  self.assertEqual(x["unit_code"],"NTD_THOUSANDS")
+  self.assertTrue(x["unit_evidence_complete"])
+  self.assertIsNone(x["publication_date"])
+  self.assertFalse(x["pit_verified"])
+  self.assertFalse(x["certified"])
  def test_unproven_mops_matrix_is_quarantined(self):
   x=mops_html_evidence('<table><tr><td>資產總額</td><td>1,234</td></tr></table><p>金額單位：新台幣仟元</p>')
   self.assertEqual(x["kind"],"FINANCIAL_STATEMENT_MATRIX")
