@@ -118,7 +118,8 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                         p=Probe();p.feed(z.read(item).decode("utf-8","replace"))
                         entry["html_structure"]={"tables":p.tables,"rows":p.rows,"cells":p.cells,"text_preview":p.text}
                     errors.append(entry)
-        report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"stats":dict(stats),"errors":errors[:10],"zero_cell_diagnostics":zero_cell_diagnostics,"oversize_members":oversize_members}
+        report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"archive_candidates":archive_candidates,"stats":dict(stats),"errors":errors[:10],"zero_cell_diagnostics":zero_cell_diagnostics,"oversize_members":oversize_members}
     report["cross_source_close"]=compare_rows(close_rows)
-    report["close_field_diagnostics"]={src:{"native_field_counts":dict(d["native_field_counts"].most_common(12)),"matched_field_rows":d["matched_field_rows"],"distinct_stocks":len(d["stocks"]),"date_range":[min(d["dates"]),max(d["dates"])] if d["dates"] else [],"date_samples":dict(d["dates"].most_common(5))} for src,d in close_diagnostics.items()}
+    report["close_field_diagnostics"]={src:{"native_field_counts":dict(d["native_field_counts"].most_common(12)),"matched_field_rows":d["matched_field_rows"],"distinct_stocks":len(d["stocks"]),"stock_samples":sorted(d["stocks"])[:20],"date_range":[min(d["dates"]),max(d["dates"])] if d["dates"] else [],"date_samples":dict(d["dates"].most_common(5))} for src,d in close_diagnostics.items()}
+    report["close_overlap_diagnostics"]={"FinMind_TPEx_stock_overlap":sorted(close_diagnostics["FinMind"]["stocks"] & close_diagnostics["TPEx"]["stocks"])[:20],"FinMind_TWSE_stock_overlap":sorted(close_diagnostics["FinMind"]["stocks"] & close_diagnostics["TWSE"]["stocks"])[:20]}
     return report
