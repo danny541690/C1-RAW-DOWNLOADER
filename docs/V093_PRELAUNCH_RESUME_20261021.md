@@ -39,5 +39,5 @@ Release remains BLOCKED. No cron activation and no production Drive writes were 
 - Canonical ISO dates, string security identifiers and finite nonnegative nonboolean tolerances are required. Identical duplicates do not inflate pair counts.
 - New adverse tests cover all permutations of a conflicting triplet, unaffected independent sources, exact duplicates, invalid keys and unsafe tolerances.
 - Local full regression: 252/252 PASS. Five-stage workflow contract check PASS; release BLOCKED, no cron or production Drive writes.
-- Cloud run 39590624849 started for this exact commit; inspect final jobs before reporting cloud acceptance.
+- Cloud run 39590624849 completed SUCCESS: 7/7 jobs, cloud regression 252/252 PASS, four real sample months completed. Combined bounded sample audit remains 142 members, 1,364,695 unverified cells; seven close-price pairs agree with zero duplicate conflicts. Five MOPS parse/quarantine errors and previous coverage/PIT/implementation blockers remain; production writes=0, release=BLOCKED.
 - This fixes diagnostic comparison safety; it does not approve MOPS revenue, establish PIT availability or complete real five-stage production paths.
