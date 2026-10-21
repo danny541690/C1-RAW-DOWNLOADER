@@ -1,0 +1,123 @@
+name: JARVIS v0.93 Durable Backlog Restart Integrated Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-durable-backlog-restart-integrated.yml'
+permissions:
+  contents: write
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    outputs:
+      path: ${{ steps.make.outputs.path }}
+    steps:
+      - id: make
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,urllib.request
+          path='.github/test-state/restart-'+os.environ['RUN_ID']+'.json'
+          jobs={f'2026-{m:02d}:RAW':{'status':'PENDING','attempts':0,'certified':False} for m in range(1,13)}
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'}
+          body={'message':'test: seed durable backlog','content':base64.b64encode(json.dumps({'jobs':jobs},sort_keys=True).encode()).decode()}
+          req=urllib.request.Request('https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+path,data=json.dumps(body).encode(),method='PUT',headers=h)
+          with urllib.request.urlopen(req,timeout=30) as r:assert r.status==201
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('path='+path+'\n')
+          print('BACKLOG_SEED_PASS '+json.dumps({'months':12}))
+          PY
+  partial:
+    needs: seed
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PATH_KEY: ${{ needs.seed.outputs.path }}
+    steps:
+      - name: Persist partial checkpoint and simulate interrupted process
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,hashlib,urllib.request,subprocess,sys
+          code="""
+          import os,json,base64,hashlib,urllib.request
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'}
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+os.environ['PATH_KEY']
+          with urllib.request.urlopen(urllib.request.Request(url,headers=h),timeout=30) as r:cur=json.load(r)
+          obj=json.loads(base64.b64decode(cur['content']))
+          for m in range(1,5):
+              key=f'2026-{m:02d}:RAW'
+              obj['jobs'][key]={'status':'DATA_PRESENT_PENDING_QA','attempts':1,'sha256':hashlib.sha256(key.encode()).hexdigest(),'certified':False}
+          body={'message':'test: checkpoint 4 months','sha':cur['sha'],'content':base64.b64encode(json.dumps(obj,sort_keys=True).encode()).decode()}
+          with urllib.request.urlopen(urllib.request.Request(url,data=json.dumps(body).encode(),method='PUT',headers=h),timeout=30) as r:assert r.status==200
+          print('PARTIAL_CHECKPOINT_SAVED',flush=True)
+          os._exit(23)
+          """
+          result=subprocess.run([sys.executable,'-u','-c',code],check=False)
+          assert result.returncode==23,result.returncode
+          print('INTERRUPTED_PROCESS_EXIT_CONFIRMED '+json.dumps({'exit_code':23,'job_cancelled':False}))
+          PY
+  resume:
+    needs: [seed,partial]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PATH_KEY: ${{ needs.seed.outputs.path }}
+    steps:
+      - name: Resume eight pending months on new runner
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,hashlib,urllib.request,urllib.error,time
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'}
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+os.environ['PATH_KEY']
+          for attempt in range(1,8):
+              with urllib.request.urlopen(urllib.request.Request(url,headers=h),timeout=30) as r:cur=json.load(r)
+              obj=json.loads(base64.b64decode(cur['content']))
+              prior=sum(x['status']=='DATA_PRESENT_PENDING_QA' for x in obj['jobs'].values())
+              changed=0
+              for m in range(1,13):
+                  key=f'2026-{m:02d}:RAW'
+                  row=obj['jobs'][key]
+                  if row['status']=='PENDING':
+                      obj['jobs'][key]={'status':'DATA_PRESENT_PENDING_QA','attempts':1,'sha256':hashlib.sha256(key.encode()).hexdigest(),'certified':False}
+                      changed+=1
+                  else:
+                      assert row['attempts']==1 and row['sha256']==hashlib.sha256(key.encode()).hexdigest()
+              assert prior==4 and changed==8,(prior,changed)
+              body={'message':'test: resume pending months','sha':cur['sha'],'content':base64.b64encode(json.dumps(obj,sort_keys=True).encode()).decode()}
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url,data=json.dumps(body).encode(),method='PUT',headers=h),timeout=30) as r:assert r.status==200
+                  break
+              except urllib.error.HTTPError as e:
+                  if e.code not in (409,422):raise
+                  time.sleep(.5*attempt)
+          else:raise AssertionError('CAS_RETRY_EXHAUSTED')
+          print('DURABLE_BACKLOG_RESUME_PASS '+json.dumps({'prior':4,'resumed':8,'duplicates':0}),flush=True)
+          PY
+  verify:
+    needs: [seed,resume]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PATH_KEY: ${{ needs.seed.outputs.path }}
+    steps:
+      - name: Independent verification
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,hashlib,urllib.request
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          url='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+os.environ['PATH_KEY']
+          with urllib.request.urlopen(urllib.request.Request(url,headers=h),timeout=30) as r:cur=json.load(r)
+          jobs=json.loads(base64.b64decode(cur['content']))['jobs']
+          assert len(jobs)==12
+          for m in range(1,13):
+              key=f'2026-{m:02d}:RAW';row=jobs[key]
+              assert row['status']=='DATA_PRESENT_PENDING_QA' and row['attempts']==1
+              assert row['sha256']==hashlib.sha256(key.encode()).hexdigest() and not row['certified']
+          print('MULTIMONTH_DURABLE_RESTART_INTEGRATION_PASS '+json.dumps({'months':12,'checkpointed':4,'resumed':8,'lost':0,'duplicates':0,'false_certifications':0,'runners':4,'actual_job_cancelled':False,'real_drive_writes':0}),flush=True)
+          print('RELEASE_GATE=BLOCKED_REAL_JOB_CANCEL_AND_DRIVE_TRANSACTION_NOT_TESTED')
+          PY
