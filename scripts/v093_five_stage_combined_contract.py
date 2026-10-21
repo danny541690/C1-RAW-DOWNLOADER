@@ -27,9 +27,10 @@ def run():
   is_stub="FIVE_STAGE_PRELAUNCH_CHECK_PASS" in script_text and "writes':0" in script_text
   stage_status="BLOCKED_STUB_ONLY" if is_stub else "REQUIRES_REAL_WRITE_PATH_AUDIT"
   stages[stage]={"path":str(path),"dispatch_only":set(triggers)=={"workflow_dispatch"},"cron_active":has_cron,"stage_status":stage_status,"concurrency_group":wf.get("concurrency",{}).get("group")}
-  assert not has_cron,stage
-  assert stages[stage]["dispatch_only"],stage
-  assert is_stub,stage
+  assert has_cron,stage
+  assert "workflow_dispatch" in triggers,stage
+  assert not is_stub and "scripts.v093_live_five_stage --stage "+stage in script_text,stage
+  stages[stage]["stage_status"]="REAL_WORKER_WITH_DURABLE_QUEUE"
  assert not eligible(Work("2026-10","PRICE","ohlc"))
  assert not eligible(Work("2026-10","FINANCIAL","revenue"))
  assert not eligible(Work("2026-10","CHIP","institutional"))
@@ -57,7 +58,7 @@ def run():
   legacy_writers[filename]={"push_trigger":push_active,"jobs_disabled":jobs_disabled,"concurrency_group":doc.get("concurrency",{}).get("group")}
   assert not push_active and jobs_disabled,"LEGACY_WRITER_NOT_RETIRED:"+filename
  shared_groups={v["concurrency_group"] for v in stages.values()}
- assert len(shared_groups)==1
- return {"period":"2000-01..2026-10","months":len(months),"stages":stages,"source_of_truth":"GITHUB_WORKFLOW_FILES","legacy_writers":legacy_writers,"shared_stage_concurrency_group":next(iter(shared_groups)),"raw_resume_requires_same_commit_canary":True,"production_writes":0,"production_release":"BLOCKED","reason":"FIVE_STAGES_STILL_PRELAUNCH_STUBS"}
+ assert shared_groups=={"jarvis-v093-live-raw","jarvis-v093-live-consumer"}
+ return {"period":"2000-01..2026-10","months":len(months),"stages":stages,"source_of_truth":"GITHUB_WORKFLOW_FILES","legacy_writers":legacy_writers,"shared_stage_concurrency_group":sorted(shared_groups),"raw_resume_requires_same_commit_canary":True,"production_writes":0,"production_release":"REAL_WORKERS_CONFIGURED_REQUIRES_CLOUD_EVIDENCE","reason":"STATIC_CONFIGURATION_CHECK_ONLY"}
 if __name__=="__main__":
  print("FIVE_STAGE_COMBINED_CONTRACT "+json.dumps(run(),ensure_ascii=False,sort_keys=True),flush=True)

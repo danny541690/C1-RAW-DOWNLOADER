@@ -17,20 +17,18 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "BLOCKED_PENDING_REAL_STAGE_IMPLEMENTATION",
+  "state": "REAL_WORKERS_IMPLEMENTED_AWAITING_DEPLOYMENT_EVIDENCE",
   "activation_authorized": true,
   "activation_completed": false,
   "downloads_started_by_this_request": false,
   "blocking_requirements": [
-    "REAL_FIVE_STAGE_PROCESSORS_NOT_CONNECTED",
-    "PRODUCTION_PATH_DURABLE_HANDOFF_AND_RECOVERY_NOT_VALIDATED",
-    "PRODUCTION_CUTOVER_ROLLBACK_AND_RATE_BUDGET_NOT_VALIDATED"
+    "CURRENT_COMMIT_TEST_AND_ACTUAL_CLOUD_RUN"
   ],
   "preserve_existing_raw_and_receipts": true,
   "reuse_only_hash_and_identity_verified_v093_units": true,
   "raw_publication_requires_separate_numeric_and_pit_acceptance": true,
   "requires_additional_user_confirmation": false,
-  "next_required_action": "IMPLEMENT_AND_VALIDATE_REAL_FIVE_STAGE_WORKERS_THEN_ACTIVATE_WITH_EXISTING_AUTHORIZATION",
+  "next_required_action": "AUTOMATICALLY_TEST_ENABLE_AND_DISPATCH_FIVE_WITH_EXISTING_AUTHORIZATION",
   "legacy_retirement": {
     "public_repository_stop_run": 39608022842,
     "private_repository_stop_run": 39608025445,

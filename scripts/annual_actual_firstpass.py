@@ -71,6 +71,7 @@ class Drive:
                 if found:
                     saved=self.read(parent,name)
                     if saved is not None and hashlib.sha256(saved).digest()==hashlib.sha256(raw).digest():break
+                    if not overwrite:raise ValueError("immutable remote create conflict")
                     if not old:old=found
                 if n==3:raise
                 time.sleep(min(2**n,6)+random.random())

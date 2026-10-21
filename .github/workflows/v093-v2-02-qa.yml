@@ -1,30 +1,34 @@
-name: JARVIS v0.93 V2 02 QA1 (Prelaunch)
+name: JARVIS v0.93 LIVE QA1
+on:
+  schedule:
+    - cron: '3,33 * * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: Bounded worker time in minutes
+        default: '4'
+        required: false
 permissions:
-  contents: read
+  contents: write
 concurrency:
-  group: jarvis-v093-v2-cutover-global
+  group: jarvis-v093-live-consumer
   cancel-in-progress: false
 jobs:
-  prelaunch:
+  worker:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 35
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    - run: pip install -r requirements-qa.lock
-    - name: Validate QA1 scope without touching production
-      run: |
-        python3 - <<'PYCODE'
-        import json
-        from scripts.v093_five_stage_policy import prelaunch
-        from scripts.v093_five_stage_scheduler_gate import Work,eligible
-        stage='QA1'
-        report=prelaunch(stage)
-        assert not eligible(Work('2026-10',stage,'ohlc')) if stage!='RAW' else True
-        print('FIVE_STAGE_PRELAUNCH_CHECK_PASS '+json.dumps({'writes':0,**report}),flush=True)
-        print('PRODUCTION_GATE=BLOCKED_REAL_WORKER_INTEGRATION_AND_OPERATIONAL_ACCEPTANCE_PENDING')
-        PYCODE
-'on':
-  workflow_dispatch: null
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements-qa.lock
+      - name: Run real QA1 worker with durable per-unit state
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          WORKER_MINUTES: ${{ inputs.minutes || '4' }}
+        run: python3 -m scripts.v093_live_five_stage --stage QA1 --minutes "$WORKER_MINUTES"
