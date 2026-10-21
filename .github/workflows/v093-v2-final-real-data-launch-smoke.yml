@@ -1,0 +1,105 @@
+name: JARVIS v0.93 Final Real-Data Five-Lane Launch Smoke
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-final-real-data-launch-smoke.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  all-legacy-trigger-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyyaml
+      - name: Inspect every GitHub workflow schedule and every legacy writer
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,yaml
+          from pathlib import Path
+          root=Path('.github/workflows')
+          allrows=[]
+          for path in sorted(root.glob('*.yml')):
+              data=yaml.safe_load(path.read_text()) or {}
+              triggers=data.get('on',data.get(True,{}))
+              if isinstance(triggers,str):triggers={triggers:None}
+              if isinstance(triggers,list):triggers={k:None for k in triggers}
+              if not isinstance(triggers,dict):triggers={}
+              allrows.append({'workflow':path.name,'scheduled':bool(triggers.get('schedule')),'push': 'push' in triggers,'dispatch':'workflow_dispatch' in triggers})
+          five=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml','v093-v2-04-financial.yml','v093-v2-05-chip.yml']
+          old=['v093-raw-2015-to-2000.yml','v093-l1-secondpass-qa-repair.yml','v093-l1-thirdpass-gated-repair.yml']
+          by={x['workflow']:x for x in allrows}
+          assert all(n in by for n in five+old)
+          assert all(not by[n]['scheduled'] for n in five+old)
+          scheduled=[x for x in allrows if x['scheduled']]
+          with open('reports/all-workflow-trigger-audit.json','w') as f:json.dump({'workflows':allrows,'scheduled':scheduled},f,indent=2)
+          print('ALL_WORKFLOW_TRIGGER_AUDIT_PASS '+json.dumps({'workflow_count':len(allrows),'scheduled_workflows':scheduled,'old_three_crons_disabled':True,'new_five_crons_enabled':False},sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: complete-workflow-trigger-audit
+          path: reports/all-workflow-trigger-audit.json
+  real-drive-five-lane:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Real RAW -> ZIP QA -> three adapter decisions on existing Google Drive data
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_historical_repair_inventory import inspect_month
+          from scripts.v093_five_stage_durable_gate import decide_adapter
+          d=Drive(service())
+          reports={m:inspect_month(d,m) for m in ('2026-09','2025-01','2000-01')}
+          samples=[s['sample'] for r in reports.values() for s in r['sources'].values() if s.get('sample')]
+          assert len(samples)==8,len(samples)
+          assert all(s['sha256'] and len(s['sha256'])==64 and not s['certified'] for s in samples)
+          downstream={stage:decide_adapter(stage,{'sha256':samples[0]['sha256']},{'raw_sha256':samples[0]['sha256']},None) for stage in ('PRICE','FINANCIAL','CHIP')}
+          assert all(v.startswith('BLOCKED_') for v in downstream.values())
+          result={'real_raw_zip_qa_samples':len(samples),'raw_files_verified_sample_only':True,'downstream':downstream,'historical_2000_01':{k:v['status'] for k,v in reports['2000-01']['sources'].items()},'certified_months':0,'drive_writes':0}
+          with open('reports/real-five-lane.json','w') as f:json.dump(result,f,indent=2)
+          print('REAL_FIVE_LANE_SMOKE_PASS '+json.dumps(result,sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: real-drive-five-lane-smoke
+          path: reports/real-five-lane.json
+  combined-decision:
+    needs: [regression,all-legacy-trigger-audit,real-drive-five-lane]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*-workflow-trigger-audit'
+          path: reports
+      - name: Report explicit no-false-production activation
+        run: |
+          echo 'FINAL_COMBINED_SMOKE_PASS=TRUE'
+          echo 'FIVE_REAL_PRODUCTION_PIPELINES_READY=FALSE'
+          echo 'ACTION_REQUIRED=CONNECT_REAL_STAGE_IMPLEMENTATIONS_BEFORE_CRON'
