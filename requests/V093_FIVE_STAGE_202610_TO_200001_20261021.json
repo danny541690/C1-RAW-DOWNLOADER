@@ -17,7 +17,7 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "LIVE_CAPACITY_CUTOVER_PENDING",
+  "state": "LIVE_RUNNING",
   "activation_authorized": true,
   "activation_completed": true,
   "downloads_started_by_this_request": true,
@@ -71,7 +71,7 @@
     ]
   },
   "current_schedules": {
-    "verified_at": null,
+    "verified_at": "2026-10-21T22:43:30Z",
     "timezone": "Asia/Taipei",
     "entries": [
       {
@@ -119,7 +119,7 @@
     "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
     "max_heavy_workers": null,
     "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
-    "state": "PENDING_PARALLEL_CUTOVER",
+    "state": "INDEPENDENT_STAGE_POOLS_ENABLED",
     "downstream_budget_minutes_per_hour": 120
   },
   "previous_generation_evidence": {
@@ -240,6 +240,15 @@
     },
     "raw_budget_unchanged": true,
     "checkpoint_reset": false,
-    "state": "PENDING_CLOUD_CUTOVER"
+    "state": "ENABLED_VERIFIED",
+    "cutover_run": 39688427387,
+    "old_shared_consumer_retired": true,
+    "first_independent_runs": {
+      "QA1": 39688535702,
+      "PRICE": 39688537807,
+      "FINANCIAL": 39688539735,
+      "CHIP": 39688542058
+    },
+    "policy_sha256": "299dec982d6ae3919e06843387cc477f78e87495fef83ab680807b7d5a0931c8"
   }
 }
