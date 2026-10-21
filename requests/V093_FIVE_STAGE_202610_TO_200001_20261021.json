@@ -17,32 +17,47 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "AUTHORIZED_RESUME_PENDING_ACTIONS_START",
+  "state": "LIVE_ENABLED_FIRST_BATCH_STARTING",
   "activation_authorized": true,
-  "activation_completed": false,
+  "activation_completed": true,
   "downloads_started_by_this_request": true,
-  "blocking_requirements": [
-    "CLOUD_REPLAN_EXECUTION_VERIFICATION"
-  ],
+  "blocking_requirements": [],
   "preserve_existing_raw_and_receipts": true,
   "reuse_only_hash_and_identity_verified_v093_units": true,
   "raw_publication_requires_separate_numeric_and_pit_acceptance": true,
   "requires_additional_user_confirmation": false,
-  "next_required_action": "ENABLE_FIVE_AND_START_NOW",
+  "next_required_action": "CONTINUE_FROM_DURABLE_STAGE_CHECKPOINTS",
   "legacy_retirement": {
     "public_repository_stop_run": 39608022842,
     "private_repository_stop_run": 39608025445,
     "chatgpt_jarvis_automations_paused": 6
   },
   "operational_evidence": {
-    "replan_state": "STOPPED_PENDING_CLOUD_VALIDATION",
+    "replan_state": "FIVE_ENABLED_FIRST_RAW_AND_CONSUMER_CYCLE_STARTING",
     "public_stop_run": 39622875661,
     "private_stop_run": 39622879311,
     "legacy_primary_resume_month": "2014-04",
-    "audit_start_month": "2026-10"
+    "audit_start_month": "2026-10",
+    "activation_run": 39628114211,
+    "activation_job": 119318710361,
+    "policy_sha256": "c8616b51bee97ed165a38a9f4303b3e867c4df4d84d50f7f6a2d1076738dd179",
+    "old_unstarted_dispatches_fenced": [
+      39611764652
+    ],
+    "raw_primary_resume": "2014-04",
+    "audit_primary_start": "2026-10",
+    "downstream_budgets_minutes": {
+      "QA1": 30,
+      "PRICE": 10,
+      "FINANCIAL": 10,
+      "CHIP": 10
+    },
+    "full_history_complete": false,
+    "numeric_verified": false,
+    "pit_verified": false
   },
   "current_schedules": {
-    "verified_at": null,
+    "verified_at": "2026-10-21T15:42:53Z",
     "timezone": "Asia/Taipei",
     "entries": [
       {
@@ -90,7 +105,7 @@
     "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
     "max_heavy_workers": 2,
     "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
-    "state": "AUTHORIZED_PENDING_ACTIVATION",
+    "state": "ENABLED_VERIFIED",
     "downstream_budget_minutes_per_hour": 60
   },
   "previous_generation_evidence": {
