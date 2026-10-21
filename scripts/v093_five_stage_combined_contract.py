@@ -6,7 +6,7 @@ import datetime,json,pathlib,yaml
 from scripts.v093_five_stage_scheduler_gate import STAGES,OWNERS,Work,eligible,validate_partition
 from scripts.v093_five_stage_durable_gate import decide_adapter
 
-WORKFLOWS={s:pathlib.Path(f".github/workflows/v093-v2-{i:02d}-{s.lower()}.yml") for i,s in enumerate(STAGES,1)}
+WORKFLOWS={s:pathlib.Path(f".github/workflows/v093-v2-{i:02d}-{suffix}.yml") for i,(s,suffix) in enumerate(zip(STAGES,("raw","qa","price","financial","chip")),1)}
 def run():
  months=[f"{y}-{m:02d}" for y in range(2026,1999,-1) for m in range(12,0,-1) if (y,m)<=(2026,10)]
  validate_partition(months)
