@@ -1,3 +1,15 @@
+# 最新五線執行結果（2026-10-21 22:21，台北時間）
+
+五條正式排程已啟用，五個真實處理程式均已執行成功。RAW 首批處理 22 個單元，14 個新 RAW 已保存並回讀核對，8 個未通過基本檢查的回應隔離留存；QA1 首批通過 35 個單元。修正版 R2_ARCHIVE_PROVENANCE 價格線保存 6 份暫存、隔離 1 份；籌碼線保存 9 份修正版暫存。財報線執行成功，目前等待可用的上游財報／營收單元，處理數為 0。
+
+首次五線執行：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39613119269
+修正版轉換驗證：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39615276955
+接續 RAW 批次：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39613732516
+
+範圍固定 2026-10 往回至 2000-01，共 322 個月。五排程可持續執行，不需再次詢問使用者是否啟動。舊排程仍停止。已保存資料不代表全歷史覆蓋、數值、單位或 PIT 全面核准；分析發布驗收仍與 RAW 啟動分開。依各 stage 的 STATUS.json、MONTH_STATE.json、持久斷點與採納政策接續；R2 暫存收據以 processor_version 辨識，初版已重算單元標示被新版取代。
+
+---
+
 # 最新執行狀態：五排程已啟用，RAW 已實際保存新資料
 
 2026-10-21 啟動紀錄：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39613119269 。五個正式 workflow 均已啟用，涵蓋 2026-10 往回至 2000-01 的 322 個月。已觀察到至少三個 2026-10-21 新 RAW 單元保存並回讀核對；下游首次結果仍待確認。這不是全部歷史完成、數值或 PIT 核准。舊排程維持停用。
