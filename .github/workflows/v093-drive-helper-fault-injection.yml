@@ -1,0 +1,97 @@
+name: JARVIS v0.93 Actual Drive Helper Fault Injection Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-drive-helper-fault-injection.yml'
+permissions:
+  contents: read
+jobs:
+  actual-helper-faults:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Inject accepted-write timeout, idempotency, mismatch and overwrite race
+        run: |
+          python3 - <<'PY'
+          import threading,json,hashlib
+          from scripts.annual_actual_firstpass import Drive
+          class Request:
+              def __init__(self,fn):self.fn=fn
+              def execute(self,**kwargs):return self.fn()
+          class Backend:
+              def __init__(self):
+                  self.lock=threading.Lock()
+                  self.items={}
+                  self.creates=0;self.updates=0
+                  self.timeout_once=False
+                  self.update_barrier=None
+          class Files:
+              def __init__(self,b):self.b=b
+              def create(self,body,media_body,fields):
+                  def go():
+                      raw=media_body._fd.getvalue()
+                      with self.b.lock:
+                          self.b.creates+=1
+                          self.b.items[body['name']]=raw
+                          timeout=self.b.timeout_once
+                          self.b.timeout_once=False
+                      if timeout:raise TimeoutError('accepted by remote, response lost')
+                      return {'id':body['name']}
+                  return Request(go)
+              def update(self,fileId,media_body):
+                  def go():
+                      raw=media_body._fd.getvalue()
+                      if self.b.update_barrier is not None:self.b.update_barrier.wait(timeout=5)
+                      with self.b.lock:
+                          self.b.updates+=1
+                          self.b.items[fileId]=raw
+                      return {'id':fileId}
+                  return Request(go)
+          class API:
+              def __init__(self,b):self.b=b
+              def files(self):return Files(self.b)
+          class FakeDrive(Drive):
+              def __init__(self,b):self.b=b;self.api=API(b)
+              def find(self,parent,name):
+                  with self.b.lock:
+                      if name in self.b.items:return {'id':name,'name':name}
+                  return None
+              def read(self,parent,name):
+                  with self.b.lock:return self.b.items.get(name)
+          b=Backend();d=FakeDrive(b)
+          # A remote create succeeds but the HTTP response disappears.
+          b.timeout_once=True
+          d.put('TEST_ONLY','immutable-aaa',b'payload','application/octet-stream')
+          assert b.creates==1 and b.items['immutable-aaa']==b'payload'
+          # Idempotent retry never writes a second copy.
+          d.put('TEST_ONLY','immutable-aaa',b'payload')
+          assert b.creates==1
+          # Different bytes under same immutable name are rejected, not overwritten.
+          try:d.put('TEST_ONLY','immutable-aaa',b'corrupted')
+          except ValueError as e:assert 'SHA mismatch' in str(e)
+          else:raise AssertionError('MISMATCH_WAS_ACCEPTED')
+          assert b.items['immutable-aaa']==b'payload'
+          print('DRIVE_HELPER_AMBIGUOUS_TIMEOUT_AND_IMMUTABLE_PASS '+json.dumps({'accepted_timeout_recovered':True,'create_count':1,'idempotent_retry':True,'mismatch_rejected':True,'real_drive_writes':0}),flush=True)
+          # Two overwrite=True callers have no CAS, and both may report success.
+          b.items['mutable.json']=b'old'
+          b.update_barrier=threading.Barrier(2)
+          errors=[]
+          def overwrite(raw):
+              try:FakeDrive(b).put('TEST_ONLY','mutable.json',raw,overwrite=True)
+              except Exception as e:errors.append(type(e).__name__+':'+str(e))
+          threads=[threading.Thread(target=overwrite,args=(raw,)) for raw in (b'new-A',b'new-B')]
+          for t in threads:t.start()
+          for t in threads:t.join(timeout=8)
+          assert all(not t.is_alive() for t in threads)
+          assert b.updates==2
+          assert b.items['mutable.json'] in (b'new-A',b'new-B')
+          # One readback may succeed or fail depending on scheduling; both writes were accepted.
+          print('DRIVE_MUTABLE_OVERWRITE_RACE_REPRODUCED '+json.dumps({'writers':2,'updates_accepted':b.updates,'final_value':b.items['mutable.json'].decode(),'errors':errors,'production_safe':False,'real_drive_writes':0}),flush=True)
+          print('RELEASE_GATE=BLOCKED_MUTABLE_DRIVE_UPDATE_LACKS_ATOMIC_CAS')
+          PY
