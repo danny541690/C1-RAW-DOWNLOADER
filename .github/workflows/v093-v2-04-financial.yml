@@ -6,7 +6,7 @@ on:
     inputs:
       minutes:
         type: string
-        default: '30'
+        default: '60'
         required: false
     secrets:
       GOOGLE_CLIENT_ID:
@@ -19,7 +19,7 @@ on:
     inputs:
       minutes:
         description: Bounded worker time in minutes
-        default: '30'
+        default: '60'
         required: false
 permissions:
   contents: write
@@ -29,7 +29,7 @@ concurrency:
 jobs:
   worker:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -44,5 +44,5 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-          WORKER_MINUTES: ${{ inputs.minutes || '30' }}
+          WORKER_MINUTES: ${{ inputs.minutes || '60' }}
         run: python3 -m scripts.v093_replanned_five_stage --stage FINANCIAL --minutes "$WORKER_MINUTES"

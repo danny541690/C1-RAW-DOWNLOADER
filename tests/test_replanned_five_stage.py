@@ -46,7 +46,7 @@ class ReplanTests(unittest.TestCase):
         self.assertEqual(len({plan.lease_suffix_for(s) for s in consumers}),4)
         self.assertEqual(plan.lease_suffix_for('RAW'),plan.PLAN['lease_suffix'])
         self.assertNotIn(plan.PLAN['lease_suffix'],{plan.lease_suffix_for(s) for s in consumers})
-        self.assertEqual({plan.PLAN['worker_budgets_minutes'][s] for s in consumers},{30})
+        self.assertEqual({plan.PLAN['worker_budgets_minutes'][s] for s in consumers},{60})
         self.assertIsNone(plan.PLAN['max_heavy_workers'])
 
     def test_distinct_consumer_leases_can_coexist_without_unlocking_same_stage(self):
@@ -62,3 +62,9 @@ class ReplanTests(unittest.TestCase):
             self.assertEqual(len(state['jobs']),4)
             with self.assertRaises(gate.LeaseBusy):
                 gate.acquire('url','token','POOL_CONSUMER'+plan.lease_suffix_for('PRICE'),'other/PRICE',now=2)
+
+    def test_hour_budget_lease_outlives_actions_timeout(self):
+        self.assertEqual(plan.lease_ttl_for(60),5400)
+        self.assertGreater(plan.lease_ttl_for(60),plan.PLAN['consumer_workflow_timeout_minutes']*60)
+        self.assertEqual(plan.lease_ttl_for(24),3600)
+        self.assertEqual(plan.PLAN['worker_budgets_minutes']['RAW'],24)

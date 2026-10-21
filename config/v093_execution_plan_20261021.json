@@ -1,6 +1,6 @@
 {
   "revision": "RAW_201404_AUDIT_202610_V1",
-  "authorized_by": "USER_20261022_REMOVE_TWO_WORKER_CAP_AND_30M_DOWNSTREAM",
+  "authorized_by": "USER_20261022_FOUR_CONSUMERS_60M",
   "download_policy_unchanged": true,
   "raw_history_start": "2014-04",
   "raw_history_end": "2000-01",
@@ -15,12 +15,12 @@
   "lease_suffix": "_REPLAN_201404_V1",
   "worker_budgets_minutes": {
     "RAW": 24,
-    "QA1": 30,
-    "PRICE": 30,
-    "FINANCIAL": 30,
-    "CHIP": 30
+    "QA1": 60,
+    "PRICE": 60,
+    "FINANCIAL": 60,
+    "CHIP": 60
   },
-  "downstream_budget_minutes_per_hour": 120,
+  "downstream_budget_minutes_per_hour": 240,
   "downstream_cadence": "HOURLY_INDEPENDENT_PARALLEL",
   "cron_utc": {
     "RAW": "1,31 * * * *",
@@ -35,5 +35,7 @@
     "PRICE": "_PRICE_REPLAN_201404_V1",
     "FINANCIAL": "_FINANCIAL_REPLAN_201404_V1",
     "CHIP": "_CHIP_REPLAN_201404_V1"
-  }
+  },
+  "consumer_workflow_timeout_minutes": 75,
+  "consumer_lease_ttl_seconds": 5400
 }

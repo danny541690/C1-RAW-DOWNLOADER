@@ -20,6 +20,10 @@ assert RAW_MONTHS[0]=='2014-04' and RAW_MONTHS[-1]=='2000-01' and len(RAW_MONTHS
 def lease_suffix_for(stage):
     return PLAN.get('stage_lease_suffix',{}).get(stage,PLAN['lease_suffix'])
 
+def lease_ttl_for(minutes):
+    # 60-minute consumers have a 75-minute Actions timeout and 90-minute lease.
+    return max(3600,int((minutes+30)*60))
+
 class ArchiveCache:
     def __init__(self,limit=64_000_000):self.limit=limit;self.size=0;self.entries=collections.OrderedDict()
     def read(self,d,fid):
@@ -58,7 +62,7 @@ def newest_receipts(upstream):
 
 class Worker(base.Worker):
     def __init__(self,stage,minutes):
-        super().__init__(stage,minutes,lease_suffix=lease_suffix_for(stage))
+        super().__init__(stage,minutes,lease_suffix=lease_suffix_for(stage),lease_ttl=lease_ttl_for(minutes))
         self.cache=ArchiveCache();self.last_processed_month=None;self.last_processed_period=None
         self.primary_month=None;self.phase='INITIALIZING';self.indexed=0;self.corrections=0
         self.budget_seconds=minutes*60
@@ -271,7 +275,7 @@ class Worker(base.Worker):
     def run(self):
         try:
             self.raw() if self.stage=='RAW' else self.consume()
-            report={'stage':self.stage,'run':base.RUN,'execution_plan':REVISION,'updated_utc':native.stamp(),
+            report={'worker_budget_minutes':self.budget_seconds/60,'lease_ttl_seconds':lease_ttl_for(self.budget_seconds/60),'stage':self.stage,'run':base.RUN,'execution_plan':REVISION,'updated_utc':native.stamp(),
                     'processed_this_run':self.processed,'saved_this_run':self.saved,'indexed_files_this_run':self.indexed,
                     'corrections_queued_this_run':self.corrections,'last_processed_month':self.last_processed_month,
                     'last_processed_period':self.last_processed_period,'primary_active_month':self.primary_month,
