@@ -1,5 +1,5 @@
 """One-shot enable/dispatch using the already recorded user authorization."""
-import json,os,time,urllib.request
+import json,os,time,urllib.request,urllib.error
 BASE='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
 HEADERS={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'}
 FILES=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml','v093-v2-04-financial.yml','v093-v2-05-chip.yml']
@@ -15,7 +15,7 @@ def workflows():
     raise RuntimeError('WORKFLOW_PAGINATION_OVERFLOW')
 def main():
     chosen={'.github/workflows/'+f for f in FILES}
-    own='.github/workflows/jarvis-start-live-five-20261021.yml'
+    own='.github/workflows/jarvis-start-live-five-v2-20261021.yml'
     for w in workflows():
         if w['state']=='active' and w['path'] not in chosen|{own}:api('/actions/workflows/'+str(w['id'])+'/disable','PUT')
     # Cancel only superseded orchestration and its still-unstarted dispatch.
@@ -24,7 +24,10 @@ def main():
         if str(runid)==os.environ['GITHUB_RUN_ID'] or run['status']=='completed':continue
         if runid==39611764652 and api('/actions/runs/'+str(runid)+'/jobs')['jobs']:
             print('EXISTING_RAW_ALREADY_STARTED_PRESERVE_IT',flush=True);continue
-        api('/actions/runs/'+str(runid)+'/cancel','POST')
+        try:api('/actions/runs/'+str(runid)+'/cancel','POST')
+        except urllib.error.HTTPError as exc:
+            if exc.code!=409:raise
+            print('SUPERSEDED_CANCEL_CONFLICT_PRESERVE_SAFE_CONCURRENCY '+str(runid),flush=True)
     for file in FILES:api('/actions/workflows/'+file+'/enable','PUT')
     enabled=[w['path'] for w in workflows() if w['state']=='active' and w['path']!=own]
     if set(enabled)!=chosen:raise RuntimeError('UNEXPECTED_ENABLED_WORKFLOWS:'+json.dumps(enabled))
