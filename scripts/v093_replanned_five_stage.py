@@ -288,7 +288,7 @@ class Worker(base.Worker):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--stage',choices=base.STAGES,required=True);p.add_argument('--minutes',type=float,default=4)
     a=p.parse_args()
-    if not .1<=a.minutes<=26:raise SystemExit('INVALID_BUDGET')
+    if not .1<=a.minutes<=PLAN['worker_budgets_minutes'][a.stage]:raise SystemExit('INVALID_BUDGET')
     base.load_policy()
     request=json.loads(Path('requests/V093_FIVE_STAGE_202610_TO_200001_20261021.json').read_text())
     if request.get('activation_authorized') is not True or request.get('execution_plan',{}).get('revision')!=REVISION:raise SystemExit('MISSING_REPLAN_AUTHORIZATION')

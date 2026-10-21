@@ -1,6 +1,6 @@
 {
   "revision": "RAW_201404_AUDIT_202610_V1",
-  "authorized_by": "USER_20261021_REPLAN_EXISTING_FIVE_STAGES",
+  "authorized_by": "USER_20261021_EXPLICIT_RESUME_30_10_10_10",
   "download_policy_unchanged": true,
   "raw_history_start": "2014-04",
   "raw_history_end": "2000-01",
@@ -15,18 +15,18 @@
   "lease_suffix": "_REPLAN_201404_V1",
   "worker_budgets_minutes": {
     "RAW": 24,
-    "QA1": 18,
-    "PRICE": 12,
+    "QA1": 30,
+    "PRICE": 10,
     "FINANCIAL": 10,
-    "CHIP": 12
+    "CHIP": 10
   },
-  "downstream_budget_minutes_per_hour": 52,
+  "downstream_budget_minutes_per_hour": 60,
   "downstream_cadence": "HOURLY_STAGGERED",
   "cron_utc": {
     "RAW": "1,31 * * * *",
     "QA1": "0 * * * *",
-    "PRICE": "20 * * * *",
-    "FINANCIAL": "34 * * * *",
-    "CHIP": "46 * * * *"
+    "PRICE": "30 * * * *",
+    "FINANCIAL": "40 * * * *",
+    "CHIP": "50 * * * *"
   }
 }

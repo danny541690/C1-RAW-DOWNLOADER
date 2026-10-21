@@ -43,8 +43,8 @@ class ReplanTests(unittest.TestCase):
 
     def test_longer_consumer_budgets_fit_one_hour_single_slot(self):
         budget=plan.PLAN['worker_budgets_minutes']
-        self.assertEqual(sum(budget[s] for s in ('QA1','PRICE','FINANCIAL','CHIP')),52)
-        starts=[0,20,34,46,60]
+        self.assertEqual(sum(budget[s] for s in ('QA1','PRICE','FINANCIAL','CHIP')),60)
+        starts=[0,30,40,50,60]
         for i,stage in enumerate(('QA1','PRICE','FINANCIAL','CHIP')):
             self.assertGreater(budget[stage],4)
-            self.assertLessEqual(starts[i]+budget[stage]+2,starts[i+1])
+            self.assertLessEqual(starts[i]+budget[stage],starts[i+1])

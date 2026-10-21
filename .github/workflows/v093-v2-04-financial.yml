@@ -1,7 +1,7 @@
 name: JARVIS v0.93 LIVE FINANCIAL
 on:
   schedule:
-    - cron: '34 * * * *'
+    - cron: '40 * * * *'
   workflow_call:
     inputs:
       minutes:
@@ -29,7 +29,7 @@ concurrency:
 jobs:
   worker:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

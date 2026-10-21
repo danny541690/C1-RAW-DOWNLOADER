@@ -2,7 +2,7 @@
   "request_id": "V093_FIVE_STAGE_202610_TO_200001_20261021",
   "authorized_by": "USER_2026-10-21_ASIA_TAIPEI",
   "policy_version": "V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021",
-  "requested_action": "PAUSE_ALL_SCHEDULES",
+  "requested_action": "RESUME_RAW_201404_AUDIT_202610_WITH_30_10_10_10",
   "stages": [
     "RAW",
     "QA1",
@@ -17,8 +17,8 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "PAUSED_BY_USER",
-  "activation_authorized": false,
+  "state": "AUTHORIZED_RESUME_PENDING_ACTIONS_START",
+  "activation_authorized": true,
   "activation_completed": false,
   "downloads_started_by_this_request": true,
   "blocking_requirements": [
@@ -28,7 +28,7 @@
   "reuse_only_hash_and_identity_verified_v093_units": true,
   "raw_publication_requires_separate_numeric_and_pit_acceptance": true,
   "requires_additional_user_confirmation": false,
-  "next_required_action": "WAIT_FOR_EXPLICIT_USER_RESUME",
+  "next_required_action": "ENABLE_FIVE_AND_START_NOW",
   "legacy_retirement": {
     "public_repository_stop_run": 39608022842,
     "private_repository_stop_run": 39608025445,
@@ -58,31 +58,31 @@
         "workflow": ".github/workflows/v093-v2-02-qa.yml",
         "cron_utc": "0 * * * *",
         "taipei_trigger": "每小時 0 分",
-        "worker_budget_minutes": 18,
+        "worker_budget_minutes": 30,
         "concurrency_pool": "CONSUMER"
       },
       {
         "stage": "PRICE",
         "workflow": ".github/workflows/v093-v2-03-price.yml",
-        "cron_utc": "20 * * * *",
-        "taipei_trigger": "每小時 20 分",
-        "worker_budget_minutes": 12,
+        "cron_utc": "30 * * * *",
+        "taipei_trigger": "每小時 30 分",
+        "worker_budget_minutes": 10,
         "concurrency_pool": "CONSUMER"
       },
       {
         "stage": "FINANCIAL",
         "workflow": ".github/workflows/v093-v2-04-financial.yml",
-        "cron_utc": "34 * * * *",
-        "taipei_trigger": "每小時 34 分",
+        "cron_utc": "40 * * * *",
+        "taipei_trigger": "每小時 40 分",
         "worker_budget_minutes": 10,
         "concurrency_pool": "CONSUMER"
       },
       {
         "stage": "CHIP",
         "workflow": ".github/workflows/v093-v2-05-chip.yml",
-        "cron_utc": "46 * * * *",
-        "taipei_trigger": "每小時 46 分",
-        "worker_budget_minutes": 12,
+        "cron_utc": "50 * * * *",
+        "taipei_trigger": "每小時 50 分",
+        "worker_budget_minutes": 10,
         "concurrency_pool": "CONSUMER"
       }
     ],
@@ -90,7 +90,8 @@
     "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
     "max_heavy_workers": 2,
     "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
-    "state": "PAUSED_BY_USER"
+    "state": "AUTHORIZED_PENDING_ACTIVATION",
+    "downstream_budget_minutes_per_hour": 60
   },
   "previous_generation_evidence": {
     "activation_run": 39613119269,
@@ -150,7 +151,7 @@
   },
   "execution_plan": {
     "revision": "RAW_201404_AUDIT_202610_V1",
-    "authorized_by": "USER_20261021_REPLAN_EXISTING_FIVE_STAGES",
+    "authorized_by": "USER_20261021_EXPLICIT_RESUME_30_10_10_10",
     "download_policy_unchanged": true,
     "raw_history_start": "2014-04",
     "raw_history_end": "2000-01",
@@ -165,22 +166,27 @@
     "lease_suffix": "_REPLAN_201404_V1",
     "worker_budgets_minutes": {
       "RAW": 24,
-      "QA1": 18,
-      "PRICE": 12,
+      "QA1": 30,
+      "PRICE": 10,
       "FINANCIAL": 10,
-      "CHIP": 12
+      "CHIP": 10
     },
-    "downstream_budget_minutes_per_hour": 52,
+    "downstream_budget_minutes_per_hour": 60,
     "downstream_cadence": "HOURLY_STAGGERED",
     "cron_utc": {
       "RAW": "1,31 * * * *",
       "QA1": "0 * * * *",
-      "PRICE": "20 * * * *",
-      "FINANCIAL": "34 * * * *",
-      "CHIP": "46 * * * *"
+      "PRICE": "30 * * * *",
+      "FINANCIAL": "40 * * * *",
+      "CHIP": "50 * * * *"
     }
   },
   "execution_control": {
+    "paused": false,
+    "reason": "USER_EXPLICIT_RESUME",
+    "automatic_restart_allowed": true
+  },
+  "previous_pause": {
     "paused": true,
     "paused_at": "2026-10-21T15:34:00Z",
     "reason": "USER_REQUEST_PAUSE_ALL_SCHEDULES",
