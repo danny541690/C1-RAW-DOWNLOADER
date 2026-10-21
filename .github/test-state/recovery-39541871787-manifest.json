@@ -1,1 +1,1 @@
-{"jobs": {}}
+{"jobs": {"2026-10:ohlc:RAW": {"blob": ".github/test-state/recovery-39541871787-6105f1606826b0db764e7dfcd10b66465dcf32d9fed38a71e7cd5873af5fcf42.bin", "certified": false, "sha256": "6105f1606826b0db764e7dfcd10b66465dcf32d9fed38a71e7cd5873af5fcf42", "status": "DATA_PRESENT_PENDING_QA"}}}
