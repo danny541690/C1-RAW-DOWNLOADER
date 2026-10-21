@@ -9,6 +9,8 @@ on:
       - 'scripts/v093_native_numeric_sanity.py'
       - 'scripts/v093_source_pit_unit_evidence.py'
       - 'tests/test_v093_source_pit_unit_evidence.py'
+      - 'scripts/v093_twse_disclosure_pit.py'
+      - 'tests/test_v093_twse_disclosure_pit.py'
       - 'tests/test_v093_native_numeric_sanity.py'
       - 'tests/test_v093_finmind_annual_rows_adapter.py'
       - 'tests/test_v093_mops_html_financial_classification.py'
