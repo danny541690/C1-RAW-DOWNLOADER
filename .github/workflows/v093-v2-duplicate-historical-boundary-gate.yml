@@ -1,0 +1,106 @@
+name: JARVIS v0.93 Consolidated Duplicate Hash and Historical Boundary Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-duplicate-historical-boundary-gate.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  real-drive-duplicates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        year: [2017,2019,2024,2025]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Inspect real duplicate IDs and bounded SHA without modifying files
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          YEAR: ${{ matrix.year }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_duplicate_boundary_audit import audit_year
+          r=audit_year(Drive(service()),int(os.environ['YEAR']))
+          with open('reports/duplicates.json','w') as f:json.dump(r,f,ensure_ascii=False,indent=2)
+          print('REAL_DRIVE_DUPLICATE_HASH_YEAR_PASS '+json.dumps({'year':r['year'],'duplicate_count':len(r['duplicates']),'duplicates':[{'month':v['month'],'source':v['source'],'status':v['status'],'copies':len(v['copies'])} for v in r['duplicates']],'certified':False,'production_writes':0},sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: duplicate-audit-${{ matrix.year }}
+          path: reports/duplicates.json
+  boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Verify 2014 transition and 2000 first month with real Drive
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_duplicate_boundary_audit import audit_year
+          d=Drive(service())
+          years={}
+          for year,months in [(2000,['2000-01']),(2014,[f'2014-{m:02d}' for m in range(1,13)])]:
+              years[str(year)]=audit_year(d,year,months)
+          with open('reports/boundary.json','w') as f:json.dump(years,f,ensure_ascii=False,indent=2)
+          print('REAL_DRIVE_HISTORICAL_BOUNDARY_PASS '+json.dumps({'2000-01':years['2000']['months']['2000-01'],'2014':years['2014']['months'],'certified_months':0,'production_writes':0},sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: historical-boundary-2000-2014
+          path: reports/boundary.json
+  aggregate:
+    needs: [regression,real-drive-duplicates,boundary]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: duplicate-audit-*
+          path: parts
+      - name: Aggregate duplicate cases without auto-delete
+        run: |
+          python3 - <<'PY'
+          import glob,json,collections
+          files=glob.glob('parts/*/duplicates.json')
+          assert len(files)==4,files
+          reports=[json.load(open(x)) for x in files]
+          duplicates=[v for r in reports for v in r['duplicates']]
+          statuses=dict(collections.Counter(v['status'] for v in duplicates))
+          assert len(duplicates)==7,(len(duplicates),duplicates)
+          assert all(not r['certified'] for r in reports)
+          print('REAL_DRIVE_DUPLICATE_AND_BOUNDARY_COMBINED_PASS '+json.dumps({'duplicate_name_cases':len(duplicates),'hash_classifications':statuses,'certified_months':0,'production_writes':0},sort_keys=True),flush=True)
+          print('PRODUCTION_GATE=BLOCKED_HISTORICAL_GAPS_AND_ALL_FILE_QA')
+          PY
