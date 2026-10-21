@@ -1,9 +1,31 @@
 import hashlib
+import copy
 import unittest
 from unittest.mock import patch
 from scripts import v093_five_stage_durable_gate as gate
 
 class DurableFiveStageGateTests(unittest.TestCase):
+    def test_fence_never_repeats_after_successful_commit(self):
+        state={'jobs':{}}
+        def put(url,token,sha,payload,message):
+            state.clear();state.update(copy.deepcopy(payload));return True
+        with patch.object(gate,'_read',side_effect=lambda *a:('sha',copy.deepcopy(state))),patch.object(gate,'_put',side_effect=put):
+            first=gate.acquire('url','token','key','same-owner',now=100,ttl=10)
+            gate.commit('url','token','key','same-owner',first,'a'*64,now=101)
+            second=gate.acquire('url','token','key','same-owner',now=102,ttl=10)
+            self.assertGreater(second,first)
+            with self.assertRaises(gate.LeaseConflict):
+                gate.commit('url','token','key','same-owner',first,'b'*64,now=103)
+    def test_live_commit_rechecks_expiration_after_cas_retry(self):
+        payload={'jobs':{'key':{'lease':{'owner':'o','fence':1,'expires_at':110}}}}
+        with patch.object(gate,'_read',side_effect=lambda *a:('sha',copy.deepcopy(payload))),patch.object(gate,'_put',return_value=False) as put,patch.object(gate.time,'sleep'),patch.object(gate.time,'time',side_effect=[109,111]):
+            with self.assertRaises(gate.LeaseConflict):gate.commit('url','token','key','o',1,'a'*64)
+            self.assertEqual(put.call_count,1)
+    def test_empty_or_malformed_matching_receipts_cannot_enable_adapter(self):
+        adapter={k:True for k in ('schema_ok','unit_ok','date_ok','pit_ok','numeric_ok','universe_ok')}
+        adapter['approved_version']='v1'
+        for digest in (None,'','z'*64):
+            self.assertEqual(gate.decide_adapter('PRICE',{'sha256':digest},{'raw_sha256':digest},adapter),'BLOCKED_INVALID_INPUT_DIGEST')
     def test_acquire_and_commit_with_fencing(self):
         state={'sha':'s1','payload':{'jobs':{}}}
         def read(url,token):

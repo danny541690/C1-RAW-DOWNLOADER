@@ -47,15 +47,15 @@ def _put(api_url,token,sha,payload,message):
 def acquire(api_url,token,key,owner,now=None,ttl=900,retries=12):
     if not key or not owner or ttl<=0:
         raise ValueError('INVALID_LEASE_REQUEST')
-    now=int(time.time() if now is None else now)
     for attempt in range(retries):
         sha,payload=_read(api_url,token)
+        instant=int(time.time() if now is None else now)
         row=payload['jobs'].get(key,{})
         lease=row.get('lease') or {}
-        if lease.get('expires_at',0)>now:
+        if lease.get('expires_at',0)>instant:
             raise LeaseBusy(key)
-        fence=int(lease.get('fence',0))+1
-        row['lease']={'owner':owner,'expires_at':now+ttl,'fence':fence}
+        fence=max(int(lease.get('fence',0)),int(row.get('last_fence',0)))+1
+        row['lease']={'owner':owner,'expires_at':instant+ttl,'fence':fence}
         payload['jobs'][key]=row
         if _put(api_url,token,sha,payload,'test: durable lease acquire'):
             return fence
@@ -64,12 +64,12 @@ def acquire(api_url,token,key,owner,now=None,ttl=900,retries=12):
 
 def commit(api_url,token,key,owner,fence,raw_sha256,now=None,retries=12):
     _digest(raw_sha256)
-    now=int(time.time() if now is None else now)
     for attempt in range(retries):
         sha,payload=_read(api_url,token)
+        instant=int(time.time() if now is None else now)
         row=payload['jobs'].get(key,{})
         lease=row.get('lease') or {}
-        if lease.get('owner')!=owner or lease.get('fence')!=fence or lease.get('expires_at',0)<=now:
+        if lease.get('owner')!=owner or lease.get('fence')!=fence or lease.get('expires_at',0)<=instant:
             raise LeaseConflict('STALE_OR_EXPIRED_OWNER')
         if row.get('certified'):
             raise LeaseConflict('CERTIFICATION_NOT_ALLOWED_BY_COMMIT')
@@ -87,6 +87,11 @@ def decide_adapter(stage,raw_receipt,qa_receipt,adapter):
         raise ValueError('UNKNOWN_ADAPTER_STAGE')
     if not raw_receipt or not qa_receipt or not adapter:
         return 'BLOCKED_MISSING_INPUT_OR_ADAPTER'
+    try:
+        _digest(raw_receipt.get('sha256'))
+        _digest(qa_receipt.get('raw_sha256'))
+    except ValueError:
+        return 'BLOCKED_INVALID_INPUT_DIGEST'
     if raw_receipt.get('sha256')!=qa_receipt.get('raw_sha256'):
         return 'BLOCKED_RAW_QA_DIGEST_MISMATCH'
     for k in ('schema_ok','unit_ok','date_ok','pit_ok','numeric_ok','universe_ok'):

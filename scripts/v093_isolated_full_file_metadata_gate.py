@@ -10,14 +10,20 @@ FOLDER='application/vnd.google-apps.folder'
 
 def audit_year_range(d,start,end,latest='2026-10'):
     if not (2000<=start<=end<=2026):raise ValueError('INVALID_RANGE')
-    years={str(x['name']):x for x in ls(d,ROOT) if x.get('mimeType')==FOLDER}
+    years=collections.defaultdict(list)
+    for x in ls(d,ROOT):
+        if x.get('mimeType')==FOLDER:years[str(x['name'])].append(x)
     result={'start':start,'end':end,'months':{},'certified':0,'read_only':True}
     for year in range(end,start-1,-1):
         yr=str(year)
-        parent=years.get(yr)
-        sources={x['name']:x for x in ls(d,parent['id']) if x.get('mimeType')==FOLDER} if parent else {}
+        parents=years.get(yr,[])
+        parent=parents[0] if len(parents)==1 else None
+        sources=collections.defaultdict(list)
+        for x in ls(d,parent['id']) if parent else []:
+            if x.get('mimeType')==FOLDER:sources[x['name']].append(x)
         for source in SOURCES:
-            folder=sources.get(source)
+            source_choices=sources.get(source,[])
+            folder=source_choices[0] if len(source_choices)==1 else None
             monthfolders=collections.defaultdict(list)
             if folder:
                 for x in ls(d,folder['id']):
@@ -27,6 +33,11 @@ def audit_year_range(d,start,end,latest='2026-10'):
                 key=f'{year}-{m:02d}'
                 if key>latest:continue
                 row=result['months'].setdefault(key,{})
+                parent_status=('MISSING_YEAR_FOLDER' if not parents else 'DUPLICATE_YEAR_FOLDER' if len(parents)>1 else
+                               'MISSING_SOURCE_FOLDER' if not source_choices else 'DUPLICATE_SOURCE_FOLDER' if len(source_choices)>1 else None)
+                if parent_status:
+                    row[source]={'status':parent_status,'file_count':0,'zip_count':0,'other_count':0,'zero_size':0,'bytes_total':0}
+                    continue
                 choices=monthfolders.get(key,[])
                 if len(choices)!=1:
                     row[source]={'status':'MISSING_MONTH_FOLDER' if not choices else 'DUPLICATE_MONTH_FOLDER','file_count':0,'zip_count':0,'other_count':0,'zero_size':0,'bytes_total':0}
@@ -36,7 +47,7 @@ def audit_year_range(d,start,end,latest='2026-10'):
                 zipfiles=[x for x in children if x['name'].lower().endswith('.zip')]
                 zeros=[x for x in children if int(x.get('size',0))<=0]
                 dup=[k for k,v in names.items() if v>1]
-                row[source]={'status':'FILES_PRESENT_PENDING_QA' if children else 'EMPTY_MONTH_FOLDER','file_count':len(children),'zip_count':len(zipfiles),'other_count':len(children)-len(zipfiles),'zero_size':len(zeros),'duplicate_names':dup[:20],'bytes_total':sum(int(x.get('size',0)) for x in children)}
+                row[source]={'status':'FILES_PRESENT_PENDING_QA' if children else 'EMPTY_MONTH_FOLDER','file_count':len(children),'zip_count':len(zipfiles),'other_count':len(children)-len(zipfiles),'zero_size':len(zeros),'duplicate_names':dup[:20],'duplicate_name_count':len(dup),'bytes_total':sum(int(x.get('size',0)) for x in children)}
     return result
 
 def summarize(reports):
@@ -58,7 +69,7 @@ def summarize(reports):
             counts['nonzip_files']+=r['other_count']
             counts['bytes_total']+=r['bytes_total']
             counts['zero_size']+=r['zero_size']
-            counts['duplicate_names']+=len(r.get('duplicate_names',[]))
+            counts['duplicate_names']+=r.get('duplicate_name_count',len(r.get('duplicate_names',[])))
             counts[r['status']]+=1
             if r['status']!='FILES_PRESENT_PENDING_QA' or r['zero_size'] or r.get('duplicate_names'):
                 queue.append({'month':month,'source':source,'status':r['status'],'zero_size':r['zero_size'],'duplicate_names':r.get('duplicate_names',[]),'action':'VERIFY_FORMAT_AND_BACKFILL_IF_NEEDED'})

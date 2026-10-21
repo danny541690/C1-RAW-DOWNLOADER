@@ -1,0 +1,208 @@
+name: JARVIS v0.93 Complete Prelaunch Audit
+'on':
+  workflow_dispatch: null
+  push:
+    paths:
+    - .github/workflows/v093-complete-prelaunch-audit.yml
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-complete-prelaunch-audit
+  cancel-in-progress: false
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements-qa.lock
+    - name: Run all tests and retain machine-readable result
+      run: |-
+        mkdir -p reports
+        python3 - <<'PYTEST'
+        import json,pathlib,unittest
+        suite=unittest.defaultTestLoader.discover('tests',pattern='test_*.py')
+        r=unittest.TextTestRunner(verbosity=1).run(suite)
+        proof={'tests_run':r.testsRun,'errors':len(r.errors),'failures':len(r.failures),'skipped':len(r.skipped),'passed':r.wasSuccessful()}
+        pathlib.Path('reports/regression.json').write_text(json.dumps(proof,indent=2))
+        assert r.wasSuccessful(),proof
+        PYTEST
+    - uses: actions/upload-artifact@v4
+      with:
+        name: complete-regression
+        path: reports/regression.json
+  five-stage-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements-qa.lock
+    - name: Verify actual five-stage workflow contracts and 322-month scope
+      run: python3 -m scripts.v093_five_stage_combined_contract
+  real-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        month:
+        - 2014-04
+        - 2024-06
+        - 2025-01
+        - 2026-09
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements-qa.lock
+    - name: Read-only parse real ZIP contents to native R2 rows
+      env:
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        MONTH: ${{ matrix.month }}
+      run: |
+        mkdir -p reports
+        python3 - <<'PY'
+        import json,os,time,resource
+        from scripts.annual_actual_firstpass import Drive,service
+        from scripts.v093_isolated_real_native_parser_gate import run
+        month=os.environ['MONTH']
+        started=time.monotonic()
+        # Expand real TWSE/TPEx ZIP member inspection, bounded to 30 MB.
+        r=run(Drive(service()),month,max_archive=50_000_000,max_member=30_000_000,max_members=60) if month=='2026-09' else run(Drive(service()),month)
+        r['resources']={'elapsed_seconds':round(time.monotonic()-started,3),'peak_rss_kib':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
+        with open('reports/native-parser.json','w') as f:json.dump(r,f,ensure_ascii=False,indent=2)
+        print('REAL_NATIVE_PARSER_ACCEPTANCE '+json.dumps(r,ensure_ascii=False,sort_keys=True),flush=True)
+        assert r['certified'] is False and r['drive_writes']==0
+        PY
+    - uses: actions/upload-artifact@v4
+      with:
+        name: native-parser-${{ matrix.month }}
+        path: reports/native-parser.json
+  metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - start: 2000
+          end: 2006
+        - start: 2007
+          end: 2013
+        - start: 2014
+          end: 2020
+        - start: 2021
+          end: 2026
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements-qa.lock
+    - name: Real Drive all-month file metadata only
+      env:
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        START_YEAR: ${{ matrix.start }}
+        END_YEAR: ${{ matrix.end }}
+      run: |
+        mkdir -p reports
+        python3 - <<'PY'
+        import json,os
+        from scripts.annual_actual_firstpass import Drive,service
+        from scripts.v093_isolated_full_file_metadata_gate import audit_year_range
+        assert all(os.environ.get(k) for k in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'))
+        r=audit_year_range(Drive(service()),int(os.environ['START_YEAR']),int(os.environ['END_YEAR']))
+        with open('reports/shard.json','w') as f:json.dump(r,f,ensure_ascii=False)
+        print('REAL_DRIVE_FILE_METADATA_SHARD_PASS '+json.dumps({'start':r['start'],'end':r['end'],'months':len(r['months']),'file_count':sum(v['file_count'] for row in r['months'].values() for v in row.values()),'zero_size':sum(v['zero_size'] for row in r['months'].values() for v in row.values()),'certified':0}),flush=True)
+        PY
+    - uses: actions/upload-artifact@v4
+      with:
+        name: file-metadata-${{ matrix.start }}-${{ matrix.end }}
+        path: reports/shard.json
+  sandbox-seed:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements-qa.lock
+    - name: Actual isolated recovery seed
+      env: &id001
+        GH_TOKEN: ${{ github.token }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      run: python3 -m scripts.v093_prelaunch_live_recovery seed
+  sandbox-crash:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements-qa.lock
+    - name: Actual isolated recovery crash
+      env: *id001
+      run: python3 -m scripts.v093_prelaunch_live_recovery crash
+    needs: sandbox-seed
+  sandbox-resume:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements-qa.lock
+    - name: Actual isolated recovery resume
+      env: *id001
+      run: python3 -m scripts.v093_prelaunch_live_recovery resume
+    - uses: actions/upload-artifact@v4
+      with:
+        name: complete-live-recovery
+        path: reports/live-recovery.json
+    needs: sandbox-crash
+  complete-report:
+    needs:
+    - regression
+    - five-stage-contract
+    - real-native
+    - metadata
+    - sandbox-resume
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements-qa.lock
+    - uses: actions/download-artifact@v4
+      with:
+        path: parts
+    - name: Report all measured gates and exact remaining work
+      run: python3 -m scripts.v093_prelaunch_complete_audit
+    - uses: actions/upload-artifact@v4
+      with:
+        name: complete-prelaunch-evidence-and-remaining-work
+        path: reports/
