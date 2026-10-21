@@ -18,6 +18,7 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
     sources={x["name"]:x for x in ls(d,y[0]["id"]) if x.get("mimeType")==FOLDER}
     report={"month":month,"sources":{},"certified":False,"drive_writes":0}
     close_rows=collections.defaultdict(list)
+    close_diagnostics=collections.defaultdict(lambda:{"native_field_counts":collections.Counter(),"dates":collections.Counter(),"stocks":set(),"matched_field_rows":0})
     for source in SOURCES:
         sf=sources.get(source)
         if sf is None:raise ValueError("SOURCE_MISSING_"+source)
@@ -50,7 +51,15 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                     rows,invalid,encoding=parse(source,arc["name"],item.filename,z.read(item),month)
                     close_field=PRICE_FIELDS["close"].get(source)
                     if close_field:
-                        close_rows[source].extend(row for row in rows if row.get("native_field")==close_field)
+                        for row in rows:
+                            native_field=str(row.get("native_field",""))
+                            if any(term in native_field.lower() for term in ("close","收盤","成交價","收市")):
+                                close_diagnostics[source]["native_field_counts"][native_field]+=1
+                            if native_field==close_field:
+                                close_rows[source].append(row)
+                                close_diagnostics[source]["matched_field_rows"]+=1
+                                close_diagnostics[source]["dates"][row["date"]]+=1
+                                close_diagnostics[source]["stocks"].add(row["stock_id"])
                     sanity=native_audit(rows,month)
                     for field in ("invalid_date","invalid_stock_id","nonfinite_numeric","identifier_as_numeric","premature_verification","premature_publication","duplicate_lineage_key"):
                         stats["sanity_"+field]+=sanity[field]
@@ -111,4 +120,5 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                     errors.append(entry)
         report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"stats":dict(stats),"errors":errors[:10],"zero_cell_diagnostics":zero_cell_diagnostics,"oversize_members":oversize_members}
     report["cross_source_close"]=compare_rows(close_rows)
+    report["close_field_diagnostics"]={src:{"native_field_counts":dict(d["native_field_counts"].most_common(12)),"matched_field_rows":d["matched_field_rows"],"distinct_stocks":len(d["stocks"]),"date_range":[min(d["dates"]),max(d["dates"])] if d["dates"] else [],"date_samples":dict(d["dates"].most_common(5))} for src,d in close_diagnostics.items()}
     return report
