@@ -17,7 +17,7 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "ACTIVE_FIVE_SCHEDULES_RAW_SAVING_FIRST_DOWNSTREAM_PENDING",
+  "state": "ACTIVE_DOWNLOADING_AND_STAGING",
   "activation_authorized": true,
   "activation_completed": true,
   "downloads_started_by_this_request": true,
@@ -26,7 +26,7 @@
   "reuse_only_hash_and_identity_verified_v093_units": true,
   "raw_publication_requires_separate_numeric_and_pit_acceptance": true,
   "requires_additional_user_confirmation": false,
-  "next_required_action": "MONITOR_DURABLE_QUEUES_AND_FIRST_DOWNSTREAM_EXECUTION",
+  "next_required_action": "CONTINUE_AUTHORIZED_REVERSE_HISTORY_DOWNLOAD_AND_DURABLE_STAGE_QUEUES",
   "legacy_retirement": {
     "public_repository_stop_run": 39608022842,
     "private_repository_stop_run": 39608025445,
@@ -41,11 +41,35 @@
       "FINANCIAL",
       "CHIP"
     ],
-    "observed_new_raw_units_at_least": 3,
+    "observed_new_raw_units_at_least": 14,
     "observed_new_raw_date": "2026-10-21",
     "full_history_complete": false,
     "numeric_verified": false,
     "pit_verified": false,
-    "first_downstream_acceptance": "PENDING"
+    "first_downstream_acceptance": "ALL_FIVE_PROCESSES_EXECUTED_SUCCESSFULLY_BASIC_AND_STAGING_ONLY",
+    "initial_pipeline_run": 39613119269,
+    "staging_provenance_validation_run": 39615276955,
+    "continuing_raw_run": 39613732516,
+    "first_raw": {
+      "processed": 22,
+      "saved_basic_verified": 14,
+      "isolated_missing": 8
+    },
+    "first_qa1": {
+      "basic_qa_pass": 35
+    },
+    "latest_price_revision": {
+      "version": "R2_ARCHIVE_PROVENANCE",
+      "saved_staging": 6,
+      "quarantined": 1
+    },
+    "latest_chip_revision": {
+      "version": "R2_ARCHIVE_PROVENANCE",
+      "saved_staging": 9
+    },
+    "financial": {
+      "status": "WAITING_FOR_AVAILABLE_UPSTREAM_OR_NEXT_BATCH",
+      "processed": 0
+    }
   }
 }
