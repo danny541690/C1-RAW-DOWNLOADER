@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/v093-v2-real-native-parser-acceptance.yml'
       - 'scripts/v093_isolated_real_native_parser_gate.py'
+      - 'scripts/v093_standard_r2.py'
+      - 'tests/test_v093_finmind_annual_rows_adapter.py'
 permissions:
   contents: read
 jobs:
