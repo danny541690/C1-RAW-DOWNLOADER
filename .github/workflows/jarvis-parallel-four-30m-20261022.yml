@@ -1,0 +1,29 @@
+name: JARVIS Independent Four Consumers 30m 20261022
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-parallel-four-30m-20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+jobs:
+  cutover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Verify independent leases and preserved checkpoint contracts
+        run: |
+          python3 -m unittest discover -s tests -q
+          python3 -m scripts.v093_five_stage_combined_contract
+      - name: Stop shared consumers, retire old lock, enable and dispatch four independent workers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_parallel_cutover
