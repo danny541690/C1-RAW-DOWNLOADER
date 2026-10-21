@@ -1,0 +1,73 @@
+name: JARVIS v0.93 Crash Between Data and Manifest Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-data-manifest-crash-recovery.yml'
+permissions:
+  contents: read
+jobs:
+  crash-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Verify actual Drive.put idempotent restart after process death
+        run: |
+          python3 - <<'PY'
+          import os,tempfile,json,hashlib,multiprocessing
+          from scripts.annual_actual_firstpass import Drive
+          class Request:
+              def __init__(self,fn):self.fn=fn
+              def execute(self,**kwargs):return self.fn()
+          class Files:
+              def __init__(self,root):self.root=root
+              def create(self,body,media_body,fields):
+                  def go():
+                      name=body['name']
+                      with open(os.path.join(self.root,name),'xb') as f:f.write(media_body._fd.getvalue())
+                      return {'id':name}
+                  return Request(go)
+          class API:
+              def __init__(self,root):self.root=root
+              def files(self):return Files(self.root)
+          class DiskDrive(Drive):
+              def __init__(self,root):self.root=root;self.api=API(root)
+              def find(self,parent,name):
+                  return {'id':name,'name':name} if os.path.exists(os.path.join(self.root,name)) else None
+              def read(self,parent,name):
+                  p=os.path.join(self.root,name)
+                  return open(p,'rb').read() if os.path.exists(p) else None
+          def crashed_worker(root,name,content):
+              DiskDrive(root).put('TEST_ONLY',name,content,'application/json')
+              os._exit(23)
+          with tempfile.TemporaryDirectory() as root:
+              content=b'{"month":"2026-10","dataset":"ohlc"}'
+              digest=hashlib.sha256(content).hexdigest()
+              name='2026-10-ohlc-'+digest+'.json'
+              manifest=os.path.join(root,'manifest.json')
+              with open(manifest,'w') as f:json.dump({'jobs':{}},f)
+              child=multiprocessing.Process(target=crashed_worker,args=(root,name,content))
+              child.start();child.join(timeout=15)
+              assert child.exitcode==23,child.exitcode
+              assert os.path.exists(os.path.join(root,name))
+              assert json.load(open(manifest))['jobs']=={}
+              DiskDrive(root).put('TEST_ONLY',name,content,'application/json')
+              assert len([n for n in os.listdir(root) if n.endswith('.json')])==2
+              assert hashlib.sha256(open(os.path.join(root,name),'rb').read()).hexdigest()==digest
+              state=json.load(open(manifest))
+              key='2026-10:ohlc:RAW'
+              state['jobs'][key]={'status':'DATA_PRESENT_PENDING_QA','sha256':digest,'name':name}
+              temp=manifest+'.tmp'
+              with open(temp,'w') as f:json.dump(state,f)
+              os.replace(temp,manifest)
+              recovered=json.load(open(manifest))
+              assert recovered['jobs'][key]['status']=='DATA_PRESENT_PENDING_QA'
+              assert len(recovered['jobs'])==1
+              print('DRIVE_DATA_MANIFEST_CRASH_RECOVERY_PASS '+json.dumps({'crash_exit':23,'data_survived':True,'manifest_missing_after_crash':True,'idempotent_resume':True,'sha_verified':True,'recovered_jobs':1,'status':'DATA_PRESENT_PENDING_QA','real_drive_writes':0,'scope':'isolated filesystem-backed Drive fake'}),flush=True)
+              print('RELEASE_GATE=BLOCKED_NO_REAL_DRIVE_ATOMIC_COMMIT')
+          PY
