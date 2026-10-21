@@ -4,8 +4,6 @@ on:
     paths:
       - '.github/workflows/v093-l1-thirdpass-gated-repair.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '41 * * * *'
 permissions:
   contents: read
 concurrency:
