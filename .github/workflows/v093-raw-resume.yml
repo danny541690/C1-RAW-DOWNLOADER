@@ -32,7 +32,11 @@ jobs:
           with urllib.request.urlopen(req,timeout=25) as response:
               runs=json.load(response).get('workflow_runs',[])
           if not runs:raise SystemExit('MERGED_LAUNCH_GATE_NOT_YET_PASSED; RAW_CAPTURE_NOT_STARTED')
-          print('MERGED_LAUNCH_GATE_EVIDENCE',runs[0]['id'],runs[0]['head_sha'])
+          # A passing canary for an older revision does not authorize changed RAW code.
+          current_sha=os.environ['GITHUB_SHA']
+          matching=next((run for run in runs if run.get('head_sha')==current_sha and run.get('conclusion')=='success'),None)
+          if not matching:raise SystemExit('MERGED_GATE_NOT_PASSED_FOR_THIS_EXACT_COMMIT; RAW_CAPTURE_NOT_STARTED')
+          print('MERGED_LAUNCH_GATE_EVIDENCE',matching['id'],matching['head_sha'])
           PY
       - name: Repeat offline safety acceptance on current code
         run: python3 -m unittest discover -s tests -p 'test_*.py' -q
