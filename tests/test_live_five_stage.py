@@ -18,6 +18,7 @@ class LiveStageTests(unittest.TestCase):
         receipt={'evidence_file':'file/unit.raw','sha256':live.native.sha(b'native')}
         with patch.object(live.native,'read',return_value=blob.getvalue()):
             self.assertEqual(live.payload(None,receipt),b'native')
+            self.assertEqual(live.payload(None,receipt,True),(b'native',live.native.sha(blob.getvalue())))
             receipt['sha256']='0'*64
             with self.assertRaisesRegex(ValueError,'HASH_MISMATCH'):live.payload(None,receipt)
     def test_attempt_cap_survives_restart(self):

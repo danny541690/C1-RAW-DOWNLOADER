@@ -1,0 +1,50 @@
+name: JARVIS Live Staging Provenance Followthrough
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-live-staging-followthrough-20261021.yml'
+permissions:
+  contents: write
+  actions: write
+jobs:
+  wait_first_chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Wait for initial downstream workers to finish without competing for their slot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 200); do
+            status=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/39613119269" --jq '.status')
+            if [ "$status" = completed ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+  price:
+    needs: wait_first_chain
+    uses: ./.github/workflows/v093-v2-03-price.yml
+    with:
+      minutes: '1'
+    secrets: inherit
+  financial:
+    needs: price
+    uses: ./.github/workflows/v093-v2-04-financial.yml
+    with:
+      minutes: '1'
+    secrets: inherit
+  chip:
+    needs: financial
+    uses: ./.github/workflows/v093-v2-05-chip.yml
+    with:
+      minutes: '1'
+    secrets: inherit
+  finish:
+    if: always()
+    needs: [wait_first_chain, price, financial, chip]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disable completed one-shot followthrough
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/$GITHUB_REPOSITORY/actions/workflows/jarvis-live-staging-followthrough-20261021.yml/disable"

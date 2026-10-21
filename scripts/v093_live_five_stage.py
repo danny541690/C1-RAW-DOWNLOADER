@@ -17,6 +17,7 @@ from scripts.v093_five_stage_durable_gate import acquire, commit, _read, LeaseCo
 RUN = 'LIVE_FIVE_STAGE_202610_TO_200001_V1'
 MONTHS = [f'{y}-{m:02d}' for y in range(2026,1999,-1) for m in range(12,0,-1) if (y,m)<=(2026,10)]
 STAGES = ('RAW','QA1','PRICE','FINANCIAL','CHIP')
+STAGING_REVISION = 'R2_ARCHIVE_PROVENANCE'
 
 def emit(**obj):
     print('LIVE_FIVE_STAGE '+json.dumps(obj,ensure_ascii=False,sort_keys=True),flush=True)
@@ -41,17 +42,19 @@ def retryable(exc):
     if isinstance(exc,urllib.error.HTTPError):return exc.code in (408,429,500,502,503,504)
     return isinstance(exc,(TimeoutError,ConnectionError,OSError))
 
-def payload(d,receipt):
+def payload(d,receipt,with_archive_hash=False):
     ref=receipt.get('evidence_file')
     if not ref:raise ValueError('MISSING_RAW_FILE_REFERENCE')
     fid,sep,member=ref.partition('/')
     raw=native.read(d,{'id':fid})
+    archive_sha=native.sha(raw)
+    if receipt.get('archive_sha256') and receipt['archive_sha256']!=archive_sha:raise ValueError('ARCHIVE_READBACK_HASH_MISMATCH')
     if sep:
         with zipfile.ZipFile(io.BytesIO(raw)) as z:
             if z.getinfo(member).file_size>30_000_000:raise ValueError('MEMBER_SIZE_LIMIT')
             raw=z.read(member)
     if native.sha(raw)!=receipt['sha256']:raise ValueError('RAW_READBACK_HASH_MISMATCH')
-    return raw
+    return (raw,archive_sha) if with_archive_hash else raw
 
 class Worker(Independent):
     def __init__(self,stage,minutes):
@@ -228,11 +231,13 @@ class Worker(Independent):
                 if receipt.get('status')!='SAVED_BASIC_VERIFIED':continue
                 if self.stage!='QA1' and route(receipt['category'])!=self.stage:continue
                 k=receipt['unit_id']+'_'+receipt['sha256']
-                if k in ledger['units']:continue
+                output_key=k if self.stage=='QA1' else k+'_'+STAGING_REVISION
+                if output_key in ledger['units']:continue
                 if self.stage!='QA1' and qa.get(k,{}).get('status')!='BASIC_QA_PASS':continue
                 result={'raw_sha256':receipt['sha256'],'unit_id':receipt['unit_id'],'numeric_verified':False,'pit_verified':False,'stage':self.stage,'checked_utc':native.stamp()}
                 try:
-                    raw=payload(self.d,receipt)
+                    raw,archive_sha=payload(self.d,receipt,with_archive_hash=True)
+                    result['archive_sha256']=archive_sha
                     if self.stage=='QA1':
                         if receipt['category'] not in engine.FIN_REPORTS:native.validate(raw,receipt['source'],receipt['category'],receipt['period'])
                         else:
@@ -248,14 +253,17 @@ class Worker(Independent):
                         rows,stats,encoding=parse_member(receipt['source'],name,raw,month)
                         if not rows:raise ValueError('NO_PARSED_NUMERIC_CELLS:'+json.dumps(stats))
                         for row in rows:
-                            row.update(native_archive=receipt['evidence_file'].split('/')[0],native_sha256=receipt.get('archive_sha256',receipt['sha256']),native_member_sha256=receipt['sha256'])
+                            row.update(native_archive=receipt['evidence_file'].split('/')[0],native_sha256=archive_sha,native_member_sha256=receipt['sha256'])
                         buf=io.BytesIO();pq.write_table(pa.Table.from_pylist(rows,schema=SCHEMA),buf,compression='zstd')
-                        blob=buf.getvalue();filename=k+'.parquet'
+                        blob=buf.getvalue();filename=output_key+'.parquet'
                         self.owned();self.d.put(out,filename,blob,'application/octet-stream',overwrite=False)
                         result.update(status='STAGING_SAVED_NOT_APPROVED',rows=len(rows),sha256=native.sha(blob),parser_stats=stats,output_name=filename)
                 except (ValueError,KeyError,TypeError,zipfile.BadZipFile) as exc:
                     result.update(status='QUARANTINED',error=type(exc).__name__+':'+str(exc)[:400])
-                ledger['units'][k]=result;self.putj(out,'MONTH_STATE.json',ledger)
+                if self.stage!='QA1':
+                    result['processor_version']=STAGING_REVISION
+                    if k in ledger['units']:ledger['units'][k]['status']='SUPERSEDED_PROVENANCE_REVISION'
+                ledger['units'][output_key]=result;self.putj(out,'MONTH_STATE.json',ledger)
                 self.processed+=1;self.saved+=int(result['status']!='QUARANTINED')
                 emit(stage=self.stage,month=month,unit=receipt['unit_id'],status=result['status'],rows=result.get('rows'))
         self.save_cursor()
