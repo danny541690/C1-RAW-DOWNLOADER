@@ -10,6 +10,7 @@ on:
       - 'tests/test_v093_mops_html_financial_classification.py'
       - 'tests/test_v093_tpex_ex_dividend_event_dates.py'
       - 'scripts/v093_five_stage_combined_contract.py'
+      - '.github/workflows/v093-raw-resume.yml'
 permissions:
   contents: read
 jobs:
