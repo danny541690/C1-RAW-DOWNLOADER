@@ -1,0 +1,68 @@
+name: JARVIS v0.93 V2 Consolidated Prelaunch Release Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-consolidated-prelaunch-release-gate.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  full-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  evidence-and-cutover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Fetch last verified 322-month Drive metadata without redundant API scanning
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p input reports
+          gh run download 39549532792 --repo "$GITHUB_REPOSITORY" -p 'full-322-months-file-metadata-and-review-queue' -D input
+          test -f input/all-322-months-file-metadata.json
+      - name: Verify legacy crons disabled and five stage skeletons manual-only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import yaml
+          old=['v093-raw-2015-to-2000.yml','v093-l1-secondpass-qa-repair.yml','v093-l1-thirdpass-gated-repair.yml']
+          new=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml','v093-v2-04-financial.yml','v093-v2-05-chip.yml']
+          for name in old+new:
+              f=Path('.github/workflows')/name
+              data=yaml.safe_load(f.read_text())
+              on=data.get('on',data.get(True,{}))
+              assert 'schedule' not in on,name
+              if name in new:assert 'workflow_dispatch' in on,name
+          print('OLD_CRONS_DISABLED_AND_FIVE_MANUAL_STAGES_CONFIRMED')
+          PY
+      - name: Fail-closed combined release decision
+        run: |
+          python3 - <<'PY'
+          import json
+          from scripts.v093_v2_consolidated_launch_gate import evidence_from_inventory,decide
+          inventory=json.load(open('input/all-322-months-file-metadata.json'))
+          evidence=evidence_from_inventory(inventory)
+          result=decide(evidence)
+          with open('reports/consolidated-release-gate.json','w') as f:json.dump({'evidence':evidence,'result':result},f,ensure_ascii=False,indent=2)
+          assert result['decision']=='BLOCKED_KEEP_MANUAL_ONLY','Unexpected release decision; manual review required'
+          print('CONSOLIDATED_RELEASE_GATE_VERIFIED '+json.dumps(result,sort_keys=True),flush=True)
+          print('SAFETY_STATUS=NO_PRODUCTION_CRON_NO_DRIVE_WRITES')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v093-consolidated-prelaunch-release-evidence
+          path: reports/consolidated-release-gate.json
