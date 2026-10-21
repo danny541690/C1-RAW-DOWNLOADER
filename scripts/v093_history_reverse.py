@@ -280,5 +280,7 @@ class History:
   except Exception as ex:print('FINISHED_SCHEDULE_DISABLE_FAILED:'+type(ex).__name__,flush=True)
 
 if __name__=='__main__':
+ from scripts.v093_five_stage_policy import block_legacy_cli
+ block_legacy_cli('v093_history_reverse.py')
  import argparse
  p=argparse.ArgumentParser();p.add_argument('--minutes',type=int,default=45);a=p.parse_args();History(a.minutes).run()

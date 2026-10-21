@@ -22,8 +22,8 @@ class FiveStageSchedulerGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'ALREADY_LEASED'):claim(x,lock,worker='runner2',now=101,ttl=50)
         self.assertEqual(claim(x,lock,worker='runner2',now=151)['owner'],'runner2')
     def test_retry_cap(self):
-        self.assertTrue(eligible(Work('2026-10','RAW','ohlc',attempts=2)))
-        self.assertFalse(eligible(Work('2026-10','RAW','ohlc',attempts=3)))
+        self.assertTrue(eligible(Work('2026-10','RAW','ohlc',attempts=3)))
+        self.assertFalse(eligible(Work('2026-10','RAW','ohlc',attempts=4)))
     def test_partial_done_is_not_certified(self):
         x=Work('2026-10','QA1','ohlc',done=True,raw_committed=True,raw_sha256=SHA)
         self.assertFalse(can_publish(x))

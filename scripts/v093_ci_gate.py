@@ -8,7 +8,7 @@ import hashlib,json,os,urllib.request
 def execution_signature(tree):
     if tree.get('truncated'):raise ValueError('TRUNCATED_EXECUTION_TREE')
     inputs=sorted((f['path'],f['sha'],f['mode']) for f in tree['tree']
-                  if f['type']=='blob' and (f['path'].startswith(('scripts/','tests/','.github/workflows/')) or f['path']=='requirements-qa.lock'))
+                  if f['type']=='blob' and (f['path'].startswith(('scripts/','tests/','.github/workflows/')) or f['path'] in ('requirements-qa.lock','config/v093_five_stage_policy.json')))
     if not inputs:raise ValueError('EMPTY_EXECUTION_INPUTS')
     return hashlib.sha256(json.dumps(inputs,separators=(',',':')).encode()).hexdigest()
 

@@ -1,0 +1,42 @@
+name: JARVIS v0.93 Adopted Five Stage Policy Acceptance
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-five-stage-policy-acceptance.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Full suite including adopted rules and blocked legacy capture CLIs
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  policy-and-workflows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Every prelaunch stage loads one adopted policy version and digest
+        run: |
+          python3 - <<'PY'
+          import json
+          from scripts.v093_five_stage_policy import load_policy,prelaunch
+          from scripts.v093_five_stage_combined_contract import run
+          p=load_policy();checks=[prelaunch(stage) for stage in p['stages']]
+          assert len({c['policy_sha256'] for c in checks})==1
+          assert all(c['max_total_attempts']==4 for c in checks)
+          result=run()
+          assert result['production_release']=='BLOCKED'
+          print('ADOPTED_POLICY_ACCEPTANCE '+json.dumps({'policy_version':p['policy_version'],'stages':checks,'production_writes':0,'schedules_enabled':False},sort_keys=True),flush=True)
+          PY

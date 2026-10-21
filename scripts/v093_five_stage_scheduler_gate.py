@@ -4,12 +4,14 @@ This is a testable candidate, NOT an active distributed lock implementation.
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
+from scripts.v093_five_stage_policy import load_policy,bounded_month
 
 STAGES = ("RAW", "QA1", "PRICE", "FINANCIAL", "CHIP")
 OWNERS = {"PRICE": frozenset(("ohlc", "volume", "corporate_action")),
           "FINANCIAL": frozenset(("revenue", "balance", "income", "cashflow", "pit")),
           "CHIP": frozenset(("institutional", "margin", "broker", "ownership"))}
-MAX_RETRIES = 3
+MAX_TOTAL_ATTEMPTS = load_policy()['retry']['max_total_attempts']
+MAX_RETRIES = MAX_TOTAL_ATTEMPTS  # compatibility alias; counts total attempts
 
 @dataclass(frozen=True)
 class Work:
@@ -26,6 +28,8 @@ class Work:
 
 def eligible(w: Work) -> bool:
     if w.stage not in STAGES: raise ValueError("UNKNOWN_STAGE")
+    try:bounded_month(w.month)
+    except (TypeError,ValueError):return False
     if w.done or w.attempts >= MAX_RETRIES: return False
     if w.stage == "RAW": return True
     if not w.raw_committed or len(w.raw_sha256) != 64: return False

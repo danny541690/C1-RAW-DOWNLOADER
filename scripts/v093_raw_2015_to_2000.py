@@ -21,6 +21,8 @@ def run(minutes):
     raw.Independent(minutes).run()
 
 if __name__ == "__main__":
+    from scripts.v093_five_stage_policy import block_legacy_cli
+    block_legacy_cli('v093_raw_2015_to_2000.py')
     parser = argparse.ArgumentParser()
     parser.add_argument("--minutes", type=float, default=40)
     args = parser.parse_args()

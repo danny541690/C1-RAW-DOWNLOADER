@@ -170,4 +170,5 @@ def run():
                            "coverage_complete":False}),flush=True)
     put_json(d,report_dir,"2024_ANNUAL_STATUS.json",{"year":YEAR,"months_processed":12,"mode":"PARTIAL_SAMPLE_ONLY","market_coverage_complete":False,"numeric_verified":False,"pit_verified":False})
     print("2024 FIRST-PASS SOURCE SAMPLES FINISHED; FULL-MARKET DATA NOT VERIFIED",flush=True)
-if __name__=="__main__":run()
+if __name__=="__main__":
+    raise SystemExit("LEGACY_WORKER_POLICY_NOT_INTEGRATED: annual_actual_firstpass.py; required=V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021; no download started")

@@ -312,4 +312,6 @@ class Independent(engine.History):
         with urllib.request.urlopen(req,timeout=20):pass
 
 if __name__=='__main__':
+    from scripts.v093_five_stage_policy import block_legacy_cli
+    block_legacy_cli('v093_independent_raw.py')
     p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=40);a=p.parse_args();Independent(a.minutes).run()

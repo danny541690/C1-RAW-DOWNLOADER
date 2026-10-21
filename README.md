@@ -2,6 +2,14 @@
 
 Public-source ingestion runner. This repository is PUBLIC. Do not put investment strategies, personal holdings, access tokens, Google Drive identifiers, or proprietary QA rules here.
 
+## Current binding execution rules (2026-10-21)
+
+The user-adopted policy is [V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md](docs/V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md), with machine-readable authority in [config/v093_five_stage_policy.json](config/v093_five_stage_policy.json). It supersedes conflicting legacy order/whole-month-skip/retry/top-up rules. Five prelaunch workflows load its version and hash; incompatible known legacy capture CLIs are blocked. Real five-stage worker integration and operational acceptance remain pending. No schedule activation or market-data download is performed by policy adoption.
+
+Cross-chat handoff: [CHATGPT_MEMORY_POINT_V093_20261021.md](docs/CHATGPT_MEMORY_POINT_V093_20261021.md).
+
+The bootstrap descriptions below are historical implementation notes; use the policy and current acceptance checkpoint for present status.
+
 ## Separation
 - Private: `danny541690/C1-JARVIS` (investment models and proprietary research)
 - Public: this repository (public data adapters and generic raw capture checks only)

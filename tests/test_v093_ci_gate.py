@@ -26,7 +26,7 @@ class ConsolidatedCodeAcceptance(unittest.TestCase):
         result=approved_code(self.get([self.workflow()],self.tree(code='newcode'),self.tree()),'new');self.assertFalse(result['ready'])
     def test_dependency_workflow_and_tests_are_bound(self):
         baseline=self.tree();before=execution_signature(baseline)
-        for path in ('requirements-qa.lock','.github/workflows/worker.yml','tests/test_extra.py'):
+        for path in ('requirements-qa.lock','.github/workflows/worker.yml','tests/test_extra.py','config/v093_five_stage_policy.json'):
             tree=self.tree();tree['tree'].append({'path':path,'sha':'changed','mode':'100644','type':'blob'})
             self.assertNotEqual(execution_signature(tree),before)
     def test_partial_or_empty_tree_is_rejected(self):

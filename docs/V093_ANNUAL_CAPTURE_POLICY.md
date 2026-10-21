@@ -1,4 +1,6 @@
 # JARVIS C1 v0.93 — Annual public-data capture policy
+
+> 2026-10-21：後續新任務以 `V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md` 與 `config/v093_five_stage_policy.json` 為權威；以下保留歷史規範。相衝突的月份順序、整月跳過、不續補與永久略過未知請求規則已被取代。
 Status: APPROVED USER REQUIREMENTS / IMPLEMENTATION PENDING
 Updated: 2026-10-18
 

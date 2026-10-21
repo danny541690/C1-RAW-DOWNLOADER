@@ -1,5 +1,7 @@
 # RAW first capture only: 2026-12 to 2000-01
 
+> 2026-10-21：後續新任務以 `V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md` 與 `config/v093_five_stage_policy.json` 為權威；以下保留歷史規範。相衝突的月份順序、整月跳過、不續補與永久略過未知請求規則已被取代。
+
 One replacement workflow; all earlier workflows remain disabled. Exactly 324
 month slots in descending order. Future months are recorded NOT_AVAILABLE, current
 month is through execution date only. No automatic later top-up of these months.
