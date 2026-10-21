@@ -57,6 +57,11 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                         try:
                             payload=json.loads(z.read(item).decode("utf-8-sig"))
                             diag["payload_type"]=type(payload).__name__
+                            if isinstance(payload,list):
+                                diag["array_rows"]=len(payload)
+                                if payload and isinstance(payload[0],dict):
+                                    diag["row_keys"]=sorted(str(k) for k in payload[0])[:35]
+                                    diag["date_and_symbol_fields"]={str(k):str(v)[:50] for k,v in payload[0].items() if any(t in str(k).lower() for t in ("date","day","time","code","stock","代號","日期","證券"))}
                             if isinstance(payload,dict):
                                 diag["top_level_keys"]=sorted(str(k) for k in payload)[:24]
                                 if source=="TPEx" and isinstance(payload.get("tables"),list):
