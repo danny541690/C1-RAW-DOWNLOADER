@@ -9,6 +9,7 @@ permissions:
   actions: write
 jobs:
   prepare:
+    if: ${{ false }} # paused by explicit user request
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -28,36 +29,42 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m scripts.v093_replan_control prepare
   verify_raw:
+    if: ${{ false }} # paused by explicit user request
     needs: prepare
     uses: ./.github/workflows/v093-v2-01-raw.yml
     with:
       minutes: '4'
     secrets: inherit
   verify_qa:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_raw
     uses: ./.github/workflows/v093-v2-02-qa.yml
     with:
       minutes: '5'
     secrets: inherit
   verify_price:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_qa
     uses: ./.github/workflows/v093-v2-03-price.yml
     with:
       minutes: '1'
     secrets: inherit
   verify_financial:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_price
     uses: ./.github/workflows/v093-v2-04-financial.yml
     with:
       minutes: '1'
     secrets: inherit
   verify_chip:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_financial
     uses: ./.github/workflows/v093-v2-05-chip.yml
     with:
       minutes: '1'
     secrets: inherit
   activate:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_chip
     runs-on: ubuntu-latest
     steps:

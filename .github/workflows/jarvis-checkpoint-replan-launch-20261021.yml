@@ -11,6 +11,7 @@ env:
   REPLAN_WORKFLOW_FILE: jarvis-checkpoint-replan-launch-20261021.yml
 jobs:
   prepare:
+    if: ${{ false }} # paused by explicit user request
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -30,6 +31,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m scripts.v093_replan_control prepare
   verify_raw:
+    if: ${{ false }} # paused by explicit user request
     needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -52,6 +54,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m scripts.v093_replanned_five_stage --stage RAW --minutes 4
   verify_qa:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_raw
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -74,6 +77,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m scripts.v093_replanned_five_stage --stage QA1 --minutes 5
   verify_price:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_qa
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -96,6 +100,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m scripts.v093_replanned_five_stage --stage PRICE --minutes 1
   verify_financial:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_price
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -118,6 +123,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m scripts.v093_replanned_five_stage --stage FINANCIAL --minutes 1
   verify_chip:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_financial
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -140,6 +146,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m scripts.v093_replanned_five_stage --stage CHIP --minutes 1
   activate:
+    if: ${{ false }} # paused by explicit user request
     needs: verify_chip
     runs-on: ubuntu-latest
     steps:
