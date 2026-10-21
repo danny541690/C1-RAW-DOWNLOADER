@@ -24,6 +24,7 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
         stats=collections.Counter()
         errors=[]
         zero_cell_diagnostics=[]
+        oversize_members=[]
         if not archives:
             report["sources"][source]={"status":"NO_BOUNDED_ZIP_SAMPLE","stats":{},"errors":[]}
             continue
@@ -37,6 +38,7 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                 if item.is_dir() or not item.filename.lower().endswith((".json",".raw",".jsonl",".csv")):continue
                 if any(t in item.filename.lower() for t in ("manifest","receipt","checkpoint","metadata")):continue
                 if item.file_size>max_member:
+                    if len(oversize_members)<8:oversize_members.append({"member":item.filename,"uncompressed_bytes":item.file_size,"compressed_bytes":item.compress_size,"max_member_bytes":max_member})
                     stats["oversize_skipped"]+=1
                     continue
                 stats["members_attempted"]+=1
@@ -90,5 +92,5 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                         p=Probe();p.feed(z.read(item).decode("utf-8","replace"))
                         entry["html_structure"]={"tables":p.tables,"rows":p.rows,"cells":p.cells,"text_preview":p.text}
                     errors.append(entry)
-        report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"stats":dict(stats),"errors":errors[:10],"zero_cell_diagnostics":zero_cell_diagnostics}
+        report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"stats":dict(stats),"errors":errors[:10],"zero_cell_diagnostics":zero_cell_diagnostics,"oversize_members":oversize_members}
     return report
