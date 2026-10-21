@@ -33,7 +33,7 @@ jobs:
         run: |
           mkdir -p input reports
           gh run download 39549532792 --repo "$GITHUB_REPOSITORY" -p 'full-322-months-file-metadata-and-review-queue' -D input
-          test -f input/all-322-months-file-metadata.json
+          test "$(find input -name all-322-months-file-metadata.json | wc -l)" -eq 1
       - name: Verify legacy crons disabled and five stage skeletons manual-only
         run: |
           python3 - <<'PY'
@@ -54,7 +54,10 @@ jobs:
           python3 - <<'PY'
           import json
           from scripts.v093_v2_consolidated_launch_gate import evidence_from_inventory,decide
-          inventory=json.load(open('input/all-322-months-file-metadata.json'))
+          from pathlib import Path
+          paths=list(Path('input').rglob('all-322-months-file-metadata.json'))
+          assert len(paths)==1,paths
+          inventory=json.load(open(paths[0]))
           evidence=evidence_from_inventory(inventory)
           result=decide(evidence)
           with open('reports/consolidated-release-gate.json','w') as f:json.dump({'evidence':evidence,'result':result},f,ensure_ascii=False,indent=2)
