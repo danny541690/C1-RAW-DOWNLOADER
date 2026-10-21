@@ -1,0 +1,58 @@
+name: JARVIS v0.93 Real Historical SHA CRC and Repair Queue Combined
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-real-historical-sha-crc-repair-gate.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  real-drive-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Verify real historical ZIP samples and emit explicit repair queue
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_historical_repair_inventory import inspect_month,blocked_stages
+          assert all(os.environ.get(k) for k in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'))
+          d=Drive(service())
+          months=('2026-09','2025-01','2000-01')
+          result={'months':{},'repair_queue':[],'production_writes':0,'certified':False}
+          for month in months:
+              item=inspect_month(d,month)
+              result['months'][month]=item
+              result['repair_queue']+=item['repair_queue']
+              item['downstream_gates']=blocked_stages(item)
+              print('REAL_DRIVE_MONTH_SHA_CRC_AUDIT '+json.dumps({'month':month,'source_status':{k:v['status'] for k,v in item['sources'].items()},'repair_items':len(item['repair_queue']),'certified':False},sort_keys=True),flush=True)
+          with open('reports/v093-historical-repair-audit.json','w') as f:json.dump(result,f,ensure_ascii=False,indent=2)
+          print('HISTORICAL_SHA_CRC_REPAIR_QUEUE_PASS '+json.dumps({'months':len(months),'queue_items':len(result['repair_queue']),'source_zip_samples_verified':sum(v.get('status')=='ZIP_SAMPLE_HASH_CRC_PASS_PENDING_DEEP_QA' for m in result['months'].values() for v in m['sources'].values()),'false_certifications':0,'real_drive_writes':0}),flush=True)
+          print('PRODUCTION_GATE=BLOCKED_FULL_322_MONTH_COVERAGE_AND_CONVERSION_QA_NOT_YET_PROVEN')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v093-historical-repair-audit
+          path: reports/v093-historical-repair-audit.json
