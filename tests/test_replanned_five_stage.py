@@ -40,3 +40,11 @@ class ReplanTests(unittest.TestCase):
     def test_newest_actual_content_date_precedes_old_insertion_order(self):
         a={'unit_id':'a','category':'prices','period':'2026-10-01','status':'SAVED_BASIC_VERIFIED','evidence_file':'x/a'}
         b=dict(a,unit_id='b',period='2026-10-21');self.assertEqual([e['unit_id'] for e in plan.newest_receipts({'units':{'a':a,'b':b}})],['b','a'])
+
+    def test_longer_consumer_budgets_fit_one_hour_single_slot(self):
+        budget=plan.PLAN['worker_budgets_minutes']
+        self.assertEqual(sum(budget[s] for s in ('QA1','PRICE','FINANCIAL','CHIP')),52)
+        starts=[0,20,34,46,60]
+        for i,stage in enumerate(('QA1','PRICE','FINANCIAL','CHIP')):
+            self.assertGreater(budget[stage],4)
+            self.assertLessEqual(starts[i]+budget[stage]+2,starts[i+1])

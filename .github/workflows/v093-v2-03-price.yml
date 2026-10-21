@@ -1,12 +1,12 @@
 name: JARVIS v0.93 LIVE PRICE
 on:
   schedule:
-    - cron: '15,45 * * * *'
+    - cron: '20 * * * *'
   workflow_call:
     inputs:
       minutes:
         type: string
-        default: '4'
+        default: '12'
         required: false
     secrets:
       GOOGLE_CLIENT_ID:
@@ -19,7 +19,7 @@ on:
     inputs:
       minutes:
         description: Bounded worker time in minutes
-        default: '4'
+        default: '12'
         required: false
 permissions:
   contents: write
@@ -44,5 +44,5 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-          WORKER_MINUTES: ${{ inputs.minutes || '4' }}
+          WORKER_MINUTES: ${{ inputs.minutes || '12' }}
         run: python3 -m scripts.v093_replanned_five_stage --stage PRICE --minutes "$WORKER_MINUTES"

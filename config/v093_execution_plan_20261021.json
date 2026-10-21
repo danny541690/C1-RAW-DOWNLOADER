@@ -12,5 +12,21 @@
   "raw_latest_updates": "BOUNDED_CURRENT_DATE_INCREMENT_ONLY",
   "preserve_completed_receipts_and_attempts": true,
   "max_heavy_workers": 2,
-  "lease_suffix": "_REPLAN_201404_V1"
+  "lease_suffix": "_REPLAN_201404_V1",
+  "worker_budgets_minutes": {
+    "RAW": 24,
+    "QA1": 18,
+    "PRICE": 12,
+    "FINANCIAL": 10,
+    "CHIP": 12
+  },
+  "downstream_budget_minutes_per_hour": 52,
+  "downstream_cadence": "HOURLY_STAGGERED",
+  "cron_utc": {
+    "RAW": "1,31 * * * *",
+    "QA1": "0 * * * *",
+    "PRICE": "20 * * * *",
+    "FINANCIAL": "34 * * * *",
+    "CHIP": "46 * * * *"
+  }
 }

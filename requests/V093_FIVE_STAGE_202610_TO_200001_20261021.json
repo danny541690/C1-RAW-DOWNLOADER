@@ -49,40 +49,40 @@
         "stage": "RAW",
         "workflow": ".github/workflows/v093-v2-01-raw.yml",
         "cron_utc": "1,31 * * * *",
-        "taipei_trigger": "每小時 01、31 分",
+        "taipei_trigger": "每小時 1,31 分",
         "worker_budget_minutes": 24,
         "concurrency_pool": "RAW"
       },
       {
         "stage": "QA1",
         "workflow": ".github/workflows/v093-v2-02-qa.yml",
-        "cron_utc": "3,33 * * * *",
-        "taipei_trigger": "每小時 03、33 分",
-        "worker_budget_minutes": 10,
+        "cron_utc": "0 * * * *",
+        "taipei_trigger": "每小時 0 分",
+        "worker_budget_minutes": 18,
         "concurrency_pool": "CONSUMER"
       },
       {
         "stage": "PRICE",
         "workflow": ".github/workflows/v093-v2-03-price.yml",
-        "cron_utc": "15,45 * * * *",
-        "taipei_trigger": "每小時 15、45 分",
-        "worker_budget_minutes": 4,
+        "cron_utc": "20 * * * *",
+        "taipei_trigger": "每小時 20 分",
+        "worker_budget_minutes": 12,
         "concurrency_pool": "CONSUMER"
       },
       {
         "stage": "FINANCIAL",
         "workflow": ".github/workflows/v093-v2-04-financial.yml",
-        "cron_utc": "21,51 * * * *",
-        "taipei_trigger": "每小時 21、51 分",
-        "worker_budget_minutes": 3,
+        "cron_utc": "34 * * * *",
+        "taipei_trigger": "每小時 34 分",
+        "worker_budget_minutes": 10,
         "concurrency_pool": "CONSUMER"
       },
       {
         "stage": "CHIP",
         "workflow": ".github/workflows/v093-v2-05-chip.yml",
-        "cron_utc": "26,56 * * * *",
-        "taipei_trigger": "每小時 26、56 分",
-        "worker_budget_minutes": 3,
+        "cron_utc": "46 * * * *",
+        "taipei_trigger": "每小時 46 分",
+        "worker_budget_minutes": 12,
         "concurrency_pool": "CONSUMER"
       }
     ],
@@ -162,6 +162,22 @@
     "raw_latest_updates": "BOUNDED_CURRENT_DATE_INCREMENT_ONLY",
     "preserve_completed_receipts_and_attempts": true,
     "max_heavy_workers": 2,
-    "lease_suffix": "_REPLAN_201404_V1"
+    "lease_suffix": "_REPLAN_201404_V1",
+    "worker_budgets_minutes": {
+      "RAW": 24,
+      "QA1": 18,
+      "PRICE": 12,
+      "FINANCIAL": 10,
+      "CHIP": 12
+    },
+    "downstream_budget_minutes_per_hour": 52,
+    "downstream_cadence": "HOURLY_STAGGERED",
+    "cron_utc": {
+      "RAW": "1,31 * * * *",
+      "QA1": "0 * * * *",
+      "PRICE": "20 * * * *",
+      "FINANCIAL": "34 * * * *",
+      "CHIP": "46 * * * *"
+    }
   }
 }
