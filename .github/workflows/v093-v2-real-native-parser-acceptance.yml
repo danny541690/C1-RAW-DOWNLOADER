@@ -73,6 +73,24 @@ jobs:
           cells=sum(s['stats'].get('native_cells_staged',0) for r in reports for s in r['sources'].values())
           attempted=sum(s['stats'].get('members_attempted',0) for r in reports for s in r['sources'].values())
           errors=sum(s['stats'].get('parse_errors',0) for r in reports for s in r['sources'].values())
-          print('REAL_NATIVE_PARSER_COMBINED_PASS '+json.dumps({'months':len(reports),'members_attempted':attempted,'native_cells_staged_unverified':cells,'parse_errors':errors,'production_writes':0,'certified':False}),flush=True)
-          print('RELEASE_REQUIRES=APPROVED_PIT_UNITS_NUMERIC_ADAPTERS_AND_REAL_FIVE_STAGE_SCHEDULERS')
+          source_summary={}
+          for source in ('TWSE','TPEx','MOPS','FinMind'):
+            samples=[r['sources'][source] for r in reports]
+            source_summary[source]={
+              'members_attempted':sum(s['stats'].get('members_attempted',0) for s in samples),
+              'unverified_numeric_cells':sum(s['stats'].get('native_cells_staged',0) for s in samples),
+              'parse_errors':sum(s['stats'].get('parse_errors',0) for s in samples),
+              'oversize_skipped':sum(s['stats'].get('oversize_skipped',0) for s in samples),
+              'zero_cell_members':sum(s['stats'].get('members_without_cells',0) for s in samples)
+            }
+          blockers=[]
+          if errors:blockers.append('UNRESOLVED_PARSE_ERRORS')
+          if any(v['oversize_skipped'] for v in source_summary.values()):blockers.append('UNINSPECTED_LARGE_MEMBERS')
+          if any(v['zero_cell_members'] for v in source_summary.values()):blockers.append('UNMAPPED_OR_EMPTY_MEMBERS')
+          blockers.extend(['PIT_UNIT_NUMERIC_QA_UNAPPROVED','FIVE_REAL_STAGE_IMPLEMENTATIONS_NOT_CONNECTED'])
+          decision={'months':len(reports),'members_attempted':attempted,'native_cells_staged_unverified':cells,'parse_errors':errors,'sources':source_summary,'production_writes':0,'certified':False,'release':'BLOCKED','blockers':blockers}
+          assert all(not r['certified'] and r['drive_writes']==0 for r in reports)
+          assert errors==sum(v['parse_errors'] for v in source_summary.values())
+          print('REAL_NATIVE_PARSER_COMBINED_AUDIT '+json.dumps(decision,sort_keys=True),flush=True)
+          print('RELEASE_GATE=BLOCKED_NO_CRON_ACTIVATION',flush=True)
           PY
