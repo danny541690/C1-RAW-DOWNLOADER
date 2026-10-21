@@ -39,6 +39,7 @@ jobs:
                               digest=hashlib.sha256(key.encode()).hexdigest()
                               commit(db,key,'worker-before-cancel',fence,digest,101)
                               db.execute('UPDATE jobs SET status="DONE",sha=? WHERE month=? AND stage=?',(digest,m,stage))
+                              db.commit()
                   db.commit()
               # A GitHub run is cancelled. The SQLite database is intentionally reopened to
               # model persistence; real GitHub-hosted runner local disks are NOT persistent.
@@ -61,6 +62,7 @@ jobs:
                           digest=hashlib.sha256(key.encode()).hexdigest()
                           commit(db,key,'restarted-worker',fence,digest,111)
                           db.execute('UPDATE jobs SET status="DONE",sha=? WHERE month=? AND stage=?',(digest,m,stage))
+                          db.commit()
                           recovered+=1
                   db.commit()
               with sqlite3.connect(path) as db:
