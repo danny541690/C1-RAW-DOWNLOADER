@@ -9,6 +9,7 @@ on:
       - 'tests/test_v093_finmind_annual_rows_adapter.py'
       - 'tests/test_v093_mops_html_financial_classification.py'
       - 'tests/test_v093_tpex_ex_dividend_event_dates.py'
+      - 'tests/test_v093_historical_date_safety.py'
       - 'scripts/v093_five_stage_combined_contract.py'
       - '.github/workflows/v093-raw-resume.yml'
       - '.github/workflows/v093-2024-four-source-annual-capture.yml'
