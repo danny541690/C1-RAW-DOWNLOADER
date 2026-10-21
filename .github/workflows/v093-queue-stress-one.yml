@@ -1,9 +1,4 @@
 name: JARVIS v0.93 Queue Stress ONE
-on:
-  workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/v093-queue-stress-trigger.yml'
 permissions:
   contents: read
 concurrency:
@@ -14,8 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Observe shared concurrency pending queue
-        run: |
-          echo "QUEUE_STRESS_ONE_START $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          sleep 35
-          echo "QUEUE_STRESS_ONE_END $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    - name: Observe shared concurrency pending queue
+      run: 'echo "QUEUE_STRESS_ONE_START $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+        sleep 35
+
+        echo "QUEUE_STRESS_ONE_END $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+        '
+'on':
+  workflow_dispatch: null

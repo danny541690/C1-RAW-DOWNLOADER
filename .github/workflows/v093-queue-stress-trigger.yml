@@ -1,2 +1,0 @@
-# Test-only trigger for three independent workflows sharing one GitHub Actions concurrency group.
-# No production schedules or Drive data touched.
