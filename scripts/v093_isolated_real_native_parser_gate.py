@@ -7,6 +7,7 @@ from html.parser import HTMLParser
 from scripts.v093_isolated_historical_repair_inventory import inspect_month
 from scripts.v093_standard_r1 import ROOT,SOURCES,ls
 from scripts.v093_standard_r2 import parse
+from scripts.v093_native_numeric_sanity import audit as native_audit
 FOLDER="application/vnd.google-apps.folder"
 def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
     y=[x for x in ls(d,ROOT) if x.get("name")==month[:4] and x.get("mimeType")==FOLDER]
@@ -41,6 +42,9 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                 stats["members_attempted"]+=1
                 try:
                     rows,invalid,encoding=parse(source,arc["name"],item.filename,z.read(item),month)
+                    sanity=native_audit(rows,month)
+                    for field in ("invalid_date","invalid_stock_id","nonfinite_numeric","identifier_as_numeric","premature_verification","premature_publication","duplicate_lineage_key"):
+                        stats["sanity_"+field]+=sanity[field]
                     stats["native_cells_staged"]+=len(rows)
                     stats["invalid_rows"]+=invalid
                     stats["members_with_cells"]+=bool(rows)
