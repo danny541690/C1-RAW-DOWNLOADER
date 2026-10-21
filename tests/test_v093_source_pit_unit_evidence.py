@@ -1,6 +1,28 @@
 import unittest
 from scripts.v093_source_pit_unit_evidence import assess_evidence,mops_html_evidence,mops_revenue_header_evidence,mops_revenue_table_probe
 class SourcePITUnitEvidenceTests(unittest.TestCase):
+ def comparison(self,**changes):
+  return dict(source='FinMind',stock_id='2330',report_period='2026-09',metric='當月營收',unit='NTD_THOUSANDS',source_sha256='a'*64,**changes)
+ def test_cross_source_metadata_rejects_different_company_period_metric_or_unit(self):
+  for field,value in [('stock_id','1101'),('report_period','2026-08'),('metric','累計營收'),('unit','NTD')]:
+   with self.subTest(field=field):
+    c=self.comparison();c[field]=value
+    x=assess_evidence('MOPS','2330','2026-09','2026-10-10','NTD_THOUSANDS',c,metric='當月營收')
+    self.assertFalse(x['cross_source_metadata_comparable'])
+    self.assertIn('COMPARISON_'+field.upper()+'_MISMATCH',x['issues'])
+ def test_cross_source_metadata_requires_source_and_real_digest(self):
+  for source,digest in [(None,'a'*64),('FinMind','fake'),('MOPS','a'*64)]:
+   c=self.comparison();c.update(source=source,source_sha256=digest)
+   x=assess_evidence('MOPS','2330','2026-09','2026-10-10','NTD_THOUSANDS',c,metric='當月營收')
+   self.assertFalse(x['cross_source_metadata_comparable'])
+ def test_matching_metadata_still_does_not_certify_numeric_values(self):
+  x=assess_evidence('MOPS','2330','2026-09','2026-10-10','NTD_THOUSANDS',self.comparison(),metric='當月營收')
+  self.assertTrue(x['cross_source_metadata_comparable'])
+  self.assertFalse(x['verified'])
+ def test_cross_source_metadata_blocked_without_primary_metric_or_publication(self):
+  for pub,metric in [('2026-10-10',None),(None,'當月營收')]:
+   x=assess_evidence('MOPS','2330','2026-09',pub,'NTD_THOUSANDS',self.comparison(),metric=metric)
+   self.assertFalse(x['cross_source_metadata_comparable'])
  def test_revenue_identity_and_exact_amount_without_pit_promotion(self):
   html='<p>上市公司115年9月份</p><p>出表日期：115/10/16</p><p>單位：千元</p><table><tr><th>公司代號</th><th>公司名稱</th><th>當月營收</th><th>上月營收</th></tr><tr><td>1101</td><td>台泥</td><td>14,321,556</td><td>2330</td></tr><tr><td>合計</td><td></td><td>14,321,556</td></tr></table>'
   x=mops_revenue_table_probe(html)
