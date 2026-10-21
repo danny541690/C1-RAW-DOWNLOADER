@@ -6,7 +6,7 @@ import collections,io,json,zipfile,re
 from html.parser import HTMLParser
 from scripts.v093_isolated_historical_repair_inventory import inspect_month
 from scripts.v093_standard_r1 import ROOT,SOURCES,ls
-from scripts.v093_standard_r2 import parse
+from scripts.v093_standard_r2 import parse,decode
 from scripts.v093_native_numeric_sanity import audit as native_audit
 from scripts.v093_source_pit_unit_evidence import mops_html_evidence
 from scripts.v093_twse_disclosure_pit import disclosure_evidence,audit_disclosure_rows
@@ -109,7 +109,9 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                     stats["parse_errors"]+=1
                     entry={"member":item.filename,"error":type(exc).__name__+":"+str(exc)[:120]}
                     if source=="MOPS" and ("MOPS_FINANCIAL_STATEMENT_MATRIX_" in str(exc) or "MOPS_REVENUE_TABLE_CANDIDATE_" in str(exc) or "HTML_NEEDS_DEDICATED_REVENUE_ADAPTER" in str(exc)):
-                        entry["mops_metadata_evidence"]=mops_html_evidence(z.read(item).decode("utf-8","replace"))
+                        html_text,html_encoding=decode(z.read(item))
+                        entry["html_encoding"]=html_encoding
+                        entry["mops_metadata_evidence"]=mops_html_evidence(html_text)
                         class Probe(HTMLParser):
                             def __init__(self):
                                 super().__init__();self.tables=0;self.rows=0;self.cells=0;self.text=[]
@@ -120,7 +122,7 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                             def handle_data(self,data):
                                 data=re.sub(r"\\s+"," ",data).strip()
                                 if data and len(self.text)<30:self.text.append(data[:65])
-                        p=Probe();p.feed(z.read(item).decode("utf-8","replace"))
+                        p=Probe();p.feed(html_text)
                         entry["html_structure"]={"tables":p.tables,"rows":p.rows,"cells":p.cells,"text_preview":p.text}
                     errors.append(entry)
         report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"archive_candidates":archive_candidates,"stats":dict(stats),"errors":errors[:10],"zero_cell_diagnostics":zero_cell_diagnostics,"oversize_members":oversize_members}
