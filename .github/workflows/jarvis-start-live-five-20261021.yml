@@ -5,12 +5,12 @@ on:
       - '.github/workflows/jarvis-start-live-five-20261021.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   actions: write
 jobs:
   activate:
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,7 +23,46 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -q
           python3 -m scripts.v093_five_stage_combined_contract
-      - name: Enable and start the five real workers
+      - name: Enable five workers and replace unstarted dispatch
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -m scripts.v093_activate_live
+  first_raw:
+    needs: activate
+    uses: ./.github/workflows/v093-v2-01-raw.yml
+    with:
+      minutes: '8'
+    secrets: inherit
+  first_qa:
+    needs: first_raw
+    uses: ./.github/workflows/v093-v2-02-qa.yml
+    with:
+      minutes: '2'
+    secrets: inherit
+  first_price:
+    needs: first_qa
+    uses: ./.github/workflows/v093-v2-03-price.yml
+    with:
+      minutes: '2'
+    secrets: inherit
+  first_financial:
+    needs: first_price
+    uses: ./.github/workflows/v093-v2-04-financial.yml
+    with:
+      minutes: '2'
+    secrets: inherit
+  first_chip:
+    needs: first_financial
+    uses: ./.github/workflows/v093-v2-05-chip.yml
+    with:
+      minutes: '2'
+    secrets: inherit
+  finish:
+    if: always()
+    needs: [activate, first_raw, first_qa, first_price, first_financial, first_chip]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disable one-shot activation workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/$GITHUB_REPOSITORY/actions/workflows/jarvis-start-live-five-20261021.yml/disable"

@@ -2,6 +2,19 @@ name: JARVIS v0.93 LIVE RAW
 on:
   schedule:
     - cron: '1,31 * * * *'
+  workflow_call:
+    inputs:
+      minutes:
+        type: string
+        default: '4'
+        required: false
+    secrets:
+      GOOGLE_CLIENT_ID:
+        required: true
+      GOOGLE_CLIENT_SECRET:
+        required: true
+      GOOGLE_REFRESH_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       minutes:
