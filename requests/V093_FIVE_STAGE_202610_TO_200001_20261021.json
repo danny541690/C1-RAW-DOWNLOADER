@@ -47,10 +47,10 @@
     "raw_primary_resume": "2014-04",
     "audit_primary_start": "2026-10",
     "downstream_budgets_minutes": {
-      "QA1": 30,
-      "PRICE": 10,
-      "FINANCIAL": 10,
-      "CHIP": 10
+      "QA1": 60,
+      "PRICE": 60,
+      "FINANCIAL": 60,
+      "CHIP": 60
     },
     "full_history_complete": false,
     "numeric_verified": false,
@@ -68,10 +68,11 @@
       "PRICE",
       "FINANCIAL",
       "CHIP"
-    ]
+    ],
+    "latest_capacity_run": 39690225723
   },
   "current_schedules": {
-    "verified_at": null,
+    "verified_at": "2026-10-21T22:58:22Z",
     "timezone": "Asia/Taipei",
     "entries": [
       {
@@ -119,7 +120,7 @@
     "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
     "max_heavy_workers": null,
     "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
-    "state": "SIXTY_MINUTE_CONFIG_DEPLOYED_PENDING_DISPATCH",
+    "state": "SIXTY_MINUTE_CONFIG_ENABLED",
     "downstream_budget_minutes_per_hour": 240
   },
   "previous_generation_evidence": {
@@ -242,10 +243,18 @@
     },
     "raw_budget_unchanged": true,
     "checkpoint_reset": false,
-    "state": "PENDING_CLOUD_DISPATCH",
+    "state": "ENABLED_VERIFIED",
     "workflow_timeout_minutes": 75,
     "lease_ttl_seconds": 5400,
-    "in_flight_30_minute_runs": "FINISH_THEN_RESUME_WITH_60_MINUTES"
+    "in_flight_30_minute_runs": "FINISH_THEN_RESUME_WITH_60_MINUTES",
+    "activation_run": 39690225723,
+    "first_60_minute_runs": {
+      "QA1": 39690259579,
+      "PRICE": 39690261646,
+      "FINANCIAL": 39690263836,
+      "CHIP": 39690265883
+    },
+    "tests_passed": 281
   },
   "previous_capacity_change": {
     "authorized_by": "USER_20261022_REMOVE_TWO_WORKER_CAP_AND_30M_DOWNSTREAM",
