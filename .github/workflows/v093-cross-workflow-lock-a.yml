@@ -1,0 +1,21 @@
+name: JARVIS v0.93 Cross Workflow Lock A
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-cross-workflow-lock-b.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-test-only-cross-workflow-serialization
+  cancel-in-progress: false
+jobs:
+  lock-a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Hold cross-workflow repository lock
+        run: |
+          echo "CROSS_WORKFLOW_LOCK_A_START $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          sleep 30
+          echo "CROSS_WORKFLOW_LOCK_A_END $(date -u +%Y-%m-%dT%H:%M:%SZ)"
