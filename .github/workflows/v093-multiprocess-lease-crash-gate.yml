@@ -1,0 +1,88 @@
+name: JARVIS v0.93 Multiprocess Lease Crash Recovery Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-multiprocess-lease-crash-gate.yml'
+permissions:
+  contents: read
+jobs:
+  multiprocess-contention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Twenty real OS processes contend on one local SQLite lease
+        run: |
+          python3 - <<'PY'
+          import tempfile,os,sqlite3,multiprocessing as mp,json
+          from scripts.v093_isolated_transaction_prototype import initialize,acquire,commit
+          def contend(path,gate,q,i):
+              db=sqlite3.connect(path,timeout=20)
+              gate.wait()
+              try:q.put(('won',i,acquire(db,'2026-10:ohlc:RAW',str(i),100,300)))
+              except ValueError as e:q.put(('blocked',i,str(e)))
+              finally:db.close()
+          with tempfile.TemporaryDirectory() as tmp:
+              path=os.path.join(tmp,'lock.db')
+              with sqlite3.connect(path) as db:initialize(db)
+              ctx=mp.get_context('fork');gate=ctx.Event();q=ctx.Queue()
+              ps=[ctx.Process(target=contend,args=(path,gate,q,i)) for i in range(20)]
+              for p in ps:p.start()
+              gate.set()
+              for p in ps:p.join(20)
+              assert all(p.exitcode==0 for p in ps),[(p.pid,p.exitcode) for p in ps]
+              result=[q.get(timeout=2) for _ in ps]
+              winners=[x for x in result if x[0]=='won']
+              assert len(winners)==1,result
+              assert len(result)==20
+              with sqlite3.connect(path) as db:
+                  owner=str(winners[0][1]);fence=winners[0][2]
+                  commit(db,'2026-10:ohlc:RAW',owner,fence,'a'*64,101)
+                  row=db.execute('SELECT owner,fence,digest FROM leases').fetchone()
+                  assert row==(owner,fence,'a'*64),row
+              print('MULTIPROCESS_CONTENTION_PASS '+json.dumps({'processes':20,'winners':1,'blocked':19,'commits':1,'scope':'single_runner_local_sqlite'}),flush=True)
+          PY
+  crash-and-fence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Simulate owner crash, lease takeover and stale commit rejection
+        run: |
+          python3 - <<'PY'
+          import tempfile,os,sqlite3,multiprocessing as mp,json
+          from scripts.v093_isolated_transaction_prototype import initialize,acquire,commit
+          def abandoned(path,q):
+              with sqlite3.connect(path) as db:
+                  token=acquire(db,'2026-10:revenue:FINANCIAL','crashed',100,ttl=10)
+                  q.put(token)
+              os._exit(1)
+          with tempfile.TemporaryDirectory() as tmp:
+              path=os.path.join(tmp,'lock.db')
+              with sqlite3.connect(path) as db:initialize(db)
+              ctx=mp.get_context('fork');q=ctx.Queue()
+              p=ctx.Process(target=abandoned,args=(path,q));p.start();p.join(10)
+              assert p.exitcode==1,p.exitcode
+              with sqlite3.connect(path) as db:
+                  old=db.execute('SELECT fence FROM leases WHERE key=?',('2026-10:revenue:FINANCIAL',)).fetchone()
+                  assert old is not None
+                  try:acquire(db,'2026-10:revenue:FINANCIAL','new',109,ttl=10)
+                  except ValueError as e:assert str(e)=='LEASE_BUSY'
+                  else:raise AssertionError('PREMATURE_TAKEOVER')
+                  fresh=acquire(db,'2026-10:revenue:FINANCIAL','new',110,ttl=10)
+                  assert fresh>old[0]
+                  try:commit(db,'2026-10:revenue:FINANCIAL','crashed',old[0],'b'*64,111)
+                  except ValueError as e:assert str(e)=='STALE_OR_EXPIRED_LEASE'
+                  else:raise AssertionError('STALE_COMMIT_ACCEPTED')
+                  commit(db,'2026-10:revenue:FINANCIAL','new',fresh,'b'*64,111)
+              print('CRASH_TAKEOVER_FENCING_PASS '+json.dumps({'crashed_process_exit':1,'takeover_after_expiry':True,'stale_commit_rejected':True,'new_commit':1}),flush=True)
+          PY
+  release-check:
+    needs: [multiprocess-contention, crash-and-fence]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo 'ISOLATED_MULTI_PROCESS_TESTS_PASS'
+          echo 'CROSS_RUNNER_DURABLE_ATOMIC_LOCK_NOT_IMPLEMENTED'
+          echo 'PRODUCTION_RELEASE_GATE=BLOCKED'
