@@ -33,7 +33,11 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
         if not archives:
             report["sources"][source]={"status":"NO_BOUNDED_ZIP_SAMPLE","stats":{},"errors":[]}
             continue
-        arc=archives[0]
+        # Prefer the full original monthly TWSE archive over a partial delta for
+        # the same month; compare against FinMind's listed-stock batch.
+        full_name=f"V093_TWSE_{month}_raw.zip"
+        full_candidates=[x for x in archives if source=="TWSE" and x["name"]==full_name]
+        arc=full_candidates[0] if full_candidates else archives[0]
         archive_candidates=[{"name":x["name"],"bytes":int(x.get("size",0))} for x in archives[:20]]
         raw=d.call(lambda:d.api.files().get_media(fileId=arc["id"]))
         if len(raw)>max_archive:raise ValueError("ARCHIVE_TOO_LARGE")
