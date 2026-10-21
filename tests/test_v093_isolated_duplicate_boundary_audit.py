@@ -5,7 +5,7 @@ class DuplicateBoundaryTests(unittest.TestCase):
     def test_same_name_different_hash_quarantined(self):
         class Api:
             def files(self):return self
-            def get_media(self,fileId):return fileId
+            def get_media(self,fileId):return fileId.encode()
         class Drive:
             api=Api()
             def call(self,fn):return fn()
