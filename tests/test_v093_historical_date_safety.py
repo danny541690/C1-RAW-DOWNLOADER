@@ -15,6 +15,12 @@ class HistoricalDateSafetyTests(unittest.TestCase):
    with self.subTest(name=name):self.assertEqual(source_date(name),(expected,"FILENAME_ONLY"))
  def test_filename_rejects_impossible_date(self):
   self.assertEqual(source_date("TWSE_20240230.csv"),(None,"NONE"))
+ def test_cross_source_member_quarantined(self):
+  raw=b'{"data":[{"date":"2026-09-08","stock_id":"2330","close":"100"}]}'
+  with self.assertRaisesRegex(ValueError,"SOURCE_PATH_MISMATCH_MEMBER_PREFIX"):
+   parse("MOPS","V093_MOPS_2026-09_raw.zip","TWSE_director_latest_abc.jsonl",raw,"2026-09")
+  rows,invalid,_=parse("TWSE","V093_TWSE_2026-09_raw.zip","TWSE_20260908.json",raw,"2026-09")
+  self.assertTrue(rows)
  def test_invalid_row_date_not_replaced_by_response(self):
   raw=b'{"date":"20240603","data":[{"date":"2024-02-30","stock_id":"2330","close":"100"}]}'
   rows,invalid,_=parse("TWSE","x.zip","x.json",raw,"2024-06")
