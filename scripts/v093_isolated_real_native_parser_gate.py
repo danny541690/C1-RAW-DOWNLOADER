@@ -8,6 +8,7 @@ from scripts.v093_isolated_historical_repair_inventory import inspect_month
 from scripts.v093_standard_r1 import ROOT,SOURCES,ls
 from scripts.v093_standard_r2 import parse
 from scripts.v093_native_numeric_sanity import audit as native_audit
+from scripts.v093_source_pit_unit_evidence import mops_html_evidence
 FOLDER="application/vnd.google-apps.folder"
 def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
     y=[x for x in ls(d,ROOT) if x.get("name")==month[:4] and x.get("mimeType")==FOLDER]
@@ -78,7 +79,8 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                 except Exception as exc:
                     stats["parse_errors"]+=1
                     entry={"member":item.filename,"error":type(exc).__name__+":"+str(exc)[:120]}
-                    if source=="MOPS" and "HTML_NEEDS_DEDICATED_REVENUE_ADAPTER" in str(exc):
+                    if source=="MOPS" and ("MOPS_FINANCIAL_STATEMENT_MATRIX_" in str(exc) or "HTML_NEEDS_DEDICATED_REVENUE_ADAPTER" in str(exc)):
+                        entry["mops_metadata_evidence"]=mops_html_evidence(z.read(item).decode("utf-8","replace"))
                         class Probe(HTMLParser):
                             def __init__(self):
                                 super().__init__();self.tables=0;self.rows=0;self.cells=0;self.text=[]
