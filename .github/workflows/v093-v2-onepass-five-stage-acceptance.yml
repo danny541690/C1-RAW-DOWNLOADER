@@ -1,0 +1,132 @@
+name: JARVIS v0.93 ONE-PASS Five-Stage Combined Acceptance
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-onepass-five-stage-acceptance.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: jarvis-v093-v2-onepass-acceptance
+  cancel-in-progress: false
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  five-stages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        stage: [RAW,QA1,PRICE,FINANCIAL,CHIP]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Exercise all stage dependencies and enforce no false release
+        env:
+          STAGE: ${{ matrix.stage }}
+        run: |
+          python3 - <<'PY'
+          import os,json
+          from scripts.v093_five_stage_scheduler_gate import STAGES
+          from scripts.v093_five_stage_durable_gate import decide_adapter
+          stage=os.environ['STAGE']
+          assert stage in STAGES
+          if stage in ('PRICE','FINANCIAL','CHIP'):
+              result=decide_adapter(stage,None,None,None)
+              assert result.startswith('BLOCKED_'),result
+          else:
+              result='MANUAL_PRELAUNCH_ONLY_PENDING_COMPLETE_QA'
+          print('FIVE_STAGE_ISOLATED_DRY_RUN_PASS '+json.dumps({'stage':stage,'decision':result,'certified':False,'production_writes':0}),flush=True)
+          PY
+  real-drive-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Read-only real ZIP CRC SHA and historical boundary
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_historical_repair_inventory import inspect_month
+          from scripts.v093_isolated_duplicate_boundary_audit import audit_year
+          assert all(os.environ.get(k) for k in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'))
+          d=Drive(service())
+          samples={m:inspect_month(d,m) for m in ('2026-09','2025-01','2000-01')}
+          boundary=audit_year(d,2014,['2014-01','2014-04','2014-05'])
+          passed=sum(v['status']=='ZIP_SAMPLE_HASH_CRC_PASS_PENDING_DEEP_QA' for r in samples.values() for v in r['sources'].values())
+          assert passed==8,passed
+          assert all(not r['certified'] for r in samples.values())
+          assert not boundary['certified']
+          with open('reports/real-drive-sample.json','w') as f:json.dump({'samples':samples,'boundary':boundary},f,ensure_ascii=False,indent=2)
+          print('REAL_DRIVE_SHA_CRC_HISTORICAL_COMBINED_PASS '+json.dumps({'sample_sha_crc_pass':passed,'boundary_months':3,'certified_months':0,'production_writes':0}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: onepass-real-drive-qa-evidence
+          path: reports/real-drive-sample.json
+  release:
+    needs: [regression,five-stages,real-drive-qa]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Download verified 322-month inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p input reports
+          gh run download 39549532792 --repo "$GITHUB_REPOSITORY" -p 'full-322-months-file-metadata-and-review-queue' -D input
+          test "$(find input -name all-322-months-file-metadata.json | wc -l)" -eq 1
+      - name: Verify five workflows are manual only and decide release
+        run: |
+          python3 - <<'PY'
+          import json,yaml
+          from pathlib import Path
+          from scripts.v093_v2_consolidated_launch_gate import decide,evidence_from_inventory
+          old=['v093-raw-2015-to-2000.yml','v093-l1-secondpass-qa-repair.yml','v093-l1-thirdpass-gated-repair.yml']
+          new=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml','v093-v2-04-financial.yml','v093-v2-05-chip.yml']
+          for name in old+new:
+              data=yaml.safe_load((Path('.github/workflows')/name).read_text())
+              on=data.get('on',data.get(True,{}))
+              assert 'schedule' not in on,name
+              if name in new:assert 'workflow_dispatch' in on,name
+          paths=list(Path('input').rglob('all-322-months-file-metadata.json'))
+          assert len(paths)==1
+          report=json.load(open(paths[0]))
+          evidence=evidence_from_inventory(report)
+          decision=decide(evidence)
+          assert decision['decision']=='BLOCKED_KEEP_MANUAL_ONLY'
+          with open('reports/onepass-release-evidence.json','w') as f:json.dump({'evidence':evidence,'decision':decision},f,ensure_ascii=False,indent=2)
+          print('ONEPASS_ALL_FIVE_STAGE_ACCEPTANCE_PASS '+json.dumps({'five_stages_tested':5,'months_inventoried':report['months'],'source_month_pairs':report['counts']['source_month_pairs'],'unresolved_empty_source_months':report['counts']['EMPTY_MONTH_FOLDER'],'release_decision':decision['decision'],'failed_gates':decision['failed'],'production_writes':0},sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: onepass-five-stage-release-decision
+          path: reports/onepass-release-evidence.json
