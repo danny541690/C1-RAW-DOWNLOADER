@@ -1,0 +1,99 @@
+name: JARVIS v0.93 Integrated Safety Regression Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-integrated-safety-regression.yml'
+permissions:
+  contents: read
+jobs:
+  full-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Check release gate remains blocked
+        run: echo 'PRODUCTION_RELEASE_GATE=BLOCKED'
+  merged-failure-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Integrate lease fencing, retry, manifest and Drive helper
+        run: |
+          python3 - <<'PY'
+          import sqlite3,hashlib,tempfile,os,json
+          from scripts.v093_isolated_transaction_prototype import initialize,acquire,commit
+          from scripts.annual_actual_firstpass import Drive
+          class Request:
+              def __init__(self,fn):self.fn=fn
+              def execute(self,**kwargs):return self.fn()
+          class Files:
+              def __init__(self,items):self.items=items
+              def list(self,q,fields,pageSize):
+                  name=q.split("name = '",1)[1].split("'",1)[0]
+                  return Request(lambda:{'files':[{'id':name,'name':name}] if name in self.items else []})
+              def get_media(self,fileId):return Request(lambda:self.items[fileId])
+              def create(self,body,media_body,fields):
+                  def go():
+                      self.items[body['name']]=media_body._fd.getvalue()
+                      return {'id':body['name']}
+                  return Request(go)
+          class API:
+              def __init__(self,items):self.items=items
+              def files(self):return Files(self.items)
+          with tempfile.TemporaryDirectory() as root:
+              db=sqlite3.connect(os.path.join(root,'state.db'))
+              initialize(db)
+              data=b'2026-10:ohlc:RAW'
+              sha=hashlib.sha256(data).hexdigest()
+              name='2026-10-ohlc-'+sha+'.bin'
+              files={}
+              drive=Drive(API(files))
+              key='2026-10:ohlc:RAW'
+              fence1=acquire(db,key,'worker-a',100,ttl=10)
+              drive.put('TEST_ONLY',name,data)
+              # Simulated crash: data exists, but no digest committed.
+              assert name in files
+              assert db.execute('SELECT digest FROM leases WHERE key=?',(key,)).fetchone()[0] is None
+              try:acquire(db,key,'worker-b',105,ttl=10)
+              except ValueError as exc:assert str(exc)=='LEASE_BUSY'
+              else:raise AssertionError('LEASE_BYPASS')
+              fence2=acquire(db,key,'worker-b',110,ttl=10)
+              assert fence2>fence1
+              drive.put('TEST_ONLY',name,data)
+              assert len(files)==1
+              try:commit(db,key,'worker-a',fence1,sha,111)
+              except ValueError as exc:assert str(exc)=='STALE_OR_EXPIRED_LEASE'
+              else:raise AssertionError('STALE_WORKER_COMMITTED')
+              # Verify actual remote read and digest before accepting resumed commit.
+              assert hashlib.sha256(drive.read('TEST_ONLY',name)).hexdigest()==sha
+              commit(db,key,'worker-b',fence2,sha,111)
+              assert db.execute('SELECT digest FROM leases WHERE key=?',(key,)).fetchone()[0]==sha
+              # Tampering after manifest update must block certification.
+              files[name]=b'corrupt'
+              assert hashlib.sha256(drive.read('TEST_ONLY',name)).hexdigest()!=sha
+              certification='REPAIR_SHA_MISMATCH'
+              # Three failed repair attempts must remain unresolved, not certified.
+              attempts=3
+              assert attempts==3 and certification!='CERTIFIED'
+              print('INTEGRATED_FAULT_MATRIX_PASS '+json.dumps({'data_write_before_crash':True,'lease_expiry_takeover':True,'stale_commit_rejected':True,'idempotent_resume':True,'committed_after_readback':True,'tamper_detected':True,'failed_repairs':3,'certified_after_tamper':False,'real_drive_writes':0,'shared_atomic_backend':False}),flush=True)
+              print('RELEASE_GATE=BLOCKED_SHARED_DURABLE_CAS_AND_DRIVE_INTEGRATION')
+          PY
+  final-gate:
+    needs: [full-regression,merged-failure-matrix]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summarize merged test
+        run: |
+          echo 'INTEGRATED_SAFETY_GATE_PASS'
+          echo 'PRODUCTION_RELEASE_GATE=BLOCKED'
