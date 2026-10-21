@@ -1,0 +1,99 @@
+name: JARVIS v0.93 Cross Runner GitHub SHA CAS Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-cross-runner-github-cas-gate.yml'
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      path: ${{ steps.seed.outputs.path }}
+      sha: ${{ steps.seed.outputs.sha }}
+    steps:
+      - name: Create isolated shared-state file using GitHub Contents API
+        id: seed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,urllib.request
+          path=f".github/test-state/cas-probe-{os.environ['RUN_ID']}.json"
+          content=json.dumps({'status':'seed','run':os.environ['RUN_ID']}).encode()
+          url=f"https://api.github.com/repos/{os.environ['REPO']}/contents/{path}"
+          body=json.dumps({'message':'test: isolated CAS seed (not production data)','content':base64.b64encode(content).decode()}).encode()
+          req=urllib.request.Request(url,data=body,method='PUT',headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
+          with urllib.request.urlopen(req,timeout=20) as r: response=json.load(r)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+              out.write(f"path={path}\nsha={response['content']['sha']}\n")
+          print('CAS_SEED_CREATED '+path)
+          PY
+  contender-a:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compete to update shared file with initial SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PATH_KEY: ${{ needs.prepare.outputs.path }}
+          SEED_SHA: ${{ needs.prepare.outputs.sha }}
+          ACTOR: A
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,urllib.request,urllib.error
+          path=os.environ['PATH_KEY'];actor=os.environ['ACTOR']
+          body=json.dumps({'message':'test: contender '+actor,'sha':os.environ['SEED_SHA'],'content':base64.b64encode(json.dumps({'winner':actor}).encode()).decode()}).encode()
+          req=urllib.request.Request(f"https://api.github.com/repos/{os.environ['REPO']}/contents/{path}",data=body,method='PUT',headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
+          try:
+              with urllib.request.urlopen(req,timeout=30) as r: status=r.status
+          except urllib.error.HTTPError as e:status=e.code
+          assert status in (200,409,422),status
+          print('CAS_CONTENDER_RESULT '+json.dumps({'actor':actor,'http_status':status,'success':status==200}))
+          PY
+  contender-b:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compete to update shared file with initial SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PATH_KEY: ${{ needs.prepare.outputs.path }}
+          SEED_SHA: ${{ needs.prepare.outputs.sha }}
+          ACTOR: B
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,urllib.request,urllib.error
+          path=os.environ['PATH_KEY'];actor=os.environ['ACTOR']
+          body=json.dumps({'message':'test: contender '+actor,'sha':os.environ['SEED_SHA'],'content':base64.b64encode(json.dumps({'winner':actor}).encode()).decode()}).encode()
+          req=urllib.request.Request(f"https://api.github.com/repos/{os.environ['REPO']}/contents/{path}",data=body,method='PUT',headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
+          try:
+              with urllib.request.urlopen(req,timeout=30) as r: status=r.status
+          except urllib.error.HTTPError as e:status=e.code
+          assert status in (200,409,422),status
+          print('CAS_CONTENDER_RESULT '+json.dumps({'actor':actor,'http_status':status,'success':status==200}))
+          PY
+  verify:
+    needs: [prepare,contender-a,contender-b]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read back winner from separate GitHub runner
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PATH_KEY: ${{ needs.prepare.outputs.path }}
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,base64
+          req=urllib.request.Request(f"https://api.github.com/repos/{os.environ['REPO']}/contents/{os.environ['PATH_KEY']}",headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+          with urllib.request.urlopen(req,timeout=30) as r:data=json.load(r)
+          content=json.loads(base64.b64decode(data['content']))
+          assert content.get('winner') in ('A','B'),content
+          print('CROSS_RUNNER_SHARED_GITHUB_STATE_READBACK_PASS '+json.dumps(content))
+          print('RELEASE_GATE=BLOCKED_DRIVE_COMMIT_AND_DURABLE_QUEUE_NOT_INTEGRATED')
+          PY
