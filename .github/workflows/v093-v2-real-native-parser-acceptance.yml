@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/v093-v2-real-native-parser-acceptance.yml'
+      - 'scripts/v093_isolated_real_native_parser_gate.py'
 permissions:
   contents: read
 jobs:
