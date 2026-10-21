@@ -68,3 +68,34 @@ def mops_revenue_header_evidence(html):
          "export_date_is_publication_date":False,"publication_date":None,
          "unit_label":unit,"unit_code":unit_code,"unit_evidence_complete":unit_code is not None,
          "pit_verified":False,"certified":False}
+
+def mops_revenue_table_probe(html):
+ """Read-only table-row extraction, retaining positional columns and raw text."""
+ from html.parser import HTMLParser
+ class Probe(HTMLParser):
+  def __init__(self):
+   super().__init__();self.rows=[];self.row=None;self.cell=None;self.depth=0
+  def handle_starttag(self,tag,attrs):
+   if tag=="tr":self.row=[]
+   if tag in ("td","th") and self.row is not None:self.cell=[]
+  def handle_data(self,data):
+   if self.cell is not None:self.cell.append(data)
+  def handle_endtag(self,tag):
+   if tag in ("td","th") and self.cell is not None and self.row is not None:
+    self.row.append(" ".join("".join(self.cell).split()));self.cell=None
+   if tag=="tr" and self.row is not None:
+    if self.row:self.rows.append(self.row)
+    self.row=None
+ p=Probe();p.feed(html)
+ symbols=[];headers=[];seen=set()
+ for row in p.rows:
+  for i,cell in enumerate(row):
+   if re.fullmatch(r"[1-9][0-9]{3}",cell):
+    key=(cell,i)
+    if key not in seen:
+     seen.add(key);symbols.append({"stock_id":cell,"column":i,"sample":row[:12]})
+   if "公司代號" in cell or "當月營收" in cell:
+    if len(headers)<8:headers.append(row[:18])
+ return {"html_rows":len(p.rows),"distinct_symbol_column_pairs":len(seen),
+         "symbol_samples":symbols[:8],"header_samples":headers,
+         "certified":False,"pit_verified":False}
