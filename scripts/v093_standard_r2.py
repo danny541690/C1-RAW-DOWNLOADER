@@ -2,6 +2,7 @@
 Outputs STAGING Parquet, never a certified Golden Copy. RAW is immutable.
 """
 import argparse,collections,csv,datetime,hashlib,io,json,re,zipfile
+from html.parser import HTMLParser
 import pyarrow as pa,pyarrow.parquet as pq
 from scripts.v093_standard_r1 import Drive,service,ROOT,C1,folder,ls,LIMIT_ARCHIVE,LIMIT_MEMBER,MAX_ZIP_UNCOMPRESSED
 SOURCES=("TWSE","TPEx","MOPS","FinMind")
@@ -90,6 +91,24 @@ def parse_json(source,archive,member,obj,period):
    if td and date and td!=date:continue
    add("table_"+str(j)+":"+str(t.get("title",""))[:75],t.get("data"),t.get("fields"))
  return rows_to_long(source,archive,member,period,records)
+def classify_mops_html(text):
+ """Classify financial HTML without inventing stock IDs, periods, or PIT."""
+ class Probe(HTMLParser):
+  def __init__(self):
+   super().__init__();self.tables=0;self.rows=0;self.cells=0;self.text=[]
+  def handle_starttag(self,tag,attrs):
+   if tag=="table":self.tables+=1
+   if tag=="tr":self.rows+=1
+   if tag in ("td","th"):self.cells+=1
+  def handle_data(self,data):
+   value=re.sub(r"\\s+"," ",data).strip()
+   if value and len(self.text)<500:self.text.append(value)
+ p=Probe();p.feed(text)
+ combined=" ".join(p.text)
+ financial=any(x in combined for x in ("資產總額","負債總額","現金及約當現金","綜合損益","營業利益"))
+ revenue="營業收入" in combined or "當月營收" in combined
+ return {"kind":"FINANCIAL_STATEMENT_MATRIX" if financial else "REVENUE_TABLE_CANDIDATE" if revenue else "UNKNOWN_HTML","tables":p.tables,"rows":p.rows,"cells":p.cells,"unit_hint":"NTD_THOUSANDS_UNVERIFIED" if "新台幣仟元" in combined else "UNKNOWN","pit_verified":False,"stock_id_verified":False,"certified":False}
+
 def parse(source,archive,member,b,period):
  s,encoding=decode(b)
  lower=member.lower()
@@ -121,7 +140,10 @@ def parse(source,archive,member,b,period):
     date=period+"-01";proof="REPORTED_MONTH_NOT_PUBLISHED_DATE"
    records.append(("csv",i,date,proof,sid,vals))
   return rows_to_long(source,archive,member,period,records)+(encoding,)
- raise ValueError("HTML_NEEDS_DEDICATED_REVENUE_ADAPTER")
+ if source=="MOPS" and s.lstrip().startswith("<"):
+  kind=classify_mops_html(s)["kind"]
+  raise ValueError("MOPS_"+kind+"_REQUIRES_STOCK_ID_PERIOD_AND_PIT_METADATA")
+ raise ValueError("HTML_NEEDS_DEDICATED_ADAPTER")
 def run(year,month):
  d=Drive(service());period=f"{year}-{month:02d}";base=folder(d,ROOT,str(year))
  standard=folder(d,C1,"02_STANDARD",True);dest=folder(d,folder(d,standard,str(year),True),period,True);dest=folder(d,dest,"NATIVE_STAGING_R2",True)
