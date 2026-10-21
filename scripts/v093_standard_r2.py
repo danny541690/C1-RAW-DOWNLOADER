@@ -73,6 +73,10 @@ def parse_json(source,archive,member,obj,period):
    if not symbol and isinstance(fields,list) and isinstance(row,list):
     col=next((j for j,f in enumerate(fields) if f in ("股票代號","證券代號","代號","公司代號")),None)
     if col is not None:symbol=str(row[col]).strip()
+   # An explicit but invalid row date must not inherit the response or filename
+   # date; that would create a fabricated dated financial observation.
+   if any(k in values and values[k] not in (None,"") and normalize_date(values[k]) is None
+          for k in ("date","Date","trade_date","資料日期")):continue
    # TPEx ex-dividend tables use ROC dates per event, which can differ
    # from the query/response date. Never substitute the query date for event date.
    event_date=None
