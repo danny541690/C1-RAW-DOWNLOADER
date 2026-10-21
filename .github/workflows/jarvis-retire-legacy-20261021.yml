@@ -1,0 +1,69 @@
+name: JARVIS Retire Legacy Workflows 20261021
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-retire-legacy-20261021.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  retire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Stop all old work and verify no enabled or active workflows remain
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          OWN_RUN: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json,os,time,urllib.request,urllib.error
+          base='https://api.github.com/repos/'+os.environ['REPO']
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          def api(path,method='GET'):
+              req=urllib.request.Request(base+path,headers=headers,method=method,data=b'' if method!='GET' else None)
+              try:
+                  with urllib.request.urlopen(req,timeout=30) as response:
+                      raw=response.read()
+                      return json.loads(raw) if raw else {}
+              except urllib.error.HTTPError as error:
+                  if method=='POST' and error.code in (409,422):return {}
+                  raise
+          def collect(path,key):
+              out=[];page=1
+              while True:
+                  data=api(path+('&' if '?' in path else '?')+'per_page=100&page='+str(page))
+                  rows=data.get(key,[]);out.extend(rows)
+                  if len(rows)<100:return out
+                  page+=1
+          workflows=collect('/actions/workflows','workflows')
+          disabled=[]
+          for workflow in workflows:
+              if workflow['state']=='active':
+                  api('/actions/workflows/'+str(workflow['id'])+'/disable','PUT')
+                  disabled.append(workflow['id'])
+          def outstanding():
+              runs={}
+              for status in ('in_progress','queued','pending','waiting','requested'):
+                  for run in collect('/actions/runs?status='+status,'workflow_runs'):
+                      if str(run['id'])!=os.environ['OWN_RUN']:runs[run['id']]=run
+              return list(runs.values())
+          for attempt in range(12):
+              runs=outstanding()
+              if not runs:break
+              for run in runs:
+                  api('/actions/runs/'+str(run['id'])+'/cancel','POST')
+                  if attempt>=2:api('/actions/runs/'+str(run['id'])+'/force-cancel','POST')
+              time.sleep(3)
+          remaining=outstanding()
+          enabled=[w['id'] for w in collect('/actions/workflows','workflows') if w['state']=='active']
+          result={'repository':os.environ['REPO'],'disabled_count':len(disabled),'remaining_enabled_workflows':enabled,
+                  'remaining_legacy_runs':[r['id'] for r in remaining],'raw_and_checkpoints_preserved':True,
+                  'new_five_stage_workers_started':False,'download_scope_requested':'2026-10..2000-01',
+                  'activation_blocker':'FIVE_REAL_STAGE_WORKERS_NOT_IMPLEMENTED'}
+          print('JARVIS_RETIRE_LEGACY_RESULT '+json.dumps(result,sort_keys=True),flush=True)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(json.dumps(result,indent=2))
+          if remaining or enabled:raise SystemExit('STOP_NOT_CONFIRMED')
+          PY
