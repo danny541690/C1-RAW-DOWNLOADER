@@ -1,10 +1,9 @@
 name: JARVIS v0.93 Layer02 STANDARD R2 Native Tables
 on:
-  push:
-    paths: [.github/workflows/v093-layer02-standard-r2.yml]
   workflow_dispatch:
 jobs:
   stage:
+    if: ${{ false }} # legacy staging writer retired during five-stage cutover
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
