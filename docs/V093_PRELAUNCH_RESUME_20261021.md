@@ -50,3 +50,13 @@ Release remains BLOCKED. No cron activation and no production Drive writes were 
 - Exact remaining OP-01..OP-05 and DATA-01..DATA-02 requirements: docs/V093_PRELAUNCH_READINESS_20261021.md.
 - Do not conflate historical backfill completion with RAW operational launch readiness. Next substantive work: implement/connect real stage workers and their durable handoff, then test production-path cancellation, cutover and sustained load.
 - No production cron activation or approved-data publication occurred.
+
+## User-adopted rules — 2026-10-21 (current execution authority)
+- User explicitly adopted all recommended five-stage download rules and requested Google Drive/GitHub/cross-chat persistence.
+- Authority: docs/V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md and config/v093_five_stage_policy.json; version V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021; SHA256 c8616b51bee97ed165a38a9f4303b3e867c4df4d84d50f7f6a2d1076738dd179.
+- Public downloader code commit 651915e6f08368e7efcf1c9cda53c0e745d13299; private C1-JARVIS adoption commit a997d9252ecfc883e4dc14978632ab9da9c5ef3e.
+- Google Drive policy document and machine JSON created; existing config, monthly capture rule, README and cross-chat continuation updated in place. Machine JSON/config/rule/continuation byte readback matched local saved bytes.
+- Cloud run 39606989385 completed SUCCESS: 263/263 tests and all five prelaunch stages load one policy digest, total request-attempt limit 4.
+- Known incompatible legacy capture CLIs blocked before startup; code evidence signature now includes the policy config.
+- Cross-chat summary: docs/CHATGPT_MEMORY_POINT_V093_20261021.md. A saved handoff document is not ChatGPT built-in permanent memory.
+- Formal five-stage worker integration, partition concurrency/quota enforcement and production-path operational acceptance remain pending. No schedule activation or market-data capture occurred during this rules update.
