@@ -1,0 +1,97 @@
+name: JARVIS v0.93 Full 322 Month Readonly Inventory Combined Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-full-history-inventory-gate.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - start: 2000
+            end: 2006
+          - start: 2007
+            end: 2013
+          - start: 2014
+            end: 2020
+          - start: 2021
+            end: 2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Read real Drive monthly folder presence (no content certification)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          START_YEAR: ${{ matrix.start }}
+          END_YEAR: ${{ matrix.end }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_full_history_inventory import inventory
+          assert all(os.environ.get(k) for k in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'))
+          start=int(os.environ['START_YEAR']);end=int(os.environ['END_YEAR'])
+          report=inventory(Drive(service()),start,end,'2026-10')
+          with open('reports/inventory.json','w') as f:json.dump(report,f,ensure_ascii=False,indent=2)
+          print('FULL_HISTORY_REAL_DRIVE_INVENTORY_PART_PASS '+json.dumps({k:report[k] for k in ('start_year','end_year','month_count','source_month_total','source_month_folder_present','source_month_folder_missing','source_month_folder_ambiguous','certified_months','read_only')},sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-history-inventory-${{ matrix.start }}-${{ matrix.end }}
+          path: reports/inventory.json
+  aggregate:
+    needs: [inventory,regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: full-history-inventory-*
+          path: parts
+      - name: Verify full coverage and generate repair plan
+        run: |
+          python3 - <<'PY'
+          import glob,json,os,collections
+          files=glob.glob('parts/*/inventory.json')
+          assert len(files)==4,files
+          reports=[json.load(open(x)) for x in files]
+          months={}
+          for r in reports:
+              for k,v in r['months'].items():
+                  assert k not in months,'DUPLICATE_MONTH_'+k
+                  months[k]=v
+          expected={f'{y}-{m:02d}' for y in range(2000,2027) for m in range(1,13) if f'{y}-{m:02d}'<='2026-10'}
+          assert set(months)==expected,(len(months),len(expected))
+          counts=collections.Counter(s for source_states in months.values() for s in source_states.values())
+          queue=[{'month':month,'source':source,'status':state,'action':'INVESTIGATE_FOLDER_THEN_BACKFILL'} for month,states in months.items() for source,state in states.items() if state!='MONTH_FOLDER_PRESENT_UNVERIFIED']
+          report={'months':len(months),'source_month_pairs':len(months)*4,'status_counts':dict(counts),'repair_queue':queue,'certified_months':0,'drive_writes':0,'production_crons_enabled':0}
+          os.makedirs('reports',exist_ok=True)
+          with open('reports/full-history-322-months.json','w') as f:json.dump({'summary':report,'months':months},f,ensure_ascii=False,indent=2)
+          print('FULL_322_MONTH_REAL_DRIVE_INVENTORY_AGGREGATE_PASS '+json.dumps({'months':report['months'],'source_month_pairs':report['source_month_pairs'],'status_counts':report['status_counts'],'repair_items':len(queue),'certified_months':0,'drive_writes':0},sort_keys=True),flush=True)
+          print('PRODUCTION_GATE=BLOCKED_ZIP_CONTENT_FULL_QA_AND_HISTORICAL_TRANSFORM_ADAPTERS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-history-322-months-summary
+          path: reports/full-history-322-months.json
