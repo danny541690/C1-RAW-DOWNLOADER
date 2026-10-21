@@ -1,0 +1,104 @@
+name: JARVIS Resume 201404 RAW and Hourly 30 10 10 10
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-resume-201404-30-10-10-10-20261021.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+env:
+  REPLAN_WORKFLOW_FILE: jarvis-resume-201404-30-10-10-10-20261021.yml
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Verify requested scopes and unchanged policy
+        run: |
+          python3 -m unittest discover -s tests -q
+          python3 -m scripts.v093_five_stage_combined_contract
+      - name: Retire old generations and restore only authorized new leases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -m scripts.v093_replan_control prepare
+          python3 - <<'PY'
+          import json
+          from scripts.v093_replan_control import BASE,TOKEN
+          from scripts.v093_five_stage_durable_gate import _read,_put
+          request=json.load(open('requests/V093_FIVE_STAGE_202610_TO_200001_20261021.json'))
+          assert request['activation_authorized'] and not request['execution_control']['paused']
+          url=BASE+'/contents/.github/live-state/five-stage-leases.json'
+          for attempt in range(12):
+              sha,state=_read(url,TOKEN)
+              for key in ('POOL_RAW_REPLAN_201404_V1','POOL_CONSUMER_REPLAN_201404_V1'):
+                  row=state['jobs'].setdefault(key,{})
+                  lease=row.get('lease') or {}
+                  if lease and lease.get('owner')!='PAUSED_BY_USER_20261021':
+                      raise RuntimeError('UNEXPECTED_LEASE_OWNER:'+key)
+                  row['last_fence']=max(row.get('last_fence',0),lease.get('fence',0))+1
+                  row.update(lease=None,status='AUTHORIZED_RESUME',certified=False)
+              if _put(url,TOKEN,sha,state,'ops: resume only authorized 201404 generation'):break
+          else:raise RuntimeError('RESUME_CAS_FAILED')
+          print('AUTHORIZED_NEW_GENERATION_UNLOCKED',flush=True)
+          PY
+      - name: Enable exactly the five schedules
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replan_control activate
+  first_raw:
+    needs: activate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: jarvis-v093-live-raw
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Resume RAW 2014-04 original checkpoint now
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replanned_five_stage --stage RAW --minutes 24
+  first_consumer_cycle:
+    needs: activate
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    concurrency:
+      group: jarvis-v093-live-consumer
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: First ordered cycle QA1 30 PRICE 10 FINANCIAL 10 CHIP 10
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -m scripts.v093_replanned_five_stage --stage QA1 --minutes 30
+          python3 -m scripts.v093_replanned_five_stage --stage PRICE --minutes 10
+          python3 -m scripts.v093_replanned_five_stage --stage FINANCIAL --minutes 10
+          python3 -m scripts.v093_replanned_five_stage --stage CHIP --minutes 10
