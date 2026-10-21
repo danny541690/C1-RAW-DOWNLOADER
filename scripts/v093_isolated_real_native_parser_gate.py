@@ -10,7 +10,7 @@ from scripts.v093_standard_r2 import parse
 from scripts.v093_native_numeric_sanity import audit as native_audit
 from scripts.v093_source_pit_unit_evidence import mops_html_evidence
 from scripts.v093_twse_disclosure_pit import disclosure_evidence,audit_disclosure_rows
-from scripts.v093_cross_source_numeric_audit import compare_rows,PRICE_FIELDS,matches_native_field
+from scripts.v093_cross_source_numeric_audit import compare_rows,PRICE_FIELDS,is_mapped_native_field
 FOLDER="application/vnd.google-apps.folder"
 def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
     y=[x for x in ls(d,ROOT) if x.get("name")==month[:4] and x.get("mimeType")==FOLDER]
@@ -55,7 +55,7 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                             native_field=str(row.get("native_field",""))
                             if any(term in native_field.lower() for term in ("close","收盤","成交價","收市")):
                                 close_diagnostics[source]["native_field_counts"][native_field]+=1
-                            if matches_native_field(native_field,close_field):
+                            if is_mapped_native_field(source,"close",native_field):
                                 close_rows[source].append(row)
                                 close_diagnostics[source]["matched_field_rows"]+=1
                                 close_diagnostics[source]["dates"][row["date"]]+=1
