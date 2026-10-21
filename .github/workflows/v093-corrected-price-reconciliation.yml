@@ -1,0 +1,51 @@
+name: JARVIS v0.93 Corrected Price Reconciliation
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-corrected-price-reconciliation.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Compare real TWSE and FinMind daily price volume and dates with schema-derived indices
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.parse,json,datetime,decimal
+          D=decimal.Decimal
+          def fetch(url):
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 JARVIS-Readonly-Validated'})
+            with urllib.request.urlopen(req,timeout=20) as r:return json.loads(r.read(1500000))
+          def n(v):return D(str(v).replace(',',''))
+          fields={'open':'開盤價','high':'最高價','low':'最低價','close':'收盤價','volume':'成交股數','amount':'成交金額','trades':'成交筆數'}
+          fmfields={'open':'open','high':'max','low':'min','close':'close','volume':'Trading_Volume','amount':'Trading_money','trades':'Trading_turnover'}
+          outcomes=[]
+          for year,month in ((2026,8),(2014,10)):
+            start=datetime.date(year,month,1)
+            nxt=datetime.date(year+1,1,1) if month==12 else datetime.date(year,month+1,1)
+            end=nxt-datetime.timedelta(days=1)
+            a=fetch('https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?'+urllib.parse.urlencode({'date':start.strftime('%Y%m%d'),'stockNo':'2330','response':'json'}))
+            b=fetch('https://api.finmindtrade.com/api/v4/data?'+urllib.parse.urlencode({'dataset':'TaiwanStockPrice','data_id':'2330','start_date':start.isoformat(),'end_date':end.isoformat()}))
+            assert a.get('stat')=='OK' and b.get('status')==200
+            headers=a['fields']
+            idx={key:headers.index(label) for key,label in fields.items()}
+            tw={}
+            for row in a['data']:
+              y,m,d=map(int,row[0].split('/'))
+              date=f'{y+1911:04d}-{m:02d}-{d:02d}'
+              tw[date]={k:n(row[i]) for k,i in idx.items()}
+            fm={row['date']:{k:n(row[v]) for k,v in fmfields.items()} for row in b['data']}
+            common=sorted(set(tw)&set(fm))
+            missing=sorted(set(tw)^set(fm))
+            mismatches={k:[day for day in common if tw[day][k]!=fm[day][k]] for k in fields}
+            status='PASS' if common and not missing and not any(mismatches.values()) else 'FAIL'
+            result={'month':start.strftime('%Y-%m'),'status':status,'twse_rows':len(tw),'finmind_rows':len(fm),'matched_dates':len(common),'unmatched_dates':missing,'field_mismatch_counts':{k:len(v) for k,v in mismatches.items()},'first_mismatch':{k:v[:3] for k,v in mismatches.items() if v}}
+            outcomes.append(result)
+            print('CORRECTED_RECONCILIATION '+json.dumps(result,ensure_ascii=False),flush=True)
+          assert len(outcomes)==2
+          assert all(x['status']=='PASS' for x in outcomes),'Cross-source mismatch: investigate; never overwrite source'
+          print('CORRECTED_RECONCILIATION_PASS total_days='+str(sum(x['matched_dates'] for x in outcomes))+' readonly=1')
+          PY
