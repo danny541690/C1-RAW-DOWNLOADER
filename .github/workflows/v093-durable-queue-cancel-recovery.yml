@@ -1,0 +1,76 @@
+name: JARVIS v0.93 Durable Queue Cancellation Recovery Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-durable-queue-cancel-recovery.yml'
+permissions:
+  contents: read
+jobs:
+  durable-queue-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Simulate 322 months, 5 stages, cancellation, restart, and exactly-once certification
+        run: |
+          python3 - <<'PY'
+          import sqlite3,tempfile,os,datetime,json,hashlib
+          from scripts.v093_isolated_transaction_prototype import initialize,acquire,commit
+          stages=('RAW','QA1','PRICE','FINANCIAL','CHIP')
+          months=[]
+          for y in range(2026,1999,-1):
+              for m in range(12,0,-1):
+                  if (y,m)<=(2026,10):months.append(f'{y}-{m:02d}')
+          assert len(months)==322 and months[0]=='2026-10' and months[-1]=='2000-01'
+          with tempfile.TemporaryDirectory() as td:
+              path=os.path.join(td,'durable_queue.db')
+              with sqlite3.connect(path) as db:
+                  initialize(db)
+                  db.execute('CREATE TABLE jobs(month TEXT,stage TEXT,status TEXT NOT NULL DEFAULT "PENDING",sha TEXT,PRIMARY KEY(month,stage))')
+                  db.executemany('INSERT INTO jobs(month,stage) VALUES (?,?)',[(m,s) for m in months for s in stages])
+                  db.commit()
+              with sqlite3.connect(path) as db:
+                  for m in months[:5]:
+                      for stage in stages:
+                          key=m+':'+stage
+                          fence=acquire(db,key,'worker-before-cancel',100,ttl=10)
+                          if m==months[0] and stage=='RAW':
+                              digest=hashlib.sha256(key.encode()).hexdigest()
+                              commit(db,key,'worker-before-cancel',fence,digest,101)
+                              db.execute('UPDATE jobs SET status="DONE",sha=? WHERE month=? AND stage=?',(digest,m,stage))
+                  db.commit()
+              # A GitHub run is cancelled. The SQLite database is intentionally reopened to
+              # model persistence; real GitHub-hosted runner local disks are NOT persistent.
+              with sqlite3.connect(path) as db:
+                  outstanding=db.execute('SELECT count(*) FROM jobs WHERE status="PENDING"').fetchone()[0]
+                  assert outstanding==1609,outstanding
+                  blocked=0;recovered=0;skipped=0
+                  for m in months:
+                      for stage in stages:
+                          key=m+':'+stage
+                          status=db.execute('SELECT status FROM jobs WHERE month=? AND stage=?',(m,stage)).fetchone()[0]
+                          if status=='DONE':
+                              skipped+=1;continue
+                          if m in months[:5]:
+                              try:acquire(db,key,'restarted-worker',109,ttl=10)
+                              except ValueError as e:
+                                  assert str(e)=='LEASE_BUSY';blocked+=1
+                              else:raise AssertionError('premature lease takeover')
+                          fence=acquire(db,key,'restarted-worker',110,ttl=10000)
+                          digest=hashlib.sha256(key.encode()).hexdigest()
+                          commit(db,key,'restarted-worker',fence,digest,111)
+                          db.execute('UPDATE jobs SET status="DONE",sha=? WHERE month=? AND stage=?',(digest,m,stage))
+                          recovered+=1
+                  db.commit()
+              with sqlite3.connect(path) as db:
+                  total,done,distinct=db.execute('SELECT count(*),sum(status="DONE"),count(distinct month||":"||stage) FROM jobs').fetchone()
+                  certified=db.execute('SELECT count(*) FROM leases WHERE digest IS NOT NULL').fetchone()[0]
+                  assert (total,done,distinct,certified)==(1610,1610,1610,1610)
+                  assert recovered==1609 and skipped==1 and blocked==24,(recovered,skipped,blocked)
+                  print('DURABLE_QUEUE_CANCEL_RESTART_PASS '+json.dumps({'months':322,'stages':5,'jobs':1610,'recovered':recovered,'already_done_skipped':skipped,'pre_expiry_takeovers_blocked':blocked,'duplicate_jobs':0,'committed':certified,'scope':'one runner isolated SQLite file only','cross_runner_persistence':False},sort_keys=True),flush=True)
+          PY
+      - name: Production release status
+        run: |
+          echo 'PROTOTYPE_ONLY: GitHub hosted runner local SQLite is ephemeral'
+          echo 'PRODUCTION_RELEASE_GATE=BLOCKED_PENDING_SHARED_DURABLE_QUEUE_AND_ATOMIC_DRIVE_COMMIT'
