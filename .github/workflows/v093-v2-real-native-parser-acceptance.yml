@@ -7,6 +7,7 @@ on:
       - 'scripts/v093_isolated_real_native_parser_gate.py'
       - 'scripts/v093_standard_r2.py'
       - 'tests/test_v093_finmind_annual_rows_adapter.py'
+      - 'tests/test_v093_mops_html_financial_classification.py'
 permissions:
   contents: read
 jobs:
