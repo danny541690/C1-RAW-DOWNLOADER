@@ -42,7 +42,9 @@ def source_date(name,obj=None):
    d=normalize_date(obj.get(k))
    if d:return d,"RESPONSE"
  m=re.search(r"(?<!\d)(20\d{2}[01]\d[0-3]\d)(?!\d)",name)
- if m:return normalize_date(m.group(1)),"FILENAME_ONLY"
+ if m:
+  candidate=normalize_date(m.group(1))
+  if candidate:return candidate,"FILENAME_ONLY"
  return None,"NONE"
 def rows_to_long(source,archive,member,period,records):
  out=[];invalid=0
