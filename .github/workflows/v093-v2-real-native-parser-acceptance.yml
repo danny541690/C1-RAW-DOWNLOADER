@@ -1,0 +1,74 @@
+name: JARVIS v0.93 Real Native Parser Acceptance
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-real-native-parser-acceptance.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  real-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        month: ['2025-01','2026-09']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Read-only parse real ZIP contents to native R2 rows
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          MONTH: ${{ matrix.month }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_real_native_parser_gate import run
+          r=run(Drive(service()),os.environ['MONTH'])
+          with open('reports/native-parser.json','w') as f:json.dump(r,f,ensure_ascii=False,indent=2)
+          print('REAL_NATIVE_PARSER_ACCEPTANCE '+json.dumps(r,ensure_ascii=False,sort_keys=True),flush=True)
+          assert r['certified'] is False and r['drive_writes']==0
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-parser-${{ matrix.month }}
+          path: reports/native-parser.json
+  summary:
+    needs: [regression,real-native]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-parser-*
+          path: parts
+      - name: Aggregate parser results and highlight real conversion gaps
+        run: |
+          python3 - <<'PY'
+          import glob,json
+          paths=glob.glob('parts/*/native-parser.json')
+          assert len(paths)==2,paths
+          reports=[json.load(open(p)) for p in paths]
+          cells=sum(s['stats'].get('native_cells_staged',0) for r in reports for s in r['sources'].values())
+          attempted=sum(s['stats'].get('members_attempted',0) for r in reports for s in r['sources'].values())
+          errors=sum(s['stats'].get('parse_errors',0) for r in reports for s in r['sources'].values())
+          print('REAL_NATIVE_PARSER_COMBINED_PASS '+json.dumps({'months':len(reports),'members_attempted':attempted,'native_cells_staged_unverified':cells,'parse_errors':errors,'production_writes':0,'certified':False}),flush=True)
+          print('RELEASE_REQUIRES=APPROVED_PIT_UNITS_NUMERIC_ADAPTERS_AND_REAL_FIVE_STAGE_SCHEDULERS')
+          PY
