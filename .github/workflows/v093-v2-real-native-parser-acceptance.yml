@@ -9,6 +9,7 @@ on:
       - 'tests/test_v093_finmind_annual_rows_adapter.py'
       - 'tests/test_v093_mops_html_financial_classification.py'
       - 'tests/test_v093_tpex_ex_dividend_event_dates.py'
+      - 'scripts/v093_five_stage_combined_contract.py'
 permissions:
   contents: read
 jobs:
@@ -22,6 +23,17 @@ jobs:
           python-version: '3.11'
       - run: pip install -r requirements-qa.lock
       - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  five-stage-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Verify actual five-stage workflow contracts and 322-month scope
+        run: python3 -m scripts.v093_five_stage_combined_contract
   real-native:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -57,7 +69,7 @@ jobs:
           name: native-parser-${{ matrix.month }}
           path: reports/native-parser.json
   summary:
-    needs: [regression,real-native]
+    needs: [regression,real-native,five-stage-contract]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
