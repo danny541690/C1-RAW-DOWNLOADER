@@ -2,12 +2,12 @@
 
 Never writes staging or labels any parsed cell verified.
 """
-import collections,io,zipfile
+import collections,io,json,zipfile
 from scripts.v093_isolated_historical_repair_inventory import inspect_month
 from scripts.v093_standard_r1 import ROOT,SOURCES,ls
 from scripts.v093_standard_r2 import parse
 FOLDER="application/vnd.google-apps.folder"
-def run(d,month,max_archive=10_000_000,max_member=1_000_000,max_members=12):
+def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
     y=[x for x in ls(d,ROOT) if x.get("name")==month[:4] and x.get("mimeType")==FOLDER]
     if len(y)!=1:raise ValueError("YEAR_AMBIGUOUS")
     sources={x["name"]:x for x in ls(d,y[0]["id"]) if x.get("mimeType")==FOLDER}
@@ -21,6 +21,7 @@ def run(d,month,max_archive=10_000_000,max_member=1_000_000,max_members=12):
         archives=sorted([x for x in files if x["name"].lower().endswith(".zip") and 0<int(x.get("size",0))<=max_archive],key=lambda x:x["name"])
         stats=collections.Counter()
         errors=[]
+        zero_cell_diagnostics=[]
         if not archives:
             report["sources"][source]={"status":"NO_BOUNDED_ZIP_SAMPLE","stats":{},"errors":[]}
             continue
@@ -43,8 +44,22 @@ def run(d,month,max_archive=10_000_000,max_member=1_000_000,max_members=12):
                     stats["invalid_rows"]+=invalid
                     stats["members_with_cells"]+=bool(rows)
                     stats["members_without_cells"]+=not bool(rows)
+                    if not rows and len(zero_cell_diagnostics)<4:
+                        diag={"member":item.filename,"bytes":item.file_size,"encoding":encoding,"invalid_rows":invalid}
+                        try:
+                            payload=json.loads(z.read(item).decode("utf-8-sig"))
+                            diag["payload_type"]=type(payload).__name__
+                            if isinstance(payload,dict):
+                                diag["top_level_keys"]=sorted(str(k) for k in payload)[:24]
+                                data=payload.get("data",payload.get("rows"))
+                                diag["data_rows"]=len(data) if isinstance(data,list) else None
+                                if isinstance(data,list) and data and isinstance(data[0],dict):
+                                    diag["row_keys"]=sorted(str(k) for k in data[0])[:24]
+                        except (ValueError,UnicodeDecodeError):
+                            diag["payload_type"]="NON_JSON_OR_UNDECODABLE"
+                        zero_cell_diagnostics.append(diag)
                 except Exception as exc:
                     stats["parse_errors"]+=1
                     errors.append({"member":item.filename,"error":type(exc).__name__+":"+str(exc)[:120]})
-        report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"stats":dict(stats),"errors":errors[:10]}
+        report["sources"][source]={"status":"REAL_NATIVE_PARSER_AUDITED_NOT_CERTIFIED","archive":arc["name"],"stats":dict(stats),"errors":errors[:10],"zero_cell_diagnostics":zero_cell_diagnostics}
     return report
