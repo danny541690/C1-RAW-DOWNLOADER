@@ -1,0 +1,28 @@
+name: JARVIS v0.93 Transaction and Fencing Prelaunch Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-transaction-fencing-prelaunch.yml'
+permissions:
+  contents: read
+jobs:
+  full-regression-and-transaction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Run full regression with isolated transactional prototype
+        run: |
+          python3 -m unittest discover -s tests -p 'test_*.py' -q
+          echo 'TRANSACTION_FENCING_TESTS_COMPLETE'
+      - name: Explicitly block production release
+        run: |
+          echo 'LOCAL_SQLITE_TRANSACTION_ONLY; NOT_SHARED_ACROSS_GITHUB_RUNNERS; GOOGLE_DRIVE_PRODUCTION_UNCHANGED'
+          echo 'PRODUCTION_RELEASE_GATE=BLOCKED_PENDING_SHARED_ATOMIC_CAS'
