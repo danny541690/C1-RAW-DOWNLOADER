@@ -108,7 +108,7 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                 except Exception as exc:
                     stats["parse_errors"]+=1
                     entry={"member":item.filename,"error":type(exc).__name__+":"+str(exc)[:120]}
-                    if source=="MOPS" and ("MOPS_FINANCIAL_STATEMENT_MATRIX_" in str(exc) or "HTML_NEEDS_DEDICATED_REVENUE_ADAPTER" in str(exc)):
+                    if source=="MOPS" and ("MOPS_FINANCIAL_STATEMENT_MATRIX_" in str(exc) or "MOPS_REVENUE_TABLE_CANDIDATE_" in str(exc) or "HTML_NEEDS_DEDICATED_REVENUE_ADAPTER" in str(exc)):
                         entry["mops_metadata_evidence"]=mops_html_evidence(z.read(item).decode("utf-8","replace"))
                         class Probe(HTMLParser):
                             def __init__(self):
