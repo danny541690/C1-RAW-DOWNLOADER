@@ -87,10 +87,29 @@ def mops_revenue_table_probe(html):
     if self.row:self.rows.append(self.row)
     self.row=None
  p=Probe();p.feed(html)
- symbols=[];headers=[];seen=set()
+ symbols=[];headers=[];seen=set();active_header=None;revenue=[];rejected=0
+ metadata=mops_revenue_header_evidence(html)
  for row in p.rows:
+  if row and row[0]=="公司代號" and "當月營收" in row:
+   active_header=row
+  elif active_header and row and re.fullmatch(r"[1-9][0-9]{3}",row[0]):
+   # Only the explicitly headed company column identifies a stock. Four-digit
+   # revenue values elsewhere in a row are never security identifiers.
+   from decimal import Decimal,InvalidOperation
+   index=active_header.index("當月營收")
+   try:
+    raw_value=row[index]
+    if not re.fullmatch(r"-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?",raw_value):raise ValueError("INVALID_REVENUE")
+    value=Decimal(raw_value.replace(",",""))
+    if not metadata["report_period"] or not metadata["unit_code"]:raise ValueError("MISSING_HEADER_METADATA")
+    factor=Decimal(UNIT_FACTORS[metadata["unit_code"]])
+    revenue.append({"stock_id":row[0],"report_period":metadata["report_period"],
+     "metric":"當月營收","raw_value":raw_value,"unit":metadata["unit_code"],
+     "value_100m_ntd":str(value*factor/Decimal(100000000)),
+     "publication_date":None,"pit_verified":False,"numeric_verified":False,"certified":False})
+   except (IndexError,InvalidOperation,ValueError):rejected+=1
   for i,cell in enumerate(row):
-   if re.fullmatch(r"[1-9][0-9]{3}",cell):
+   if active_header and i==0 and re.fullmatch(r"[1-9][0-9]{3}",cell):
     key=(cell,i)
     if key not in seen:
      seen.add(key);symbols.append({"stock_id":cell,"column":i,"sample":row[:12]})
@@ -98,4 +117,6 @@ def mops_revenue_table_probe(html):
     if len(headers)<8:headers.append(row[:18])
  return {"html_rows":len(p.rows),"distinct_symbol_column_pairs":len(seen),
          "symbol_samples":symbols[:8],"header_samples":headers,
+         "revenue_candidates":len(revenue),"rejected_revenue_rows":rejected,
+         "revenue_candidate_samples":revenue[:8],"candidate_status":"STAGING_NOT_APPROVED",
          "certified":False,"pit_verified":False}
