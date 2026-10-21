@@ -1,0 +1,47 @@
+name: JARVIS Four Independent Consumers 60m 20261022
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-four-consumers-60m-20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Verify 60-minute budgets and lease duration
+        run: |
+          python3 -m unittest discover -s tests -q
+          python3 -m scripts.v093_five_stage_combined_contract
+      - name: Activate four 60-minute workers without interrupting saved progress
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json
+          from scripts.v093_replan_control import api,all_pages
+          plan=json.load(open('config/v093_execution_plan_20261021.json'))
+          stages=('QA1','PRICE','FINANCIAL','CHIP')
+          files=('v093-v2-02-qa.yml','v093-v2-03-price.yml','v093-v2-04-financial.yml','v093-v2-05-chip.yml')
+          assert all(plan['worker_budgets_minutes'][s]==60 for s in stages)
+          assert plan['consumer_lease_ttl_seconds']>plan['consumer_workflow_timeout_minutes']*60>3600
+          for filename in files:api('/actions/workflows/'+filename+'/enable','PUT')
+          enabled={w['path'] for w in all_pages('/actions/workflows','workflows') if w['state']=='active' and w['path']!='.github/workflows/jarvis-four-consumers-60m-20261022.yml'}
+          expected={'.github/workflows/'+f for f in files}|{'.github/workflows/v093-v2-01-raw.yml'}
+          assert enabled==expected,enabled
+          print('FOUR_CONSUMERS_60M_ENABLED '+json.dumps({'budgets':plan['worker_budgets_minutes'],'workflow_timeout_minutes':75,'lease_ttl_seconds':5400,'raw_changed':False,'checkpoint_reset':False,'inflight_policy':'FINISH_THEN_RESUME'}),flush=True)
+          for stage,filename in zip(stages,files):
+              api('/actions/workflows/'+filename+'/dispatches','POST',{'ref':'main','inputs':{'minutes':'60'}})
+              print('SIXTY_MINUTE_DISPATCHED '+stage,flush=True)
+          api('/actions/workflows/jarvis-four-consumers-60m-20261022.yml/disable','PUT')
+          PY
