@@ -1,0 +1,100 @@
+name: JARVIS v0.93 Combined Full File Metadata and Repair Queue Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-all-month-file-metadata-combined.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - start: 2000
+            end: 2006
+          - start: 2007
+            end: 2013
+          - start: 2014
+            end: 2020
+          - start: 2021
+            end: 2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Real Drive all-month file metadata only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          START_YEAR: ${{ matrix.start }}
+          END_YEAR: ${{ matrix.end }}
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_isolated_full_file_metadata_gate import audit_year_range
+          assert all(os.environ.get(k) for k in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'))
+          r=audit_year_range(Drive(service()),int(os.environ['START_YEAR']),int(os.environ['END_YEAR']))
+          with open('reports/shard.json','w') as f:json.dump(r,f,ensure_ascii=False)
+          print('REAL_DRIVE_FILE_METADATA_SHARD_PASS '+json.dumps({'start':r['start'],'end':r['end'],'months':len(r['months']),'file_count':sum(v['file_count'] for row in r['months'].values() for v in row.values()),'zero_size':sum(v['zero_size'] for row in r['months'].values() for v in row.values()),'certified':0}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: file-metadata-${{ matrix.start }}-${{ matrix.end }}
+          path: reports/shard.json
+  merge:
+    needs: [regression,metadata]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: file-metadata-*
+          path: parts
+      - name: Aggregate all 322 months and generate missing-data review queue
+        run: |
+          python3 - <<'PY'
+          import json,glob,os,sys
+          # Module has no Google dependencies; import via path.
+          sys.path.insert(0,'.')
+          # Install dependencies only needed for importing module.
+          PY
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Aggregate verified scope, file counts and review queue
+        run: |
+          mkdir -p reports
+          python3 - <<'PY'
+          import json,glob
+          from scripts.v093_isolated_full_file_metadata_gate import summarize
+          files=glob.glob('parts/*/shard.json')
+          assert len(files)==4,files
+          report=summarize([json.load(open(x)) for x in files])
+          with open('reports/all-322-months-file-metadata.json','w') as f:json.dump(report,f,ensure_ascii=False,indent=2)
+          print('FULL_322_MONTH_FILE_METADATA_AND_REPAIR_QUEUE_PASS '+json.dumps({'months':report['months'],'counts':report['counts'],'review_queue_items':len(report['review_queue']),'certified_months':0,'drive_writes':0},sort_keys=True),flush=True)
+          print('PRODUCTION_GATE=BLOCKED_NUMERIC_PIT_QA_AND_APPROVED_TRANSFORM_ADAPTERS')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-322-months-file-metadata-and-review-queue
+          path: reports/all-322-months-file-metadata.json
