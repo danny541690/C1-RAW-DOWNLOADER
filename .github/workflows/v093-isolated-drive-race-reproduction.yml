@@ -1,0 +1,70 @@
+name: JARVIS v0.93 Isolated Drive Race Reproduction
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-isolated-drive-race-reproduction.yml'
+permissions:
+  contents: read
+jobs:
+  race-reproduction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Reproduce real helper race with isolated fake Drive backend
+        run: |
+          python3 - <<'PY'
+          import threading,json
+          from scripts.annual_actual_firstpass import Drive
+          class Request:
+              def __init__(self,fn):self.fn=fn
+              def execute(self,**kwargs):return self.fn()
+          class Backend:
+              def __init__(self):
+                  self.lock=threading.Lock();self.barrier=threading.Barrier(2);self.files=[]
+          class Files:
+              def __init__(self,b):self.b=b
+              def create(self,body,media_body,fields):
+                  def go():
+                      raw=media_body._fd.getvalue()
+                      with self.b.lock:
+                          self.b.files.append((body['name'],raw))
+                          return {'id':str(len(self.b.files))}
+                  return Request(go)
+          class API:
+              def __init__(self,b):self.b=b
+              def files(self):return Files(self.b)
+          class FakeDrive(Drive):
+              def __init__(self,b):self.b=b;self.api=API(b)
+              def find(self,parent,name):
+                  with self.b.lock:
+                      matches=[v for v in self.b.files if v[0]==name]
+                  if not matches:
+                      self.b.barrier.wait(timeout=5)
+                      return None
+                  if len(matches)>1:raise ValueError('duplicate remote names')
+                  return {'id':'1','name':name}
+              def read(self,parent,name):
+                  with self.b.lock:
+                      matches=[v[1] for v in self.b.files if v[0]==name]
+                  if len(matches)>1:raise ValueError('duplicate remote names')
+                  return matches[0] if matches else None
+          backend=Backend();errors=[]
+          def writer():
+              try:FakeDrive(backend).put('TEST_ONLY','same.json',b'payload','application/json')
+              except Exception as e:errors.append(type(e).__name__+':'+str(e))
+          ts=[threading.Thread(target=writer) for _ in range(2)]
+          for t in ts:t.start()
+          for t in ts:t.join(timeout=8)
+          assert all(not t.is_alive() for t in ts)
+          assert len(backend.files)==2,backend.files
+          assert any('duplicate remote names' in e for e in errors),errors
+          print('DRIVE_ACTUAL_PUT_RACE_REPRODUCED '+json.dumps({'writers':2,'same_name_files':len(backend.files),'errors':errors,'real_drive_writes':0,'release_gate':'BLOCKED'},ensure_ascii=False),flush=True)
+          PY
