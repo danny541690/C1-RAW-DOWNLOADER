@@ -1,8 +1,6 @@
 name: JARVIS 2024 Four-Source Annual Actual Capture
 on:
-  push:
-    paths:
-      - '.github/workflows/v093-2024-four-source-annual-capture.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
@@ -10,6 +8,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   monthly-capture:
+    if: ${{ false }} # legacy writer retired during v0.93 five-stage cutover
     strategy:
       fail-fast: false
       max-parallel: 2
