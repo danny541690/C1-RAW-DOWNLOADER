@@ -31,34 +31,114 @@ jobs:
         run: python3 -m scripts.v093_replan_control prepare
   verify_raw:
     needs: prepare
-    uses: ./.github/workflows/v093-v2-01-raw.yml
-    with:
-      minutes: '4'
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    concurrency:
+      group: jarvis-v093-live-raw
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Bounded cutover verification of RAW; scheduled budget is configured separately
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replanned_five_stage --stage RAW --minutes 4
   verify_qa:
     needs: verify_raw
-    uses: ./.github/workflows/v093-v2-02-qa.yml
-    with:
-      minutes: '5'
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    concurrency:
+      group: jarvis-v093-live-consumer
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Bounded cutover verification of QA1; scheduled budget is configured separately
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replanned_five_stage --stage QA1 --minutes 5
   verify_price:
     needs: verify_qa
-    uses: ./.github/workflows/v093-v2-03-price.yml
-    with:
-      minutes: '1'
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    concurrency:
+      group: jarvis-v093-live-consumer
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Bounded cutover verification of PRICE; scheduled budget is configured separately
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replanned_five_stage --stage PRICE --minutes 1
   verify_financial:
     needs: verify_price
-    uses: ./.github/workflows/v093-v2-04-financial.yml
-    with:
-      minutes: '1'
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    concurrency:
+      group: jarvis-v093-live-consumer
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Bounded cutover verification of FINANCIAL; scheduled budget is configured separately
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replanned_five_stage --stage FINANCIAL --minutes 1
   verify_chip:
     needs: verify_financial
-    uses: ./.github/workflows/v093-v2-05-chip.yml
-    with:
-      minutes: '1'
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    concurrency:
+      group: jarvis-v093-live-consumer
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Bounded cutover verification of CHIP; scheduled budget is configured separately
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replanned_five_stage --stage CHIP --minutes 1
   activate:
     needs: verify_chip
     runs-on: ubuntu-latest
