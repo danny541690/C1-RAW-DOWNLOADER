@@ -1,0 +1,90 @@
+name: JARVIS v0.93 Real Drive Isolated Commit and Historical Readonly Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-real-drive-isolated-historical-gate.yml'
+permissions:
+  contents: read
+jobs:
+  real-drive-isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Real Drive isolated immutable write readback and no-overwrite
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_standard_r1 import C1
+          assert all(os.environ.get(k) for k in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN')),'MISSING_DRIVE_CREDENTIALS'
+          d=Drive(service())
+          control=d.folder(C1,'05_CONTROL')
+          qa=d.folder(control,'STANDARD_QA')
+          isolated=d.folder(qa,'ISOLATED_GUARDED_COMMIT_TEST_'+os.environ['RUN_ID'])
+          key='2026-10-ohlc-test'
+          raw=b'JARVIS_TEST_ONLY_NOT_REAL_MARKET_DATA|'+os.environ['RUN_ID'].encode()
+          digest=hashlib.sha256(raw).hexdigest()
+          name=key+'_'+digest+'.bin'
+          d.put(isolated,name,raw,overwrite=False)
+          first=d.read(isolated,name)
+          assert first==raw
+          d.put(isolated,name,raw,overwrite=False)
+          assert d.read(isolated,name)==raw
+          try:d.put(isolated,name,b'DIFFERENT_TEST_BYTES',overwrite=False)
+          except ValueError:pass
+          else:raise AssertionError('MISMATCH_OVERWRITE_ALLOWED')
+          print('REAL_GOOGLE_DRIVE_ISOLATED_IMMUTABLE_WRITE_PASS '+json.dumps({'folder_id':isolated,'sha256':digest,'idempotent':True,'different_content_rejected':True,'real_drive_test_writes':1,'production_raw_writes':0,'production_status_writes':0}),flush=True)
+          print('PRODUCTION_RELEASE_GATE=BLOCKED_CROSS_SYSTEM_ATOMICITY_NOT_PROVEN')
+          PY
+  historical-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Readonly real Drive historical inventory and pilot adapter audit
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_standard_r1 import ROOT,SOURCES,ls
+          assert all(os.environ.get(k) for k in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN')),'MISSING_DRIVE_CREDENTIALS'
+          d=Drive(service())
+          inventory={}
+          for month in ('2026-09','2025-01','2000-01'):
+              year=month[:4]
+              years=[x for x in ls(d,ROOT) if x['name']==year and x['mimeType']=='application/vnd.google-apps.folder']
+              if len(years)!=1:
+                  inventory[month]={'year_folder_count':len(years),'sources':{}}
+                  continue
+              sources={}
+              for src in SOURCES:
+                  folders=[x for x in ls(d,years[0]['id']) if x['name']==src and x['mimeType']=='application/vnd.google-apps.folder']
+                  if len(folders)!=1:
+                      sources[src]={'folder_count':len(folders),'archive_count':0}
+                      continue
+                  matches=[x for x in ls(d,folders[0]['id']) if x['name']==month and x['mimeType']=='application/vnd.google-apps.folder']
+                  archives=[x for x in ls(d,matches[0]['id']) if x['name'].lower().endswith('.zip')] if len(matches)==1 else []
+                  sources[src]={'folder_count':len(matches),'archive_count':len(archives)}
+              inventory[month]={'year_folder_count':1,'sources':sources}
+          print('REAL_DRIVE_HISTORICAL_READONLY_INVENTORY_PASS '+json.dumps(inventory,sort_keys=True),flush=True)
+          print('HISTORICAL_CERTIFICATION=NOT_ESTABLISHED_FROM_FOLDER_INVENTORY')
+          PY
