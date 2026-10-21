@@ -1,0 +1,48 @@
+name: JARVIS v0.93 OTC Schema and Full Regression SAFE
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-otc-schema-full-regression-safe.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-otc-schema-full-regression-safe
+  cancel-in-progress: false
+jobs:
+  all-repository-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Full repository test suite (existing tests)
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+  otc-live-schema-diagnostic:
+    needs: all-repository-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Read-only inspect TPEx daily tables, columns, and 3105 matching rows
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.parse,datetime
+          for day in ('2024/01/02','2026/08/03'):
+            url='https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotes?'+urllib.parse.urlencode({'response':'json','date':day})
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 JARVIS-OTC-Schema-QA'})
+            with urllib.request.urlopen(req,timeout=22) as r:data=json.loads(r.read(2500000))
+            reports=[]
+            for i,t in enumerate(data.get('tables',[])):
+              if not isinstance(t,dict):continue
+              rows=t.get('data',[])
+              if not isinstance(rows,list):continue
+              found=[row for row in rows if isinstance(row,list) and any(str(x).strip()=='3105' for x in row[:4])]
+              reports.append({'table':i,'title':str(t.get('title',''))[:130],'fields':t.get('fields',t.get('header',[])),'rows':len(rows),'first_row':rows[0][:14] if rows and isinstance(rows[0],list) else None,'stock_3105':found[:2]})
+            print('OTC_SCHEMA_DIAGNOSTIC '+json.dumps({'date':day,'provider_date':data.get('date'),'stat':data.get('stat'),'tables':reports},ensure_ascii=False),flush=True)
+          print('OTC_SCHEMA_READONLY_FINISHED',flush=True)
+          PY
