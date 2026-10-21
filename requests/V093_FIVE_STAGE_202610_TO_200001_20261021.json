@@ -17,21 +17,35 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "REAL_WORKERS_IMPLEMENTED_AWAITING_DEPLOYMENT_EVIDENCE",
+  "state": "ACTIVE_FIVE_SCHEDULES_RAW_SAVING_FIRST_DOWNSTREAM_PENDING",
   "activation_authorized": true,
-  "activation_completed": false,
-  "downloads_started_by_this_request": false,
-  "blocking_requirements": [
-    "CURRENT_COMMIT_TEST_AND_ACTUAL_CLOUD_RUN"
-  ],
+  "activation_completed": true,
+  "downloads_started_by_this_request": true,
+  "blocking_requirements": [],
   "preserve_existing_raw_and_receipts": true,
   "reuse_only_hash_and_identity_verified_v093_units": true,
   "raw_publication_requires_separate_numeric_and_pit_acceptance": true,
   "requires_additional_user_confirmation": false,
-  "next_required_action": "AUTOMATICALLY_TEST_ENABLE_AND_DISPATCH_FIVE_WITH_EXISTING_AUTHORIZATION",
+  "next_required_action": "MONITOR_DURABLE_QUEUES_AND_FIRST_DOWNSTREAM_EXECUTION",
   "legacy_retirement": {
     "public_repository_stop_run": 39608022842,
     "private_repository_stop_run": 39608025445,
     "chatgpt_jarvis_automations_paused": 6
+  },
+  "operational_evidence": {
+    "activation_run": 39613119269,
+    "verified_enabled_stages": [
+      "RAW",
+      "QA1",
+      "PRICE",
+      "FINANCIAL",
+      "CHIP"
+    ],
+    "observed_new_raw_units_at_least": 3,
+    "observed_new_raw_date": "2026-10-21",
+    "full_history_complete": false,
+    "numeric_verified": false,
+    "pit_verified": false,
+    "first_downstream_acceptance": "PENDING"
   }
 }
