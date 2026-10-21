@@ -69,10 +69,10 @@
       "FINANCIAL",
       "CHIP"
     ],
-    "latest_capacity_run": 39690225723
+    "latest_capacity_run": 39692278269
   },
   "current_schedules": {
-    "verified_at": null,
+    "verified_at": "2026-10-21T23:16:52.719Z",
     "timezone": "Asia/Taipei",
     "entries": [
       {
@@ -120,7 +120,7 @@
     "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
     "max_heavy_workers": null,
     "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
-    "state": "ALL_FIVE_60M_PENDING_RAW_ACTIVATION",
+    "state": "ALL_FIVE_60M_ENABLED",
     "downstream_budget_minutes_per_hour": 240,
     "total_worker_budget_minutes_per_hour": 300
   },
@@ -248,10 +248,13 @@
     },
     "raw_budget_unchanged": false,
     "checkpoint_reset": false,
-    "state": "PENDING_RAW_CLOUD_DISPATCH",
+    "state": "ENABLED_VERIFIED",
     "workflow_timeout_minutes": 75,
     "lease_ttl_seconds": 5400,
-    "inflight_policy": "FINISH_EXISTING_RAW_BATCH_THEN_RESUME_60M"
+    "inflight_policy": "FINISH_EXISTING_RAW_BATCH_THEN_RESUME_60M",
+    "activation_run": 39692278269,
+    "first_raw_60_minute_run": 39692306046,
+    "tests_passed": 281
   },
   "previous_capacity_change": {
     "authorized_by": "USER_20261022_REMOVE_TWO_WORKER_CAP_AND_30M_DOWNSTREAM",
