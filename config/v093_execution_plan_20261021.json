@@ -1,0 +1,16 @@
+{
+  "revision": "RAW_201404_AUDIT_202610_V1",
+  "authorized_by": "USER_20261021_REPLAN_EXISTING_FIVE_STAGES",
+  "download_policy_unchanged": true,
+  "raw_history_start": "2014-04",
+  "raw_history_end": "2000-01",
+  "legacy_checkpoint_namespace": "RAW_201503_TO_200001_V1",
+  "legacy_checkpoint_start": "2015-03",
+  "audit_start": "2026-10",
+  "audit_end": "2000-01",
+  "audit_order": "NEWEST_CONTENT_DATE_FIRST",
+  "raw_latest_updates": "BOUNDED_CURRENT_DATE_INCREMENT_ONLY",
+  "preserve_completed_receipts_and_attempts": true,
+  "max_heavy_workers": 2,
+  "lease_suffix": "_REPLAN_201404_V1"
+}

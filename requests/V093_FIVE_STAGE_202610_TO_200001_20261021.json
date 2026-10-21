@@ -2,7 +2,7 @@
   "request_id": "V093_FIVE_STAGE_202610_TO_200001_20261021",
   "authorized_by": "USER_2026-10-21_ASIA_TAIPEI",
   "policy_version": "V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021",
-  "requested_action": "RETIRE_ALL_LEGACY_AND_START_REAL_FIVE_STAGE_WORKERS",
+  "requested_action": "STOP_ALL_REPLAN_RAW_201404_AUDIT_202610_AND_RESTART",
   "stages": [
     "RAW",
     "QA1",
@@ -17,22 +17,82 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "ACTIVE_DOWNLOADING_AND_STAGING",
+  "state": "STOPPED_REPLANNING_PRIMARY_RAW_201404_AUDIT_202610",
   "activation_authorized": true,
-  "activation_completed": true,
+  "activation_completed": false,
   "downloads_started_by_this_request": true,
-  "blocking_requirements": [],
+  "blocking_requirements": [
+    "CLOUD_REPLAN_EXECUTION_VERIFICATION"
+  ],
   "preserve_existing_raw_and_receipts": true,
   "reuse_only_hash_and_identity_verified_v093_units": true,
   "raw_publication_requires_separate_numeric_and_pit_acceptance": true,
   "requires_additional_user_confirmation": false,
-  "next_required_action": "CONTINUE_AUTHORIZED_REVERSE_HISTORY_DOWNLOAD_AND_DURABLE_STAGE_QUEUES",
+  "next_required_action": "AUTOMATICALLY_VERIFY_REPLANNED_WORKERS_AND_ENABLE_FIVE",
   "legacy_retirement": {
     "public_repository_stop_run": 39608022842,
     "private_repository_stop_run": 39608025445,
     "chatgpt_jarvis_automations_paused": 6
   },
   "operational_evidence": {
+    "replan_state": "STOPPED_PENDING_CLOUD_VALIDATION",
+    "public_stop_run": 39622875661,
+    "private_stop_run": 39622879311,
+    "legacy_primary_resume_month": "2014-04",
+    "audit_start_month": "2026-10"
+  },
+  "current_schedules": {
+    "verified_at": null,
+    "timezone": "Asia/Taipei",
+    "entries": [
+      {
+        "stage": "RAW",
+        "workflow": ".github/workflows/v093-v2-01-raw.yml",
+        "cron_utc": "1,31 * * * *",
+        "taipei_trigger": "每小時 01、31 分",
+        "worker_budget_minutes": 24,
+        "concurrency_pool": "RAW"
+      },
+      {
+        "stage": "QA1",
+        "workflow": ".github/workflows/v093-v2-02-qa.yml",
+        "cron_utc": "3,33 * * * *",
+        "taipei_trigger": "每小時 03、33 分",
+        "worker_budget_minutes": 10,
+        "concurrency_pool": "CONSUMER"
+      },
+      {
+        "stage": "PRICE",
+        "workflow": ".github/workflows/v093-v2-03-price.yml",
+        "cron_utc": "15,45 * * * *",
+        "taipei_trigger": "每小時 15、45 分",
+        "worker_budget_minutes": 4,
+        "concurrency_pool": "CONSUMER"
+      },
+      {
+        "stage": "FINANCIAL",
+        "workflow": ".github/workflows/v093-v2-04-financial.yml",
+        "cron_utc": "21,51 * * * *",
+        "taipei_trigger": "每小時 21、51 分",
+        "worker_budget_minutes": 3,
+        "concurrency_pool": "CONSUMER"
+      },
+      {
+        "stage": "CHIP",
+        "workflow": ".github/workflows/v093-v2-05-chip.yml",
+        "cron_utc": "26,56 * * * *",
+        "taipei_trigger": "每小時 26、56 分",
+        "worker_budget_minutes": 3,
+        "concurrency_pool": "CONSUMER"
+      }
+    ],
+    "ordering": "RAW -> QA1 -> PRICE / FINANCIAL / CHIP by durable eligible unit",
+    "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
+    "max_heavy_workers": 2,
+    "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
+    "state": "PENDING_REPLAN_ACTIVATION"
+  },
+  "previous_generation_evidence": {
     "activation_run": 39613119269,
     "verified_enabled_stages": [
       "RAW",
@@ -88,54 +148,20 @@
       }
     }
   },
-  "current_schedules": {
-    "verified_at": "2026-10-21T22:45:00+08:00",
-    "timezone": "Asia/Taipei",
-    "entries": [
-      {
-        "stage": "RAW",
-        "workflow": ".github/workflows/v093-v2-01-raw.yml",
-        "cron_utc": "1,31 * * * *",
-        "taipei_trigger": "每小時 01、31 分",
-        "worker_budget_minutes": 24,
-        "concurrency_pool": "RAW"
-      },
-      {
-        "stage": "QA1",
-        "workflow": ".github/workflows/v093-v2-02-qa.yml",
-        "cron_utc": "3,33 * * * *",
-        "taipei_trigger": "每小時 03、33 分",
-        "worker_budget_minutes": 4,
-        "concurrency_pool": "CONSUMER"
-      },
-      {
-        "stage": "PRICE",
-        "workflow": ".github/workflows/v093-v2-03-price.yml",
-        "cron_utc": "9,39 * * * *",
-        "taipei_trigger": "每小時 09、39 分",
-        "worker_budget_minutes": 4,
-        "concurrency_pool": "CONSUMER"
-      },
-      {
-        "stage": "FINANCIAL",
-        "workflow": ".github/workflows/v093-v2-04-financial.yml",
-        "cron_utc": "15,45 * * * *",
-        "taipei_trigger": "每小時 15、45 分",
-        "worker_budget_minutes": 4,
-        "concurrency_pool": "CONSUMER"
-      },
-      {
-        "stage": "CHIP",
-        "workflow": ".github/workflows/v093-v2-05-chip.yml",
-        "cron_utc": "21,51 * * * *",
-        "taipei_trigger": "每小時 21、51 分",
-        "worker_budget_minutes": 4,
-        "concurrency_pool": "CONSUMER"
-      }
-    ],
-    "ordering": "RAW -> QA1 -> PRICE / FINANCIAL / CHIP by durable eligible unit",
-    "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
+  "execution_plan": {
+    "revision": "RAW_201404_AUDIT_202610_V1",
+    "authorized_by": "USER_20261021_REPLAN_EXISTING_FIVE_STAGES",
+    "download_policy_unchanged": true,
+    "raw_history_start": "2014-04",
+    "raw_history_end": "2000-01",
+    "legacy_checkpoint_namespace": "RAW_201503_TO_200001_V1",
+    "legacy_checkpoint_start": "2015-03",
+    "audit_start": "2026-10",
+    "audit_end": "2000-01",
+    "audit_order": "NEWEST_CONTENT_DATE_FIRST",
+    "raw_latest_updates": "BOUNDED_CURRENT_DATE_INCREMENT_ONLY",
+    "preserve_completed_receipts_and_attempts": true,
     "max_heavy_workers": 2,
-    "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files"
+    "lease_suffix": "_REPLAN_201404_V1"
   }
 }

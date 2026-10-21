@@ -57,7 +57,7 @@ def payload(d,receipt,with_archive_hash=False):
     return (raw,archive_sha) if with_archive_hash else raw
 
 class Worker(Independent):
-    def __init__(self,stage,minutes):
+    def __init__(self,stage,minutes,lease_suffix=""):
         self.stage=stage
         self.today=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date()
         native.TODAY=self.today
@@ -73,7 +73,7 @@ class Worker(Independent):
         if self.cursor.get('run')!=RUN:raise ValueError('CURSOR_RUN_MISMATCH')
         self.api='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/contents/.github/live-state/five-stage-leases.json'
         self.token=os.environ['GH_TOKEN'];self.owner=os.environ['GITHUB_RUN_ID']+'/'+stage
-        self.lock='POOL_RAW' if stage=='RAW' else 'POOL_CONSUMER'
+        self.lock=('POOL_RAW' if stage=='RAW' else 'POOL_CONSUMER')+lease_suffix
         # TTL exceeds the workflow's hard timeout. No writer can outlive its lease.
         self.fence=acquire(self.api,self.token,self.lock,self.owner,ttl=3600)
         self.last_lease_check=0

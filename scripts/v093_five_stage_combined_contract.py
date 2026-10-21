@@ -29,7 +29,7 @@ def run():
   stages[stage]={"path":str(path),"dispatch_only":set(triggers)=={"workflow_dispatch"},"cron_active":has_cron,"stage_status":stage_status,"concurrency_group":wf.get("concurrency",{}).get("group")}
   assert has_cron,stage
   assert "workflow_dispatch" in triggers,stage
-  assert not is_stub and "scripts.v093_live_five_stage --stage "+stage in script_text,stage
+  assert not is_stub and "scripts.v093_replanned_five_stage --stage "+stage in script_text,stage
   stages[stage]["stage_status"]="REAL_WORKER_WITH_DURABLE_QUEUE"
  assert not eligible(Work("2026-10","PRICE","ohlc"))
  assert not eligible(Work("2026-10","FINANCIAL","revenue"))

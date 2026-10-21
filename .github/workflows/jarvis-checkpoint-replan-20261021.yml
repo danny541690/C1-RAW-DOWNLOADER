@@ -1,0 +1,68 @@
+name: JARVIS Replan RAW 201404 Audit 202610
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-checkpoint-replan-20261021.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Test split scopes, preserved retries and archive reuse
+        run: |
+          python3 -m unittest discover -s tests -q
+          python3 -m scripts.v093_five_stage_combined_contract
+      - name: Verify stopped workers and fence retired generation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replan_control prepare
+  verify_raw:
+    needs: prepare
+    uses: ./.github/workflows/v093-v2-01-raw.yml
+    with:
+      minutes: '4'
+    secrets: inherit
+  verify_qa:
+    needs: verify_raw
+    uses: ./.github/workflows/v093-v2-02-qa.yml
+    with:
+      minutes: '5'
+    secrets: inherit
+  verify_price:
+    needs: verify_qa
+    uses: ./.github/workflows/v093-v2-03-price.yml
+    with:
+      minutes: '1'
+    secrets: inherit
+  verify_financial:
+    needs: verify_price
+    uses: ./.github/workflows/v093-v2-04-financial.yml
+    with:
+      minutes: '1'
+    secrets: inherit
+  verify_chip:
+    needs: verify_financial
+    uses: ./.github/workflows/v093-v2-05-chip.yml
+    with:
+      minutes: '1'
+    secrets: inherit
+  activate:
+    needs: verify_chip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable only the five replanned schedules
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.v093_replan_control activate
