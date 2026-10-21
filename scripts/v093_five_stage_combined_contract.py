@@ -51,7 +51,11 @@ def run():
   path=pathlib.Path(".github/workflows")/filename
   doc=yaml.safe_load(path.read_text())
   triggers=doc.get("on",doc.get(True))
-  legacy_writers[filename]={"push_trigger":isinstance(triggers,dict) and "push" in triggers,"concurrency_group":doc.get("concurrency",{}).get("group")}
+  jobs=doc.get("jobs",{})
+  jobs_disabled=bool(jobs) and all(job.get("if") in (False,"${{ false }}") or str(job.get("if","")).startswith("${{ false }}") for job in jobs.values())
+  push_active=isinstance(triggers,dict) and "push" in triggers
+  legacy_writers[filename]={"push_trigger":push_active,"jobs_disabled":jobs_disabled,"concurrency_group":doc.get("concurrency",{}).get("group")}
+  assert not push_active and jobs_disabled,"LEGACY_WRITER_NOT_RETIRED:"+filename
  shared_groups={v["concurrency_group"] for v in stages.values()}
  assert len(shared_groups)==1
  return {"period":"2000-01..2026-10","months":len(months),"stages":stages,"source_of_truth":"GITHUB_WORKFLOW_FILES","legacy_writers":legacy_writers,"shared_stage_concurrency_group":next(iter(shared_groups)),"raw_resume_requires_same_commit_canary":True,"production_writes":0,"production_release":"BLOCKED","reason":"FIVE_STAGES_STILL_PRELAUNCH_STUBS"}
