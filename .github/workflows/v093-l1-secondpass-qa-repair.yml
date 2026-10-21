@@ -4,8 +4,6 @@ on:
     paths:
       - '.github/workflows/v093-l1-secondpass-qa-repair.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '29 * * * *'
 permissions:
   contents: read
   actions: write
