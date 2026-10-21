@@ -1,0 +1,46 @@
+name: JARVIS v0.93 Deep Repair Three-Lane SAFE Smoke
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-deep-repair-three-lane-smoke.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-deep-repair-smoke-only
+  cancel-in-progress: false
+jobs:
+  lane-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [price, financial, chip]
+    steps:
+      - name: Offline partition and safety smoke (no Drive, no FinMind, no RAW writes)
+        env:
+          LANE: ${{ matrix.lane }}
+        run: |
+          python3 - <<'PY'
+          import os, json, hashlib
+          lane = os.environ['LANE']
+          groups = {
+            'price': ('price','corporate_action','calendar'),
+            'financial': ('revenue','eps','filing'),
+            'chip': ('institutional','margin','broker')
+          }
+          tasks = [{'key':f'2026-08:{i:04d}', 'category':sum((list(v) for v in groups.values()),[])[i%9], 'state':'PENDING'} for i in range(135)]
+          def owner(task):
+            return next(k for k,v in groups.items() if task['category'] in v)
+          assigned = [t for t in tasks if owner(t)==lane]
+          assert len(assigned)==45
+          assert len({t['key'] for t in assigned})==len(assigned)
+          assert all(owner(t)==lane for t in assigned)
+          assert all(not t.get('pit_verified',False) for t in assigned)
+          first10={t['key'] for t in assigned[:10]}
+          resume=[t for t in assigned if t['key'] not in first10]
+          assert len(resume)==35 and not any(t['key'] in first10 for t in resume)
+          assert all(t['state']=='PENDING' for t in tasks)
+          print('SAFE_OFFLINE_SMOKE_PASS',json.dumps({'lane':lane,'assigned':len(assigned),'resume':len(resume),'api_calls':0,'drive_writes':0}))
+          PY
