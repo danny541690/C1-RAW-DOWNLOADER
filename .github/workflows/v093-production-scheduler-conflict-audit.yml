@@ -1,0 +1,53 @@
+name: JARVIS v0.93 Production Scheduler Conflict Audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-production-scheduler-conflict-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit-legacy-and-five-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect actual three scheduled workflows for overlap and protection
+        run: |
+          python3 - <<'PY'
+          import pathlib,re,json
+          paths=[
+            '.github/workflows/v093-raw-2015-to-2000.yml',
+            '.github/workflows/v093-l1-secondpass-qa-repair.yml',
+            '.github/workflows/v093-l1-thirdpass-gated-repair.yml']
+          info=[]
+          for p in paths:
+            body=pathlib.Path(p).read_text()
+            minute=int(re.search(r"cron:\s*'([0-9]+) \* \* \* \*'",body).group(1))
+            group=re.search(r'(?m)^\s*group:\s*(\S+)',body).group(1)
+            cap=int(re.search(r'--minutes\s+(\d+)',body).group(1))
+            info.append({'file':p,'minute':minute,'run_cap_minutes':cap,'group':group,'has_schedule':bool(re.search(r'(?m)^\s*schedule:',body))})
+          collisions=[]
+          for i,a in enumerate(info):
+            for b in info[i+1:]:
+              delta=(b['minute']-a['minute'])%60
+              if delta<a['run_cap_minutes'] or (60-delta)<b['run_cap_minutes']:
+                collisions.append({'a':a['file'].split('/')[-1],'b':b['file'].split('/')[-1],'start_separation_minutes':min(delta,60-delta),'same_concurrency_group':a['group']==b['group']})
+          assert len(info)==3 and all(x['has_schedule'] for x in info)
+          print('PRODUCTION_SCHEDULER_AUDIT '+json.dumps({'workflows':info,'potential_overlaps':collisions,'overlap_pairs':len(collisions),'cross_workflow_lock_proven':False,'release_gate':'BLOCKED_PENDING_REAL_DISTRIBUTED_CAS'},ensure_ascii=False),flush=True)
+          assert len(collisions)>=1,'Unexpectedly no overlaps; review assumptions'
+          assert all(not x['same_concurrency_group'] for x in collisions),'Unexpected shared group'
+          print('SCHEDULER_RISK_DETECTION_PASS',flush=True)
+          PY
+      - name: Verify real five-stage candidate has no production lock or schedules
+        run: |
+          python3 - <<'PY'
+          from scripts.v093_five_stage_scheduler_gate import Work,eligible,claim,can_publish
+          w=Work('2026-10','RAW','ohlc')
+          lock=claim(w,None,worker='a',now=100)
+          try:claim(w,lock,worker='b',now=101)
+          except ValueError:pass
+          else:raise AssertionError('IN_MEMORY_LEASE_COLLISION_NOT_BLOCKED')
+          assert not can_publish(Work('2026-10','QA1','ohlc',done=True))
+          print('FIVE_STAGE_IN_MEMORY_POLICY_PASS; NO_DURABLE_ATOMIC_LOCK; NOT_READY_TO_ENABLE',flush=True)
+          PY
