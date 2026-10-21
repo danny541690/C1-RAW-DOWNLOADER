@@ -70,6 +70,72 @@
     "financial": {
       "status": "WAITING_FOR_AVAILABLE_UPSTREAM_OR_NEXT_BATCH",
       "processed": 0
+    },
+    "latest_scheduled_runs": {
+      "RAW": {
+        "run_id": 39617137600,
+        "observed_status": "in_progress"
+      },
+      "QA1": {
+        "run_id": 39618796750,
+        "observed_status": "completed",
+        "conclusion": "success",
+        "basic_qa_pass_this_run": 65
+      },
+      "PRICE": {
+        "run_id": 39618998856,
+        "observed_status": "in_progress"
+      }
     }
+  },
+  "current_schedules": {
+    "verified_at": "2026-10-21T22:45:00+08:00",
+    "timezone": "Asia/Taipei",
+    "entries": [
+      {
+        "stage": "RAW",
+        "workflow": ".github/workflows/v093-v2-01-raw.yml",
+        "cron_utc": "1,31 * * * *",
+        "taipei_trigger": "每小時 01、31 分",
+        "worker_budget_minutes": 24,
+        "concurrency_pool": "RAW"
+      },
+      {
+        "stage": "QA1",
+        "workflow": ".github/workflows/v093-v2-02-qa.yml",
+        "cron_utc": "3,33 * * * *",
+        "taipei_trigger": "每小時 03、33 分",
+        "worker_budget_minutes": 4,
+        "concurrency_pool": "CONSUMER"
+      },
+      {
+        "stage": "PRICE",
+        "workflow": ".github/workflows/v093-v2-03-price.yml",
+        "cron_utc": "9,39 * * * *",
+        "taipei_trigger": "每小時 09、39 分",
+        "worker_budget_minutes": 4,
+        "concurrency_pool": "CONSUMER"
+      },
+      {
+        "stage": "FINANCIAL",
+        "workflow": ".github/workflows/v093-v2-04-financial.yml",
+        "cron_utc": "15,45 * * * *",
+        "taipei_trigger": "每小時 15、45 分",
+        "worker_budget_minutes": 4,
+        "concurrency_pool": "CONSUMER"
+      },
+      {
+        "stage": "CHIP",
+        "workflow": ".github/workflows/v093-v2-05-chip.yml",
+        "cron_utc": "21,51 * * * *",
+        "taipei_trigger": "每小時 21、51 分",
+        "worker_budget_minutes": 4,
+        "concurrency_pool": "CONSUMER"
+      }
+    ],
+    "ordering": "RAW -> QA1 -> PRICE / FINANCIAL / CHIP by durable eligible unit",
+    "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
+    "max_heavy_workers": 2,
+    "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files"
   }
 }
