@@ -2,7 +2,7 @@
   "request_id": "V093_FIVE_STAGE_202610_TO_200001_20261021",
   "authorized_by": "USER_2026-10-21_ASIA_TAIPEI",
   "policy_version": "V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021",
-  "requested_action": "STOP_ALL_REPLAN_RAW_201404_AUDIT_202610_AND_RESTART",
+  "requested_action": "PAUSE_ALL_SCHEDULES",
   "stages": [
     "RAW",
     "QA1",
@@ -17,8 +17,8 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "STOPPED_REPLANNING_PRIMARY_RAW_201404_AUDIT_202610",
-  "activation_authorized": true,
+  "state": "PAUSED_BY_USER",
+  "activation_authorized": false,
   "activation_completed": false,
   "downloads_started_by_this_request": true,
   "blocking_requirements": [
@@ -28,7 +28,7 @@
   "reuse_only_hash_and_identity_verified_v093_units": true,
   "raw_publication_requires_separate_numeric_and_pit_acceptance": true,
   "requires_additional_user_confirmation": false,
-  "next_required_action": "AUTOMATICALLY_VERIFY_REPLANNED_WORKERS_AND_ENABLE_FIVE",
+  "next_required_action": "WAIT_FOR_EXPLICIT_USER_RESUME",
   "legacy_retirement": {
     "public_repository_stop_run": 39608022842,
     "private_repository_stop_run": 39608025445,
@@ -90,7 +90,7 @@
     "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
     "max_heavy_workers": 2,
     "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
-    "state": "PENDING_REPLAN_ACTIVATION"
+    "state": "PAUSED_BY_USER"
   },
   "previous_generation_evidence": {
     "activation_run": 39613119269,
@@ -179,5 +179,11 @@
       "FINANCIAL": "34 * * * *",
       "CHIP": "46 * * * *"
     }
+  },
+  "execution_control": {
+    "paused": true,
+    "paused_at": "2026-10-21T15:34:00Z",
+    "reason": "USER_REQUEST_PAUSE_ALL_SCHEDULES",
+    "automatic_restart_allowed": false
   }
 }
