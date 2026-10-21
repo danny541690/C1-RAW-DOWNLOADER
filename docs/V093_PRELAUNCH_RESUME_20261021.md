@@ -32,3 +32,12 @@ Release remains BLOCKED. No cron activation and no production Drive writes were 
 - Local full regression: 247/247 PASS; five-stage workflow contract remains BLOCKED with no cron.
 - Cloud run 39588075481 completed SUCCESS: 7/7 jobs; 247/247 regression tests; all four real-data months completed. Combined audit remains BLOCKED: 142 members, 1,364,695 unverified cells, 5 MOPS quarantine/parse errors, 7 close-price comparisons with zero mismatches, missing bounded historic MOPS/FinMind archives, unmapped/empty members and unconnected five-stage production implementations. Production Drive writes=0.
 - These checks exercise the evidence guard. They do not verify real financial values or establish company publication dates. Prior real source-coverage and five-stage implementation blockers remain open.
+
+## Third continuation — conflicting price-key isolation
+- Code commit: fa8ef228a96667a238108273b14051f2b875c87e.
+- Found and fixed: a source with contradictory prices for the same stock/date was counted as a duplicate conflict but its first value could still participate in cross-source agreement. Conflicted source keys are now excluded permanently for that comparison, independent of row order; clean independent sources remain comparable.
+- Canonical ISO dates, string security identifiers and finite nonnegative nonboolean tolerances are required. Identical duplicates do not inflate pair counts.
+- New adverse tests cover all permutations of a conflicting triplet, unaffected independent sources, exact duplicates, invalid keys and unsafe tolerances.
+- Local full regression: 252/252 PASS. Five-stage workflow contract check PASS; release BLOCKED, no cron or production Drive writes.
+- Cloud run 39590624849 started for this exact commit; inspect final jobs before reporting cloud acceptance.
+- This fixes diagnostic comparison safety; it does not approve MOPS revenue, establish PIT availability or complete real five-stage production paths.
