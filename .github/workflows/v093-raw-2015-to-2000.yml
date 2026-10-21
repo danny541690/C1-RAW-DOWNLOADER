@@ -4,8 +4,6 @@ on:
     paths:
       - '.github/workflows/v093-raw-2015-to-2000.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '17 * * * *'
 permissions:
   contents: read
   actions: write
