@@ -49,7 +49,7 @@ def rows_to_long(source,archive,member,period,records):
   if not isinstance(values,dict):continue
   for col,val in values.items():
    nv=num(val)
-   if nv is None or str(col) in ("股票代號","證券代號","代號","公司代號","stock_id","Code"):continue
+   if nv is None or str(col).split("__col_")[0] in ("股票代號","證券代號","代號","公司代號","stock_id","Code","StockCode","SecuritiesCompanyCode"):continue
    out.append({"date":day,"stock_id":symbol,"source":source,"native_archive":archive,"native_member":member,
      "native_table":t,"row_index":idx,"date_proof":proof,"native_field":str(col)[:130],
      "raw_value":str(val)[:130],"numeric_unscaled":nv,"unit_verified":False,
@@ -71,11 +71,19 @@ def parse_json(source,archive,member,obj,period):
    if not symbol and isinstance(fields,list) and isinstance(row,list):
     col=next((j for j,f in enumerate(fields) if f in ("股票代號","證券代號","代號","公司代號")),None)
     if col is not None:symbol=str(row[col]).strip()
-   rd=next((normalize_date(values[k]) for k in ("date","Date","trade_date","資料日期") if k in values and normalize_date(values[k])),None)
+   # TPEx ex-dividend tables use ROC dates per event, which can differ
+   # from the query/response date. Never substitute the query date for event date.
+   event_date=None
+   if source=="TPEx" and isinstance(fields,list) and isinstance(row,list):
+    event_idx=next((j for j,f in enumerate(fields) if f=="除權息日期"),None)
+    if event_idx is not None and event_idx<len(row):
+     event_date=normalize_date(row[event_idx])
+     if event_date is None:continue
+   rd=event_date or next((normalize_date(values[k]) for k in ("date","Date","trade_date","資料日期") if k in values and normalize_date(values[k])),None)
    day=rd or date
-   date_origin="ROW" if rd else proof
+   date_origin="TPEx_EVENT_ROC_DATE" if event_date else "ROW" if rd else proof
    # Documented date field must not contradict row date.
-   if date and rd and date!=rd:continue
+   if date and rd and date!=rd and not event_date:continue
    records.append((tab,i,day,date_origin,symbol,values))
  if isinstance(obj,list):add("records",obj)
  if isinstance(obj,dict):
