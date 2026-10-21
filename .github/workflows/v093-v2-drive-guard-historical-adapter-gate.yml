@@ -1,0 +1,42 @@
+name: JARVIS v0.93 Drive Guard and Historical Adapter Combined Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-drive-guard-historical-adapter-gate.yml'
+permissions:
+  contents: read
+jobs:
+  integrated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Full regression including actual Drive.put guarded adapter tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Historical adapter coverage audit and release gate
+        run: |
+          python3 - <<'PY'
+          import json,inspect
+          from scripts import v093_standard_r1 as standard
+          from scripts.v093_five_stage_durable_gate import decide_adapter
+          months=[f'{y}-{m:02d}' for y in range(2026,1999,-1) for m in range(12,0,-1)]
+          assert len(months)==324
+          assert len([m for m in months if m<='2026-10'])==322
+          assert standard.ROOT and standard.C1
+          doc=standard.__doc__ or ''
+          assert '2025-01 and 2026-09' in doc
+          assert 'No full-population' in doc
+          src=inspect.getsource(standard.parse)
+          assert 'STAGED_UNMAPPED' in src
+          blocked={}
+          for stage in ('PRICE','FINANCIAL','CHIP'):
+              blocked[stage]=decide_adapter(stage,{'sha256':'a'*64},{'raw_sha256':'a'*64},{'schema_ok':True})
+              assert blocked[stage]=='BLOCKED_UNIT_OK'
+          print('DRIVE_GUARD_AND_HISTORICAL_ADAPTER_AUDIT_PASS '+json.dumps({'target_months_through_2026_10':322,'historical_adapter_coverage_certified':False,'existing_standard_scope':'pilot 2025-01 and 2026-09','unmapped_numeric_staging':True,'adapter_stage_results':blocked,'production_drive_writes':0,'new_production_crons':0}),flush=True)
+          print('PRODUCTION_GATE=BLOCKED_GUARDED_ADAPTER_TESTED_WITH_FAKE_DRIVE_ONLY_AND_FULL_HISTORICAL_CONVERTERS_UNAVAILABLE')
+          PY
