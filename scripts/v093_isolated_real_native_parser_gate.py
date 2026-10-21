@@ -8,7 +8,7 @@ from scripts.v093_isolated_historical_repair_inventory import inspect_month
 from scripts.v093_standard_r1 import ROOT,SOURCES,ls
 from scripts.v093_standard_r2 import parse,decode
 from scripts.v093_native_numeric_sanity import audit as native_audit
-from scripts.v093_source_pit_unit_evidence import mops_html_evidence,mops_revenue_header_evidence
+from scripts.v093_source_pit_unit_evidence import mops_html_evidence,mops_revenue_header_evidence,mops_revenue_table_probe
 from scripts.v093_twse_disclosure_pit import disclosure_evidence,audit_disclosure_rows
 from scripts.v093_cross_source_numeric_audit import compare_rows,PRICE_FIELDS,is_mapped_native_field
 FOLDER="application/vnd.google-apps.folder"
@@ -113,6 +113,7 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                         entry["html_encoding"]=html_encoding
                         entry["mops_metadata_evidence"]=mops_html_evidence(html_text)
                         entry["mops_revenue_header_evidence"]=mops_revenue_header_evidence(html_text)
+                        entry["mops_revenue_table_probe"]=mops_revenue_table_probe(html_text)
                         class Probe(HTMLParser):
                             def __init__(self):
                                 super().__init__();self.tables=0;self.rows=0;self.cells=0;self.text=[]
