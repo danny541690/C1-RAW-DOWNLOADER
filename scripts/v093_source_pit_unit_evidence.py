@@ -38,3 +38,33 @@ def mops_html_evidence(html):
  x["has_report_period_evidence"]=bool(re.search(r"(?:報表年度|報表期間|資料年月|民國)\s*[:：]?\s*(?:20\d{2}|1\d{2})",html))
  x["pit_verified"]=False;x["certified"]=False
  return x
+
+def mops_revenue_header_evidence(html):
+ """Extract report period, table export date and explicit monetary unit.
+ Export date is NOT a company-specific first-publication timestamp.
+ """
+ from html.parser import HTMLParser
+ class Text(HTMLParser):
+  def __init__(self):super().__init__();self.parts=[]
+  def handle_data(self,data):
+   t=data.strip()
+   if t:self.parts.append(t)
+ p=Text();p.feed(html)
+ header=" ".join(p.parts[:100])
+ period_match=re.search(r"(?:上市|上櫃)公司\\s*(\\d{2,3})年\\s*(\\d{1,2})月份",header)
+ export_match=re.search(r"出表日期\\s*[:：]\\s*(\\d{2,3})/(\\d{1,2})/(\\d{1,2})",header)
+ unit_match=re.search(r"單位\\s*[:：]\\s*(千元|仟元|元|百萬元|億元)",header)
+ def roc_date(m):
+  if not m:return None
+  try:return datetime.date(int(m.group(1))+1911,int(m.group(2)),int(m.group(3))).isoformat()
+  except ValueError:return None
+ period=None
+ if period_match:
+  y,mo=int(period_match.group(1))+1911,int(period_match.group(2))
+  if 2000<=y<=2100 and 1<=mo<=12:period=f"{y:04d}-{mo:02d}"
+ unit=unit_match.group(1) if unit_match else None
+ unit_code={"千元":"NTD_THOUSANDS","仟元":"NTD_THOUSANDS","元":"NTD","百萬元":"NTD_MILLIONS","億元":"NTD_100M"}.get(unit)
+ return {"report_period":period,"export_date":roc_date(export_match),
+         "export_date_is_publication_date":False,"publication_date":None,
+         "unit_label":unit,"unit_code":unit_code,"unit_evidence_complete":unit_code is not None,
+         "pit_verified":False,"certified":False}
