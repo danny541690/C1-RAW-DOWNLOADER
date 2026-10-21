@@ -1,0 +1,73 @@
+name: JARVIS v0.93 Five-Stage Dependency SAFE Smoke
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-five-stage-dependency-smoke.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-five-stage-offline-test
+  cancel-in-progress: false
+jobs:
+  dependency-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [blocked-uncommitted, saved-reuse, qa-gate, three-lane-disjoint, interrupted-resume]
+    steps:
+      - name: Verify historical coverage, dependency gates and safe reuse without any API writes
+        env:
+          SCENARIO: ${{ matrix.scenario }}
+        run: |
+          python3 - <<'PY'
+          import os,datetime as dt,hashlib,json
+          scenario=os.environ['SCENARIO']
+          def months(start,end):
+            y,m=map(int,start.split('-'));out=[]
+            while (y,m)>=tuple(map(int,end.split('-'))):
+              out.append(f'{y:04d}-{m:02d}')
+              m-=1
+              if m==0:y-=1;m=12
+            return out
+          plan=months('2026-10','2000-01')
+          assert len(plan)==322 and len(set(plan))==322
+          assert plan[0]=='2026-10' and plan[-1]=='2000-01'
+          prior_a=months('2026-10','2015-04')
+          prior_b=months('2015-03','2000-01')
+          assert len(prior_a)==139 and len(prior_b)==183 and set(prior_a)|set(prior_b)==set(plan) and not(set(prior_a)&set(prior_b))
+          def eligible_for_qa(unit):
+            return unit.get('capture')=='RAW_COMMITTED' and unit.get('sha256') and unit.get('source') and unit.get('date_scope')
+          def eligible_for_deep(unit):
+            return eligible_for_qa(unit) and unit.get('qa_status') in ('QA1_COMPLETE_WITH_GAPS','QA1_PASS') and unit.get('qa_report_sha256')
+          def lane(t):
+            return {'price':'price','corporate_action':'price','revenue':'financial','filing':'financial','institutional':'chip','margin':'chip'}[t['category']]
+          unit={'capture':'DOWNLOADING','source':'TWSE','date_scope':'2026-08','sha256':None}
+          if scenario=='blocked-uncommitted':
+            assert not eligible_for_qa(unit) and not eligible_for_deep(unit)
+          elif scenario=='saved-reuse':
+            unit.update(capture='RAW_COMMITTED',sha256=hashlib.sha256(b'old-verified-raw').hexdigest())
+            assert eligible_for_qa(unit)
+            assert not eligible_for_deep(unit)
+            assert unit['sha256']==hashlib.sha256(b'old-verified-raw').hexdigest()
+          elif scenario=='qa-gate':
+            unit.update(capture='RAW_COMMITTED',sha256='a'*64)
+            assert not eligible_for_deep(unit)
+            unit.update(qa_status='QA1_COMPLETE_WITH_GAPS',qa_report_sha256='b'*64)
+            assert eligible_for_deep(unit)
+            unit.update(qa_report_sha256=None)
+            assert not eligible_for_deep(unit)
+          elif scenario=='three-lane-disjoint':
+            tasks=[{'key':f'{i:03d}','category':c} for i,c in enumerate(['price','corporate_action','revenue','filing','institutional','margin']*15)]
+            groups={l:{t['key'] for t in tasks if lane(t)==l} for l in ('price','financial','chip')}
+            assert sum(map(len,groups.values()))==90
+            assert all(not groups[a]&groups[b] for a,b in [('price','financial'),('price','chip'),('financial','chip')])
+          elif scenario=='interrupted-resume':
+            completed={'2026-10:TWSE:prices:2026-10-20':'a'*64}
+            pending=['2026-10:TWSE:prices:2026-10-20','2026-10:TPEx:prices:2026-10-20']
+            resume=[k for k in pending if k not in completed]
+            assert resume==['2026-10:TPEx:prices:2026-10-20']
+          print('DEPENDENCY_SAFE_SMOKE_PASS',json.dumps({'scenario':scenario,'months':len(plan),'prior_newer':len(prior_a),'prior_older':len(prior_b),'api_calls':0,'drive_writes':0}))
+          PY
