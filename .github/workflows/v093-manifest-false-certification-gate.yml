@@ -1,0 +1,69 @@
+name: JARVIS v0.93 Manifest False Certification Fault Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-manifest-false-certification-gate.yml'
+permissions:
+  contents: read
+jobs:
+  manifest-faults:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Fault inject missing corrupt and unverified data through actual Drive.read
+        run: |
+          python3 - <<'PY'
+          import hashlib,json
+          from scripts.annual_actual_firstpass import Drive
+          class Request:
+              def __init__(self,fn):self.fn=fn
+              def execute(self,**kwargs):return self.fn()
+          class Files:
+              def __init__(self,items):self.items=items
+              def list(self,q,fields,pageSize):
+                  name=q.split("name = '",1)[1].split("'",1)[0]
+                  return Request(lambda:{'files':[{'id':name,'name':name}] if name in self.items else []})
+              def get_media(self,fileId):
+                  return Request(lambda:self.items[fileId])
+          class API:
+              def __init__(self,items):self.items=items
+              def files(self):return Files(self.items)
+          def audit(drive,name,manifest):
+              raw=drive.read('TEST_ONLY',name)
+              if raw is None:return 'REPAIR_MISSING_FILE'
+              digest=manifest.get('sha256','')
+              if len(digest)!=64 or any(ch not in '0123456789abcdef' for ch in digest):return 'QUARANTINE_INVALID_DIGEST'
+              if hashlib.sha256(raw).hexdigest()!=digest:return 'REPAIR_SHA_MISMATCH'
+              if not manifest.get('raw_committed'):return 'BLOCK_RAW_NOT_COMMITTED'
+              if not manifest.get('qa_complete') or not manifest.get('qa_sha256'):return 'PENDING_QA'
+              if not manifest.get('numeric_verified') or not manifest.get('pit_verified'):return 'PENDING_DEEP_QA'
+              return 'CERTIFIED'
+          good=b'2026-10:2330:ohlc'
+          digest=hashlib.sha256(good).hexdigest()
+          complete={'status':'CERTIFIED','sha256':digest,'raw_committed':True,'qa_complete':True,'qa_sha256':'b'*64,'numeric_verified':True,'pit_verified':True}
+          cases=[
+              ('missing',{},complete,'REPAIR_MISSING_FILE'),
+              ('corrupt',{'raw.bin':b'bad bytes'},complete,'REPAIR_SHA_MISMATCH'),
+              ('bad_digest',{'raw.bin':good},{**complete,'sha256':'not-a-hash'},'QUARANTINE_INVALID_DIGEST'),
+              ('missing_qa',{'raw.bin':good},{**complete,'qa_complete':False},'PENDING_QA'),
+              ('missing_numeric',{'raw.bin':good},{**complete,'numeric_verified':False},'PENDING_DEEP_QA'),
+              ('missing_pit',{'raw.bin':good},{**complete,'pit_verified':False},'PENDING_DEEP_QA'),
+              ('good',{'raw.bin':good},complete,'CERTIFIED')
+          ]
+          results={}
+          for label,files,manifest,expected in cases:
+              actual=audit(Drive(API(files)),'raw.bin',manifest)
+              assert actual==expected,(label,actual,expected)
+              results[label]=actual
+          assert sum(v=='CERTIFIED' for v in results.values())==1
+          print('MANIFEST_FALSE_CERTIFICATION_FAULT_GATE_PASS '+json.dumps({'cases':len(cases),'false_certifications':0,'flagged_for_repair_or_qa':6,'valid_certifications':1,'results':results,'actual_drive_read_helper':True,'real_drive_writes':0},sort_keys=True),flush=True)
+          print('RELEASE_GATE=BLOCKED_AUDIT_POLICY_NOT_YET_INTEGRATED_WITH_PRODUCTION')
+          PY
+      - name: Run full QA regression
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
