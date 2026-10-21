@@ -36,6 +36,24 @@ def run():
  assert decide_adapter("PRICE",None,None,None)=="BLOCKED_MISSING_INPUT_OR_ADAPTER"
  assert decide_adapter("FINANCIAL",None,None,None)=="BLOCKED_MISSING_INPUT_OR_ADAPTER"
  assert decide_adapter("CHIP",None,None,None)=="BLOCKED_MISSING_INPUT_OR_ADAPTER"
- return {"period":"2000-01..2026-10","months":len(months),"stages":stages,"source_of_truth":"GITHUB_WORKFLOW_FILES","production_writes":0,"production_release":"BLOCKED","reason":"FIVE_STAGES_STILL_PRELAUNCH_STUBS"}
+ # The real RAW resume writer must not trust a passing canary from an old commit.
+ raw_resume=pathlib.Path(".github/workflows/v093-raw-resume.yml").read_text()
+ assert "MERGED_GATE_NOT_PASSED_FOR_THIS_EXACT_COMMIT" in raw_resume
+ assert "run.get('head_sha')==current_sha" in raw_resume
+ # The quick canary explicitly disclaims production approval; do not conflate it
+ # with a fully validated multi-stage release.
+ quick_gate=pathlib.Path(".github/workflows/v093-merged-quick-gate.yml").read_text()
+ assert "'production_ready':False" in quick_gate
+ assert "'pit_verified':False" in quick_gate
+ assert "'numeric_verified':False" in quick_gate
+ legacy_writers={}
+ for filename in ("v093-2024-four-source-annual-capture.yml","v093-layer02-standard-r2.yml"):
+  path=pathlib.Path(".github/workflows")/filename
+  doc=yaml.safe_load(path.read_text())
+  triggers=doc.get("on",doc.get(True))
+  legacy_writers[filename]={"push_trigger":isinstance(triggers,dict) and "push" in triggers,"concurrency_group":doc.get("concurrency",{}).get("group")}
+ shared_groups={v["concurrency_group"] for v in stages.values()}
+ assert len(shared_groups)==1
+ return {"period":"2000-01..2026-10","months":len(months),"stages":stages,"source_of_truth":"GITHUB_WORKFLOW_FILES","legacy_writers":legacy_writers,"shared_stage_concurrency_group":next(iter(shared_groups)),"raw_resume_requires_same_commit_canary":True,"production_writes":0,"production_release":"BLOCKED","reason":"FIVE_STAGES_STILL_PRELAUNCH_STUBS"}
 if __name__=="__main__":
  print("FIVE_STAGE_COMBINED_CONTRACT "+json.dumps(run(),ensure_ascii=False,sort_keys=True),flush=True)
