@@ -1,0 +1,95 @@
+name: JARVIS v0.93 Cross Source Price Readonly Probe
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-cross-source-price-readonly-probe.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-cross-source-readonly
+  cancel-in-progress: false
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Read-only TWSE versus FinMind daily OHLC and volume comparison
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.parse,json,decimal,datetime,time,collections
+          D=decimal.Decimal
+          def get(url):
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 JARVIS-CrossSource-Readonly','Accept':'application/json'})
+            with urllib.request.urlopen(req,timeout=20) as r:
+              body=r.read(2500000)
+              if r.status!=200: raise RuntimeError('HTTP_'+str(r.status))
+            return json.loads(body)
+          def decimal_value(x):
+            if x is None:return None
+            s=str(x).strip().replace(',','')
+            if not s or s in ('--','-','N/A','除權息'):return None
+            try:return D(s)
+            except decimal.InvalidOperation:return None
+          def parse_twse(j):
+            fields=j.get('fields',[])
+            rows=j.get('data',[])
+            if not fields or not isinstance(rows,list):raise ValueError('TWSE_FIELDS_OR_DATA_MISSING')
+            # TWSE daily STOCK_DAY has: date, volume, value, trade_count, open, high, low, close, change, ...
+            if len(fields)<8 or '日期' not in fields[0] or '成交股數' not in fields[1]:
+              raise ValueError('TWSE_SCHEMA_CHANGED '+str(fields))
+            out={}
+            for r in rows:
+              y,m,d=map(int,str(r[0]).split('/'))
+              day=f'{y+1911:04d}-{m:02d}-{d:02d}'
+              out[day]={'open':decimal_value(r[4]),'high':decimal_value(r[5]),'low':decimal_value(r[6]),'close':decimal_value(r[7]),'volume_shares':decimal_value(r[1])}
+            return out
+          def parse_finmind(j):
+            if j.get('status')!=200:raise ValueError('FINMIND_STATUS_'+str(j.get('status'))+'_'+str(j.get('msg'))[:100])
+            rows=j.get('data')
+            if not isinstance(rows,list):raise ValueError('FINMIND_NO_DATA_LIST')
+            out={}
+            for r in rows:
+              out[r['date']]={'open':decimal_value(r.get('open')),'high':decimal_value(r.get('max')),'low':decimal_value(r.get('min')),'close':decimal_value(r.get('close')),'volume_shares':decimal_value(r.get('Trading_Volume'))}
+            return out
+          for month in ('2026-08','2014-10'):
+            year,mm=month.split('-')
+            start=f'{year}-{mm}-01'
+            last=datetime.date(int(year),int(mm),1)
+            if int(mm)==12:end=f'{int(year)+1}-01-01'
+            else:end=f'{year}-{int(mm)+1:02d}-01'
+            urls={
+              'TWSE':'https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?'+urllib.parse.urlencode({'date':year+mm+'01','stockNo':'2330','response':'json'}),
+              'FinMind':'https://api.finmindtrade.com/api/v4/data?'+urllib.parse.urlencode({'dataset':'TaiwanStockPrice','data_id':'2330','start_date':start,'end_date':end})
+            }
+            outcome={'month':month,'stock':'2330','status':'INCONCLUSIVE','twse_rows':None,'finmind_rows':None,'matched_days':0,'price_mismatch_days':[],'volume_mismatch_days':[],'unmatched_days':[],'errors':[]}
+            sources={}
+            for name,url in urls.items():
+              try:
+                j=get(url)
+                sources[name]=parse_twse(j) if name=='TWSE' else parse_finmind(j)
+                outcome[name.lower()+'_rows']=len(sources[name])
+              except Exception as e:
+                outcome['errors'].append(name+':'+type(e).__name__+':'+str(e)[:160])
+            if len(sources)==2:
+              a,b=sources['TWSE'],sources['FinMind']
+              common=sorted(set(a)&set(b))
+              outcome['matched_days']=len(common)
+              outcome['unmatched_days']=sorted(set(a)^set(b))
+              for day in common:
+                for field in ('open','high','low','close'):
+                  if a[day][field] is None or b[day][field] is None:
+                    outcome['errors'].append(day+':'+field+':missing_value')
+                  elif abs(a[day][field]-b[day][field])>D('0.011'):
+                    if day not in outcome['price_mismatch_days']:outcome['price_mismatch_days'].append(day)
+                if a[day]['volume_shares'] is None or b[day]['volume_shares'] is None:
+                  outcome['errors'].append(day+':volume:missing_value')
+                elif a[day]['volume_shares']!=b[day]['volume_shares']:
+                  outcome['volume_mismatch_days'].append(day)
+              if common and not outcome['errors'] and not outcome['unmatched_days'] and not outcome['price_mismatch_days'] and not outcome['volume_mismatch_days']:
+                outcome['status']='MATCH_ON_SAMPLED_FIELDS_NOT_PIT_CERTIFIED'
+              elif common:
+                outcome['status']='DISCREPANCIES_REQUIRE_REVIEW'
+            print('CROSS_SOURCE_AUDIT '+json.dumps(outcome,ensure_ascii=False),flush=True)
+          print('READONLY_CROSS_SOURCE_PROBE_FINISHED no_drive_write=1 no_token=1 no_raw_mutation=1',flush=True)
+          PY
