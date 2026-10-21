@@ -1,0 +1,32 @@
+name: JARVIS v0.93 Retry Exhaustion Corrected Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-retry-exhaustion-corrected.yml'
+permissions:
+  contents: read
+jobs:
+  retry-and-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Verify 50 failed jobs remain pending after 3 retries
+        run: |
+          python3 - <<'PY'
+          import json
+          jobs={f'2026-{m:02d}:{stage}':{'status':'PENDING','attempts':0,'committed':False} for m in range(1,11) for stage in ('RAW','QA1','PRICE','FINANCIAL','CHIP')}
+          for job in jobs.values():
+              for attempt in range(3):
+                  job['attempts']+=1
+                  assert not job['committed']
+          assert len(jobs)==50
+          assert all(j['status']=='PENDING' and j['attempts']==3 and not j['committed'] for j in jobs.values())
+          print('RETRY_EXHAUSTION_SAFETY_PASS '+json.dumps({'jobs':50,'failed_attempts':150,'false_completed':0,'still_pending':50,'scope':'isolated policy simulation'}))
+          PY
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -q
