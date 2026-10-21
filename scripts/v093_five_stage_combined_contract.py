@@ -58,7 +58,7 @@ def run():
   legacy_writers[filename]={"push_trigger":push_active,"jobs_disabled":jobs_disabled,"concurrency_group":doc.get("concurrency",{}).get("group")}
   assert not push_active and jobs_disabled,"LEGACY_WRITER_NOT_RETIRED:"+filename
  shared_groups={v["concurrency_group"] for v in stages.values()}
- assert shared_groups=={"jarvis-v093-live-raw","jarvis-v093-live-consumer"}
+ assert shared_groups=={"jarvis-v093-live-"+stage.lower() for stage in STAGES}
  return {"period":"2000-01..2026-10","months":len(months),"stages":stages,"source_of_truth":"GITHUB_WORKFLOW_FILES","legacy_writers":legacy_writers,"shared_stage_concurrency_group":sorted(shared_groups),"raw_resume_requires_same_commit_canary":True,"production_writes":0,"production_release":"REAL_WORKERS_CONFIGURED_REQUIRES_CLOUD_EVIDENCE","reason":"STATIC_CONFIGURATION_CHECK_ONLY"}
 if __name__=="__main__":
  print("FIVE_STAGE_COMBINED_CONTRACT "+json.dumps(run(),ensure_ascii=False,sort_keys=True),flush=True)

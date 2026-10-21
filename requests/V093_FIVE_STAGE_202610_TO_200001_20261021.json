@@ -2,7 +2,7 @@
   "request_id": "V093_FIVE_STAGE_202610_TO_200001_20261021",
   "authorized_by": "USER_2026-10-21_ASIA_TAIPEI",
   "policy_version": "V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021",
-  "requested_action": "RESUME_RAW_201404_AUDIT_202610_WITH_30_10_10_10",
+  "requested_action": "REMOVE_GLOBAL_TWO_WORKER_CAP_AND_SET_PRICE_FINANCIAL_CHIP_30M",
   "stages": [
     "RAW",
     "QA1",
@@ -17,7 +17,7 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "LIVE_RUNNING",
+  "state": "LIVE_CAPACITY_CUTOVER_PENDING",
   "activation_authorized": true,
   "activation_completed": true,
   "downloads_started_by_this_request": true,
@@ -71,7 +71,7 @@
     ]
   },
   "current_schedules": {
-    "verified_at": "2026-10-21T15:42:53Z",
+    "verified_at": null,
     "timezone": "Asia/Taipei",
     "entries": [
       {
@@ -88,39 +88,39 @@
         "cron_utc": "0 * * * *",
         "taipei_trigger": "每小時 0 分",
         "worker_budget_minutes": 30,
-        "concurrency_pool": "CONSUMER"
+        "concurrency_pool": "QA1"
       },
       {
         "stage": "PRICE",
         "workflow": ".github/workflows/v093-v2-03-price.yml",
         "cron_utc": "30 * * * *",
         "taipei_trigger": "每小時 30 分",
-        "worker_budget_minutes": 10,
-        "concurrency_pool": "CONSUMER"
+        "worker_budget_minutes": 30,
+        "concurrency_pool": "PRICE"
       },
       {
         "stage": "FINANCIAL",
         "workflow": ".github/workflows/v093-v2-04-financial.yml",
         "cron_utc": "40 * * * *",
         "taipei_trigger": "每小時 40 分",
-        "worker_budget_minutes": 10,
-        "concurrency_pool": "CONSUMER"
+        "worker_budget_minutes": 30,
+        "concurrency_pool": "FINANCIAL"
       },
       {
         "stage": "CHIP",
         "workflow": ".github/workflows/v093-v2-05-chip.yml",
         "cron_utc": "50 * * * *",
         "taipei_trigger": "每小時 50 分",
-        "worker_budget_minutes": 10,
-        "concurrency_pool": "CONSUMER"
+        "worker_budget_minutes": 30,
+        "concurrency_pool": "CHIP"
       }
     ],
     "ordering": "RAW -> QA1 -> PRICE / FINANCIAL / CHIP by durable eligible unit",
     "actual_start_time_note": "GitHub scheduled runs may start later than the nominal cron time",
-    "max_heavy_workers": 2,
+    "max_heavy_workers": null,
     "source_of_truth": "canonical C1-RAW-DOWNLOADER workflow files",
-    "state": "ENABLED_VERIFIED",
-    "downstream_budget_minutes_per_hour": 60
+    "state": "PENDING_PARALLEL_CUTOVER",
+    "downstream_budget_minutes_per_hour": 120
   },
   "previous_generation_evidence": {
     "activation_run": 39613119269,
@@ -180,7 +180,7 @@
   },
   "execution_plan": {
     "revision": "RAW_201404_AUDIT_202610_V1",
-    "authorized_by": "USER_20261021_EXPLICIT_RESUME_30_10_10_10",
+    "authorized_by": "USER_20261022_REMOVE_TWO_WORKER_CAP_AND_30M_DOWNSTREAM",
     "download_policy_unchanged": true,
     "raw_history_start": "2014-04",
     "raw_history_end": "2000-01",
@@ -191,23 +191,30 @@
     "audit_order": "NEWEST_CONTENT_DATE_FIRST",
     "raw_latest_updates": "BOUNDED_CURRENT_DATE_INCREMENT_ONLY",
     "preserve_completed_receipts_and_attempts": true,
-    "max_heavy_workers": 2,
+    "max_heavy_workers": null,
     "lease_suffix": "_REPLAN_201404_V1",
     "worker_budgets_minutes": {
       "RAW": 24,
       "QA1": 30,
-      "PRICE": 10,
-      "FINANCIAL": 10,
-      "CHIP": 10
+      "PRICE": 30,
+      "FINANCIAL": 30,
+      "CHIP": 30
     },
-    "downstream_budget_minutes_per_hour": 60,
-    "downstream_cadence": "HOURLY_STAGGERED",
+    "downstream_budget_minutes_per_hour": 120,
+    "downstream_cadence": "HOURLY_INDEPENDENT_PARALLEL",
     "cron_utc": {
       "RAW": "1,31 * * * *",
       "QA1": "0 * * * *",
       "PRICE": "30 * * * *",
       "FINANCIAL": "40 * * * *",
       "CHIP": "50 * * * *"
+    },
+    "parallelism": "ONE_WORKER_PER_STAGE_FIVE_INDEPENDENT_POOLS",
+    "stage_lease_suffix": {
+      "QA1": "_QA1_REPLAN_201404_V1",
+      "PRICE": "_PRICE_REPLAN_201404_V1",
+      "FINANCIAL": "_FINANCIAL_REPLAN_201404_V1",
+      "CHIP": "_CHIP_REPLAN_201404_V1"
     }
   },
   "execution_control": {
@@ -220,5 +227,19 @@
     "paused_at": "2026-10-21T15:34:00Z",
     "reason": "USER_REQUEST_PAUSE_ALL_SCHEDULES",
     "automatic_restart_allowed": false
+  },
+  "capacity_change": {
+    "authorized_by": "USER_20261022_REMOVE_TWO_WORKER_CAP_AND_30M_DOWNSTREAM",
+    "global_two_worker_cap_removed": true,
+    "per_stage_limit": 1,
+    "downstream_worker_budgets_minutes": {
+      "QA1": 30,
+      "PRICE": 30,
+      "FINANCIAL": 30,
+      "CHIP": 30
+    },
+    "raw_budget_unchanged": true,
+    "checkpoint_reset": false,
+    "state": "PENDING_CLOUD_CUTOVER"
   }
 }

@@ -8,7 +8,7 @@ from pathlib import Path
 from scripts import v093_live_five_stage as base
 from scripts import v093_history_reverse as engine
 from scripts import v093_three_year_repair as native
-from scripts.v093_five_stage_durable_gate import commit
+from scripts.v093_five_stage_durable_gate import commit,_read
 
 PLAN=json.loads((Path(__file__).resolve().parents[1]/'config/v093_execution_plan_20261021.json').read_text())
 REVISION=PLAN['revision']
@@ -16,6 +16,9 @@ AUDIT_MONTHS=base.MONTHS
 RAW_MONTHS=[m for m in AUDIT_MONTHS if m<=PLAN['raw_history_start']]
 LEGACY_MONTHS=[m for m in AUDIT_MONTHS if m<=PLAN['legacy_checkpoint_start']]
 assert RAW_MONTHS[0]=='2014-04' and RAW_MONTHS[-1]=='2000-01' and len(RAW_MONTHS)==172
+
+def lease_suffix_for(stage):
+    return PLAN.get('stage_lease_suffix',{}).get(stage,PLAN['lease_suffix'])
 
 class ArchiveCache:
     def __init__(self,limit=64_000_000):self.limit=limit;self.size=0;self.entries=collections.OrderedDict()
@@ -55,7 +58,7 @@ def newest_receipts(upstream):
 
 class Worker(base.Worker):
     def __init__(self,stage,minutes):
-        super().__init__(stage,minutes,lease_suffix=PLAN['lease_suffix'])
+        super().__init__(stage,minutes,lease_suffix=lease_suffix_for(stage))
         self.cache=ArchiveCache();self.last_processed_month=None;self.last_processed_period=None
         self.primary_month=None;self.phase='INITIALIZING';self.indexed=0;self.corrections=0
         self.budget_seconds=minutes*60
@@ -292,5 +295,9 @@ def main():
     base.load_policy()
     request=json.loads(Path('requests/V093_FIVE_STAGE_202610_TO_200001_20261021.json').read_text())
     if request.get('activation_authorized') is not True or request.get('execution_plan',{}).get('revision')!=REVISION:raise SystemExit('MISSING_REPLAN_AUTHORIZATION')
+    if a.stage!='RAW' and PLAN.get('parallelism')=='ONE_WORKER_PER_STAGE_FIVE_INDEPENDENT_POOLS':
+        url='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/contents/.github/live-state/five-stage-leases.json'
+        _,manifest=_read(url,os.environ['GH_TOKEN'])
+        if manifest.get('parallel_cutover',{}).get('status')!='READY':raise SystemExit('PARALLEL_CUTOVER_PENDING')
     Worker(a.stage,a.minutes).run()
 if __name__=='__main__':main()

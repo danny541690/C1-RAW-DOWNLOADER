@@ -24,7 +24,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: jarvis-v093-live-consumer
+  group: jarvis-v093-live-qa1
   cancel-in-progress: false
 jobs:
   worker:

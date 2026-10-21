@@ -1,6 +1,6 @@
 {
   "revision": "RAW_201404_AUDIT_202610_V1",
-  "authorized_by": "USER_20261021_EXPLICIT_RESUME_30_10_10_10",
+  "authorized_by": "USER_20261022_REMOVE_TWO_WORKER_CAP_AND_30M_DOWNSTREAM",
   "download_policy_unchanged": true,
   "raw_history_start": "2014-04",
   "raw_history_end": "2000-01",
@@ -11,22 +11,29 @@
   "audit_order": "NEWEST_CONTENT_DATE_FIRST",
   "raw_latest_updates": "BOUNDED_CURRENT_DATE_INCREMENT_ONLY",
   "preserve_completed_receipts_and_attempts": true,
-  "max_heavy_workers": 2,
+  "max_heavy_workers": null,
   "lease_suffix": "_REPLAN_201404_V1",
   "worker_budgets_minutes": {
     "RAW": 24,
     "QA1": 30,
-    "PRICE": 10,
-    "FINANCIAL": 10,
-    "CHIP": 10
+    "PRICE": 30,
+    "FINANCIAL": 30,
+    "CHIP": 30
   },
-  "downstream_budget_minutes_per_hour": 60,
-  "downstream_cadence": "HOURLY_STAGGERED",
+  "downstream_budget_minutes_per_hour": 120,
+  "downstream_cadence": "HOURLY_INDEPENDENT_PARALLEL",
   "cron_utc": {
     "RAW": "1,31 * * * *",
     "QA1": "0 * * * *",
     "PRICE": "30 * * * *",
     "FINANCIAL": "40 * * * *",
     "CHIP": "50 * * * *"
+  },
+  "parallelism": "ONE_WORKER_PER_STAGE_FIVE_INDEPENDENT_POOLS",
+  "stage_lease_suffix": {
+    "QA1": "_QA1_REPLAN_201404_V1",
+    "PRICE": "_PRICE_REPLAN_201404_V1",
+    "FINANCIAL": "_FINANCIAL_REPLAN_201404_V1",
+    "CHIP": "_CHIP_REPLAN_201404_V1"
   }
 }

@@ -6,7 +6,7 @@ on:
     inputs:
       minutes:
         type: string
-        default: '10'
+        default: '30'
         required: false
     secrets:
       GOOGLE_CLIENT_ID:
@@ -19,12 +19,12 @@ on:
     inputs:
       minutes:
         description: Bounded worker time in minutes
-        default: '10'
+        default: '30'
         required: false
 permissions:
   contents: write
 concurrency:
-  group: jarvis-v093-live-consumer
+  group: jarvis-v093-live-chip
   cancel-in-progress: false
 jobs:
   worker:
@@ -44,5 +44,5 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-          WORKER_MINUTES: ${{ inputs.minutes || '10' }}
+          WORKER_MINUTES: ${{ inputs.minutes || '30' }}
         run: python3 -m scripts.v093_replanned_five_stage --stage CHIP --minutes "$WORKER_MINUTES"

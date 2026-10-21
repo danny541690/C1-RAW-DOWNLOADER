@@ -41,10 +41,24 @@ class ReplanTests(unittest.TestCase):
         a={'unit_id':'a','category':'prices','period':'2026-10-01','status':'SAVED_BASIC_VERIFIED','evidence_file':'x/a'}
         b=dict(a,unit_id='b',period='2026-10-21');self.assertEqual([e['unit_id'] for e in plan.newest_receipts({'units':{'a':a,'b':b}})],['b','a'])
 
-    def test_longer_consumer_budgets_fit_one_hour_single_slot(self):
-        budget=plan.PLAN['worker_budgets_minutes']
-        self.assertEqual(sum(budget[s] for s in ('QA1','PRICE','FINANCIAL','CHIP')),60)
-        starts=[0,30,40,50,60]
-        for i,stage in enumerate(('QA1','PRICE','FINANCIAL','CHIP')):
-            self.assertGreater(budget[stage],4)
-            self.assertLessEqual(starts[i]+budget[stage],starts[i+1])
+    def test_parallel_consumers_have_distinct_leases_and_preserve_raw_lease(self):
+        consumers=('QA1','PRICE','FINANCIAL','CHIP')
+        self.assertEqual(len({plan.lease_suffix_for(s) for s in consumers}),4)
+        self.assertEqual(plan.lease_suffix_for('RAW'),plan.PLAN['lease_suffix'])
+        self.assertNotIn(plan.PLAN['lease_suffix'],{plan.lease_suffix_for(s) for s in consumers})
+        self.assertEqual({plan.PLAN['worker_budgets_minutes'][s] for s in consumers},{30})
+        self.assertIsNone(plan.PLAN['max_heavy_workers'])
+
+    def test_distinct_consumer_leases_can_coexist_without_unlocking_same_stage(self):
+        from scripts import v093_five_stage_durable_gate as gate
+        from copy import deepcopy
+        state={'jobs':{}}
+        def read(*args):return 'sha',deepcopy(state)
+        def put(url,token,sha,new,message):
+            state.clear();state.update(deepcopy(new));return True
+        with patch.object(gate,'_read',side_effect=read),patch.object(gate,'_put',side_effect=put):
+            for stage in ('QA1','PRICE','FINANCIAL','CHIP'):
+                gate.acquire('url','token','POOL_CONSUMER'+plan.lease_suffix_for(stage),'run/'+stage,now=1,ttl=3600)
+            self.assertEqual(len(state['jobs']),4)
+            with self.assertRaises(gate.LeaseBusy):
+                gate.acquire('url','token','POOL_CONSUMER'+plan.lease_suffix_for('PRICE'),'other/PRICE',now=2)
