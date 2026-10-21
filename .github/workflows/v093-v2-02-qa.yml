@@ -1,0 +1,32 @@
+name: JARVIS v0.93 V2 02 QA1 (Prelaunch)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-v2-cutover-global
+  cancel-in-progress: false
+jobs:
+  prelaunch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Validate QA1 scope without touching production
+        run: |
+          python3 - <<'PY'
+          import json
+          from scripts.v093_five_stage_scheduler_gate import STAGES, OWNERS, Work, eligible
+          months=[f'{y}-{m:02d}' for y in range(2026,1999,-1) for m in range(12,0,-1)]
+          assert len(months)==324 and months[0]=='2026-12' and months[-1]=='2000-01'
+          assert 'QA1' in STAGES
+          assert len(set().union(*OWNERS.values()))==sum(len(x) for x in OWNERS.values())
+          assert eligible(Work('2026-10','RAW','ohlc'))
+          assert not eligible(Work('2026-10','QA1','ohlc')) if 'QA1'!='RAW' else True
+          print('FIVE_STAGE_PRELAUNCH_CHECK_PASS '+json.dumps({'stage':'QA1','scope_months_full_year':len(months),'effective_months_as_of_2026_10':322,'writes':0}),flush=True)
+          print('PRODUCTION_GATE=BLOCKED_NO_DURABLE_SHARED_LOCK_OR_APPROVED_END_TO_END_DATA_ADAPTER')
+          PY
