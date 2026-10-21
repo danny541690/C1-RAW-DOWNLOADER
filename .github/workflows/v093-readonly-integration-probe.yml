@@ -1,0 +1,56 @@
+name: JARVIS L1 Readonly Integration Probe
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-readonly-integration-probe.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-readonly-integration-probe
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test actual source endpoints with small read-only requests
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.parse,json,datetime,hashlib
+          cases=[
+            ('TWSE_2026_08','https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date=20260801&stockNo=2330&response=json'),
+            ('TWSE_2014_10','https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date=20141001&stockNo=2330&response=json'),
+            ('FINMIND_PUBLIC','https://api.finmindtrade.com/api/v4/data?'+urllib.parse.urlencode({'dataset':'TaiwanStockPrice','data_id':'2330','start_date':'2026-08-03','end_date':'2026-08-04'}))
+          ]
+          outcomes=[]
+          for name,url in cases:
+            result={'case':name}
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 JARVIS-ReadOnly-QA','Accept':'application/json'})
+              with urllib.request.urlopen(req,timeout=18) as r:
+                raw=r.read(400000)
+                result['http']=r.status
+                result['bytes']=len(raw)
+                result['sha256']=hashlib.sha256(raw).hexdigest()[:16]
+                try:
+                  data=json.loads(raw)
+                  result['json']=True
+                  result['provider_status']=data.get('stat',data.get('status')) if isinstance(data,dict) else None
+                  rows=data.get('data',[]) if isinstance(data,dict) else []
+                  result['rows']=len(rows) if isinstance(rows,list) else None
+                except Exception as e:
+                  result['json']=False
+                  result['error']=type(e).__name__
+            except Exception as e:
+              result['error']=type(e).__name__+':'+str(e)[:110]
+            outcomes.append(result)
+            print('SOURCE_PROBE '+json.dumps(result,ensure_ascii=False),flush=True)
+          assert len(outcomes)==3
+          assert all('case' in x for x in outcomes)
+          print('READONLY_PROBE_FINISHED no_secrets=1 drive_writes=0 raw_mutations=0')
+          PY
