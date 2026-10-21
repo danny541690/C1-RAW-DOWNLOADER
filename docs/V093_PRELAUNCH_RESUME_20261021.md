@@ -13,7 +13,7 @@ Requested source conversation: FinMind 2026 下載驗收. Conversation retrieval
 - Explicit report period and monetary unit are required for revenue candidates. Decimal conversion reports amounts in NTD 100 million.
 - Export dates are not publication dates. All candidates retain publication_date=null, pit_verified=false, numeric_verified=false, certified=false.
 - Local full regression: 243/243 PASS. Five-stage contract check PASS for 322 descending months, 2026-10 through 2000-01.
-- Cloud validation started automatically by the code changes: run 39582234666 at the above commit. Record final job results from Actions before claiming cloud acceptance.
+- Cloud validation started automatically by the code changes: run 39582234666 at the above commit. Final result: SUCCESS; cloud regression 243/243 PASS. Real 2026-09 MOPS files yielded 863 + 30 + 994 + 93 = 1,980 unverified revenue candidates, zero rejected rows in those four files. These are diagnostic row counts, not certified unique-company coverage.
 
 ## Remaining checkpoint / next work
 1. Inspect new real MOPS revenue candidate counts and compare exact company/period/metric/unit keys against an independent source; do not publish diagnostic candidates.
