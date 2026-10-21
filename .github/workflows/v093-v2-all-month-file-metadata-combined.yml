@@ -64,19 +64,11 @@ jobs:
     needs: [regression,metadata]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           pattern: file-metadata-*
           path: parts
-      - name: Aggregate all 322 months and generate missing-data review queue
-        run: |
-          python3 - <<'PY'
-          import json,glob,os,sys
-          # Module has no Google dependencies; import via path.
-          sys.path.insert(0,'.')
-          # Install dependencies only needed for importing module.
-          PY
-      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
