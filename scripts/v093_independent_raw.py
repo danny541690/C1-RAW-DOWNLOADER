@@ -139,8 +139,8 @@ class Independent(engine.History):
         self.state[bucket][k]=dict(unit,unit_id=k,status='SAVED_BASIC_VERIFIED',sha256=sha(payload),rows=stats['rows'],codes_found=stats['codes'],reused_existing=True,evidence_file=file_ref,numeric_verified=False,pit_verified=False)
         self.state['stocks']=sorted(set(self.state['stocks'])|set(stats['codes']))
         if source in ('TWSE','TPEx'):self.state['market_codes'][source]=sorted(set(self.state['market_codes'].get(source,[]))|set(stats['codes']))
-    def inventory_existing(self):
-        for source in SOURCES:
+    def inventory_existing(self,sources=None):
+        for source in (sources or SOURCES):
             for f in listing(self.d,self.folder(source,self.active)):
                 if time.monotonic()>=self.until:return False
                 if f['mimeType']=='application/vnd.google-apps.folder' or f['id'] in self.state['inventory']:continue

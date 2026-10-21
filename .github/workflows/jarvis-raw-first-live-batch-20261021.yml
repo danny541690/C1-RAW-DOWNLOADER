@@ -1,0 +1,23 @@
+name: JARVIS RAW Source Independent First Live Batch
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-raw-first-live-batch-20261021.yml'
+permissions:
+  contents: write
+  actions: write
+jobs:
+  capture:
+    uses: ./.github/workflows/v093-v2-01-raw.yml
+    with:
+      minutes: '12'
+    secrets: inherit
+  finish:
+    if: always()
+    needs: capture
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disable completed one-shot trigger
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/$GITHUB_REPOSITORY/actions/workflows/jarvis-raw-first-live-batch-20261021.yml/disable"

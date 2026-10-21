@@ -161,19 +161,21 @@ class Worker(Independent):
     def capture_month(self,month,quota=None):
         self.restore(month,self.monthfolder('RAW',month))
         # Crash recovery and legacy per-unit proof always precede a new HTTP request.
-        if not self.inventory_existing():return False
         jobs=native.Audit.jobs(object.__new__(native.Audit),month,set())
         # Do not request today's incomplete close-of-day snapshot.
         if month==self.today.strftime('%Y-%m') and dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).hour<18:
             jobs=[j for j in jobs if j['period']!=self.today.isoformat()]
         jobs.sort(key=lambda j:(j['period'],j['category'] in ('prices','prices_indices')),reverse=True)
-        financial=self.financial_jobs()
-        # Quarter endpoints may return partial published groups; never claim PIT acceptance.
-        for bucket,items in (('units',jobs),('financial_units',financial)):
-            for j in items:
-                if time.monotonic()>=self.until:return False
-                if quota is not None and self.processed>=quota:return False
-                self.fetch_job(j,bucket)
+        for source in ('TWSE','TPEx','MOPS','FinMind'):
+            if not self.inventory_existing((source,)):return False
+            # Each source hands off independently; FinMind inventory cannot block
+            # a confirmed official-source gap from being captured.
+            financial=self.financial_jobs() if source=='MOPS' else []
+            for bucket,items in (('units',[j for j in jobs if j['source']==source]),('financial_units',financial)):
+                for j in items:
+                    if time.monotonic()>=self.until:return False
+                    if quota is not None and self.processed>=quota:return False
+                    self.fetch_job(j,bucket)
         unresolved=[e for b in ('units','financial_units') for e in self.state[b].values() if e.get('status')!='SAVED_BASIC_VERIFIED']
         self.state['missing_queue']=unresolved
         self.state['finmind_alignment_hold']='NO_APPROVED_CROSS_SOURCE_SEMANTIC_EVIDENCE_NO_REQUEST'
@@ -257,8 +259,10 @@ class Worker(Independent):
             self.putj(self.stagectrl,'STATUS.json',report)
             commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(json.dumps(report,sort_keys=True).encode()))
             emit(**report)
-        except Exception:
-            # Keep lease until TTL: no second writer can race a terminating job.
+        except Exception as exc:
+            failed={'stage':self.stage,'status':'FAILED_RETRY_NEXT_RUN','error':type(exc).__name__}
+            try:commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(json.dumps(failed,sort_keys=True).encode()))
+            except Exception:pass
             raise
 
 def main():
