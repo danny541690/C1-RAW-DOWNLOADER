@@ -126,6 +126,11 @@ def classify_mops_html(text):
  return {"kind":"FINANCIAL_STATEMENT_MATRIX" if financial else "REVENUE_TABLE_CANDIDATE" if revenue else "UNKNOWN_HTML","tables":p.tables,"rows":p.rows,"cells":p.cells,"unit_hint":"NTD_THOUSANDS_UNVERIFIED" if "新台幣仟元" in combined else "UNKNOWN","pit_verified":False,"stock_id_verified":False,"certified":False}
 
 def parse(source,archive,member,b,period):
+ # The Drive folder/archive label cannot override explicit source identity in
+ # the member filename. Quarantine cross-source payloads before parsing.
+ prefix=re.match(r"^(TWSE|TPEx|MOPS|FinMind)[_-]",member,re.I)
+ if prefix and prefix.group(1).casefold()!=source.casefold():
+  raise ValueError("SOURCE_PATH_MISMATCH_MEMBER_PREFIX")
  s,encoding=decode(b)
  lower=member.lower()
  if lower.endswith(".jsonl"):
