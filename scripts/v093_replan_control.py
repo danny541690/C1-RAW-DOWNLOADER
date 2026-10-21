@@ -4,7 +4,7 @@ from scripts.v093_five_stage_durable_gate import _read,_put
 BASE='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
 TOKEN=os.environ['GH_TOKEN']
 FILES=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml','v093-v2-04-financial.yml','v093-v2-05-chip.yml']
-OWN='.github/workflows/jarvis-checkpoint-replan-20261021.yml'
+OWN='.github/workflows/'+os.environ.get('REPLAN_WORKFLOW_FILE','jarvis-checkpoint-replan-20261021.yml')
 def api(path,method='GET',data=None):
     req=urllib.request.Request(BASE+path,headers={'Authorization':'Bearer '+TOKEN,'Accept':'application/vnd.github+json','Content-Type':'application/json'},method=method,data=json.dumps(data).encode() if data is not None else (b'' if method!='GET' else None))
     try:
@@ -68,7 +68,7 @@ def activate():
     enabled={w['path'] for w in all_pages('/actions/workflows','workflows') if w['state']=='active' and w['path']!=OWN}
     if enabled!=expected:raise RuntimeError('FIVE_ONLY_ACTIVATION_MISMATCH:'+json.dumps(sorted(enabled)))
     print('REPLANNED_FIVE_ENABLED '+json.dumps({'workflows':sorted(enabled),'raw_start':'2014-04','audit_start':'2026-10','end':'2000-01'}),flush=True)
-    api('/actions/workflows/jarvis-checkpoint-replan-20261021.yml/disable','PUT')
+    api('/actions/workflows/'+OWN.rsplit('/',1)[-1]+'/disable','PUT')
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('action',choices=['prepare','activate']);a=p.parse_args()
     prepare() if a.action=='prepare' else activate()
