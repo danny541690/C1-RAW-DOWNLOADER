@@ -12,6 +12,8 @@ on:
       - 'scripts/v093_twse_disclosure_pit.py'
       - 'tests/test_v093_twse_disclosure_pit.py'
       - 'tests/test_v093_twse_all_rows_pit.py'
+      - 'scripts/v093_cross_source_numeric_audit.py'
+      - 'tests/test_v093_cross_source_numeric_audit.py'
       - 'tests/test_v093_native_numeric_sanity.py'
       - 'tests/test_v093_finmind_annual_rows_adapter.py'
       - 'tests/test_v093_mops_html_financial_classification.py'
@@ -112,14 +114,17 @@ jobs:
           missing_archives={r['month']:[src for src,details in r['sources'].items() if details['status']=='NO_BOUNDED_ZIP_SAMPLE'] for r in reports}
           sanity_keys=('invalid_date','invalid_stock_id','nonfinite_numeric','identifier_as_numeric','premature_verification','premature_publication','duplicate_lineage_key')
           sanity={k:sum(s['stats'].get('sanity_'+k,0) for r in reports for s in r['sources'].values()) for k in sanity_keys}
+          cross_source={"candidate_keys":sum(r["cross_source_close"]["candidate_keys"] for r in reports),"compared_pairs":sum(sum(r["cross_source_close"]["compared_pairs"].values()) for r in reports),"mismatches":sum(sum(r["cross_source_close"]["mismatch"].values()) for r in reports),"duplicate_conflicts":sum(r["cross_source_close"]["duplicate_conflicts"] for r in reports),"certified":False}
           blockers=[]
+          if cross_source["mismatches"] or cross_source["duplicate_conflicts"]:blockers.append("CROSS_SOURCE_NUMERIC_DISAGREEMENT")
+          if not cross_source["compared_pairs"]:blockers.append("NO_INDEPENDENT_CROSS_SOURCE_NUMERIC_OVERLAP")
           if any(sanity.values()):blockers.append('NATIVE_SANITY_VIOLATIONS')
           if any(missing_archives.values()):blockers.append('MISSING_OR_OVERSIZE_SOURCE_ARCHIVES')
           if errors:blockers.append('UNRESOLVED_PARSE_ERRORS')
           if any(v['oversize_skipped'] for v in source_summary.values()):blockers.append('UNINSPECTED_LARGE_MEMBERS')
           if any(v['zero_cell_members'] for v in source_summary.values()):blockers.append('UNMAPPED_OR_EMPTY_MEMBERS')
           blockers.extend(['PIT_UNIT_NUMERIC_QA_UNAPPROVED','FIVE_REAL_STAGE_IMPLEMENTATIONS_NOT_CONNECTED'])
-          decision={'months':len(reports),'members_attempted':attempted,'native_cells_staged_unverified':cells,'parse_errors':errors,'native_sanity':sanity,'sources':source_summary,'missing_or_oversize_archives_by_month':missing_archives,'production_writes':0,'certified':False,'release':'BLOCKED','blockers':blockers}
+          decision={'months':len(reports),'members_attempted':attempted,'native_cells_staged_unverified':cells,'parse_errors':errors,'native_sanity':sanity,'cross_source_close':cross_source,'sources':source_summary,'missing_or_oversize_archives_by_month':missing_archives,'production_writes':0,'certified':False,'release':'BLOCKED','blockers':blockers}
           assert all(not r['certified'] and r['drive_writes']==0 for r in reports)
           assert errors==sum(v['parse_errors'] for v in source_summary.values())
           print('REAL_NATIVE_PARSER_COMBINED_AUDIT '+json.dumps(decision,sort_keys=True),flush=True)
