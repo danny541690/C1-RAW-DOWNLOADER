@@ -27,6 +27,16 @@ def route(category):
     if category in ('prices','prices_indices','valuation','indices','marketcap','ex_dividend','capital_reduction','par_value_change'):return 'PRICE'
     raise ValueError('UNROUTED_DATASET:'+category)
 
+def dataset_watermarks(state):
+    marks={}
+    for bucket in ('units','financial_units'):
+        for receipt in state.get(bucket,{}).values():
+            if receipt.get('status')!='SAVED_BASIC_VERIFIED':continue
+            key=receipt['source']+':'+receipt['category']
+            marks[key]=max(marks.get(key,''),receipt['period'])
+    return marks
+
+
 def retryable(exc):
     if isinstance(exc,urllib.error.HTTPError):return exc.code in (408,429,500,502,503,504)
     return isinstance(exc,(TimeoutError,ConnectionError,OSError))
@@ -77,6 +87,7 @@ class Worker(Independent):
 
     def save_state(self):
         self.owned();self.registry.flush()
+        self.state['dataset_watermarks']=dataset_watermarks(self.state)
         self.state['updated_utc']=native.stamp()
         self.putj(self.monthctrl,'MONTH_STATE.json',self.state)
 
