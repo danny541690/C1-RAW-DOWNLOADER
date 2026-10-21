@@ -1,0 +1,35 @@
+name: JARVIS v0.93 Five Stage Integrated Prelaunch Test
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-five-stage-integrated-prelaunch-test.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v093-five-stage-prelaunch
+  cancel-in-progress: false
+jobs:
+  test-policy-and-existing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Five-stage candidate policy and all repository regression tests
+        run: |
+          python3 -m unittest discover -s tests -p 'test_*.py' -q
+          echo 'FIVE_STAGE_INTEGRATION_POLICY_PASS'
+      - name: Verify production five schedules have not been installed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/v093_five_stage_scheduler_gate.py').read_text()
+          assert 'atomic CAS on shared durable storage' in p
+          print('PRELAUNCH_ONLY_NO_DISTRIBUTED_CAS; production rollout blocked until real Drive lock implementation')
+          PY
