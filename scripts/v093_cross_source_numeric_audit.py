@@ -13,7 +13,7 @@ PRICE_FIELDS={
 }
 def matches_native_field(native_field,expected):
  """Array-field suffixes preserve original column positions; never use substrings."""
- return native_field==expected or bool(re.fullmatch(re.escape(expected)+r"__col_\\d{2,4}",str(native_field or "")))
+ return native_field==expected or bool(re.fullmatch(re.escape(expected)+r"__col_\d{2,4}",str(native_field or "")))
 
 def compare_rows(rows_by_source,metric="close",abs_tol=0.01):
  if metric not in PRICE_FIELDS:raise ValueError("METRIC_NOT_MAPPED")
