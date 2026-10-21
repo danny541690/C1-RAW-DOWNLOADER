@@ -52,6 +52,16 @@ def run(d,month,max_archive=12_000_000,max_member=5_000_000,max_members=12):
                             diag["payload_type"]=type(payload).__name__
                             if isinstance(payload,dict):
                                 diag["top_level_keys"]=sorted(str(k) for k in payload)[:24]
+                                if source=="TPEx" and isinstance(payload.get("tables"),list):
+                                    diag["table_shapes"]=[]
+                                    for t in payload["tables"][:3]:
+                                        if not isinstance(t,dict):continue
+                                        rows=t.get("data")
+                                        fields=t.get("fields")
+                                        shape={"title":str(t.get("title",""))[:70],"fields":[str(x)[:45] for x in fields[:25]] if isinstance(fields,list) else None,"rows":len(rows) if isinstance(rows,list) else None,"table_date":str(t.get("date",""))[:25]}
+                                        if isinstance(rows,list) and rows:
+                                            shape["first_row"]=([str(x)[:40] for x in rows[0][:25]] if isinstance(rows[0],list) else {str(k):str(v)[:40] for k,v in list(rows[0].items())[:20]} if isinstance(rows[0],dict) else str(type(rows[0]).__name__))
+                                        diag["table_shapes"].append(shape)
                                 data=payload.get("data",payload.get("rows"))
                                 diag["data_rows"]=len(data) if isinstance(data,list) else None
                                 if isinstance(data,list) and data and isinstance(data[0],dict):
