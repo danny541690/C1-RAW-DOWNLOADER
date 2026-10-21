@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        month: ['2025-01','2026-09']
+        month: ['2014-04','2024-06','2025-01','2026-09']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -68,7 +68,7 @@ jobs:
           python3 - <<'PY'
           import glob,json
           paths=glob.glob('parts/*/native-parser.json')
-          assert len(paths)==2,paths
+          assert len(paths)==4,paths
           reports=[json.load(open(p)) for p in paths]
           cells=sum(s['stats'].get('native_cells_staged',0) for r in reports for s in r['sources'].values())
           attempted=sum(s['stats'].get('members_attempted',0) for r in reports for s in r['sources'].values())
@@ -83,12 +83,14 @@ jobs:
               'oversize_skipped':sum(s['stats'].get('oversize_skipped',0) for s in samples),
               'zero_cell_members':sum(s['stats'].get('members_without_cells',0) for s in samples)
             }
+          missing_archives={r['month']:[src for src,details in r['sources'].items() if details['status']=='NO_BOUNDED_ZIP_SAMPLE'] for r in reports}
           blockers=[]
+          if any(missing_archives.values()):blockers.append('MISSING_OR_OVERSIZE_SOURCE_ARCHIVES')
           if errors:blockers.append('UNRESOLVED_PARSE_ERRORS')
           if any(v['oversize_skipped'] for v in source_summary.values()):blockers.append('UNINSPECTED_LARGE_MEMBERS')
           if any(v['zero_cell_members'] for v in source_summary.values()):blockers.append('UNMAPPED_OR_EMPTY_MEMBERS')
           blockers.extend(['PIT_UNIT_NUMERIC_QA_UNAPPROVED','FIVE_REAL_STAGE_IMPLEMENTATIONS_NOT_CONNECTED'])
-          decision={'months':len(reports),'members_attempted':attempted,'native_cells_staged_unverified':cells,'parse_errors':errors,'sources':source_summary,'production_writes':0,'certified':False,'release':'BLOCKED','blockers':blockers}
+          decision={'months':len(reports),'members_attempted':attempted,'native_cells_staged_unverified':cells,'parse_errors':errors,'sources':source_summary,'missing_or_oversize_archives_by_month':missing_archives,'production_writes':0,'certified':False,'release':'BLOCKED','blockers':blockers}
           assert all(not r['certified'] and r['drive_writes']==0 for r in reports)
           assert errors==sum(v['parse_errors'] for v in source_summary.values())
           print('REAL_NATIVE_PARSER_COMBINED_AUDIT '+json.dumps(decision,sort_keys=True),flush=True)
