@@ -34,3 +34,10 @@ class LiveStageTests(unittest.TestCase):
         w.inspect_payload('TWSE','unit.raw',b'raw',receipt,'archive/unit.raw')
         self.assertEqual(next(iter(w.state['units'].values()))['evidence_file'],'archive/unit.raw')
         with self.assertRaisesRegex(ValueError,'IDENTITY_MISMATCH'):w.inspect_payload('TPEx','unit.raw',b'raw',receipt,'archive/unit.raw')
+
+    def test_watermarks_do_not_hide_other_source_gaps(self):
+        state={'units':{
+            'a':{'source':'TWSE','category':'prices','period':'2026-10-21','status':'SAVED_BASIC_VERIFIED'},
+            'b':{'source':'TPEx','category':'prices','period':'2026-10-20','status':'SAVED_BASIC_VERIFIED'},
+            'c':{'source':'TPEx','category':'prices','period':'2026-10-21','status':'ISOLATED_MISSING'}}}
+        self.assertEqual(live.dataset_watermarks(state),{'TWSE:prices':'2026-10-21','TPEx:prices':'2026-10-20'})
