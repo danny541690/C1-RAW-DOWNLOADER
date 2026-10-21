@@ -1,0 +1,44 @@
+name: JARVIS v0.93 Five New Schedules Cutover Audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-cutover-contract-audit.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Regression and cutover contract
+        run: |
+          python3 -m unittest discover -s tests -p 'test_*.py' -q
+          python3 - <<'PY'
+          import pathlib,re,json,datetime
+          from scripts.v093_five_stage_scheduler_gate import STAGES,OWNERS,validate_partition
+          p=pathlib.Path('.github/workflows')
+          old=['v093-raw-2015-to-2000.yml','v093-l1-secondpass-qa-repair.yml','v093-l1-thirdpass-gated-repair.yml']
+          new=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml','v093-v2-04-financial.yml','v093-v2-05-chip.yml']
+          assert len(STAGES)==len(new)==5
+          assert all('schedule:' not in (p/f).read_text() for f in old)
+          assert all('schedule:' not in (p/f).read_text() for f in new)
+          assert all('workflow_dispatch:' in (p/f).read_text() for f in new)
+          groups=[re.search(r'(?m)^  group:\s*(\S+)',(p/f).read_text()).group(1) for f in new]
+          assert len(set(groups))==1
+          assert len(set().union(*OWNERS.values()))==sum(len(x) for x in OWNERS.values())
+          now=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).date()
+          months=[f'{y}-{m:02d}' for y in range(now.year,1999,-1) for m in range(12,0,-1) if f'{y}-{m:02d}'<=now.strftime('%Y-%m')]
+          validate_partition(months)
+          assert months[-1]=='2000-01'
+          # Actual Drive helper is still unsafe for concurrent write; gate must remain blocked.
+          source=pathlib.Path('scripts/annual_actual_firstpass.py').read_text()
+          assert 'self.find(parent,name)' in source and 'files().update(fileId=old["id"],media_body=media)' in source
+          print('FIVE_NEW_WORKFLOWS_CUTOVER_CONTRACT_PASS '+json.dumps({'old_crons_disabled':3,'new_workflows_scaffolded':5,'new_crons_active':0,'shared_concurrency_group':True,'historical_months':len(months),'scope_first':months[0],'scope_last':months[-1],'no_production_writes':True},sort_keys=True),flush=True)
+          print('PRODUCTION_RELEASE_GATE=BLOCKED_NEEDS_SAFE_SHARED_STATE_AND_REAL_2000_TO_2026_CONVERSION_ADAPTERS')
+          PY
