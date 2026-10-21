@@ -17,7 +17,7 @@
     "order": "NEWEST_TO_OLDEST",
     "current_month_through": "ACTUAL_AVAILABLE_AS_OF_EXECUTION_DATE"
   },
-  "state": "LIVE_ENABLED_FIRST_BATCH_STARTING",
+  "state": "LIVE_RUNNING",
   "activation_authorized": true,
   "activation_completed": true,
   "downloads_started_by_this_request": true,
@@ -33,7 +33,7 @@
     "chatgpt_jarvis_automations_paused": 6
   },
   "operational_evidence": {
-    "replan_state": "FIVE_ENABLED_FIRST_RAW_AND_CONSUMER_CYCLE_STARTING",
+    "replan_state": "RAW_201404_AND_QA1_202610_RUNNING",
     "public_stop_run": 39622875661,
     "private_stop_run": 39622879311,
     "legacy_primary_resume_month": "2014-04",
@@ -54,7 +54,21 @@
     },
     "full_history_complete": false,
     "numeric_verified": false,
-    "pit_verified": false
+    "pit_verified": false,
+    "raw_checkpoint_confirmed": {
+      "execution_plan": "RAW_201404_AUDIT_202610_V1",
+      "month_index": 0,
+      "primary_month": "2014-04",
+      "legacy_resume_month": "2014-04",
+      "verified_at": "2026-10-21T15:44:33Z"
+    },
+    "qa1_replanned_basic_checks_observed": 98,
+    "first_cycle_order": [
+      "QA1",
+      "PRICE",
+      "FINANCIAL",
+      "CHIP"
+    ]
   },
   "current_schedules": {
     "verified_at": "2026-10-21T15:42:53Z",
