@@ -1,0 +1,61 @@
+name: JARVIS v0.93 Multi-stock Historical QA Readonly
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-multistock-historical-qa-readonly.yml'
+permissions:
+  contents: read
+jobs:
+  multi-stock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Compare 3 TWSE stocks across 2 historical months with safe missing and boundary rules
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.parse,json,datetime,decimal,time
+          D=decimal.Decimal
+          def fetch(url):
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 JARVIS-Multistock-QA','Accept':'application/json'})
+            with urllib.request.urlopen(req,timeout=18) as r:return json.loads(r.read(2000000))
+          def num(x):
+            if x is None:return None
+            s=str(x).replace(',','').strip()
+            if s in ('','--','-','N/A'):return None
+            try:return D(s)
+            except decimal.InvalidOperation:return None
+          fields={'open':'開盤價','high':'最高價','low':'最低價','close':'收盤價','volume':'成交股數','amount':'成交金額','trades':'成交筆數'}
+          fmfields={'open':'open','high':'max','low':'min','close':'close','volume':'Trading_Volume','amount':'Trading_money','trades':'Trading_turnover'}
+          summaries=[]
+          for stock in ('2330','2317','2603'):
+            for year,month in ((2026,8),(2014,10)):
+              start=datetime.date(year,month,1)
+              nxt=datetime.date(year+1,1,1) if month==12 else datetime.date(year,month+1,1)
+              end=nxt-datetime.timedelta(days=1)
+              report={'stock':stock,'month':start.strftime('%Y-%m'),'status':'INCONCLUSIVE','errors':[]}
+              try:
+                a=fetch('https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?'+urllib.parse.urlencode({'date':start.strftime('%Y%m%d'),'stockNo':stock,'response':'json'}))
+                b=fetch('https://api.finmindtrade.com/api/v4/data?'+urllib.parse.urlencode({'dataset':'TaiwanStockPrice','data_id':stock,'start_date':start.isoformat(),'end_date':end.isoformat()}))
+                if a.get('stat')!='OK' or b.get('status')!=200:raise ValueError('PROVIDER_STATUS:'+str(a.get('stat'))+'/'+str(b.get('status')))
+                idx={key:a['fields'].index(label) for key,label in fields.items()}
+                tw={}
+                for row in a['data']:
+                  y,m,d=map(int,row[0].split('/'))
+                  day=f'{y+1911:04d}-{m:02d}-{d:02d}'
+                  tw[day]={k:num(row[i]) for k,i in idx.items()}
+                fm={row['date']:{k:num(row[v]) for k,v in fmfields.items()} for row in b['data']}
+                common=sorted(set(tw)&set(fm))
+                only_tw=sorted(set(tw)-set(fm));only_fm=sorted(set(fm)-set(tw))
+                mismatches={k:[day for day in common if tw[day][k]!=fm[day][k]] for k in fields}
+                missing={k:[day for day in common if tw[day][k] is None or fm[day][k] is None] for k in fields}
+                report.update(twse_rows=len(tw),finmind_rows=len(fm),matched_days=len(common),only_twse=only_tw,only_finmind=only_fm,mismatch_counts={k:len(v) for k,v in mismatches.items()},missing_counts={k:len(v) for k,v in missing.items()},first_mismatch={k:v[:2] for k,v in mismatches.items() if v})
+                report['status']='PASS' if common and not only_tw and not only_fm and not any(mismatches.values()) and not any(missing.values()) else 'REVIEW_REQUIRED'
+              except Exception as e:
+                report['errors'].append(type(e).__name__+':'+str(e)[:170])
+              summaries.append(report)
+              print('MULTISTOCK_AUDIT '+json.dumps(report,ensure_ascii=False),flush=True)
+              time.sleep(.2)
+          print('MULTISTOCK_SUMMARY '+json.dumps({'total':len(summaries),'pass':sum(x['status']=='PASS' for x in summaries),'review':sum(x['status']=='REVIEW_REQUIRED' for x in summaries),'inconclusive':sum(x['status']=='INCONCLUSIVE' for x in summaries),'read_only':True},ensure_ascii=False),flush=True)
+          assert len(summaries)==6
+          PY
