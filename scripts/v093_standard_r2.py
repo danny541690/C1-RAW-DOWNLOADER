@@ -79,6 +79,9 @@ def parse_json(source,archive,member,obj,period):
  if isinstance(obj,list):add("records",obj)
  if isinstance(obj,dict):
   add("data",obj.get("data"),obj.get("fields"))
+  # FinMind annual-batch archives store dated per-stock records under rows, not data.
+  # Keep original row dates and stock_id; do not synthesize either from the filename.
+  if not isinstance(obj.get("data"),list):add("rows",obj.get("rows"),obj.get("fields"))
   add("aaData",obj.get("aaData"),obj.get("fields"))
   for j,t in enumerate(obj.get("tables") or []):
    if not isinstance(t,dict):continue
