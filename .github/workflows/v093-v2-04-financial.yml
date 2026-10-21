@@ -23,6 +23,7 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
+          cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
       - name: Run real FINANCIAL worker with durable per-unit state
         env:
