@@ -60,3 +60,10 @@ Release remains BLOCKED. No cron activation and no production Drive writes were 
 - Known incompatible legacy capture CLIs blocked before startup; code evidence signature now includes the policy config.
 - Cross-chat summary: docs/CHATGPT_MEMORY_POINT_V093_20261021.md. A saved handoff document is not ChatGPT built-in permanent memory.
 - Formal five-stage worker integration, partition concurrency/quota enforcement and production-path operational acceptance remain pending. No schedule activation or market-data capture occurred during this rules update.
+
+## Authorized cutover request — 2026-10-21
+- User instructed stopping all legacy schedules and starting five real stages for 2026-10 through 2000-01 (322 months) under the adopted policy. Authorization is retained; no additional user confirmation is needed for that scope.
+- Completed actual retirement: public stop run 39608022842 disabled 63 workflows; private stop run 39608025445 disabled 207 workflows. Both receipts report zero enabled workflows and zero remaining legacy runs. Existing RAW/checkpoints preserved. Six ChatGPT project automations were already paused.
+- Actual five-stage activation NOT completed. Existing workflow bodies are prelaunch checks, not implemented production workers. No market data was downloaded by this request.
+- Durable task: requests/V093_FIVE_STAGE_202610_TO_200001_20261021.json (both repos), state BLOCKED_PENDING_REAL_STAGE_IMPLEMENTATION.
+- Next required work is real processor/durable-handoff implementation and operational validation, then activation under the existing authorization. Do not report a prelaunch check or placeholder cron as downloading.
