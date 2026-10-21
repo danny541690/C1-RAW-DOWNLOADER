@@ -1,0 +1,77 @@
+name: JARVIS v0.93 OTC Numeric Reconciliation Retry SAFE
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-otc-numeric-reconciliation-retry-safe.yml'
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Compare TPEx daily rows and FinMind OTC stocks with schema-derived fields
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.parse,decimal,datetime,time,http.client,urllib.error
+          D=decimal.Decimal
+          def get(url):
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 JARVIS-OTC-Numeric-QA','Accept':'application/json'})
+            last=None
+            for attempt in range(3):
+              try:
+                with urllib.request.urlopen(req,timeout=23) as r:
+                  body=r.read()
+                  if len(body)>8000000:raise ValueError('RESPONSE_TOO_LARGE')
+                return json.loads(body)
+              except (http.client.IncompleteRead,TimeoutError,ConnectionError,urllib.error.URLError,json.JSONDecodeError) as exc:
+                last=exc
+                print('OTC_DOWNLOAD_RETRY '+json.dumps({'attempt':attempt+1,'error':type(exc).__name__},ensure_ascii=False),flush=True)
+                if attempt<2:time.sleep(1+attempt)
+            raise RuntimeError('THREE_ATTEMPTS_EXHAUSTED:'+type(last).__name__)
+          def n(x):
+            if x is None:return None
+            s=str(x).replace(',','').replace('+','').strip()
+            if s in ('','--','-','---','除權息'):return None
+            try:return D(s)
+            except decimal.InvalidOperation:return None
+          official={'open':'開盤','high':'最高','low':'最低','close':'收盤','volume':'成交股數','amount':'成交金額(元)','trades':'成交筆數'}
+          fm={'open':'open','high':'max','low':'min','close':'close','volume':'Trading_Volume','amount':'Trading_money','trades':'Trading_turnover'}
+          results=[]
+          for day in ('2024-01-02','2024-01-03','2026-08-03','2026-08-04'):
+            tpex=get('https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotes?'+urllib.parse.urlencode({'response':'json','date':day.replace('-','/')}))
+            tables=tpex.get('tables',[])
+            assert tpex.get('stat')=='ok' and isinstance(tables,list)
+            for stock in ('3105','6488'):
+              report={'date':day,'stock':stock,'status':'INCONCLUSIVE','errors':[]}
+              try:
+                row=None;head=None
+                for table in tables:
+                  if not isinstance(table,dict):continue
+                  fields=table.get('fields',[])
+                  if '代號' not in fields:continue
+                  stock_index=fields.index('代號')
+                  found=[r for r in table.get('data',[]) if isinstance(r,list) and len(r)>stock_index and str(r[stock_index])==stock]
+                  if found:
+                    if row is not None:raise ValueError('DUPLICATE_STOCK_IN_TPEX')
+                    row=found[0];head=fields
+                if row is None:raise ValueError('STOCK_NOT_FOUND_IN_TPEX')
+                a={k:n(row[head.index(v)]) for k,v in official.items()}
+                data=get('https://api.finmindtrade.com/api/v4/data?'+urllib.parse.urlencode({'dataset':'TaiwanStockPrice','data_id':stock,'start_date':day,'end_date':day}))
+                if data.get('status')!=200:raise ValueError('FINMIND_PROVIDER_'+str(data.get('status')))
+                matches=[r for r in data.get('data',[]) if r.get('date')==day and str(r.get('stock_id'))==stock]
+                if len(matches)!=1:raise ValueError('FINMIND_DATE_STOCK_COUNT_'+str(len(matches)))
+                b={k:n(matches[0].get(v)) for k,v in fm.items()}
+                mismatch={k:{'tpex':str(a[k]),'finmind':str(b[k])} for k in official if a[k]!=b[k]}
+                missing=[k for k in official if a[k] is None or b[k] is None]
+                report.update(status='PASS' if not mismatch and not missing else 'REVIEW_REQUIRED',mismatch=mismatch,missing=missing,fields_compared=len(official))
+              except Exception as e:
+                report['errors'].append(type(e).__name__+':'+str(e)[:150])
+              results.append(report)
+              print('OTC_NUMERIC_COMPARE '+json.dumps(report,ensure_ascii=False),flush=True)
+            time.sleep(.25)
+          summary={'total':len(results),'pass':sum(x['status']=='PASS' for x in results),'review':sum(x['status']=='REVIEW_REQUIRED' for x in results),'inconclusive':sum(x['status']=='INCONCLUSIVE' for x in results)}
+          print('OTC_NUMERIC_SUMMARY '+json.dumps(summary),flush=True)
+          assert summary['pass']==summary['total']==8,'OTC discrepancy requires review; do not patch RAW'
+          PY
