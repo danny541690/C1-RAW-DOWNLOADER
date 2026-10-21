@@ -1,0 +1,112 @@
+name: JARVIS v0.93 Cross Runner Recovery Integrated Gate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v093-cross-runner-recovery-integrated.yml'
+permissions:
+  contents: write
+jobs:
+  producer:
+    runs-on: ubuntu-latest
+    outputs:
+      manifest: ${{ steps.make.outputs.manifest }}
+      blob: ${{ steps.make.outputs.blob }}
+      digest: ${{ steps.make.outputs.digest }}
+    steps:
+      - id: make
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import os,json,hashlib,base64,urllib.request
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'}
+          root='.github/test-state/recovery-'+os.environ['RUN_ID']
+          data=b'JARVIS:v093:2026-10:ohlc:RAW'
+          digest=hashlib.sha256(data).hexdigest()
+          def put(path,raw):
+              body={'message':'test: isolated recovery fixture','content':base64.b64encode(raw).decode()}
+              req=urllib.request.Request(f"https://api.github.com/repos/{os.environ['REPO']}/contents/{path}",data=json.dumps(body).encode(),method='PUT',headers=h)
+              with urllib.request.urlopen(req,timeout=30) as r:return json.load(r)
+          manifest=root+'-manifest.json';blob=root+'-'+digest+'.bin'
+          put(manifest,json.dumps({'jobs':{}},sort_keys=True).encode())
+          put(blob,data)
+          # Simulate death before manifest update: durable blob exists, manifest is empty.
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('manifest='+manifest+'\nblob='+blob+'\ndigest='+digest+'\n')
+          print('PRODUCER_DATA_WRITTEN_MANIFEST_NOT_COMMITTED '+json.dumps({'digest':digest,'blob':blob}))
+          PY
+  recovery:
+    needs: producer
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.resume.outputs.status }}
+    steps:
+      - id: resume
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MANIFEST: ${{ needs.producer.outputs.manifest }}
+          BLOB: ${{ needs.producer.outputs.blob }}
+          DIGEST: ${{ needs.producer.outputs.digest }}
+        run: |
+          python3 - <<'PY'
+          import os,json,hashlib,base64,urllib.request,urllib.error,time
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'}
+          base='https://api.github.com/repos/'+os.environ['REPO']+'/contents/'
+          def get(path):
+              with urllib.request.urlopen(urllib.request.Request(base+path,headers=h),timeout=30) as r:return json.load(r)
+          raw=base64.b64decode(get(os.environ['BLOB'])['content'])
+          assert hashlib.sha256(raw).hexdigest()==os.environ['DIGEST']
+          key='2026-10:ohlc:RAW'
+          conflicts=0
+          for attempt in range(1,6):
+              current=get(os.environ['MANIFEST'])
+              obj=json.loads(base64.b64decode(current['content']))
+              previous=obj['jobs'].get(key)
+              if previous is not None:
+                  assert previous['sha256']==os.environ['DIGEST']
+                  assert previous['status']=='DATA_PRESENT_PENDING_QA'
+                  break
+              obj['jobs'][key]={'status':'DATA_PRESENT_PENDING_QA','sha256':os.environ['DIGEST'],'blob':os.environ['BLOB'],'certified':False}
+              body={'message':'test: resume after lost manifest commit','sha':current['sha'],'content':base64.b64encode(json.dumps(obj,sort_keys=True).encode()).decode()}
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(base+os.environ['MANIFEST'],data=json.dumps(body).encode(),method='PUT',headers=h),timeout=30) as r:assert r.status==200
+                  break
+              except urllib.error.HTTPError as e:
+                  if e.code not in (409,422):raise
+                  conflicts+=1;time.sleep(0.3*attempt)
+          else:raise AssertionError('CAS_RECOVERY_RETRIES_EXHAUSTED')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('status=PASS\n')
+          print('CROSS_RUNNER_RECOVERY_COMMIT_PASS '+json.dumps({'sha_verified':True,'status':'DATA_PRESENT_PENDING_QA','conflicts':conflicts,'real_drive_writes':0}))
+          PY
+  verify:
+    needs: [producer,recovery]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Independently verify blob and manifest on third runner
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MANIFEST: ${{ needs.producer.outputs.manifest }}
+          BLOB: ${{ needs.producer.outputs.blob }}
+          DIGEST: ${{ needs.producer.outputs.digest }}
+        run: |
+          python3 - <<'PY'
+          import os,json,base64,hashlib,urllib.request
+          h={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          def read(path):
+              req=urllib.request.Request('https://api.github.com/repos/'+os.environ['REPO']+'/contents/'+path,headers=h)
+              with urllib.request.urlopen(req,timeout=30) as r:return base64.b64decode(json.load(r)['content'])
+          raw=read(os.environ['BLOB'])
+          obj=json.loads(read(os.environ['MANIFEST']))
+          assert hashlib.sha256(raw).hexdigest()==os.environ['DIGEST']
+          assert len(obj['jobs'])==1
+          item=obj['jobs']['2026-10:ohlc:RAW']
+          assert item['sha256']==os.environ['DIGEST']
+          assert item['status']=='DATA_PRESENT_PENDING_QA' and item['certified'] is False
+          print('CROSS_RUNNER_DURABLE_RECOVERY_INTEGRATED_PASS '+json.dumps({'runners':3,'blob_sha_valid':True,'manifest_entries':1,'false_certified':0,'durable_store':'GitHub Contents API','drive_backend':'not integrated','real_drive_writes':0}))
+          print('PRODUCTION_RELEASE_GATE=BLOCKED_DRIVE_ATOMIC_COMMIT_AND_SEVEN_LAYER_INTEGRATION')
+          PY
