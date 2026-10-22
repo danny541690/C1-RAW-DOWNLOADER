@@ -1,6 +1,6 @@
 {
   "plan_id": "V093_STAGE06_RECONCILE_REPAIR_DRAFT_20261022",
-  "status": "LEDGER_TASK_ENGINE_TESTED_NOT_DEPLOYED",
+  "status": "OWNER_REPLAY_BOUNDARY_AND_IDENTITY_TESTED_NOT_DEPLOYED",
   "enabled": false,
   "stage": "RECONCILE_REPAIR",
   "schedule_proposal": {
@@ -52,14 +52,23 @@
   "quarantine_import_implemented": true,
   "unknown_identity_holds_implemented": true,
   "implementation_validation": {
-    "local_regression_tests_passed": 306,
     "new_ledger_tests_passed": 25,
-    "cloud_run_id": 39707094339,
+    "cloud_run_id": 39713259385,
     "cloud_cas_canary": "PASS_SYNTHETIC_ONLY",
     "real_quarantine_rows": 16,
-    "test_gap_tasks": 13,
-    "identity_holds": 3,
+    "test_gap_tasks": 16,
+    "identity_holds": 0,
     "real_repairs_completed": 0,
-    "source_downloads_performed": 0
-  }
+    "source_downloads_performed": 0,
+    "previous_local_regression_tests_passed": 306,
+    "cloud_regression_tests_passed": 325,
+    "new_owner_identity_tests_passed": 19,
+    "total_stage06_tests_passed": 44,
+    "cloud_identity_canary": "PASS_REAL_RECEIPT_METADATA_ONLY",
+    "identities_reconciled": 3,
+    "owner_runtime_integrated": false
+  },
+  "owner_replay_boundary_implemented": true,
+  "native_identity_reconciliation_implemented": true,
+  "owner_replay_artifact_backend_live": false
 }
