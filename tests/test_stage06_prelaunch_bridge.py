@@ -228,7 +228,7 @@ class WorkerBridgeTests(unittest.TestCase):
         w.budget_seconds=3600;w.processed=0;w.saved=0;w.indexed=0;w.corrections=0
         w.last_processed_month=None;w.last_processed_period=None;w.primary_month=None
         w.stagectrl='TEST';w.api='TEST';w.token='TEST'
-        with patch.object(worker_module,'commit'),patch.object(worker_module.base,'emit'):
+        with patch.object(worker_module,'commit'),patch.object(worker_module.base,'emit'),patch('scripts.v093_stage06_live.repair_owner',return_value={'status':'ISOLATED_TEST'}):
             w.run()
         w.consume.assert_called_once();report=w.putj.call_args.args[2]
         self.assertEqual(report['stage06_completed_this_run'],1);self.assertEqual(report['worker_budget_minutes'],60)

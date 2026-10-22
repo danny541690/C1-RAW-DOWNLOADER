@@ -22,13 +22,14 @@ class FencedGitHubStore(GitHubStore):
     def __init__(self, repo, path, token, stage, lease_key, owner, fence,
                  lease_path='.github/live-state/five-stage-leases.json', clock=time.time, test_only=False):
         super().__init__(repo, path, token)
-        if stage not in ('RAW', 'QA1', 'PRICE', 'FINANCIAL', 'CHIP') or type(fence) is not int or fence <= 0:
+        if stage not in ('RAW', 'QA1', 'PRICE', 'FINANCIAL', 'CHIP', 'RECONCILE') or type(fence) is not int or fence <= 0:
             raise ValueError('INVALID_OWNER_BINDING')
         if not lease_key or not owner:
             raise ValueError('INVALID_OWNER_BINDING')
         if lease_path == '.github/live-state/five-stage-leases.json':
             plan = json.loads((Path(__file__).resolve().parents[1] / 'config/v093_execution_plan_20261021.json').read_text())
-            expected_key = ('POOL_RAW' + plan['lease_suffix']) if stage == 'RAW' else (
+            expected_key = 'POOL_STAGE06_REPAIR_V1' if stage == 'RECONCILE' else (
+                ('POOL_RAW' + plan['lease_suffix']) if stage == 'RAW' else
                 'POOL_CONSUMER' + plan['stage_lease_suffix'][stage])
             if lease_key != expected_key:
                 raise ValueError('STAGE_OWNER_POOL_MISMATCH')

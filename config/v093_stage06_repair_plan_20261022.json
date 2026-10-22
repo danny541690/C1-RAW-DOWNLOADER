@@ -1,7 +1,7 @@
 {
   "plan_id": "V093_STAGE06_RECONCILE_REPAIR_DRAFT_20261022",
-  "status": "WORKER_BRIDGE_RAW_CONTRACT_TESTED_NOT_DEPLOYED",
-  "enabled": false,
+  "status": "LIVE_ACTIVATION_REQUESTED_NATIVE_REPAIR_SCOPE",
+  "enabled": true,
   "stage": "RECONCILE_REPAIR",
   "schedule_proposal": {
     "cron_utc": "15 * * * *",
@@ -14,7 +14,7 @@
   "scope": {
     "start_month": "2026-10",
     "end_month": "2000-01",
-    "order": "NEWEST_TO_OLDEST_WITH_BLOCKING_GAP_PRIORITY"
+    "order": "NEWEST_TO_OLDEST"
   },
   "write_ownership": "STAGE06_OWNS_ITS_GAP_LEDGER_AND_TASKS_ONLY",
   "source_fetch_owner": "RAW",
@@ -66,7 +66,7 @@
     "total_stage06_tests_passed": 115,
     "cloud_identity_canary": "PASS_REAL_RECEIPT_METADATA_ONLY",
     "identities_reconciled": 3,
-    "owner_runtime_integrated": false,
+    "owner_runtime_integrated": true,
     "local_regression_tests_passed": 396,
     "new_native_tests_passed": 23,
     "isolated_native_units_replayed": 16,
@@ -92,7 +92,7 @@
     "live_cursors_written": false,
     "new_worker_raw_admission_tests_passed": 26,
     "raw_transport_validation_scope": "INJECTED_TEST_TRANSPORT_ONLY",
-    "worker_live_runtime_binding_enabled": false,
+    "worker_live_runtime_binding_enabled": true,
     "raw_uncertain_persistence_stops_primary_work": true,
     "cloud_worker_bridge_run_id": 39724099017,
     "cloud_worker_bridge_result": "PASS_REAL_DRIVE_PRICE_FIXTURES_ONLY",
@@ -102,18 +102,19 @@
     "worker_bridge_stage_context": "ISOLATED_WORKER_SHAPED_CONTEXT",
     "actual_worker_run_hook_test_scope": "LOCAL_ISOLATED_UNIT_TEST",
     "first_worker_bridge_trial_run_id": 39723908527,
-    "first_worker_bridge_trial_result": "FAILED_TEST_ASSUMED_OLD_CLAIM_TTL_FIXED"
+    "first_worker_bridge_trial_result": "FAILED_TEST_ASSUMED_OLD_CLAIM_TTL_FIXED",
+    "live_activation_result": "AWAITING_FIRST_RUN"
   },
   "owner_replay_boundary_implemented": true,
   "native_identity_reconciliation_implemented": true,
-  "owner_replay_artifact_backend_live": false,
+  "owner_replay_artifact_backend_live": true,
   "native_parser_repair_trial_implemented": true,
   "local_immutable_artifacts_implemented": true,
   "drive_immutable_artifacts_implemented": true,
   "owner_fenced_publication_implemented": true,
   "real_drive_integration_passed": true,
   "worker_repair_hook_implemented": true,
-  "worker_repair_hook_enabled": false,
+  "worker_repair_hook_enabled": true,
   "raw_replay_contract_implemented": true,
   "raw_provider_transport_bound": false,
   "raw_native_persistence_bound": false,
@@ -121,5 +122,31 @@
   "expected_unit_catalog_complete": false,
   "analysis_admission_gate_implemented": true,
   "staging_consumer_contract_tested": true,
-  "production_consumer_migration_complete": false
+  "production_consumer_migration_complete": false,
+  "activation_authorized": true,
+  "live_deployment_id": "USER_AUTHORIZED_STAGE06_LIVE_20261022_V1",
+  "live_supported_repairs": [
+    [
+      "TPEx",
+      "indices"
+    ],
+    [
+      "TWSE",
+      "capital_reduction"
+    ],
+    [
+      "TPEx",
+      "ex_dividend"
+    ]
+  ],
+  "live_repair_owner": "PRICE",
+  "live_owner_budget_minutes_within_existing_hour": 6,
+  "live_schedule": {
+    "cron_utc": "15 * * * *",
+    "budget_minutes": 60,
+    "workflow_timeout_minutes": 75,
+    "lease_ttl_seconds": 5400
+  },
+  "unsupported_repairs": "BLOCKED_APPROVAL_OR_EVIDENCE_HOLD",
+  "raw_fetch_binding_enabled": false
 }

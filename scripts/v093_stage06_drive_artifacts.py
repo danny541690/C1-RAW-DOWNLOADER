@@ -14,6 +14,8 @@ from googleapiclient.http import MediaIoBaseUpload
 
 class DriveImmutableArtifacts:
     requires_owner_fenced_store = True
+    scope = 'ISOLATED_TEST_ONLY'
+    backend = 'GOOGLE_DRIVE_IMMUTABLE_TEST'
 
     def __init__(self, api, parent, test_only=True):
         if test_only is not True:
@@ -58,7 +60,7 @@ class DriveImmutableArtifacts:
             payloads.append((item, raw))
         item, raw = payloads[0]
         self.verified[key] = dict(file_id=item['id'], parent_folder_id=self.parent, sha256=expected,
-                                  logical_key_sha256=self._sha(key.encode()), backend='GOOGLE_DRIVE_IMMUTABLE_TEST')
+                                  logical_key_sha256=self._sha(key.encode()), backend=self.backend)
         return raw
 
     def read(self, key):
@@ -79,7 +81,7 @@ class DriveImmutableArtifacts:
         name = self._sha(key.encode()) + '-' + self._sha(raw) + '.artifact'
         try:
             self.api.files().create(body=dict(name=name, parents=[self.parent], appProperties={
-                'jarvis_stage06_scope': 'ISOLATED_TEST_ONLY', 'publication': 'CANDIDATE_UNTIL_FENCED_RECEIPT'}),
+                'jarvis_stage06_scope': self.scope, 'publication': 'CANDIDATE_UNTIL_FENCED_RECEIPT'}),
                 media_body=MediaIoBaseUpload(io.BytesIO(raw), mimetype='application/octet-stream', resumable=False),
                 fields='id').execute(num_retries=0)
         except (OSError, HttpError) as exc:
