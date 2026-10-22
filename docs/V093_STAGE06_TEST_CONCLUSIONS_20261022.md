@@ -1,3 +1,20 @@
+# 第六條連續重查修正已部署（2026-10-22 台北19:45）
+
+使用者要求第六條不要掃到2000-01後停止等整點，並要求更新六條進度。已查明舊版每次只跑一輪，結束後等待下一次cron；不是永久停用。已部署3345b6885bc7387724742f0a002c4432de7ae7cb，新版在60分鐘預算內掃完後等待5分鐘，再重新取得上游索引、從2026-10往2000-01重查。控制帳本增加SCANNING／SWEEP_COMPLETE／WAITING_RECHECK與next_month；空月份UNKNOWN仍保留，資料沒變不重寫INPUTS清單。
+
+第六條workflow的concurrency改為各job獨立：producer使用原jarvis-v093-live-reconcile-repair，FINANCIAL修復job使用原jarvis-v093-live-financial、最多6分鐘，避免延誤一般財報轉換；沒有增加第七條cron。PRICE仍由自己的owner消費。RAW補抓transport與新來源仍未接通，禁止宣稱全類型修復完成。
+
+本機461項全部通過；兩個雲端461項回歸亦通過：39772732231（真實Drive step在push略過）及39772732275（隔離雲端CAS canary PASS）。本輪新增11項，驗證循環回最新、重新載入上游、部分斷點續跑、時間／額度停止、定期檢查owner、CAS退避與保存任務。CAS競爭加入有界隨機退避，修復回執衝突保留claim／候選檔並延後，不假設DONE。
+
+正式新run39772732264：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39772732264 。19:44觀察financial-repairs job119804021091已執行；producer job119804021327等待原run39772255253完成後自動取得原槽。尚未觀察新版producer進入連續第二輪，不可宣稱這部分正式實跑已完成。舊producer19:44仍在2025-02，新修復2026-03由114增到115/215；2026-06已213/213全修復。
+
+當時其他最新目錄：RAW2013-01、QA12017-09、PRICE2020-05、FINANCIAL2018-02、CHIP2021-08；仍需依MONTH_STATE和STATUS確認實際單元，不能僅憑目錄創建當完整資料。原始日資料最近權威收據仍確認至2026-10-21。
+
+下一個接續點：先確認39772255253終態及新producer119804021327開始；查control.continuous／phase／next_month，驗證掃到2000-01後5分鐘重啟、上游索引重新取得；同時查FINANCIAL owner回執。不重設RAW／QA游標、下載計次或已完成修復，不停止其他正在跑的排程。
+
+
+---
+
 # 賈維斯0.93：中斷續跑與測試結論（2026-10-22）
 更新：台北17:37。後續請以正式收據與執行紀錄為準。
 
