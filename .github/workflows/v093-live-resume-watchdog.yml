@@ -1,0 +1,54 @@
+name: JARVIS resume all six from saved checkpoints
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-live-resume-watchdog.yml'
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  actions: write
+  contents: read
+concurrency:
+  group: jarvis-v093-resume-watchdog
+  cancel-in-progress: false
+jobs:
+  resume-idle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resume idle stages without cancelling active workers or changing cursors
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json,os,urllib.request
+          repo=os.environ['GITHUB_REPOSITORY']
+          base='https://api.github.com/repos/'+repo
+          def api(path,method='GET',body=None):
+              request=urllib.request.Request(base+path,method=method,
+                  data=json.dumps(body).encode() if body is not None else None,
+                  headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(request,timeout=30) as response:
+                  raw=response.read();return json.loads(raw) if raw else {}
+          paths=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml',
+                 'v093-v2-04-financial.yml','v093-v2-05-chip.yml','v093-v2-06-reconcile-repair.yml']
+          active={}
+          for status in ('queued','in_progress','waiting','pending','requested'):
+              for page in range(1,11):
+                  runs=api('/actions/runs?status='+status+'&per_page=100&page='+str(page))['workflow_runs']
+                  for run in runs:
+                      if run.get('head_branch')=='main':
+                          active.setdefault(run['path'],[]).append({'id':run['id'],'status':run['status']})
+                  if len(runs)<100:break
+              else:raise RuntimeError('ACTIVE_RUN_SCAN_INCOMPLETE_NO_DISPATCH')
+          for name in paths:
+              path='.github/workflows/'+name
+              if active.get(path):
+                  print(json.dumps({'workflow':name,'decision':'KEEP_EXISTING','runs':active[path]}),flush=True)
+                  continue
+              payload={'ref':'main'}
+              if name!=paths[-1]:payload['inputs']={'minutes':'60'}
+              api('/actions/workflows/'+name+'/dispatches','POST',payload)
+              print(json.dumps({'workflow':name,'decision':'RESUME_SAVED_CHECKPOINT_DISPATCHED'}),flush=True)
+          PY
