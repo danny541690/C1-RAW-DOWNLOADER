@@ -19,7 +19,7 @@ class ContinuousReconciliationTests(unittest.TestCase):
             obj.until=time.monotonic()+3600
             store=FileStore(Path(tmp)/'ledger.json');store.remaining=remaining
             obj.runtime=Ledger(store)
-            obj.runtime.transaction(lambda d,n:d.update(control={'month_index':initial_index}))
+            obj.runtime.transaction(lambda d,n:d.update(control={'month_index':initial_index,'independent_revision':'INDEPENDENT_STAGE06_20261022_V2'}))
             obj.month=Mock(side_effect=lambda m:{'_coverage':{'coverage_certified':False,'seen':m}})
             obj.wait_for_recheck=Mock(side_effect=waits)
             obj.refresh_inputs=Mock();obj.d=Mock();obj.root='root'
