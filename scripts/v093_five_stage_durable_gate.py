@@ -9,6 +9,7 @@ import json
 import time
 import urllib.error
 import urllib.request
+from scripts.v093_github_budget import open_json
 
 class LeaseBusy(RuntimeError):
     pass
@@ -23,8 +24,7 @@ def _digest(value):
 
 def _read(api_url,token):
     req=urllib.request.Request(api_url,headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'})
-    with urllib.request.urlopen(req,timeout=30) as response:
-        result=json.load(response)
+    result,_=open_json(req,30)
     payload=json.loads(base64.b64decode(result['content']))
     if not isinstance(payload.get('jobs'),dict):
         raise ValueError('INVALID_DURABLE_MANIFEST')

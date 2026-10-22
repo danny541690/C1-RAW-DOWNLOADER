@@ -141,7 +141,7 @@ class Reconciler:
             raise
 
     def store(self, path):
-        return FencedGitHubStore(self.repo, path, self.token, 'RECONCILE', POOL, self.owner, self.fence)
+        return FencedGitHubStore(self.repo, path, self.token, 'RECONCILE', POOL, self.owner, self.fence,read_cache_seconds=30)
 
     def guard(self):
         if time.monotonic() >= self.until-45: raise ReconcileBudgetEnded('RECONCILER_BUDGET_ENDED')
@@ -202,11 +202,12 @@ class Reconciler:
         return reports
 
     def run(self, max_months=0):
-        count = 0; last = None
+        count = 0; last = None;control=None;last_saved=0
         try:
             index = self.runtime.snapshot().get('control',{}).get('month_index',0)
             if index >= len(base.MONTHS): index = 0
             while index < len(base.MONTHS) and time.monotonic() < self.until-45:
+                if self.runtime.store.remaining is not None and self.runtime.store.remaining<200:break
                 month = base.MONTHS[index]
                 try: result = self.month(month)
                 except ReconcileBudgetEnded: break
@@ -216,9 +217,12 @@ class Reconciler:
                     updated_utc=native.stamp(), direction='NEWEST_TO_OLDEST',
                     scope_start='2026-10', scope_end='2000-01', run=os.environ['GITHUB_RUN_ID'],
                     last_month_result=result, coverage_certified=False)
-                self.runtime.transaction(lambda doc, now: doc.update(control=control))
+                material=any(stage in result for stage in base.STAGES)
+                if material or index%12==0 or index==len(base.MONTHS) or (max_months and count>=max_months):
+                    self.runtime.transaction(lambda doc,now:doc.update(control=control));last_saved=count
                 print('STAGE06_LIVE_PROGRESS '+json.dumps(control, sort_keys=True), flush=True)
                 if max_months and count >= max_months: break
+            if control and count!=last_saved:self.runtime.transaction(lambda doc,now:doc.update(control=control))
             state = self.runtime.snapshot()
             result = dict(status='LIVE_RECONCILING_AND_APPROVED_REPAIR_QUEUE', months_scanned_this_run=count,
                 last_scanned_month=last, control=state.get('control'), production_data_approved=False,
@@ -253,7 +257,7 @@ def repair_owner(worker, minutes=6, only_month=None):
         name = 'ARTIFACTS_'+stage+'_'+month
         if name not in available and month not in input_months:continue
         ledger = Ledger(FencedGitHubStore(os.environ['GITHUB_REPOSITORY'], queue_path(stage,month),
-            worker.token, stage, worker.lock, worker.owner, worker.fence))
+            worker.token, stage, worker.lock, worker.owner, worker.fence,read_cache_seconds=30))
         records_list = engine.getj(worker.d, root['id'], 'INPUTS_'+stage+'_'+month+'.json') or []
         # The owner can upgrade previously blocked tasks with the tested version.
         # This does not move the reconciler or primary worker cursor.
@@ -279,6 +283,8 @@ def repair_owner(worker, minutes=6, only_month=None):
             receipt = records[unit['native_unit_id']+'_'+next(iter(expected))]
             return cached_payload(worker.d, receipt, worker.cache)[0]
         while time.monotonic() < limit:
+            if ledger.store.remaining is not None and ledger.store.remaining<120:
+                report['deferred']+=1;break
             try:
                 task = replay_one(ledger, stage, worker.owner, version, RULE_VERSION,
                     read_input, transform_fn, validate_fn, artifacts, guard,

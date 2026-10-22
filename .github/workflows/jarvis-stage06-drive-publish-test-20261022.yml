@@ -32,6 +32,7 @@ jobs:
       - name: Full regression
         run: python -m unittest discover -s tests -q
       - name: Real Drive and owner-fenced GitHub publication
+        if: github.event_name == 'workflow_dispatch'
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}

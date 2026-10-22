@@ -13,7 +13,7 @@ concurrency:
 jobs:
   financial:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,6 +24,10 @@ jobs:
       - run: python -m pip install -r requirements-qa.lock
       - name: Full regression including financial cells and all-data coverage gates
         run: python -m unittest discover -s tests -q
+      - name: Wait for shared GitHub quota before acquiring an owner lock
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 400 --max-wait 1200
       - name: Repair the verified financial backlog under the FINANCIAL owner
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}

@@ -79,7 +79,7 @@ class Worker(Independent):
         self.last_lease_check=0
 
     def owned(self):
-        if time.monotonic()-self.last_lease_check<20:return
+        if time.monotonic()-self.last_lease_check<120:return
         _,state=_read(self.api,self.token)
         lease=state['jobs'][self.lock].get('lease') or {}
         if lease.get('owner')!=self.owner or lease.get('fence')!=self.fence or lease.get('expires_at',0)<=time.time():raise LeaseConflict('STALE_WRITER')
