@@ -1,0 +1,58 @@
+[
+  {
+    "unit": {
+      "source": "TWSE",
+      "market": "TSE",
+      "dataset": "capital_reduction",
+      "security_id": "ALL_MARKET",
+      "period_start": "2026-10-01",
+      "period_end": "2026-10-31",
+      "native_unit_id": "170f0f0bb6fa2cb603e0f36c"
+    },
+    "input_sha256": "b3c42b074b6e488326e0d4d6de9f234601fc15ac0b458e033514a59ece737c11",
+    "expected_cells": 10,
+    "expected_records": 2
+  },
+  {
+    "unit": {
+      "source": "TPEx",
+      "market": "OTC",
+      "dataset": "indices",
+      "security_id": "ALL_MARKET",
+      "period_start": "2026-10-20",
+      "period_end": "2026-10-20",
+      "native_unit_id": "8b77e18f8f611c974c9f0026"
+    },
+    "input_sha256": "0ecd9f80da635ec4dde625bd2e51fc4f6c31ae583b0406feed925a731d4b0a1a",
+    "expected_cells": 219,
+    "expected_records": 73
+  },
+  {
+    "unit": {
+      "source": "TPEx",
+      "market": "OTC",
+      "dataset": "indices",
+      "security_id": "ALL_MARKET",
+      "period_start": "2026-10-19",
+      "period_end": "2026-10-19",
+      "native_unit_id": "cbaebbfcedd830a234aeadb1"
+    },
+    "input_sha256": "4e00b239f4647b78f32c030c4abdad4ff4ada9506f80a26e95b59e8961b157fa",
+    "expected_cells": 219,
+    "expected_records": 73
+  },
+  {
+    "unit": {
+      "source": "TPEx",
+      "market": "OTC",
+      "dataset": "ex_dividend",
+      "security_id": "ALL_MARKET",
+      "period_start": "2026-10-01",
+      "period_end": "2026-10-31",
+      "native_unit_id": "9e9b250e3f50aa2dc106b6fb"
+    },
+    "input_sha256": "661e323301c27418a968501d580832e784e19f987d351a24709b21662ec1cbdc",
+    "expected_cells": 289,
+    "expected_records": 17
+  }
+]

@@ -9,6 +9,11 @@ on:
       - 'scripts/v093_stage06_owner_replay.py'
       - 'tests/test_stage06_owner_replay.py'
       - 'tests/fixtures/stage06_legacy_identity_202610.json'
+      - 'scripts/v093_stage06_native_repair.py'
+      - 'scripts/v093_stage06_artifacts.py'
+      - 'scripts/v093_stage06_native_trial.py'
+      - 'tests/test_stage06_native_repair.py'
+      - 'tests/fixtures/stage06_native/**'
   workflow_dispatch:
 permissions:
   contents: write
