@@ -115,7 +115,9 @@
     "live_price_owner_fence_observed": 9,
     "live_repairs_deferred_observed": 1,
     "live_owner_lease_released": true,
-    "live_reconciler_lease_released": true
+    "live_reconciler_lease_released": true,
+    "live_full_launch_run_id": 39728113424,
+    "live_full_launch_status": "RUNNING_FROM_PERSISTED_NEXT_MONTH"
   },
   "owner_replay_boundary_implemented": true,
   "native_identity_reconciliation_implemented": true,
