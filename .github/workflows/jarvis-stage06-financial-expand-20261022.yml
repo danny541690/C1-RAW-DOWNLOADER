@@ -34,4 +34,4 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_stage06_live --owner-stage FINANCIAL --owner-month 2023-03 --minutes 15 --cutover-owner
+        run: python -m scripts.v093_stage06_live --owner-stage FINANCIAL --owner-month 2023-03 --minutes 5 --cutover-owner
