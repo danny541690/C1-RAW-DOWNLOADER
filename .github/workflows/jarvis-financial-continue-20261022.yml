@@ -1,0 +1,17 @@
+name: JARVIS continue financial owner from durable checkpoint
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-financial-continue-20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-financial-continue-20261022
+  cancel-in-progress: false
+jobs:
+  financial:
+    uses: ./.github/workflows/v093-v2-04-financial.yml
+    with:
+      minutes: '60'
+    secrets: inherit
