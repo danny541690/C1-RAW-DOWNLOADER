@@ -1,3 +1,11 @@
+# 連續重查接手續跑（2026-10-22 台北19:58暫存）
+使用者要求從斷點接續。最新部署632c389009d4a2856af22e12baffac32e792e730，新增慢速owner檢查超過輪詢間隔與剩餘預算的兩項邊界測試，避免負數sleep或逾時後開始新循環。本機463項通過；上一版雲端461項及隔離CAS測試已通過，最新雲端producer尚待原批次結束後進行回歸和運作，勿提前稱463雲端已通過。
+最新正式run39774302659（producer＋原FINANCIAL owner修復job）：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39774302659 。19:57兩job皆pending；producer等39772255253原RECONCILE槽，FINANCIAL等既有財報批次。先前39772732264的pending producer被最新排隊工作取代而cancelled，已成功完成的21筆財報修復仍保留；這不代表資料回滾。
+另以現有一次性財報工作流程啟動39773976279，限定2026-03、最多20分鐘，與常態FINANCIAL同一concurrency／持久pool。提交28a2a73667c31a733531a8359f7c94016e0066d8。19:57觀察2026-03已146/215 RESOLVED；2026-06已213/213。不是新增第七條cron，也未停止其他四線。
+本機執行環境重建曾缺google／pyarrow套件，本輪已在 /workspace/scratch/ac6f1be9a8a8/jarvis-test-env 建立測試venv並安裝requirements-qa.lock，再完整跑463項通過。依賴缺失那次216項測試執行失敗不能算驗收通過；當時候選提交未發布。使用venv的python續做，不假定使用者目錄的套件在環境重建後仍存在。
+當前斷點：等待39772255253結束並確認39774302659的producer取得RECONCILE槽，讀control.continuous=true／phase／next_month；完成後讀回至少一次新版正式掃描進度。原始碼及測試已部署，連續第二輪實跑仍待確認。未完成RAW補抓綁定、其他來源、全部資料完整性／PIT的限制保持。
+---
+
 # 第六條連續重查修正已部署（2026-10-22 台北19:45）
 
 使用者要求第六條不要掃到2000-01後停止等整點，並要求更新六條進度。已查明舊版每次只跑一輪，結束後等待下一次cron；不是永久停用。已部署3345b6885bc7387724742f0a002c4432de7ae7cb，新版在60分鐘預算內掃完後等待5分鐘，再重新取得上游索引、從2026-10往2000-01重查。控制帳本增加SCANNING／SWEEP_COMPLETE／WAITING_RECHECK與next_month；空月份UNKNOWN仍保留，資料沒變不重寫INPUTS清單。
