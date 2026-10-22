@@ -1,3 +1,7 @@
+## 2026-10-22 20:07 Taipei：自動第二輪實測確認
+
+同一 GitHub run 39774302659 在 WAITING_RECHECK 後，自動重新從 2026-10 掃描；2026-10-22T12:07:35.481226+00:00 狀態 SCANNING，last_scanned_month=2026-10、next_month=2026-09、cycles_completed_this_run=1。已確認沒有停在 2000-01。這是重查啟動證據，不代表所有資料完整；coverage_certified=false，RAW 補抓綁定仍未完成。
+
 # 連續模式已實際完成掃描並等待下一輪（2026-10-22 台北20:03）
 
 正式新版run39774302659已在20:02:22保存：continuous=true、phase=WAITING_RECHECK、cycles_completed_this_run=1、last_scanned_month=2000-01、next_month=2026-10、recheck_seconds=300。這次不是掃完後結束workflow；同一producer job仍in_progress、持有自己的有效鎖，預定約20:07重新載入上游再從最新月開始。第二循環尚待觀察。
