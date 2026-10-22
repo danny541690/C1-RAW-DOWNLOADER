@@ -6,6 +6,9 @@ on:
       - 'scripts/v093_stage06_ledger.py'
       - 'scripts/v093_stage06_canary.py'
       - 'tests/test_stage06_ledger.py'
+      - 'scripts/v093_stage06_owner_replay.py'
+      - 'tests/test_stage06_owner_replay.py'
+      - 'tests/fixtures/stage06_legacy_identity_202610.json'
   workflow_dispatch:
 permissions:
   contents: write

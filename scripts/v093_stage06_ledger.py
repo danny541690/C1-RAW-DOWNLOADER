@@ -56,6 +56,17 @@ def checked_unit(unit):
     if a>b or a<dt.date(2000,1,1) or b>dt.date(2026,10,31):raise ValueError('UNIT_OUTSIDE_AUTHORIZED_SCOPE')
     return copy.deepcopy(unit)
 
+
+def receipt_unit(row):
+    source=row['source'];period=row['period']
+    if source not in ('TWSE','TPEx','MOPS','FinMind'):raise ValueError('UNSUPPORTED_RECEIPT_SOURCE')
+    if re.fullmatch(r'\d{4}-\d{2}',period):
+        y,m=map(int,period.split('-'));a=period+'-01';b=period+f'-{calendar.monthrange(y,m)[1]:02d}'
+    elif re.fullmatch(r'\d{4}-\d{2}-\d{2}',period):a=b=period
+    else:raise ValueError('UNPROVEN_RECEIPT_PERIOD')
+    return checked_unit(dict(source=source,market={'TWSE':'TSE','TPEx':'OTC'}.get(source,'UNKNOWN'),
+        dataset=row['category'],security_id='ALL_MARKET',period_start=a,period_end=b,native_unit_id=row['unit_id']))
+
 class FileStore:
     """Local atomic CAS; cross-process lock protects replacement, not owner work."""
     def __init__(self,path):self.path=Path(path)
@@ -151,6 +162,38 @@ class Ledger:
                 gap['expected_evidence_sha256']=expected_evidence_sha256
             return gap
         return self.transaction(apply)
+
+    def reconcile_identity(self,hold_id,original_receipt,registry,registry_evidence_sha256):
+        """Resolve identity only by exact receipt and unique native id+RAW hash."""
+        checked_hash(registry_evidence_sha256)
+        def apply(s,now):
+            hold=s['import_holds'][hold_id]
+            if digest(original_receipt)!=hold['receipt_sha256'] or original_receipt.get('unit_id')!=hold['unit_id']:
+                raise ValueError('ORIGINAL_RECEIPT_EVIDENCE_MISMATCH')
+            checked_hash(original_receipt.get('raw_sha256'))
+            candidates=[r for r in registry if r.get('unit_id')==hold['unit_id'] and
+                r.get('sha256')==original_receipt['raw_sha256'] and r.get('status')=='SAVED_BASIC_VERIFIED']
+            if len(candidates)!=1:raise ValueError('NATIVE_RECEIPT_NOT_UNIQUE')
+            row=candidates[0]
+            for field in ('source','category','period'):
+                if original_receipt.get(field) not in (None,row.get(field)):raise ValueError('RECEIPT_IDENTITY_CONFLICT')
+            unit=receipt_unit(row);owner=hold['stage']
+            if owner not in ('QA1','PRICE','FINANCIAL','CHIP'):raise ValueError('INVALID_IDENTITY_OWNER')
+            kind='BASIC_QA' if owner=='QA1' else 'PARSER_MAPPING'
+            if 'HASH_MISMATCH' in original_receipt.get('error',''):kind='RAW_CORRUPT';owner='RAW'
+            evidence=original_receipt['raw_sha256'];gid=digest([unit,kind,owner,evidence])
+            if hold['status']=='IDENTITY_RECONCILED':
+                if hold['gap_id']!=gid:raise ValueError('RECONCILED_IDENTITY_CONFLICT')
+                return s['gaps'][gid]
+            aid=digest(unit);s['attempts'].setdefault(aid,{'used':0,'known':False,'requests':{}})
+            reason=next((x for x in ('NO_SECURITY_ID','NO_CONTENT_OR_FILENAME_DATE','HASH_MISMATCH') if x in original_receipt.get('error','')),'QUARANTINED_REVIEW')
+            s['gaps'].setdefault(gid,dict(gap_id=gid,unit=unit,kind=kind,owner=owner,evidence_sha256=evidence,
+                expected_evidence_sha256=None,reason_code=reason,status='OPEN',first_seen=now,attempt_key=aid,task_ids=[],resolution=None))
+            hold.update(status='IDENTITY_RECONCILED',gap_id=gid,reconciled_at=now,
+                registry_evidence_sha256=registry_evidence_sha256,native_receipt_sha256=digest(row))
+            return s['gaps'][gid]
+        return self.transaction(apply)
+
     def approve_version(self,owner,version,approval_evidence_sha256):
         if owner not in OWNERS or not re.fullmatch('[A-Za-z0-9_.-]{1,80}',version):raise ValueError('INVALID_VERSION')
         checked_hash(approval_evidence_sha256)
@@ -191,7 +234,7 @@ class Ledger:
         if t['status']!='CLAIMED' or claim.get('worker')!=worker or t['fence']!=fence or claim.get('expires_at',0)<=now:
             raise StaleClaim('STALE_OR_EXPIRED_OWNER')
         return t
-    def claim(self,owner,worker,ttl=5400):
+    def claim(self,owner,worker,ttl=5400,processor_version=None,rule_version=None,gap_kinds=None):
         if owner not in OWNERS or not re.fullmatch('[A-Za-z0-9_./-]{1,120}',worker) or type(ttl) is not int or ttl<=0:raise ValueError('INVALID_CLAIM')
         def apply(s,now):
             choices=[]
@@ -212,6 +255,9 @@ class Ledger:
                   if t['owner']==owner and t['status'] in ('CLAIMED','RECONCILE_REQUIRED')}
             for t in s['tasks'].values():
                 if t['owner']!=owner:continue
+                if processor_version is not None and t['processor_version']!=processor_version:continue
+                if rule_version is not None and t['rule_version']!=rule_version:continue
+                if gap_kinds is not None and s['gaps'][t['gap_id']]['kind'] not in gap_kinds:continue
                 g=s['gaps'][t['gap_id']];attempts=s['attempts'][g['attempt_key']]
                 if g['attempt_key'] in busy:continue
                 if t['status'] in ('BLOCKED_APPROVAL','BLOCKED_ATTEMPT_RECONCILIATION'):
@@ -340,7 +386,8 @@ def summary(state):
     from collections import Counter
     return {'gaps':len(state['gaps']),'gap_statuses':dict(Counter(x['status'] for x in state['gaps'].values())),
             'tasks':len(state['tasks']),'task_statuses':dict(Counter(x['status'] for x in state['tasks'].values())),
-            'identity_holds':len(state.get('import_holds',{})),
+            'identity_holds':sum(h['status']!='IDENTITY_RECONCILED' for h in state.get('import_holds',{}).values()),
+            'identities_reconciled':sum(h['status']=='IDENTITY_RECONCILED' for h in state.get('import_holds',{}).values()),
             'source_downloads_performed':0,'numeric_verified':False,'pit_verified':False,'owner_runtime_integrated':False}
 
 def main():

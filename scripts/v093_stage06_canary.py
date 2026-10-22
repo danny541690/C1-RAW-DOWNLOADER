@@ -46,6 +46,28 @@ def main():
     client().complete(renewed['task_id'], 'canary-restarted', renewed['fence'], receipt(renewed))
     state = client().snapshot()
     assert len(state['tasks']) == 1 and state['gaps'][gap['gap_id']]['status'] == 'RESOLVED'
+    # Real legacy receipt metadata is reconciled in a separate TEST-ONLY ledger.
+    # No source payloads, Drive writes or candidate parser approval are performed.
+    import tempfile
+    from pathlib import Path
+    from scripts.v093_stage06_ledger import FileStore, import_quarantine, summary
+    fixture=json.loads(Path('tests/fixtures/stage06_legacy_identity_202610.json').read_text())
+    with tempfile.TemporaryDirectory() as tmp:
+        identity=Ledger(FileStore(Path(tmp)/'identity.json'))
+        for row in fixture['receipts']:
+            import_quarantine(identity,'PRICE',{'month':'2026-10','units':{row['unit_id']:row}})
+            hold=next(h for h in identity.snapshot()['import_holds'].values() if h['unit_id']==row['unit_id'])
+            g=identity.reconcile_identity(hold['hold_id'],row,fixture['registry'],digest(fixture['registry']))
+            identity.enqueue(g['gap_id'],row['raw_sha256'],'CANDIDATE_MAPPING_FIX_V1','STAGE06_RULES_V1')
+        identity_path='.github/live-state/stage06-identity-canary-'+run+'.json'
+        sink=GitHubStore(repo,identity_path,token)
+        prior,_=sink.read()
+        assert prior is None, 'CANARY_PATH_ALREADY_EXISTS'
+        assert sink.cas(None,identity.snapshot())
+        readback=sink.read()[1];result=summary(readback)
+        assert result['gaps']==3 and result['tasks']==3 and result['identity_holds']==0
+        assert result['task_statuses']=={'BLOCKED_APPROVAL':3}
+        print('STAGE06_IDENTITY_CANARY '+json.dumps(dict(result='PASS',isolated_path=identity_path,summary=result)))
     print('STAGE06_LEDGER_CANARY ' + json.dumps(dict(result='PASS', isolated_path=path,
           tests=['cloud_cas', 'dedup', 'concurrent_claim', 'expired_fence', 'receipt_closure'],
           live_source_downloads=0, owner_runtime_integrated=False, production_data_approved=False)))

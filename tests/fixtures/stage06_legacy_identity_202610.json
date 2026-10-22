@@ -1,0 +1,70 @@
+{
+  "description": "Read-only snapshots from PRICE and QA1 native RAW index; identity evidence only, no market-data approval.",
+  "receipts": [
+    {
+      "raw_sha256": "b3c42b074b6e488326e0d4d6de9f234601fc15ac0b458e033514a59ece737c11",
+      "unit_id": "170f0f0bb6fa2cb603e0f36c",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "stage": "PRICE",
+      "checked_utc": "2026-10-21T14:17:36.038303+00:00",
+      "archive_sha256": "b9cf9f29e721f59a5c87c641f049a655d4b5806e3e8fdaa5a9c47179952bbf25",
+      "status": "QUARANTINED",
+      "error": "ValueError:NO_PARSED_NUMERIC_CELLS:{\"NO_CONTENT_OR_FILENAME_DATE\": 2, \"STAGED_CELLS\": 0, \"NATIVE_RECORDS\": 2, \"NO_PARSED_NUMERIC_CELLS\": 1}",
+      "processor_version": "R2_ARCHIVE_PROVENANCE"
+    },
+    {
+      "raw_sha256": "0ecd9f80da635ec4dde625bd2e51fc4f6c31ae583b0406feed925a731d4b0a1a",
+      "unit_id": "8b77e18f8f611c974c9f0026",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "stage": "PRICE",
+      "checked_utc": "2026-10-21T14:46:00.081635+00:00",
+      "archive_sha256": "19fc13305e53b0e7a1d0014b7161ce4b9889f4416e4d9b142d6da2e4d6ee41ba",
+      "status": "QUARANTINED",
+      "error": "ValueError:NO_PARSED_NUMERIC_CELLS:{\"NO_SECURITY_ID\": 73, \"STAGED_CELLS\": 0, \"NATIVE_RECORDS\": 73, \"NO_PARSED_NUMERIC_CELLS\": 1}",
+      "processor_version": "R2_ARCHIVE_PROVENANCE"
+    },
+    {
+      "raw_sha256": "4e00b239f4647b78f32c030c4abdad4ff4ada9506f80a26e95b59e8961b157fa",
+      "unit_id": "cbaebbfcedd830a234aeadb1",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "stage": "PRICE",
+      "checked_utc": "2026-10-21T14:46:20.434776+00:00",
+      "archive_sha256": "fbbb14518916ec2287d000545b56373ad11282f9902aebbda11ebd80829b0b5d",
+      "status": "QUARANTINED",
+      "error": "ValueError:NO_PARSED_NUMERIC_CELLS:{\"NO_SECURITY_ID\": 73, \"STAGED_CELLS\": 0, \"NATIVE_RECORDS\": 73, \"NO_PARSED_NUMERIC_CELLS\": 1}",
+      "processor_version": "R2_ARCHIVE_PROVENANCE"
+    }
+  ],
+  "registry": [
+    {
+      "source": "TWSE",
+      "category": "capital_reduction",
+      "period": "2026-10",
+      "month": "2026-10",
+      "unit_id": "170f0f0bb6fa2cb603e0f36c",
+      "status": "SAVED_BASIC_VERIFIED",
+      "sha256": "b3c42b074b6e488326e0d4d6de9f234601fc15ac0b458e033514a59ece737c11"
+    },
+    {
+      "source": "TPEx",
+      "category": "indices",
+      "period": "2026-10-20",
+      "month": "2026-10",
+      "unit_id": "8b77e18f8f611c974c9f0026",
+      "status": "SAVED_BASIC_VERIFIED",
+      "sha256": "0ecd9f80da635ec4dde625bd2e51fc4f6c31ae583b0406feed925a731d4b0a1a"
+    },
+    {
+      "source": "TPEx",
+      "category": "indices",
+      "period": "2026-10-19",
+      "month": "2026-10",
+      "unit_id": "cbaebbfcedd830a234aeadb1",
+      "status": "SAVED_BASIC_VERIFIED",
+      "sha256": "4e00b239f4647b78f32c030c4abdad4ff4ada9506f80a26e95b59e8961b157fa"
+    }
+  ]
+}
