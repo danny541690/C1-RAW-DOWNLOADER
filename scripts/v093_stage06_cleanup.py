@@ -28,6 +28,11 @@ def run(stage, minutes=60):
     root = worker.d.folder(worker.primary_control, ROOT_NAME)
     filename = 'CLEANUP_'+stage+'_CURSOR.json'
     cursor = engine.getj(worker.d, root, filename) or dict(month_index=0, completed_sweeps=0, visits={})
+    revision='INDEPENDENT_STAGE06_20261022_V2'
+    if cursor.get('independent_revision')!=revision:
+        prior=copy.deepcopy(cursor)
+        cursor=dict(month_index=0,completed_sweeps=0,visits={},independent_revision=revision,
+                    prior_checkpoint=prior,scope_start='2026-10',scope_end='2000-01')
     worker.max_source_attempts = 5
     worker.stage06_cleanup = True
     def save():
