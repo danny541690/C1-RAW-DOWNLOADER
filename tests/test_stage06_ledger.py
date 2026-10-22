@@ -145,6 +145,10 @@ class LedgerTests(unittest.TestCase):
         g = self.gap('RAW_MISSING', 'RAW')
         with self.assertRaisesRegex(ValueError, 'EXPECTED_UNIT_EVIDENCE'):
             self.ledger.enqueue(g['gap_id'], H, 'V1', 'R1')
+        self.gap('RAW_MISSING', 'RAW', expected_evidence_sha256=PROOF)
+        self.assertEqual(self.ledger.enqueue(g['gap_id'], H, 'V1', 'R1')['status'], 'BLOCKED_ATTEMPT_RECONCILIATION')
+        with self.assertRaisesRegex(ValueError, 'EXPECTED_EVIDENCE_CONFLICT'):
+            self.gap('RAW_MISSING', 'RAW', expected_evidence_sha256=OUT)
 
     def test_unknown_attempts_hold_raw_and_prior_count_never_decreases(self):
         t = self.task('RAW_MISSING', 'RAW', expected_evidence_sha256=PROOF)

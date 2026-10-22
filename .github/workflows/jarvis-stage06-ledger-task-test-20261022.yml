@@ -3,6 +3,9 @@ on:
   push:
     paths:
       - '.github/workflows/jarvis-stage06-ledger-task-test-20261022.yml'
+      - 'scripts/v093_stage06_ledger.py'
+      - 'scripts/v093_stage06_canary.py'
+      - 'tests/test_stage06_ledger.py'
   workflow_dispatch:
 permissions:
   contents: write

@@ -145,7 +145,11 @@ class Ledger:
                 s['gaps'][gap_id]={'gap_id':gap_id,'unit':unit,'kind':kind,'owner':owner,'evidence_sha256':evidence_sha256,
                     'expected_evidence_sha256':expected_evidence_sha256,'reason_code':reason_code,'status':'OPEN',
                     'first_seen':now,'attempt_key':aid,'task_ids':[],'resolution':None}
-            return s['gaps'][gap_id]
+            gap=s['gaps'][gap_id]
+            if expected_evidence_sha256 is not None:
+                if gap['expected_evidence_sha256'] not in (None,expected_evidence_sha256):raise ValueError('EXPECTED_EVIDENCE_CONFLICT')
+                gap['expected_evidence_sha256']=expected_evidence_sha256
+            return gap
         return self.transaction(apply)
     def approve_version(self,owner,version,approval_evidence_sha256):
         if owner not in OWNERS or not re.fullmatch('[A-Za-z0-9_.-]{1,80}',version):raise ValueError('INVALID_VERSION')
