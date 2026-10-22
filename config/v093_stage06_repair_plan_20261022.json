@@ -61,13 +61,13 @@
     "real_repairs_completed": 0,
     "source_downloads_performed": 0,
     "previous_local_regression_tests_passed": 370,
-    "cloud_regression_tests_passed": 450,
+    "cloud_regression_tests_passed": 461,
     "new_owner_identity_tests_passed": 19,
     "total_stage06_tests_passed": 133,
     "cloud_identity_canary": "PASS_REAL_RECEIPT_METADATA_ONLY",
     "identities_reconciled": 3,
     "owner_runtime_integrated": true,
-    "local_regression_tests_passed": 450,
+    "local_regression_tests_passed": 461,
     "new_native_tests_passed": 23,
     "isolated_native_units_replayed": 16,
     "isolated_native_records": 1041,
@@ -98,7 +98,7 @@
     "cloud_worker_bridge_result": "PASS_REAL_DRIVE_PRICE_FIXTURES_ONLY",
     "previous_cloud_drive_integration_run_id": 39717112663,
     "cloud_worker_bridge_job_id": 119643994025,
-    "cloud_ledger_cas_run_id": 39723908488,
+    "cloud_ledger_cas_run_id": 39772732275,
     "worker_bridge_stage_context": "ISOLATED_WORKER_SHAPED_CONTEXT",
     "actual_worker_run_hook_test_scope": "LOCAL_ISOLATED_UNIT_TEST",
     "first_worker_bridge_trial_run_id": 39723908527,
@@ -121,7 +121,7 @@
     "financial_native_trial_units": 14,
     "financial_native_trial_cells": 13276,
     "financial_live_result": "SUCCESS_89_GAPS_RESOLVED_TWO_BOUNDED_RUNS",
-    "cloud_regression_run_id": 39732814600,
+    "cloud_regression_run_id": 39772732231,
     "financial_live_run_id": 39732814594,
     "financial_live_completed_observed": 89,
     "financial_live_pending_observed": 0,
@@ -141,7 +141,12 @@
     "financial_tail_completed": 3,
     "financial_first_run_completed": 86,
     "financial_live_failed": 0,
-    "financial_live_owner_lease_released": true
+    "financial_live_owner_lease_released": true,
+    "continuous_recheck_tests_added": 11,
+    "continuous_deployment_commit": "3345b6885bc7387724742f0a002c4432de7ae7cb",
+    "continuous_live_run_id": 39772732264,
+    "continuous_producer_status": "WAITING_EXISTING_SWEEP_TO_RELEASE_ORIGINAL_POOL",
+    "continuous_financial_job_status": "RUNNING"
   },
   "owner_replay_boundary_implemented": true,
   "native_identity_reconciliation_implemented": true,
@@ -195,7 +200,9 @@
     "cron_utc": "15 * * * *",
     "budget_minutes": 60,
     "workflow_timeout_minutes": 75,
-    "lease_ttl_seconds": 5400
+    "lease_ttl_seconds": 5400,
+    "continuous_within_budget": true,
+    "recheck_seconds_after_sweep": 300
   },
   "unsupported_repairs": "BLOCKED_APPROVAL_OR_EVIDENCE_HOLD",
   "raw_fetch_binding_enabled": false,
@@ -230,5 +237,6 @@
     "FINANCIAL"
   ],
   "financial_validation_evidence_sha256": "292e519157bf794f5abdf086b96df52db181bec519c11ffe9e169018d715cb06",
-  "operational_recovery_commit": "6e29433a914cb896bc58fdf03d44b3cbdd59de3b"
+  "operational_recovery_commit": "6e29433a914cb896bc58fdf03d44b3cbdd59de3b",
+  "live_financial_repair_job_minutes": 6
 }
