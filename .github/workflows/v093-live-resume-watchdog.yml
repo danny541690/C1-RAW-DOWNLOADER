@@ -34,21 +34,20 @@ jobs:
           paths=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml',
                  'v093-v2-04-financial.yml','v093-v2-05-chip.yml','v093-v2-06-reconcile-repair.yml']
           active={}
-          for status in ('queued','in_progress','waiting','pending','requested'):
-              for page in range(1,11):
-                  runs=api('/actions/runs?status='+status+'&per_page=100&page='+str(page))['workflow_runs']
-                  for run in runs:
-                      if run.get('head_branch')=='main':
-                          active.setdefault(run['path'],[]).append({'id':run['id'],'status':run['status']})
-                  if len(runs)<100:break
-              else:raise RuntimeError('ACTIVE_RUN_SCAN_INCOMPLETE_NO_DISPATCH')
+          # Use unfiltered recent runs: filtered status reads can lag transitions.
+          for page in range(1,4):
+              runs=api('/actions/runs?per_page=100&page='+str(page))['workflow_runs']
+              for run in runs:
+                  if run['status']!='completed':
+                      active.setdefault(run['path'],[]).append({'id':run['id'],'status':run['status']})
+              if len(runs)<100:break
           for name in paths:
               path='.github/workflows/'+name
               if active.get(path):
                   # One-time recovery of the observed queued CHIP run. Never cancel
                   # any running job, or repeatedly replace queued runs on the timer.
                   observed=active[path]
-                  if os.environ.get('GITHUB_EVENT_NAME')=='push' and name=='v093-v2-05-chip.yml' and all(r['status']=='queued' for r in observed):
+                  if os.environ.get('GITHUB_EVENT_NAME')=='push' and name=='v093-v2-05-chip.yml' and any(r['id']==39803517719 for r in observed) and all(r['status']=='queued' for r in observed):
                       idle=True
                       for run in observed:
                           jobs=api('/actions/runs/'+str(run['id'])+'/jobs')['jobs']
