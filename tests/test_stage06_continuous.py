@@ -77,6 +77,20 @@ class ContinuousReconciliationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'lost owner'):obj.wait_for_recheck(90)
         sleep.assert_not_called()
 
+    def test_slow_owner_check_cannot_cause_negative_sleep(self):
+        obj=object.__new__(live.Reconciler);obj.until=1000;clock=[0]
+        obj.guard=Mock(side_effect=lambda:clock.__setitem__(0,100))
+        with patch.object(live.time,'monotonic',side_effect=lambda:clock[0]),patch.object(live.time,'sleep') as sleep:
+            self.assertTrue(obj.wait_for_recheck(60))
+        sleep.assert_not_called()
+
+    def test_owner_check_consuming_remaining_budget_prevents_next_cycle(self):
+        obj=object.__new__(live.Reconciler);obj.until=200;clock=[0]
+        obj.guard=Mock(side_effect=lambda:clock.__setitem__(0,190))
+        with patch.object(live.time,'monotonic',side_effect=lambda:clock[0]),patch.object(live.time,'sleep') as sleep:
+            self.assertFalse(obj.wait_for_recheck(60))
+        sleep.assert_not_called()
+
     def test_invalid_interval_is_rejected_before_acquiring_owner(self):
         with patch('sys.argv',['stage06','--recheck-seconds','0']),patch.object(live,'Reconciler') as owner:
             with self.assertRaisesRegex(ValueError,'INVALID_RECHECK_INTERVAL'):live.main()

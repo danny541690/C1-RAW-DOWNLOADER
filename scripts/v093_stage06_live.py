@@ -153,8 +153,9 @@ class Reconciler:
         wake = time.monotonic()+seconds
         while time.monotonic() < wake:
             self.guard()
-            time.sleep(min(30, wake-time.monotonic()))
-        return True
+            delay=max(0,min(30, wake-time.monotonic()))
+            if delay:time.sleep(delay)
+        return time.monotonic() < self.until-45
 
     def guard(self):
         if time.monotonic() >= self.until-45: raise ReconcileBudgetEnded('RECONCILER_BUDGET_ENDED')

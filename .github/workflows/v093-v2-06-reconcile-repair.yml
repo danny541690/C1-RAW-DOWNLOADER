@@ -1,3 +1,4 @@
+# Continuous rechecks also bound slow ownership reads.
 name: JARVIS v0.93 LIVE RECONCILE REPAIR
 on:
   schedule:
