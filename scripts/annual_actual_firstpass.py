@@ -50,8 +50,11 @@ class Drive:
         return self.call(lambda:self.api.files().get_media(fileId=f["id"])) if f else None
     def put(self,parent,name,raw,mime="application/octet-stream",overwrite=False):
         old=self.find(parent,name)
+        direct=getattr(self,'direct_readback',False)
+        saved_id=old['id'] if old else None
         if old and not overwrite:
-            if hashlib.sha256(self.read(parent,name)).digest()!=hashlib.sha256(raw).digest():
+            existing=self.call(lambda:self.api.files().get_media(fileId=old['id'])) if direct else self.read(parent,name)
+            if hashlib.sha256(existing).digest()!=hashlib.sha256(raw).digest():
                 raise ValueError("existing remote file SHA mismatch")
             return
         media=MediaIoBaseUpload(io.BytesIO(raw),mimetype=mime,resumable=False)
@@ -61,7 +64,8 @@ class Drive:
                 if old:
                     self.api.files().update(fileId=old["id"],media_body=media).execute(num_retries=0)
                 else:
-                    self.api.files().create(body={"name":name,"parents":[parent]},media_body=media,fields="id").execute(num_retries=0)
+                    created=self.api.files().create(body={"name":name,"parents":[parent]},media_body=media,fields="id").execute(num_retries=0)
+                    saved_id=created['id']
                 break
             except (TimeoutError, socket.timeout, ConnectionError, OSError, HttpError) as exc:
                 status=getattr(getattr(exc,"resp",None),"status",None)
@@ -75,7 +79,8 @@ class Drive:
                     if not old:old=found
                 if n==3:raise
                 time.sleep(min(2**n,6)+random.random())
-        readback=self.read(parent,name)
+        readback=(self.call(lambda:self.api.files().get_media(fileId=saved_id))
+                  if direct and saved_id else self.read(parent,name))
         if hashlib.sha256(readback).digest()!=hashlib.sha256(raw).digest():
             raise ValueError("Google Drive readback hash differs")
 def fetch(url, limit=8000000):
