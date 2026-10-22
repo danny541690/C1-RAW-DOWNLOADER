@@ -1,0 +1,32 @@
+name: JARVIS resume terminal workers from durable checkpoints
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-terminal-worker-recovery-20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-terminal-worker-recovery-20261022
+  cancel-in-progress: false
+jobs:
+  raw:
+    uses: ./.github/workflows/v093-v2-01-raw.yml
+    with:
+      minutes: '60'
+    secrets: inherit
+  qa1:
+    uses: ./.github/workflows/v093-v2-02-qa.yml
+    with:
+      minutes: '60'
+    secrets: inherit
+  price:
+    uses: ./.github/workflows/v093-v2-03-price.yml
+    with:
+      minutes: '60'
+    secrets: inherit
+  chip:
+    uses: ./.github/workflows/v093-v2-05-chip.yml
+    with:
+      minutes: '60'
+    secrets: inherit

@@ -38,6 +38,10 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
+      - name: Check shared API budget before taking the stage lease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 200 --max-wait 600
       - name: Run real RAW worker with durable per-unit state
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}

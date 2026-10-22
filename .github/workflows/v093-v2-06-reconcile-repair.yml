@@ -26,29 +26,14 @@ jobs:
       - run: python -m pip install -r requirements-qa.lock
       - name: Validate deployed repair contracts
         run: python -m unittest discover -s tests -q
+      - name: Check shared API budget before taking the reconciliation lease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 250 --max-wait 300
       - name: Reconcile latest to oldest with persistent cursor
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          if [ "$EVENT_NAME" = "push" ]; then
-            python -m scripts.v093_stage06_live --minutes 5 --max-months 1
-          else
-            python -m scripts.v093_stage06_live --minutes 60
-          fi
-      - name: Execute approved repairs under the existing PRICE owner pool
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          if [ "$EVENT_NAME" = "push" ]; then
-            python -m scripts.v093_stage06_live --owner-price --minutes 6 --cutover-price
-          else
-            python -m scripts.v093_stage06_live --owner-price --minutes 6
-          fi
+        run: python -m scripts.v093_stage06_live --minutes 60
