@@ -4,6 +4,8 @@ on:
     paths:
       - '.github/workflows/v093-v2-01-raw.yml'
       - 'scripts/v093_live_five_stage.py'
+      - 'scripts/v093_replanned_five_stage.py'
+      - 'scripts/v093_raw_month_coordination.py'
   schedule:
     - cron: '1 * * * *'
   workflow_call:
@@ -75,6 +77,8 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
+      - name: Verify ascending meeting and exclusive month ownership
+        run: python -m unittest tests.test_stage07_ascending -q
       - name: Check shared API budget before taking the stage lease
         env:
           GH_TOKEN: ${{ github.token }}
