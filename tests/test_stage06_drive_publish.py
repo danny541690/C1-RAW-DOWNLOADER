@@ -11,6 +11,7 @@ from scripts.v093_stage06_drive_artifacts import DriveImmutableArtifacts
 from scripts.v093_stage06_fenced_store import FencedGitHubStore
 from scripts.v093_stage06_ledger import Ledger, StaleClaim, empty
 from scripts.v093_stage06_owner_replay import replay_one
+from scripts.v093_stage06_drive_canary import seed_json
 
 
 def sha(raw): return hashlib.sha256(raw).hexdigest()
@@ -200,6 +201,39 @@ class DrivePublicationTests(unittest.TestCase):
     def test_production_backend_requires_separate_activation(self):
         with self.assertRaisesRegex(ValueError, 'NOT_ACTIVATED'):
             DriveImmutableArtifacts(self.api, 'test-folder', test_only=False)
+
+
+class IntegrationInitializationTests(unittest.TestCase):
+    def test_unrelated_branch_conflict_retries_same_initial_snapshot(self):
+        state = {}; puts = []
+        def api(method, path, body=None):
+            if method == 'GET':
+                if not state: raise urllib.error.HTTPError('test', 404, 'missing', {}, io.BytesIO())
+                return {'content': base64.b64encode(json.dumps(state).encode()).decode()}
+            puts.append(body)
+            if len(puts) == 1: raise urllib.error.HTTPError('test', 409, 'branch changed', {}, io.BytesIO())
+            state.update(json.loads(base64.b64decode(body['content'])))
+            return {}
+        seed_json(api, '.github/live-state/stage06-seed-test.json', {'same': 'snapshot'})
+        self.assertEqual(state, {'same': 'snapshot'})
+        self.assertEqual(puts[0], puts[1])
+
+    def test_lost_create_ack_is_read_back_without_duplicate_put(self):
+        state = {}; puts = []
+        def api(method, path, body=None):
+            if method == 'GET':
+                if not state: raise urllib.error.HTTPError('test', 404, 'missing', {}, io.BytesIO())
+                return {'content': base64.b64encode(json.dumps(state).encode()).decode()}
+            puts.append(body); state.update(json.loads(base64.b64decode(body['content'])))
+            raise OSError('ack lost after commit')
+        seed_json(api, '.github/live-state/stage06-seed-test.json', {'same': 'snapshot'})
+        self.assertEqual(len(puts), 1)
+
+    def test_different_existing_snapshot_is_never_replaced(self):
+        api = Mock(return_value={'content': base64.b64encode(b'{"old":true}').decode()})
+        with self.assertRaisesRegex(ValueError, 'DIFFERENT_INTEGRATION_SNAPSHOT'):
+            seed_json(api, '.github/live-state/stage06-seed-test.json', {'new': True})
+        self.assertTrue(all(call.args[0] == 'GET' for call in api.call_args_list))
 
 
 if __name__ == '__main__': unittest.main()

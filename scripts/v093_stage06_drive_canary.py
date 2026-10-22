@@ -5,6 +5,7 @@ import json
 import os
 import tempfile
 import time
+import urllib.error
 from pathlib import Path
 
 from googleapiclient.http import MediaIoBaseUpload
@@ -15,6 +16,34 @@ from scripts.v093_stage06_fenced_store import FencedGitHubStore
 from scripts.v093_stage06_ledger import FileStore, GitHubStore, Ledger, StaleClaim, digest
 from scripts.v093_stage06_native_repair import VERSION, transform, validate_output
 from scripts.v093_stage06_owner_replay import replay_one
+
+
+def seed_json(api, path, payload):
+    """Create exactly this test snapshot, reconciling unrelated branch conflicts."""
+    if not path.startswith('.github/live-state/stage06-') or not path.endswith('.json'):
+        raise ValueError('ISOLATED_TEST_PATH_REQUIRED')
+    body = dict(message='stage06: initialize isolated integration snapshot',
+                content=base64.b64encode(json.dumps(payload, sort_keys=True).encode()).decode())
+    for _ in range(16):
+        try:
+            current = api('GET', '/contents/' + path)
+        except urllib.error.HTTPError as exc:
+            if exc.code != 404:
+                raise
+        else:
+            if json.loads(base64.b64decode(current['content'])) != payload:
+                raise ValueError('DIFFERENT_INTEGRATION_SNAPSHOT_ALREADY_EXISTS')
+            return
+        try:
+            api('PUT', '/contents/' + path, body)
+            return
+        except urllib.error.HTTPError as exc:
+            if exc.code not in (409, 422):
+                raise
+        except OSError:
+            # A timed-out create may already have committed. Re-read first.
+            pass
+    raise ValueError('INTEGRATION_INITIALIZATION_CONFLICT_EXHAUSTED')
 
 
 def main():
@@ -31,8 +60,7 @@ def main():
     # These Git writes never reference the live five-stage manifest.
     probe = FencedGitHubStore(repo, healthy_path, token, 'PRICE', lease_key, owner_a, 1,
         lease_path=lease_path, clock=clock, test_only=True)
-    probe._api('PUT', '/contents/' + lease_path, dict(message='stage06: initialize isolated integration lease',
-        content=base64.b64encode(json.dumps({'version': 'ISOLATED_TEST_ONLY', 'jobs': {lease_key: {}}}).encode()).decode()))
+    seed_json(probe._api, lease_path, {'version': 'ISOLATED_TEST_ONLY', 'jobs': {lease_key: {}}})
     lease_url = probe.base + '/contents/' + lease_path
     fence_a = acquire(lease_url, token, lease_key, owner_a, now=int(clock()), ttl=1800)
 
@@ -57,9 +85,7 @@ def main():
             for e in selected:
                 gap = producer.observe(e['unit'], 'PARSER_MAPPING', 'PRICE', e['input_sha256'], 'INTEGRATION_TEST')
                 producer.enqueue(gap['gap_id'], e['input_sha256'], VERSION, rules)
-            target = GitHubStore(repo, path, token)
-            if target.read()[0] is not None or not target.cas(None, producer.snapshot()):
-                raise ValueError('INTEGRATION_LEDGER_ALREADY_EXISTS')
+            seed_json(probe._api, path, producer.snapshot())
 
     def fenced(path, owner, fence):
         return FencedGitHubStore(repo, path, token, 'PRICE', lease_key, owner, fence,
