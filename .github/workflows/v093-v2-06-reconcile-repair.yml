@@ -1,3 +1,4 @@
+# Recover confirmed terminal owners before cleanup; preserve all checkpoints.
 # Live cleanup: reverse months, durable five-attempt limit; no isolated trial jobs.
 name: JARVIS v0.93 LIVE RECONCILE REPAIR
 on:
