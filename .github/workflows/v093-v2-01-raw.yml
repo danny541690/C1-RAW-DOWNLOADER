@@ -27,11 +27,44 @@ on:
         required: false
 permissions:
   contents: write
-concurrency:
-  group: jarvis-v093-live-raw
-  cancel-in-progress: false
+  actions: write
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    concurrency:
+      group: jarvis-v093-raw-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Switch only RAW to the deployed version and preserve durable checkpoints
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json,os,time,urllib.request
+          repo=os.environ['GITHUB_REPOSITORY'];current=int(os.environ['GITHUB_RUN_ID'])
+          def api(path,method='GET'):
+              request=urllib.request.Request('https://api.github.com/repos/'+repo+path,method=method,
+                  headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(request,timeout=30) as response:
+                  raw=response.read();return json.loads(raw) if raw else {}
+          previous=[]
+          for run in api('/actions/runs?per_page=100')['workflow_runs']:
+              if run['path']=='.github/workflows/v093-v2-01-raw.yml' and run['id']<current and run['status']!='completed':
+                  previous.append(run['id']);api('/actions/runs/'+str(run['id'])+'/cancel','POST')
+          deadline=time.monotonic()+240
+          while previous:
+              previous=[run for run in previous if api('/actions/runs/'+str(run))['status']!='completed']
+              if previous and time.monotonic()>=deadline:raise RuntimeError('OLD_RAW_NOT_TERMINAL_CHECKPOINTS_PRESERVED')
+              if previous:time.sleep(5)
+          print('RAW_DEPLOY_READY_CHECKPOINTS_PRESERVED')
+          PY
   worker:
+    needs: prepare
+    concurrency:
+      group: jarvis-v093-live-raw
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
