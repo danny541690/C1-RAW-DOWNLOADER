@@ -1,0 +1,37 @@
+name: JARVIS stage06 first full live batch
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-stage06-full-launch-20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-v093-live-reconcile-repair
+  cancel-in-progress: false
+jobs:
+  launch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: python -m pip install -r requirements-qa.lock
+      - name: Continue full live work from the saved next month
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_stage06_live --minutes 60
+      - name: Consume approved repairs if the PRICE owner pool is free
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_stage06_live --owner-price --minutes 6
