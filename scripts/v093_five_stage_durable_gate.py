@@ -54,7 +54,8 @@ def terminal_owner(api_url, token, key, lease):
     pools={'RAW':'POOL_RAW_REPLAN_201404_V1','QA1':'POOL_CONSUMER_QA1_REPLAN_201404_V1',
            'PRICE':'POOL_CONSUMER_PRICE_REPLAN_201404_V1','FINANCIAL':'POOL_CONSUMER_FINANCIAL_REPLAN_201404_V1',
            'CHIP':'POOL_CONSUMER_CHIP_REPLAN_201404_V1','RECONCILE':'POOL_STAGE06_REPAIR_V1'}
-    if pools[stage]!=key:return False
+    independent=('POOL_RAW' if stage=='RAW' else 'POOL_CONSUMER')+'_STAGE06_'+stage+'_V1'
+    if key not in (pools[stage],independent):return False
     prefix=api_url.split('/contents/')[0]
     if not re.fullmatch(r'https://api.github.com/repos/[\w.-]+/[\w.-]+',prefix):return False
     request=urllib.request.Request(prefix+'/actions/runs/'+run,headers={
@@ -66,7 +67,7 @@ def terminal_owner(api_url, token, key, lease):
         raise
     primary={'RAW':'01-raw','QA1':'02-qa','PRICE':'03-price','FINANCIAL':'04-financial','CHIP':'05-chip'}
     allowed={'.github/workflows/v093-v2-06-reconcile-repair.yml'}
-    if stage in primary:allowed.add('.github/workflows/v093-v2-'+primary[stage]+'.yml')
+    if stage in primary and key==pools[stage]:allowed.add('.github/workflows/v093-v2-'+primary[stage]+'.yml')
     return result.get('id')==int(run) and result.get('status')=='completed' and result.get('path') in allowed
 
 
