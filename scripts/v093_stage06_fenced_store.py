@@ -116,8 +116,11 @@ class FencedGitHubStore(GitHubStore):
             return True
         except urllib.error.HTTPError as exc:
             if exc.code in (409, 422):
-                current = self._api('GET', '/git/ref/heads/main')['object']['sha']
-                if current != expected:
-                    self._read_cache=None
-                    return False
+                # A rejected non-forced publication never commits this candidate.
+                # Invalidate every cached head and retry through the bounded CAS
+                # transaction, including when GitHub's head read briefly lags.
+                self._read_cache=None
+                self._lease_cache.clear()
+                self._tree_cache.clear()
+                return False
             raise
