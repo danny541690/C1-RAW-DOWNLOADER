@@ -150,7 +150,8 @@ def main():
         media_body=MediaIoBaseUpload(io.BytesIO(candidate), mimetype='application/octet-stream'),
         fields='id').execute(num_retries=0)
     assert artifacts.read(output_key) == candidate
-    offset[0] += 121  # The abandoned task's 120-second claim expires.
+    # Expire the actual bridge-assigned claim rather than assuming a TTL.
+    offset[0] += max(0, task['claim']['expires_at'] - int(clock()) + 1)
     successor = Ledger(fenced(race_path, owner_b, fence_b[0]), clock)
     recovered = replay(successor, owner_b, 'DRIVE_RACE_V1')
     assert recovered['status'] == 'DONE' and recovered['fence'] > task['fence']
