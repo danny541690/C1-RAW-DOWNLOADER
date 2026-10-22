@@ -283,7 +283,8 @@ def repair_owner(worker, minutes=6, only_month=None):
     from scripts.v093_replanned_five_stage import cached_payload
     original_cursor = copy.deepcopy(worker.cursor); original_until = worker.until
     limit = min(worker.until-45, time.monotonic()+minutes*60)
-    root = worker.d.find(worker.control, ROOT_NAME)
+    read_control=getattr(worker,'primary_control',worker.control)
+    root = worker.d.find(read_control, ROOT_NAME)
     if not root: return report
     listing = native.listing(worker.d,root['id'])
     available = {f['name']:f['id'] for f in listing if f['mimeType']=='application/vnd.google-apps.folder'}
@@ -299,7 +300,8 @@ def repair_owner(worker, minutes=6, only_month=None):
         records_list = engine.getj(worker.d, root['id'], 'INPUTS_'+stage+'_'+month+'.json') or []
         # The owner can upgrade previously blocked tasks with the tested version.
         # This does not move the reconciler or primary worker cursor.
-        source_folder=worker.d.find(worker.stagectrl,month)
+        source_stage=worker.d.find(read_control,stage)
+        source_folder=worker.d.find(source_stage['id'],month) if source_stage else None
         source_state=engine.getj(worker.d,source_folder['id'],'MONTH_STATE.json') if source_folder else {}
         def upgrade(doc,now):
             new=reconcile_snapshot(doc,stage,source_state or {},records_list);doc.clear();doc.update(new)
@@ -403,7 +405,7 @@ def main():
         stage=a.owner_stage or 'PRICE'
         if a.cutover_price: cutover_price(stage)
         from scripts.v093_replanned_five_stage import Worker
-        try: worker = Worker(stage, a.minutes)
+        try: worker = Worker(stage, a.minutes, stage06=True)
         except LeaseBusy:
             print('STAGE06_LIVE_OWNER_WAIT_EXISTING_PRICE_WORKER',flush=True); return
         try: repair_owner(worker, a.minutes, a.owner_month)
