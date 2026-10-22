@@ -21,7 +21,7 @@ from scripts import v093_three_year_repair as native
 from scripts.v093_five_stage_durable_gate import acquire, commit, LeaseBusy, _read
 from scripts.v093_stage06_drive_artifacts import DriveImmutableArtifacts
 from scripts.v093_stage06_fenced_store import FencedGitHubStore
-from scripts.v093_stage06_ledger import FileStore, Ledger, digest, import_quarantine, summary, StaleClaim
+from scripts.v093_stage06_ledger import FileStore, Ledger, digest, import_quarantine, summary, StaleClaim, Conflict
 from scripts.v093_stage06_native_repair import VERSION, transform, validate_output, EVENTS
 from scripts.v093_stage06_financial_repair import VERSION as FIN_VERSION, transform as fin_transform, validate_output as fin_validate
 from scripts.v093_stage06_owner_replay import replay_one
@@ -132,16 +132,29 @@ class Reconciler:
             self.d = Drive(service()); self.control = self.d.folder(native.REPORT_ROOT, base.RUN)
             self.root = self.d.folder(self.control, ROOT_NAME)
             self.runtime = Ledger(self.store('.github/live-state/stage06-live-control.json'))
-            roots = folders(self.d, self.control)
-            self.months = {stage:folders(self.d, roots.get(stage)) for stage in base.STAGES}
-            qa_index = self.d.find(roots['QA1'], 'RAW_INDEX') if roots.get('QA1') else None
-            self.indices = folders(self.d, qa_index['id'] if qa_index else None)
+            self.refresh_inputs()
         except Exception:
             commit(self.lease_url,self.token,POOL,self.owner,self.fence,digest('INITIALIZATION_FAILED'))
             raise
 
     def store(self, path):
         return FencedGitHubStore(self.repo, path, self.token, 'RECONCILE', POOL, self.owner, self.fence,read_cache_seconds=30)
+
+    def refresh_inputs(self):
+        roots = folders(self.d, self.control)
+        self.months = {stage:folders(self.d, roots.get(stage)) for stage in base.STAGES}
+        qa_index = self.d.find(roots['QA1'], 'RAW_INDEX') if roots.get('QA1') else None
+        self.indices = folders(self.d, qa_index['id'] if qa_index else None)
+
+    def wait_for_recheck(self, seconds):
+        """Bounded polling interval under the same lease; never spin empty months."""
+        if time.monotonic()+seconds >= self.until-45:
+            return False
+        wake = time.monotonic()+seconds
+        while time.monotonic() < wake:
+            self.guard()
+            time.sleep(min(30, wake-time.monotonic()))
+        return True
 
     def guard(self):
         if time.monotonic() >= self.until-45: raise ReconcileBudgetEnded('RECONCILER_BUDGET_ENDED')
@@ -189,8 +202,10 @@ class Reconciler:
             if not any(r.get('status')=='QUARANTINED' for r in state.get('units',{}).values()): continue
             # Input references remain private. The immutable RAW hash is also
             # bound into the public task; a changed locator cannot change bytes.
-            self.d.put(self.root, 'INPUTS_'+stage+'_'+month+'.json',
-                json.dumps(registry, sort_keys=True).encode(), 'application/json', overwrite=True)
+            input_name='INPUTS_'+stage+'_'+month+'.json'
+            if engine.getj(self.d,self.root,input_name) != registry:
+                self.d.put(self.root, input_name,
+                    json.dumps(registry, sort_keys=True).encode(), 'application/json', overwrite=True)
             if stage in ADAPTERS: self.artifact_folder(stage, month)
             queue = Ledger(self.store(queue_path(stage, month)))
             def update(doc, now):
@@ -201,19 +216,40 @@ class Reconciler:
                 snapshot_scope='AT_IMPORT_NOT_LIVE_TASK_COUNT')
         return reports
 
-    def run(self, max_months=0):
+    def run(self, max_months=0, continuous=False, recheck_seconds=300):
+        if not 30 <= recheck_seconds <= 900:
+            raise ValueError('INVALID_RECHECK_INTERVAL')
         count = 0; last = None;control=None;last_saved=0
+        cycles = 0
         try:
             index = self.runtime.snapshot().get('control',{}).get('month_index',0)
             if index >= len(base.MONTHS): index = 0
-            while index < len(base.MONTHS) and time.monotonic() < self.until-45:
+            while time.monotonic() < self.until-45:
                 if self.runtime.store.remaining is not None and self.runtime.store.remaining<200:break
+                if index >= len(base.MONTHS):
+                    if not continuous:break
+                    control = dict(self.runtime.snapshot().get('control',{}),
+                        phase='WAITING_RECHECK', continuous=True, next_month=base.MONTHS[0],
+                        recheck_seconds=recheck_seconds, cycles_completed_this_run=cycles,
+                        updated_utc=native.stamp(), run=os.environ['GITHUB_RUN_ID'])
+                    self.runtime.transaction(lambda doc,now:doc.update(control=control))
+                    self.d.put(self.root, 'STATUS.json',json.dumps(dict(status='WAITING_RECHECK',
+                        control=control,production_data_approved=False),sort_keys=True).encode(),
+                        'application/json',overwrite=True)
+                    print('STAGE06_LIVE_WAIT_RECHECK '+json.dumps(control,sort_keys=True),flush=True)
+                    if not self.wait_for_recheck(recheck_seconds):break
+                    self.refresh_inputs()
+                    index = 0
                 month = base.MONTHS[index]
                 try: result = self.month(month)
                 except ReconcileBudgetEnded: break
                 index += 1; count += 1; last = month
+                if index == len(base.MONTHS):cycles += 1
                 control = dict(month_index=index, last_scanned_month=month,
-                    next_month=base.MONTHS[index] if index<len(base.MONTHS) else None,
+                    next_month=base.MONTHS[index] if index<len(base.MONTHS) else (base.MONTHS[0] if continuous else None),
+                    phase='SWEEP_COMPLETE' if index==len(base.MONTHS) else 'SCANNING',
+                    continuous=continuous,recheck_seconds=recheck_seconds,
+                    cycles_completed_this_run=cycles,
                     updated_utc=native.stamp(), direction='NEWEST_TO_OLDEST',
                     scope_start='2026-10', scope_end='2000-01', run=os.environ['GITHUB_RUN_ID'],
                     last_month_result=result, coverage_certified=False)
@@ -225,6 +261,7 @@ class Reconciler:
             if control and count!=last_saved:self.runtime.transaction(lambda doc,now:doc.update(control=control))
             state = self.runtime.snapshot()
             result = dict(status='LIVE_RECONCILING_AND_APPROVED_REPAIR_QUEUE', months_scanned_this_run=count,
+                continuous=continuous,cycles_completed_this_run=cycles,
                 last_scanned_month=last, control=state.get('control'), production_data_approved=False,
                 raw_fetch_binding_enabled=False, supported_repairs=sorted([list(x) for x in SUPPORTED|FIN_SUPPORTED]),
                 ultimate_goal='ALL_DATABASE_DATA_RECONCILED_REPAIRED_AND_VERIFIED',scope_is_not_limited_to_supported_adapters=True)
@@ -302,6 +339,14 @@ def repair_owner(worker, minutes=6, only_month=None):
                         try:ledger.release(pending['task_id'],worker.owner,pending['fence'])
                         except StaleClaim:pass
                 report['deferred'] += 1; break
+            except Conflict:
+                # A stored candidate/claim may exist. Preserve it for exact replay.
+                # The ledger never turns a conflicted publication into DONE.
+                report['deferred'] += 1
+                print('STAGE06_LIVE_OWNER_DEFER_CAS_CONFLICT '+json.dumps(dict(month=month)),flush=True)
+                report['status']='DEFERRED_CAS_CONTENTION'
+                print('STAGE06_LIVE_OWNER_RESULT '+json.dumps(report,sort_keys=True),flush=True)
+                return report
     if worker.cursor != original_cursor or worker.until != original_until: raise ValueError('PRIMARY_CURSOR_OR_BUDGET_CHANGED')
     print('STAGE06_LIVE_OWNER_RESULT '+json.dumps(report,sort_keys=True),flush=True)
     return report
@@ -347,9 +392,12 @@ def main():
     p = argparse.ArgumentParser(); p.add_argument('--minutes',type=float,default=60)
     p.add_argument('--max-months',type=int,default=0); p.add_argument('--owner-price',action='store_true')
     p.add_argument('--cutover-price','--cutover-owner',dest='cutover_price',action='store_true')
+    p.add_argument('--continuous',action='store_true')
+    p.add_argument('--recheck-seconds',type=int,default=300)
     p.add_argument('--owner-stage',choices=sorted(ADAPTERS));p.add_argument('--owner-month',choices=base.MONTHS)
     a = p.parse_args()
     if not .1 <= a.minutes <= 60 or a.max_months < 0: raise ValueError('INVALID_BUDGET')
+    if not 30 <= a.recheck_seconds <= 900:raise ValueError('INVALID_RECHECK_INTERVAL')
     if a.owner_price or a.owner_stage:
         stage=a.owner_stage or 'PRICE'
         if a.cutover_price: cutover_price(stage)
@@ -360,7 +408,7 @@ def main():
         try: repair_owner(worker, a.minutes, a.owner_month)
         finally: commit(worker.api,worker.token,worker.lock,worker.owner,worker.fence,digest('STAGE06_OWNER_RUN_FINISHED'))
     else:
-        try: Reconciler(a.minutes).run(a.max_months)
+        try: Reconciler(a.minutes).run(a.max_months,a.continuous,a.recheck_seconds)
         except LeaseBusy: print('STAGE06_LIVE_WAIT_EXISTING_RECONCILER',flush=True)
 
 

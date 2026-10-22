@@ -8,6 +8,7 @@ import base64
 import copy
 import json
 import re
+import random
 import time
 import urllib.error
 import urllib.parse
@@ -20,6 +21,10 @@ from scripts.v093_github_budget import open_json
 
 class FencedGitHubStore(GitHubStore):
     owner_fenced = True
+
+    def conflict_backoff(self, attempt):
+        # Independent stage writers must not immediately collide in lockstep.
+        time.sleep(min(.1*(attempt+1),1)+random.uniform(0,.2))
 
     def __init__(self, repo, path, token, stage, lease_key, owner, fence,
                  lease_path='.github/live-state/five-stage-leases.json', clock=time.time, test_only=False, read_cache_seconds=0):
