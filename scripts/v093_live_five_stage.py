@@ -130,9 +130,12 @@ class Worker(Independent):
     def fetch_job(self,j,bucket):
         k=engine.key(j);old=self.state[bucket].get(k,{})
         if old.get('status')=='SAVED_BASIC_VERIFIED':return
+        if getattr(self,'stage06_cleanup',False) and old.get('status')=='REQUEST_INTENT_INTERRUPTED_OR_UNCONFIRMED':
+            emit(stage='RAW',unit=k,status='STAGE06_UNCERTAIN_REQUEST_RECONCILIATION_REQUIRED');return
         attempts=self.state['attempt_ledger'].setdefault(bucket,{})
         count=attempts.get(k,0)
-        if count>=4 or old.get('permanent_hold') or old.get('next_retry_at',0)>time.time():return
+        max_attempts=getattr(self,'max_source_attempts',4)
+        if count>=max_attempts or old.get('permanent_hold') or old.get('next_retry_at',0)>time.time():return
         source=j['source']
         if self.circuit[source]>=2:
             self.state[bucket].setdefault(k,dict(j,unit_id=k,status='SOURCE_CIRCUIT_WAIT',next_retry_at=time.time()+900,numeric_verified=False,pit_verified=False))
@@ -164,9 +167,9 @@ class Worker(Independent):
                         from email.utils import parsedate_to_datetime
                         delay=max(delay,parsedate_to_datetime(hint).timestamp()-time.time())
                     except (TypeError,ValueError):pass
-            e.update(status='RETRY_WAIT' if transient and count<3 else 'ISOLATED_MISSING',
+            e.update(status='RETRY_WAIT' if transient and count<max_attempts-1 else 'ISOLATED_MISSING',
                      error=type(exc).__name__+':'+str(exc)[:200],permanent_hold=not transient,
-                     next_retry_at=time.time()+delay,retry_exhausted=count>=3)
+                     next_retry_at=time.time()+delay,retry_exhausted=count>=max_attempts-1)
         if raw is not None:
             e.update(sha256=native.sha(raw),bytes=len(raw));self.record_payload(j,raw,e,bucket)
         else:self.state[bucket][k]=e;self.save_state();emit(stage='RAW',month=self.active,unit=k,status=e['status'],error=e.get('error'))

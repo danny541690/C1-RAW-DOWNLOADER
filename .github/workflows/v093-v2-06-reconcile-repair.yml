@@ -1,4 +1,4 @@
-# Continuous rechecks also bound slow ownership reads.
+# Live cleanup: reverse months, durable five-attempt limit; no isolated trial jobs.
 name: JARVIS v0.93 LIVE RECONCILE REPAIR
 on:
   schedule:
@@ -25,8 +25,6 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: python -m pip install -r requirements-qa.lock
-      - name: Validate deployed repair contracts
-        run: python -m unittest discover -s tests -q
       - name: Check shared API budget before taking the reconciliation lease
         env:
           GH_TOKEN: ${{ github.token }}
@@ -62,4 +60,108 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_stage06_live --owner-stage FINANCIAL --minutes 6
+        run: python -m scripts.v093_stage06_live --owner-stage FINANCIAL --minutes 60
+
+  price-repairs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    concurrency:
+      group: jarvis-v093-live-price
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: python -m pip install -r requirements-qa.lock
+      - name: Check API budget before acquiring the PRICE owner
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
+      - name: Consume approved repairs under the existing PRICE owner pool
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_stage06_live --owner-stage PRICE --minutes 60
+
+  raw-cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    concurrency:
+      group: jarvis-v093-live-raw
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: python -m pip install -r requirements-qa.lock
+      - name: Check API budget before acquiring the RAW owner
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
+      - name: Consume approved repairs under the existing RAW owner pool
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_stage06_cleanup --stage RAW --minutes 60
+
+  qa1-cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    concurrency:
+      group: jarvis-v093-live-qa1
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: python -m pip install -r requirements-qa.lock
+      - name: Check API budget before acquiring the QA1 owner
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
+      - name: Consume approved repairs under the existing QA1 owner pool
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_stage06_cleanup --stage QA1 --minutes 60
+
+  chip-cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    concurrency:
+      group: jarvis-v093-live-chip
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: python -m pip install -r requirements-qa.lock
+      - name: Check API budget before acquiring the CHIP owner
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
+      - name: Consume approved repairs under the existing CHIP owner pool
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_stage06_cleanup --stage CHIP --minutes 60

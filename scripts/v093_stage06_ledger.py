@@ -223,7 +223,7 @@ class Ledger:
             if gap['kind'] in ('RAW_MISSING','RAW_CORRUPT'):
                 attempt=s['attempts'][gap['attempt_key']]
                 if not attempt['known']:status='BLOCKED_ATTEMPT_RECONCILIATION'
-                elif attempt['used']>=4:status='RETRY_EXHAUSTED'
+                elif attempt['used']>=5:status='RETRY_EXHAUSTED'
             task={'task_id':tid,'gap_id':gap_id,'owner':gap['owner'],'input_sha256':input_sha256,
                 'processor_version':processor_version,'rule_version':rule_version,'priority':priority,
                 'status':status,'fence':0,'claim':None,'receipt':None,'created_at':now}
@@ -266,8 +266,12 @@ class Ledger:
                 if t['status'] in ('BLOCKED_APPROVAL','BLOCKED_ATTEMPT_RECONCILIATION'):
                     if g['kind'] in ('RAW_MISSING','RAW_CORRUPT') and not attempts['known']:continue
                     if owner+':'+t['processor_version'] in s['approved_versions']:t['status']='READY'
+                if t['status']=='FAILED_OWNER' and len(t.get('failures',[]))<5:
+                    t['status']='READY'
+                if len(t.get('failures',[]))>=5 and t['status'] not in ('DONE','CLAIMED','RECONCILE_REQUIRED'):
+                    t.update(status='RETRY_EXHAUSTED',claim=None);g['status']='RETRY_EXHAUSTED';continue
                 if t['status'] in ('READY','REPAIRED_PENDING_QA'):
-                    if not t.get('validation_only') and g['kind'] in ('RAW_MISSING','RAW_CORRUPT') and attempts['used']>=4:
+                    if not t.get('validation_only') and g['kind'] in ('RAW_MISSING','RAW_CORRUPT') and attempts['used']>=5:
                         t.update(status='RETRY_EXHAUSTED',claim=None);g['status']='RETRY_EXHAUSTED';continue
                     choices.append(t)
             if not choices:return None
@@ -291,7 +295,7 @@ class Ledger:
                 # Caller must never replay HTTP after a previously recorded intent.
                 return {'send_allowed':False,'record':old}
             if any(r['status']=='IN_FLIGHT' for r in a['requests'].values()):raise ValueError('RECONCILE_UNKNOWN_REQUEST_FIRST')
-            if a['used']>=4:
+            if a['used']>=5:
                 t.update(status='RETRY_EXHAUSTED',claim=None);g['status']='RETRY_EXHAUSTED'
                 return {'send_allowed':False,'reason':'RETRY_EXHAUSTED'}
             a['used']+=1;a['requests'][request_id]={'task_id':tid,'fence':fence,'status':'IN_FLIGHT','started_at':now,'attempt':a['used']}
@@ -318,7 +322,7 @@ class Ledger:
             if found_response_sha256:
                 r['response_sha256']=found_response_sha256
                 t.update(validation_only=True,recovered_output_sha256=found_response_sha256)
-            t['status']='REPAIRED_PENDING_QA' if found_response_sha256 else ('RETRY_EXHAUSTED' if a['used']>=4 else 'READY')
+            t['status']='REPAIRED_PENDING_QA' if found_response_sha256 else ('RETRY_EXHAUSTED' if a['used']>=5 else 'READY')
             s['gaps'][t['gap_id']]['status']=t['status']
             return t
         return self.transaction(apply)
@@ -330,7 +334,8 @@ class Ledger:
             if any(r['task_id']==tid and r['status']=='IN_FLIGHT' for r in a['requests'].values()):raise ValueError('UNRECONCILED_HTTP_INTENT')
             t.setdefault('failures',[]).append({'fence':fence,'code':error_code,'evidence_sha256':evidence_sha256,'at':now})
             raw=g['kind'] in ('RAW_MISSING','RAW_CORRUPT')
-            t.update(status=('RETRY_EXHAUSTED' if a['used']>=4 else 'READY') if raw else 'FAILED_OWNER',claim=None)
+            t.update(status=('RETRY_EXHAUSTED' if a['used']>=5 else 'READY') if raw else 'FAILED_OWNER',claim=None)
+            if not raw and len(t['failures'])>=5:t['status']='RETRY_EXHAUSTED'
             if raw and not retryable:t['status']='FAILED_PERMANENT'
             t.pop('validation_only',None);t.pop('recovered_output_sha256',None)
             g['status']='RETRY_EXHAUSTED' if t['status']=='RETRY_EXHAUSTED' else 'OPEN'

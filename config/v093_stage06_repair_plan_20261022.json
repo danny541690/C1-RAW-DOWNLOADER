@@ -205,7 +205,7 @@
     ]
   ],
   "live_repair_owner": "PER_STAGE_OWNER_POOL",
-  "live_owner_budget_minutes_within_existing_hour": 6,
+  "live_owner_budget_minutes_within_existing_hour": 60,
   "live_schedule": {
     "cron_utc": "15 * * * *",
     "budget_minutes": 60,
@@ -215,7 +215,7 @@
     "recheck_seconds_after_sweep": 300
   },
   "unsupported_repairs": "BLOCKED_APPROVAL_OR_EVIDENCE_HOLD",
-  "raw_fetch_binding_enabled": false,
+  "raw_fetch_binding_enabled": true,
   "owner_runtime_integrated_scope": [
     "PRICE_NATIVE_INDEX_EVENT_REPAIR",
     "FINANCIAL_MOPS_MATRIX_REPAIR"
@@ -248,5 +248,23 @@
   ],
   "financial_validation_evidence_sha256": "292e519157bf794f5abdf086b96df52db181bec519c11ffe9e169018d715cb06",
   "operational_recovery_commit": "6e29433a914cb896bc58fdf03d44b3cbdd59de3b",
-  "live_financial_repair_job_minutes": 6
+  "live_financial_repair_job_minutes": 60,
+  "cleanup_live_enabled": true,
+  "cleanup_max_attempts": 5,
+  "cleanup_start_month": "2026-10",
+  "cleanup_end_month": "2000-01",
+  "cleanup_exhausted_action": "RECORD_UNRESOLVED_AND_CONTINUE_OLDER",
+  "cleanup_raw_provider_binding": "EXISTING_NATIVE_RAW_OWNER_CAPTURE_MONTH",
+  "cleanup_owners": [
+    "RAW",
+    "QA1",
+    "PRICE",
+    "FINANCIAL",
+    "CHIP"
+  ],
+  "cleanup_limitations": [
+    "Existing provider and dataset adapters only; no new external sources enabled",
+    "Native permanent holds and uncertain HTTP intents remain protected",
+    "Complete expected-unit catalog and financial semantics certification remain incomplete"
+  ]
 }
