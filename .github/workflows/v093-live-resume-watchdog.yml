@@ -22,7 +22,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           python3 - <<'PY'
-          import json,os,urllib.request
+          import json,os,time,urllib.request
           repo=os.environ['GITHUB_REPOSITORY']
           base='https://api.github.com/repos/'+repo
           def api(path,method='GET',body=None):
@@ -45,8 +45,27 @@ jobs:
           for name in paths:
               path='.github/workflows/'+name
               if active.get(path):
-                  print(json.dumps({'workflow':name,'decision':'KEEP_EXISTING','runs':active[path]}),flush=True)
-                  continue
+                  # One-time recovery of the observed queued CHIP run. Never cancel
+                  # any running job, or repeatedly replace queued runs on the timer.
+                  observed=active[path]
+                  if os.environ.get('GITHUB_EVENT_NAME')=='push' and name=='v093-v2-05-chip.yml' and all(r['status']=='queued' for r in observed):
+                      idle=True
+                      for run in observed:
+                          jobs=api('/actions/runs/'+str(run['id'])+'/jobs')['jobs']
+                          idle=idle and all(j['status']=='queued' and not j.get('steps') for j in jobs)
+                      if idle:
+                          for run in observed:api('/actions/runs/'+str(run['id'])+'/cancel','POST')
+                          deadline=time.monotonic()+60
+                          while any(api('/actions/runs/'+str(r['id']))['status']!='completed' for r in observed):
+                              if time.monotonic()>deadline:raise RuntimeError('QUEUED_CHIP_CANCEL_NOT_CONFIRMED_NO_DUPLICATE_DISPATCH')
+                              time.sleep(3)
+                          print(json.dumps({'workflow':name,'decision':'REPLACE_UNSTARTED_QUEUED_RUN_ONCE'}),flush=True)
+                      else:
+                          print(json.dumps({'workflow':name,'decision':'KEEP_STARTED_CHIP'}),flush=True)
+                          continue
+                  else:
+                      print(json.dumps({'workflow':name,'decision':'KEEP_EXISTING','runs':observed}),flush=True)
+                      continue
               payload={'ref':'main'}
               if name!=paths[-1]:payload['inputs']={'minutes':'60'}
               api('/actions/workflows/'+name+'/dispatches','POST',payload)
