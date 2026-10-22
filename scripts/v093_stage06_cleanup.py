@@ -19,13 +19,13 @@ from scripts.v093_five_stage_durable_gate import commit, LeaseBusy
 def run(stage, minutes=60):
     authorized()
     try:
-        worker = Worker(stage, minutes)
+        worker = Worker(stage, minutes, stage06=True)
     except LeaseBusy:
         print('STAGE06_CLEANUP_WAIT_EXISTING_OWNER '+stage, flush=True)
         return
     original = copy.deepcopy(worker.cursor)
     deadline = worker.until - 45
-    root = worker.d.folder(worker.control, ROOT_NAME)
+    root = worker.d.folder(worker.primary_control, ROOT_NAME)
     filename = 'CLEANUP_'+stage+'_CURSOR.json'
     cursor = engine.getj(worker.d, root, filename) or dict(month_index=0, completed_sweeps=0, visits={})
     worker.max_source_attempts = 5
@@ -63,6 +63,13 @@ def run(stage, minutes=60):
                 else:
                     out=worker.monthfolder(stage,month)
                     ledger=engine.getj(worker.d,out,'MONTH_STATE.json') or dict(month=month,units={})
+                    if not ledger.get('stage06_primary_snapshot'):
+                        primary_stage=worker.d.find(worker.primary_control,stage)
+                        primary_month=worker.d.find(primary_stage['id'],month) if primary_stage else None
+                        primary=engine.getj(worker.d,primary_month['id'],'MONTH_STATE.json') if primary_month else None
+                        units=copy.deepcopy((primary or {}).get('units',{}))
+                        units.update(ledger['units']);ledger['units']=units
+                        ledger['stage06_primary_snapshot']=True
                     if stage=='QA1':
                         upstream=worker.input_index(month,ledger['units'])
                         qa={}
@@ -73,6 +80,17 @@ def run(stage, minutes=60):
                         upstream=engine.getj(worker.d,index['id'],'MONTH_STATE.json') if index else {}
                         qa_folder=worker.d.find(qa_root,month)
                         qa=(engine.getj(worker.d,qa_folder['id'],'MONTH_STATE.json') or {}).get('units',{}) if qa_folder else {}
+                        primary_qa=worker.d.find(worker.primary_control,'QA1')
+                        primary_index=worker.d.find(primary_qa['id'],'RAW_INDEX') if primary_qa else None
+                        primary_index_month=worker.d.find(primary_index['id'],month) if primary_index else None
+                        primary_upstream=engine.getj(worker.d,primary_index_month['id'],'MONTH_STATE.json') if primary_index_month else None
+                        combined=copy.deepcopy(primary_upstream or {})
+                        for bucket in ('units','financial_units'):
+                            combined.setdefault(bucket,{}).update((upstream or {}).get(bucket,{}))
+                        upstream=combined
+                        primary_qa_month=worker.d.find(primary_qa['id'],month) if primary_qa else None
+                        primary_checks=engine.getj(worker.d,primary_qa_month['id'],'MONTH_STATE.json') if primary_qa_month else None
+                        qa={**(primary_checks or {}).get('units',{}),**qa}
                     upstream=upstream or {}
                     counts=ledger.setdefault('stage06_repair_attempts',{})
                     deferred_originals={}
