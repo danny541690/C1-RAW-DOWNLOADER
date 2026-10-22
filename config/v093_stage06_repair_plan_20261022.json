@@ -1,0 +1,31 @@
+{
+  "plan_id": "V093_STAGE06_RECONCILE_REPAIR_DRAFT_20261022",
+  "status": "PLANNED_NOT_DEPLOYED",
+  "enabled": false,
+  "stage": "RECONCILE_REPAIR",
+  "schedule_proposal": {
+    "cron_utc": "15 * * * *",
+    "timezone": "Asia/Taipei",
+    "worker_budget_minutes": 60,
+    "workflow_timeout_minutes": 75,
+    "lease_ttl_seconds": 5400,
+    "same_stage_concurrency": 1
+  },
+  "scope": {"start_month": "2026-10", "end_month": "2000-01", "order": "NEWEST_TO_OLDEST_WITH_BLOCKING_GAP_PRIORITY"},
+  "write_ownership": "STAGE06_OWNS_ITS_GAP_LEDGER_AND_TASKS_ONLY",
+  "source_fetch_owner": "RAW",
+  "qa_owner": "QA1",
+  "transform_owners": ["PRICE", "FINANCIAL", "CHIP"],
+  "preserve_raw": true,
+  "reset_attempts": false,
+  "reset_existing_cursors": false,
+  "owner_replay_contracts_implemented": false,
+  "new_sources_enabled": [],
+  "primary_candidates": ["TDCC", "FUGLE_BASIC", "FINLAB_FREE_DATASET_SPECIFIC"],
+  "conditional_candidates": ["FUBON_MARKETDATA", "TAIFEX_DATASET_SPECIFIC", "TEJ_PAID_IF_NEEDED"],
+  "unverified_private_web_apis_excluded": ["GOODINFO", "WANTGOO"],
+  "raw_repair_capacity_proposal_minutes_per_hour": 6,
+  "raw_current_budget_modified": false,
+  "closure_requires_owner_receipt_and_gap_specific_evidence": true,
+  "production_data_approved": false
+}
