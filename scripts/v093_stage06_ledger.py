@@ -130,14 +130,15 @@ class Ledger:
     def snapshot(self):return self.store.read()[1]
     def transaction(self,fn):
         now=int(self.clock())
-        for attempt in range(16):
+        attempts=getattr(self.store,'transaction_attempts',16)
+        for attempt in range(attempts):
             etag,state=self.store.read();before=digest(state)
             result=fn(state,now)
             if digest(state)==before:return copy.deepcopy(result)
             state['revision']+=1
             if self.store.cas(etag,state):return copy.deepcopy(result)
             backoff=getattr(self.store,'conflict_backoff',None)
-            if attempt<15 and backoff is not None:backoff(attempt)
+            if attempt<attempts-1 and backoff is not None:backoff(attempt)
         raise Conflict('CAS_RETRY_EXHAUSTED')
     def observe(self,unit,kind,owner,evidence_sha256,reason_code,prior_attempts=None,expected_evidence_sha256=None,attempt_evidence_sha256=None):
         unit=checked_unit(unit);checked_hash(evidence_sha256)
