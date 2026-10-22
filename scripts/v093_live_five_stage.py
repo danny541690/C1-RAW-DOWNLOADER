@@ -67,7 +67,9 @@ class Worker(Independent):
         self.control=self.d.folder(native.REPORT_ROOT,RUN)
         if isolated:
             self.primary_control=self.control
-            self.control=self.d.folder(self.d.folder(self.control,'RECONCILE_REPAIR'),'WORKERS')
+            # Each stage creates a different root; parallel starts cannot create
+            # duplicate shared WORKERS folders in Drive.
+            self.control=self.d.folder(self.d.folder(self.control,'RECONCILE_REPAIR'),'WORKERS_'+stage+'_V2')
         self.stagectrl=self.d.folder(self.control,stage)
         self.registry=FolderRegistry(self.d,self.d.folder(C1,'05_CONTROL'),namespace=('STAGE06_' if isolated else 'LIVE_')+stage)
         self.folders={};self.circuit=collections.Counter();self.request_counts=collections.Counter()
