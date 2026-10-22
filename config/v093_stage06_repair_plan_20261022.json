@@ -1,6 +1,6 @@
 {
   "plan_id": "V093_STAGE06_RECONCILE_REPAIR_DRAFT_20261022",
-  "status": "LIVE_ACTIVATION_REQUESTED_NATIVE_REPAIR_SCOPE",
+  "status": "LIVE_ENABLED_APPROVED_NATIVE_REPAIRS",
   "enabled": true,
   "stage": "RECONCILE_REPAIR",
   "schedule_proposal": {
@@ -53,7 +53,7 @@
   "unknown_identity_holds_implemented": true,
   "implementation_validation": {
     "new_ledger_tests_passed": 25,
-    "cloud_run_id": 39724099017,
+    "cloud_run_id": 39727142058,
     "cloud_cas_canary": "PASS_SYNTHETIC_ONLY",
     "real_quarantine_rows": 16,
     "test_gap_tasks": 16,
@@ -61,13 +61,13 @@
     "real_repairs_completed": 0,
     "source_downloads_performed": 0,
     "previous_local_regression_tests_passed": 370,
-    "cloud_regression_tests_passed": 396,
+    "cloud_regression_tests_passed": 414,
     "new_owner_identity_tests_passed": 19,
-    "total_stage06_tests_passed": 115,
+    "total_stage06_tests_passed": 133,
     "cloud_identity_canary": "PASS_REAL_RECEIPT_METADATA_ONLY",
     "identities_reconciled": 3,
     "owner_runtime_integrated": true,
-    "local_regression_tests_passed": 396,
+    "local_regression_tests_passed": 414,
     "new_native_tests_passed": 23,
     "isolated_native_units_replayed": 16,
     "isolated_native_records": 1041,
@@ -79,7 +79,7 @@
     "raw_archives_unchanged": true,
     "artifact_zip_readback": "PASS_SHA256_AND_67_FILES",
     "new_drive_publication_tests_passed": 22,
-    "cloud_drive_integration_run_id": 39724099017,
+    "cloud_drive_integration_run_id": 39727142016,
     "real_drive_native_units_replayed": 4,
     "real_drive_native_cells_compared": 737,
     "owner_takeover_recovery_trials": 1,
@@ -103,7 +103,19 @@
     "actual_worker_run_hook_test_scope": "LOCAL_ISOLATED_UNIT_TEST",
     "first_worker_bridge_trial_run_id": 39723908527,
     "first_worker_bridge_trial_result": "FAILED_TEST_ASSUMED_OLD_CLAIM_TTL_FIXED",
-    "live_activation_result": "AWAITING_FIRST_RUN"
+    "live_activation_result": "SUCCESS_FIRST_BATCH_15_DONE_1_BUDGET_DEFERRED",
+    "new_live_activation_tests_passed": 18,
+    "live_activation_run_id": 39727142058,
+    "live_repairs_completed_observed": 15,
+    "live_repairs_observed_at": "2026-10-22T13:23:28+08:00",
+    "live_queue_tasks_observed": 16,
+    "live_first_scanned_month": "2026-10",
+    "live_next_reconcile_month": "2026-09",
+    "live_output_and_validation_readback_verified": true,
+    "live_price_owner_fence_observed": 9,
+    "live_repairs_deferred_observed": 1,
+    "live_owner_lease_released": true,
+    "live_reconciler_lease_released": true
   },
   "owner_replay_boundary_implemented": true,
   "native_identity_reconciliation_implemented": true,
@@ -148,5 +160,8 @@
     "lease_ttl_seconds": 5400
   },
   "unsupported_repairs": "BLOCKED_APPROVAL_OR_EVIDENCE_HOLD",
-  "raw_fetch_binding_enabled": false
+  "raw_fetch_binding_enabled": false,
+  "owner_runtime_integrated_scope": [
+    "PRICE_NATIVE_INDEX_EVENT_REPAIR"
+  ]
 }
