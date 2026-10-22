@@ -1,6 +1,6 @@
 {
   "plan_id": "V093_STAGE06_RECONCILE_REPAIR_DRAFT_20261022",
-  "status": "LIVE_ENABLED_APPROVED_NATIVE_REPAIRS",
+  "status": "LIVE_ENABLED_PRICE_AND_FINANCIAL_REPAIR_ALL_DATA_GAP_SCOPE",
   "enabled": true,
   "stage": "RECONCILE_REPAIR",
   "schedule_proposal": {
@@ -61,13 +61,13 @@
     "real_repairs_completed": 0,
     "source_downloads_performed": 0,
     "previous_local_regression_tests_passed": 370,
-    "cloud_regression_tests_passed": 414,
+    "cloud_regression_tests_passed": 450,
     "new_owner_identity_tests_passed": 19,
     "total_stage06_tests_passed": 133,
     "cloud_identity_canary": "PASS_REAL_RECEIPT_METADATA_ONLY",
     "identities_reconciled": 3,
     "owner_runtime_integrated": true,
-    "local_regression_tests_passed": 414,
+    "local_regression_tests_passed": 450,
     "new_native_tests_passed": 23,
     "isolated_native_units_replayed": 16,
     "isolated_native_records": 1041,
@@ -117,10 +117,31 @@
     "live_owner_lease_released": true,
     "live_reconciler_lease_released": true,
     "live_full_launch_run_id": 39728113424,
-    "live_full_launch_status": "RUNNING_FROM_PERSISTED_NEXT_MONTH",
+    "live_full_launch_status": "FAILED_HTTP_403_CHECKPOINT_RETAINED_RECOVERED",
     "financial_native_trial_units": 14,
     "financial_native_trial_cells": 13276,
-    "financial_live_result": "PENDING_DEPLOYMENT"
+    "financial_live_result": "SUCCESS_89_GAPS_RESOLVED_TWO_BOUNDED_RUNS",
+    "cloud_regression_run_id": 39732814600,
+    "financial_live_run_id": 39732814594,
+    "financial_live_completed_observed": 89,
+    "financial_live_pending_observed": 0,
+    "financial_live_observed_at": "2026-10-22T06:32:00Z",
+    "financial_live_output_and_validation_independently_read_back": true,
+    "financial_live_readback_cells": 978,
+    "reconciliation_recovery_run_id": 39733481451,
+    "reconciliation_recovery_result": "SUCCESS_SCAN_THROUGH_2000_01_NOT_COMPLETENESS_CERTIFICATION",
+    "worker_recovery_run_id": 39733481658,
+    "shared_api_budget_observed": {
+      "limit": 5000,
+      "remaining": 4865,
+      "observed_utc": "2026-10-22T06:22:20Z"
+    },
+    "previous_http_403_root_cause": "UNCONFIRMED_NO_RECORDED_RATE_HEADERS",
+    "financial_tail_run_id": 39734375138,
+    "financial_tail_completed": 3,
+    "financial_first_run_completed": 86,
+    "financial_live_failed": 0,
+    "financial_live_owner_lease_released": true
   },
   "owner_replay_boundary_implemented": true,
   "native_identity_reconciliation_implemented": true,
@@ -168,7 +189,7 @@
       "IncomeStatement"
     ]
   ],
-  "live_repair_owner": "PRICE",
+  "live_repair_owner": "PER_STAGE_OWNER_POOL",
   "live_owner_budget_minutes_within_existing_hour": 6,
   "live_schedule": {
     "cron_utc": "15 * * * *",
@@ -208,5 +229,6 @@
     "PRICE",
     "FINANCIAL"
   ],
-  "financial_validation_evidence_sha256": "292e519157bf794f5abdf086b96df52db181bec519c11ffe9e169018d715cb06"
+  "financial_validation_evidence_sha256": "292e519157bf794f5abdf086b96df52db181bec519c11ffe9e169018d715cb06",
+  "operational_recovery_commit": "6e29433a914cb896bc58fdf03d44b3cbdd59de3b"
 }
