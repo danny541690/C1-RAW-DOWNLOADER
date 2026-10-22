@@ -38,7 +38,8 @@ class FencedGitHubStore(GitHubStore):
             expected_key = 'POOL_STAGE06_REPAIR_V1' if stage == 'RECONCILE' else (
                 ('POOL_RAW' + plan['lease_suffix']) if stage == 'RAW' else
                 'POOL_CONSUMER' + plan['stage_lease_suffix'][stage])
-            if lease_key != expected_key:
+            independent_key=('POOL_RAW' if stage=='RAW' else 'POOL_CONSUMER')+'_STAGE06_'+stage+'_V1'
+            if lease_key not in (expected_key,independent_key) or (lease_key==independent_key and not re.fullmatch(r'[0-9]+/'+stage,owner)):
                 raise ValueError('STAGE_OWNER_POOL_MISMATCH')
         if lease_path != '.github/live-state/five-stage-leases.json':
             if not test_only or not re.fullmatch(r'\.github/live-state/stage06-integration-leases-[A-Za-z0-9_-]+\.json', lease_path):
