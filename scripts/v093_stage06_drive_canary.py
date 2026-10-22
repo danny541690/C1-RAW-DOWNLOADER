@@ -7,6 +7,7 @@ import tempfile
 import time
 import urllib.error
 from pathlib import Path
+from types import SimpleNamespace
 
 from googleapiclient.http import MediaIoBaseUpload
 from scripts.annual_actual_firstpass import service
@@ -15,7 +16,7 @@ from scripts.v093_stage06_drive_artifacts import DriveImmutableArtifacts
 from scripts.v093_stage06_fenced_store import FencedGitHubStore
 from scripts.v093_stage06_ledger import FileStore, GitHubStore, Ledger, StaleClaim, digest
 from scripts.v093_stage06_native_repair import VERSION, transform, validate_output
-from scripts.v093_stage06_owner_replay import replay_one
+from scripts.v093_stage06_worker_bridge import RepairRuntime, run_pending_repairs
 
 
 def seed_json(api, path, payload):
@@ -92,9 +93,15 @@ def main():
             lease_path=lease_path, clock=clock, test_only=True)
 
     def replay(ledger, owner, rules):
-        return replay_one(ledger, 'PRICE', owner, VERSION, rules,
+        worker = SimpleNamespace(stage='PRICE', owner=owner, fence=ledger.store.fence,
+            lock=lease_key, cursor={'isolated_test': run}, until=time.monotonic()+180, owned=lambda: None)
+        runtime = RepairRuntime(ledger, artifacts, VERSION, rules,
             lambda unit: raw_by_id[unit['native_unit_id']], transform, validate_output,
-            artifacts, lambda: None, ttl=120)
+            enabled=True, test_only=True, budget_seconds=120, max_tasks=1)
+        report = run_pending_repairs(worker, runtime)
+        if report['failed'] or report['deferred']:
+            raise ValueError('ISOLATED_WORKER_BRIDGE_REPAIR_FAILED')
+        return next(iter(report['completed_tasks']), None)
 
     seed(healthy_path, entries, 'DRIVE_INTEGRATION_V1')
     healthy = Ledger(fenced(healthy_path, owner_a, fence_a), clock)

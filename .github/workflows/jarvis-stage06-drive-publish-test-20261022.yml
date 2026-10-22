@@ -7,6 +7,12 @@ on:
       - 'scripts/v093_stage06_drive_artifacts.py'
       - 'scripts/v093_stage06_drive_canary.py'
       - 'tests/test_stage06_drive_publish.py'
+      - 'tests/test_stage06_prelaunch_bridge.py'
+      - 'scripts/v093_stage06_worker_bridge.py'
+      - 'scripts/v093_stage06_raw_replay.py'
+      - 'scripts/v093_stage06_admission.py'
+      - 'scripts/v093_stage06_ledger.py'
+      - 'scripts/v093_replanned_five_stage.py'
   workflow_dispatch:
 permissions:
   contents: write

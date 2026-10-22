@@ -234,7 +234,7 @@ class Ledger:
         if t['status']!='CLAIMED' or claim.get('worker')!=worker or t['fence']!=fence or claim.get('expires_at',0)<=now:
             raise StaleClaim('STALE_OR_EXPIRED_OWNER')
         return t
-    def claim(self,owner,worker,ttl=5400,processor_version=None,rule_version=None,gap_kinds=None):
+    def claim(self,owner,worker,ttl=5400,processor_version=None,rule_version=None,gap_kinds=None,unit_sources=None):
         if owner not in OWNERS or not re.fullmatch('[A-Za-z0-9_./-]{1,120}',worker) or type(ttl) is not int or ttl<=0:raise ValueError('INVALID_CLAIM')
         def apply(s,now):
             choices=[]
@@ -258,6 +258,7 @@ class Ledger:
                 if processor_version is not None and t['processor_version']!=processor_version:continue
                 if rule_version is not None and t['rule_version']!=rule_version:continue
                 if gap_kinds is not None and s['gaps'][t['gap_id']]['kind'] not in gap_kinds:continue
+                if unit_sources is not None and s['gaps'][t['gap_id']]['unit']['source'] not in unit_sources:continue
                 g=s['gaps'][t['gap_id']];attempts=s['attempts'][g['attempt_key']]
                 if g['attempt_key'] in busy:continue
                 if t['status'] in ('BLOCKED_APPROVAL','BLOCKED_ATTEMPT_RECONCILIATION'):
@@ -319,7 +320,7 @@ class Ledger:
             s['gaps'][t['gap_id']]['status']=t['status']
             return t
         return self.transaction(apply)
-    def fail(self,tid,worker,fence,error_code,evidence_sha256):
+    def fail(self,tid,worker,fence,error_code,evidence_sha256,retryable=True):
         checked_hash(evidence_sha256)
         if not re.fullmatch('[A-Z0-9_]{1,100}',error_code):raise ValueError('INVALID_REASON_CODE')
         def apply(s,now):
@@ -328,8 +329,31 @@ class Ledger:
             t.setdefault('failures',[]).append({'fence':fence,'code':error_code,'evidence_sha256':evidence_sha256,'at':now})
             raw=g['kind'] in ('RAW_MISSING','RAW_CORRUPT')
             t.update(status=('RETRY_EXHAUSTED' if a['used']>=4 else 'READY') if raw else 'FAILED_OWNER',claim=None)
+            if raw and not retryable:t['status']='FAILED_PERMANENT'
             t.pop('validation_only',None);t.pop('recovered_output_sha256',None)
             g['status']='RETRY_EXHAUSTED' if t['status']=='RETRY_EXHAUSTED' else 'OPEN'
+            return t
+        return self.transaction(apply)
+    def reuse_saved_raw(self,tid,response_sha256,evidence_sha256):
+        checked_hash(response_sha256);checked_hash(evidence_sha256)
+        def apply(s,now):
+            t=s['tasks'][tid];g=s['gaps'][t['gap_id']];a=s['attempts'][g['attempt_key']]
+            if t['owner']!='RAW' or g['kind'] not in ('RAW_MISSING','RAW_CORRUPT'):raise ValueError('NOT_RAW_REPAIR')
+            if t['status'] in ('CLAIMED','RECONCILE_REQUIRED','DONE'):raise ValueError('TASK_NOT_AVAILABLE_FOR_NATIVE_REUSE')
+            if any(r['status']=='IN_FLIGHT' for r in a['requests'].values()):raise ValueError('UNRECONCILED_HTTP_INTENT')
+            if t.get('recovered_output_sha256') not in (None,response_sha256):raise ValueError('SAVED_RESPONSE_CONFLICT')
+            t.update(validation_only=True,recovered_output_sha256=response_sha256,
+                native_reuse_evidence={'sha256':response_sha256,'evidence_sha256':evidence_sha256})
+            t['status']='REPAIRED_PENDING_QA' if 'RAW:'+t['processor_version'] in s['approved_versions'] else 'BLOCKED_APPROVAL'
+            return t
+        return self.transaction(apply)
+    def release(self,tid,worker,fence,reason='BUDGET_DEFERRED'):
+        if not re.fullmatch('[A-Z0-9_]{1,100}',reason):raise ValueError('INVALID_REASON_CODE')
+        def apply(s,now):
+            t=self.owned(s,tid,worker,fence,now);g=s['gaps'][t['gap_id']];a=s['attempts'][g['attempt_key']]
+            if any(r['task_id']==tid and r['status']=='IN_FLIGHT' for r in a['requests'].values()):raise ValueError('UNRECONCILED_HTTP_INTENT')
+            t.update(status='REPAIRED_PENDING_QA' if t.get('validation_only') else 'READY',claim=None)
+            t.setdefault('deferrals',[]).append(dict(reason=reason,at=now,fence=fence))
             return t
         return self.transaction(apply)
     def complete(self,tid,worker,fence,receipt):
@@ -344,7 +368,7 @@ class Ledger:
             a=s['attempts'][g['attempt_key']]
             if any(r['task_id']==tid and r['status']=='IN_FLIGHT' for r in a['requests'].values()):raise ValueError('UNRECONCILED_HTTP_INTENT')
             if not all(receipt.get('checks',{}).get(k) is True for k in RULES[g['kind']][1]):raise ValueError('GAP_SPECIFIC_VALIDATION_REQUIRED')
-            if g['kind'] in ('RAW_MISSING','RAW_CORRUPT') and not any(r['task_id']==tid and r['status'] in ('OBSERVED','FOUND_SAVED_RESPONSE') and r.get('response_sha256')==receipt['output_sha256'] for r in a['requests'].values()):raise ValueError('SAVED_RAW_RESPONSE_EVIDENCE_REQUIRED')
+            if g['kind'] in ('RAW_MISSING','RAW_CORRUPT') and not (t.get('native_reuse_evidence',{}).get('sha256')==receipt['output_sha256'] or any(r['task_id']==tid and r['status'] in ('OBSERVED','FOUND_SAVED_RESPONSE') and r.get('response_sha256')==receipt['output_sha256'] for r in a['requests'].values())):raise ValueError('SAVED_RAW_RESPONSE_EVIDENCE_REQUIRED')
             if t.get('recovered_output_sha256') and receipt['output_sha256']!=t['recovered_output_sha256']:raise ValueError('RECOVERED_RESPONSE_HASH_MISMATCH')
             t.update(status='DONE',claim=None,receipt=copy.deepcopy(receipt));g.update(status='RESOLVED',resolution={'task_id':tid,'output_sha256':receipt['output_sha256'],'validation_evidence_sha256':receipt['validation_evidence_sha256'],'resolved_at':now})
             return t

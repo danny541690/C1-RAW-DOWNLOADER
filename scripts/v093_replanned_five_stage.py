@@ -274,6 +274,8 @@ class Worker(base.Worker):
 
     def run(self):
         try:
+            from scripts.v093_stage06_worker_bridge import run_pending_repairs
+            repair_report=run_pending_repairs(self)
             self.raw() if self.stage=='RAW' else self.consume()
             report={'worker_budget_minutes':self.budget_seconds/60,'lease_ttl_seconds':lease_ttl_for(self.budget_seconds/60),'stage':self.stage,'run':base.RUN,'execution_plan':REVISION,'updated_utc':native.stamp(),
                     'processed_this_run':self.processed,'saved_this_run':self.saved,'indexed_files_this_run':self.indexed,
@@ -283,7 +285,9 @@ class Worker(base.Worker):
                     'audit_next_month':AUDIT_MONTHS[self.cursor['audit_month_index']] if self.stage=='QA1' else None,
                     'raw_history_start':'2014-04','audit_start':'2026-10','end_month':'2000-01',
                     'status':'HISTORY_ACTIVE' if self.stage=='RAW' and self.primary_month else ('ACTIVE' if self.processed or self.indexed else 'WAITING_FOR_AVAILABLE_UPSTREAM_OR_NEXT_BATCH'),
-                    'numeric_verified':False,'pit_verified':False,'full_market_complete':False,'policy_sha256':base.policy_digest()}
+                    'numeric_verified':False,'pit_verified':False,'full_market_complete':False,'policy_sha256':base.policy_digest(),
+                    'stage06_repair':{k:v for k,v in repair_report.items() if k!='completed_tasks'},
+                    'stage06_completed_this_run':len(repair_report['completed_tasks'])}
             self.putj(self.stagectrl,'STATUS.json',report)
             commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(json.dumps(report,sort_keys=True).encode()))
             base.emit(**report)
