@@ -251,6 +251,12 @@ class Reconciler:
                 month = base.MONTHS[index]
                 try: result = self.month(month)
                 except ReconcileBudgetEnded: break
+                except Conflict:
+                    # Another independent writer won the branch. Retry this month
+                    # from fresh receipts; never advance its persistent cursor.
+                    print('STAGE06_CAS_CONTENTION_RETRY_SAME_MONTH '+month,flush=True)
+                    time.sleep(5)
+                    continue
                 index += 1; count += 1; last = month
                 if index == len(base.MONTHS):cycles += 1
                 control = dict(month_index=index, last_scanned_month=month,independent_revision=revision,
