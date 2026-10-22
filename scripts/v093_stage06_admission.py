@@ -7,6 +7,12 @@ from scripts.v093_stage06_native_repair import validate_output
 
 
 def read_repaired_staging(raw, output, unit):
+    if unit.get('source')=='MOPS' and unit.get('dataset') in ('IncomeStatement','BalanceSheet','CashflowStatement'):
+        from scripts.v093_stage06_financial_repair import validate_output as validate_financial
+        validate_financial(raw,output,unit)
+        rows=pq.read_table(io.BytesIO(output)).to_pylist()
+        return dict(status='STAGING_ONLY',streams={'financial_statements':rows},approved_for_analysis=False,
+                    numeric_verified=False,pit_verified=False,universe_verified=False)
     validate_output(raw, output, unit)
     rows = pq.read_table(io.BytesIO(output)).to_pylist()
     streams = {'indices': [], 'securities': []}

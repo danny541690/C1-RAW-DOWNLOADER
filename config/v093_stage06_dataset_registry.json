@@ -1,0 +1,199 @@
+{
+  "registry_version": "ALL_DATABASE_REPAIR_SCOPE_20261022_V1",
+  "scope": {
+    "start_month": "2026-10",
+    "end_month": "2000-01",
+    "direction": "NEWEST_TO_OLDEST"
+  },
+  "ultimate_goal": "ALL_EXPECTED_RAW_DATA_PRESENT_RECONCILED_REPAIRED_AND_VERIFIED",
+  "families": [
+    {
+      "id": "PRICE_MARKET",
+      "datasets": [
+        "prices",
+        "prices_indices",
+        "indices",
+        "valuation",
+        "marketcap"
+      ],
+      "owners": [
+        "RAW",
+        "QA1",
+        "PRICE"
+      ]
+    },
+    {
+      "id": "CORPORATE_ACTIONS",
+      "datasets": [
+        "ex_dividend",
+        "capital_reduction",
+        "par_value_change"
+      ],
+      "owners": [
+        "RAW",
+        "QA1",
+        "PRICE"
+      ]
+    },
+    {
+      "id": "FINANCIAL_STATEMENTS",
+      "datasets": [
+        "IncomeStatement",
+        "BalanceSheet",
+        "CashflowStatement"
+      ],
+      "owners": [
+        "RAW",
+        "QA1",
+        "FINANCIAL"
+      ],
+      "requirements": [
+        "company_identity",
+        "fiscal_period",
+        "account_axis",
+        "consolidated_or_separate",
+        "native_unit",
+        "YTD_or_instant",
+        "announcement_evidence"
+      ]
+    },
+    {
+      "id": "MONTHLY_REVENUE",
+      "datasets": [
+        "revenue_sii_0",
+        "revenue_sii_1",
+        "revenue_otc_0",
+        "revenue_otc_1"
+      ],
+      "owners": [
+        "RAW",
+        "QA1",
+        "FINANCIAL"
+      ]
+    },
+    {
+      "id": "CHIP_OWNERSHIP",
+      "datasets": [
+        "institutional",
+        "margin",
+        "lending",
+        "foreign_holdings",
+        "broker",
+        "ownership"
+      ],
+      "owners": [
+        "RAW",
+        "QA1",
+        "CHIP"
+      ]
+    },
+    {
+      "id": "MASTER_CALENDAR_PIT",
+      "datasets": [
+        "historical_security_master",
+        "trading_calendar",
+        "publication_times",
+        "restatements"
+      ],
+      "owners": [
+        "RAW",
+        "QA1"
+      ]
+    }
+  ],
+  "completion_requirements": [
+    "expected_catalog_complete",
+    "all_required_sources_checked",
+    "all_expected_units_present",
+    "all_raw_hashes_verified",
+    "all_financial_accounts_verified",
+    "all_repairs_validated",
+    "unit_semantics_verified",
+    "historical_universe_verified",
+    "pit_verified",
+    "unresolved_count_zero"
+  ],
+  "missing_values_are_not_zero": true,
+  "successful_raw_redownload": false,
+  "preserve_original_raw": true,
+  "attempt_limit_per_unit": 4,
+  "source_registry": [
+    {
+      "source": "TWSE",
+      "kind": "OFFICIAL_PRIMARY",
+      "status": "EXISTING"
+    },
+    {
+      "source": "TPEx",
+      "kind": "OFFICIAL_PRIMARY",
+      "status": "EXISTING"
+    },
+    {
+      "source": "MOPS",
+      "kind": "OFFICIAL_PRIMARY",
+      "status": "EXISTING"
+    },
+    {
+      "source": "FinMind",
+      "kind": "COMPATIBLE_GAP_SUPPLEMENT",
+      "status": "EXISTING_COMPATIBILITY_GATE"
+    },
+    {
+      "source": "TDCC",
+      "kind": "OFFICIAL_PRIMARY_OWNERSHIP",
+      "status": "API_DOCUMENTED_ADAPTER_PENDING",
+      "url": "https://openapi.tdcc.com.tw/tdcc-opendata-api-docs",
+      "automatic_download_enabled": false,
+      "coverage_start": "DATASET_SPECIFIC_NOT_ASSUMED_2000",
+      "authentication": "PUBLIC_DATASET_SPECIFIC"
+    },
+    {
+      "source": "FinLab",
+      "user_alias_assumption": "Finland",
+      "kind": "SUPPLEMENTAL_DATABASE",
+      "status": "API_DOCUMENTED_AUTH_AND_DATASET_ACCESS_REQUIRED",
+      "url": "https://finlab.finance/docs/details/get_data/",
+      "automatic_download_enabled": false,
+      "free_tw_history_end": "2023-12-31",
+      "credentials_verified": false,
+      "pit_history": "DATASET_AND_MEMBERSHIP_SPECIFIC"
+    },
+    {
+      "source": "Fugle",
+      "kind": "SUPPLEMENTAL_PRICE",
+      "status": "API_DOCUMENTED_AUTH_AND_PLAN_REQUIRED",
+      "url": "https://developer.fugle.tw/docs/data/intro/",
+      "automatic_download_enabled": false,
+      "credentials_verified": false
+    },
+    {
+      "source": "Goodinfo",
+      "kind": "REFERENCE_AND_SUPPLEMENT_CANDIDATE",
+      "status": "PUBLIC_WEBSITE_FOUND_DOCUMENTED_BULK_API_NOT_VERIFIED",
+      "url": "https://goodinfo.tw/tw/",
+      "automatic_download_enabled": false,
+      "commercial_access_or_export_terms_verified": false
+    },
+    {
+      "source": "TAIFEX",
+      "kind": "OFFICIAL_DERIVATIVES_ONLY",
+      "status": "DATASET_SPECIFIC_CANDIDATE",
+      "url": "https://www.taifex.com.tw/",
+      "automatic_download_enabled": false,
+      "cannot_replace_stock_financials": true
+    }
+  ],
+  "cross_source_match_dimensions": [
+    "security_identity",
+    "period",
+    "frequency",
+    "raw_or_adjusted",
+    "units",
+    "sign",
+    "consolidation_scope",
+    "availability_time",
+    "restatement_version"
+  ],
+  "unknown_expectations_status": "HOLD_NOT_COMPLETE",
+  "scan_finished_is_not_repair_finished": true
+}

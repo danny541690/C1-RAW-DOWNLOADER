@@ -117,7 +117,10 @@
     "live_owner_lease_released": true,
     "live_reconciler_lease_released": true,
     "live_full_launch_run_id": 39728113424,
-    "live_full_launch_status": "RUNNING_FROM_PERSISTED_NEXT_MONTH"
+    "live_full_launch_status": "RUNNING_FROM_PERSISTED_NEXT_MONTH",
+    "financial_native_trial_units": 14,
+    "financial_native_trial_cells": 13276,
+    "financial_live_result": "PENDING_DEPLOYMENT"
   },
   "owner_replay_boundary_implemented": true,
   "native_identity_reconciliation_implemented": true,
@@ -151,6 +154,18 @@
     [
       "TPEx",
       "ex_dividend"
+    ],
+    [
+      "MOPS",
+      "BalanceSheet"
+    ],
+    [
+      "MOPS",
+      "CashflowStatement"
+    ],
+    [
+      "MOPS",
+      "IncomeStatement"
     ]
   ],
   "live_repair_owner": "PRICE",
@@ -164,6 +179,34 @@
   "unsupported_repairs": "BLOCKED_APPROVAL_OR_EVIDENCE_HOLD",
   "raw_fetch_binding_enabled": false,
   "owner_runtime_integrated_scope": [
-    "PRICE_NATIVE_INDEX_EVENT_REPAIR"
-  ]
+    "PRICE_NATIVE_INDEX_EVENT_REPAIR",
+    "FINANCIAL_MOPS_MATRIX_REPAIR"
+  ],
+  "ultimate_goal": "ALL_EXPECTED_RAW_DATA_PRESENT_RECONCILED_REPAIRED_AND_VERIFIED",
+  "repair_scope": "ALL_DATABASE_DATASETS_WITH_EXPLICIT_COVERAGE_AND_VALIDATION",
+  "dataset_registry": "config/v093_stage06_dataset_registry.json",
+  "financial_repair_enabled": true,
+  "financial_supported_statement_types": [
+    "IncomeStatement",
+    "BalanceSheet",
+    "CashflowStatement"
+  ],
+  "financial_income_statement_status": "REAL_NATIVE_MATRIX_TRIAL_PASS",
+  "all_data_repaired": false,
+  "extra_source_discovery_enabled": true,
+  "additional_sources_requiring_access": [
+    "FinLab",
+    "Fugle"
+  ],
+  "additional_sources_pending_adapter": [
+    "TDCC"
+  ],
+  "reference_sources_pending_api_verification": [
+    "Goodinfo"
+  ],
+  "live_repair_owners": [
+    "PRICE",
+    "FINANCIAL"
+  ],
+  "financial_validation_evidence_sha256": "292e519157bf794f5abdf086b96df52db181bec519c11ffe9e169018d715cb06"
 }
