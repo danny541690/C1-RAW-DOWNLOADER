@@ -1,1 +1,1 @@
-{"jobs":{"POOL_CONSUMER_PRICE_REPLAN_201404_V1":{"certified":false,"last_fence":1,"lease":null,"sha256":"0c67ff88b54f75366b58f176af54bd787ccf82ea199e24d9a65bc8454d46ac26","status":"DATA_PRESENT_PENDING_QA"}},"version":"ISOLATED_TEST_ONLY"}
+{"jobs":{"POOL_CONSUMER_PRICE_REPLAN_201404_V1":{"certified":false,"last_fence":1,"lease":{"expires_at":1792648166,"fence":2,"owner":"39727142016-1/PRICE-B"},"sha256":"0c67ff88b54f75366b58f176af54bd787ccf82ea199e24d9a65bc8454d46ac26","status":"DATA_PRESENT_PENDING_QA"}},"version":"ISOLATED_TEST_ONLY"}
