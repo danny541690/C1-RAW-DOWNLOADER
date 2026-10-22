@@ -1,0 +1,87 @@
+name: Fugle FinLab 20261016 sample
+on:
+  push:
+    paths:
+      - '.github/workflows/provider-sample-20261016.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download only authorized provider samples
+        env:
+          FUGLE_API_KEY: ${{ secrets.FUGLE_API_KEY }}
+          FINLAB_API_TOKEN: ${{ secrets.FINLAB_API_TOKEN }}
+          FINLAB_API_KEY: ${{ secrets.FINLAB_API_KEY }}
+          FINLAB_REFRESH_TOKEN: ${{ secrets.FINLAB_REFRESH_TOKEN }}
+          FINLAB_SESSION_ID: ${{ secrets.FINLAB_SESSION_ID }}
+        shell: bash
+        run: |
+          python -u - <<'PY'
+          import datetime,json,os,pathlib,subprocess,sys,urllib.request,urllib.error
+          root=pathlib.Path('provider_sample_20261016');root.mkdir(exist_ok=True)
+          report={'requested_date':'2026-10-16','observed_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'providers':{}}
+          key=os.environ.get('FUGLE_API_KEY','')
+          if not key:
+              report['providers']['Fugle']={'status':'BLOCKED_MISSING_FUGLE_API_KEY','downloaded_rows':0}
+          else:
+              results=[]
+              for symbol in ('2330','2609','6488'):
+                  url='https://api.fugle.tw/marketdata/v1.0/stock/historical/candles/'+symbol+'?from=2026-10-16&to=2026-10-16&timeframe=D&adjusted=false&fields=open,high,low,close,volume,turnover,change'
+                  req=urllib.request.Request(url,headers={'Accept':'application/json','X-API-KEY':key})
+                  try:
+                      with urllib.request.urlopen(req,timeout=30) as r:
+                          raw=r.read();data=json.loads(raw)
+                      rows=data.get('data',[])
+                      if not rows or any(x.get('date')!='2026-10-16' for x in rows):
+                          results.append({'symbol':symbol,'status':'FAILED_EXACT_DATE_CHECK'});continue
+                      (root/('fugle_'+symbol+'.json')).write_bytes(raw)
+                      results.append({'symbol':symbol,'status':'DOWNLOADED_EXACT_DATE','rows':len(rows),'fields':list(rows[0]),'sample':rows[0]})
+                  except urllib.error.HTTPError as exc:
+                      results.append({'symbol':symbol,'status':'HTTP_ERROR','http_status':exc.code})
+                  except Exception as exc:
+                      results.append({'symbol':symbol,'status':'ERROR','error_type':type(exc).__name__})
+              report['providers']['Fugle']={'results':results}
+          legacy=os.environ.get('FINLAB_API_TOKEN','')
+          session=all(os.environ.get(k) for k in ('FINLAB_API_KEY','FINLAB_REFRESH_TOKEN','FINLAB_SESSION_ID'))
+          if not legacy and not session:
+              report['providers']['FinLab']={'status':'BLOCKED_MISSING_FINLAB_AUTH','downloaded_rows':0,'note':'Do not substitute older dates for requested 2026-10-16'}
+          else:
+              try:
+                  subprocess.run([sys.executable,'-m','pip','install','--quiet','finlab'],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=240)
+                  import finlab
+                  if legacy:finlab.login(legacy)
+                  else:finlab.login()
+                  from finlab import data
+                  results=[]
+                  for field in ('price:收盤價','price:成交股數'):
+                      frame=data.get(field)
+                      dates=frame.index.astype(str).str[:10]
+                      sample=frame.loc[dates=='2026-10-16']
+                      if sample.empty:
+                          results.append({'field':field,'status':'REQUESTED_DATE_NOT_RETURNED','latest_returned_date':str(frame.index.max())[:10] if len(frame) else None})
+                          continue
+                      sample.to_csv(root/('finlab_'+('close' if '收盤價' in field else 'volume')+'.csv'))
+                      cols=[s for s in ('2330','2609','6488') if s in sample.columns]
+                      results.append({'field':field,'status':'DOWNLOADED_EXACT_DATE','columns':len(sample.columns),'sample':json.loads(sample[cols].to_json(orient='split',date_format='iso'))})
+                  report['providers']['FinLab']={'results':results}
+              except Exception as exc:
+                  report['providers']['FinLab']={'status':'AUTH_OR_DOWNLOAD_FAILED','error_type':type(exc).__name__}
+          (root/'RESULT.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps(report,ensure_ascii=False))
+          PY
+      - name: Preserve raw samples and result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-sample-20261016
+          path: provider_sample_20261016/
+          if-no-files-found: error
+          retention-days: 30
