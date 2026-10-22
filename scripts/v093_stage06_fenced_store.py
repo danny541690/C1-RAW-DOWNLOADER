@@ -21,6 +21,7 @@ from scripts.v093_github_budget import open_json
 
 class FencedGitHubStore(GitHubStore):
     owner_fenced = True
+    transaction_attempts = 48
 
     def conflict_backoff(self, attempt):
         # Independent stage writers must not immediately collide in lockstep.
@@ -54,7 +55,25 @@ class FencedGitHubStore(GitHubStore):
     def _api(self, method, path, payload=None):
         request = urllib.request.Request(self.base + path, method=method, headers=self.headers,
             data=json.dumps(payload).encode() if payload is not None else None)
-        data,quota=open_json(request,35);self.remaining=quota['remaining'];return data
+        # Git object creation and non-forced ref updates are safe to retry:
+        # an acknowledged-late publication is reconciled by the next CAS read.
+        for attempt in range(4):
+            try:
+                data,quota=open_json(request,35)
+                self.remaining=quota['remaining']
+                return data
+            except urllib.error.HTTPError as exc:
+                if exc.code not in (408,429,500,502,503,504) or attempt==3:
+                    raise
+                delay=min(2**attempt,8)+random.uniform(0,.5)
+                hint=exc.headers.get('Retry-After') if exc.headers else None
+                if hint:
+                    try: delay=max(delay,min(float(hint),30))
+                    except ValueError: pass
+                time.sleep(delay)
+            except (TimeoutError,ConnectionError,OSError):
+                if attempt==3: raise
+                time.sleep(min(2**attempt,8)+random.uniform(0,.5))
 
     def _json_at(self, head, path, missing=False):
         try:
@@ -115,7 +134,12 @@ class FencedGitHubStore(GitHubStore):
             self._read_cache=(commit['sha'],copy.deepcopy(doc),self.clock())
             return True
         except urllib.error.HTTPError as exc:
-            if exc.code in (409, 422):
+            # GitHub can reject an obsolete tree with 403 after another writer
+            # changes workflow files. Treat it as contention only if head moved;
+            # a genuine permission denial on the same head remains an error.
+            moved_on_403 = (exc.code == 403 and
+                self._api('GET','/git/ref/heads/main')['object']['sha'] != expected)
+            if exc.code in (409, 422) or moved_on_403:
                 # A rejected non-forced publication never commits this candidate.
                 # Invalidate every cached head and retry through the bounded CAS
                 # transaction, including when GitHub's head read briefly lags.
