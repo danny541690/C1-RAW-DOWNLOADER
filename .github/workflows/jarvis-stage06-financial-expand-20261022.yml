@@ -8,12 +8,12 @@ permissions:
   contents: write
   actions: write
 concurrency:
-  group: jarvis-stage06-financial-expansion
+  group: jarvis-v093-live-financial
   cancel-in-progress: false
 jobs:
   financial:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,11 +27,11 @@ jobs:
       - name: Wait for shared GitHub quota before acquiring an owner lock
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_github_budget --minimum 400 --max-wait 1200
+        run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
       - name: Repair the verified financial backlog under the FINANCIAL owner
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_stage06_live --owner-stage FINANCIAL --owner-month 2023-03 --minutes 5 --cutover-owner
+        run: python -m scripts.v093_stage06_live --owner-stage FINANCIAL --minutes 60
