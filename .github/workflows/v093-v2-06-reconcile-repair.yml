@@ -1,4 +1,4 @@
-# Recover confirmed terminal owners before cleanup; preserve all checkpoints.
+# Independent stage-six workers: separate Actions pools, leases, and Drive ledgers.
 # Live cleanup: reverse months, durable five-attempt limit; no isolated trial jobs.
 name: JARVIS v0.93 LIVE RECONCILE REPAIR
 on:
@@ -12,7 +12,47 @@ permissions:
   contents: write
   actions: write
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    concurrency:
+      group: jarvis-v093-stage06-cutover
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements-qa.lock
+      - name: Verify isolation and retire only older stage-six runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m unittest tests.test_stage06_independence -q
+          python - <<'PYCODE'
+          import json, os, time, urllib.request
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          def api(path,method='GET',body=None):
+              request=urllib.request.Request(base+path,method=method,data=json.dumps(body).encode() if body is not None else None,
+                  headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(request,timeout=30) as response:
+                  raw=response.read();return json.loads(raw) if raw else {}
+          current=int(os.environ['GITHUB_RUN_ID'])
+          previous=[]
+          for run in api('/actions/runs?per_page=100')['workflow_runs']:
+              if run['path']=='.github/workflows/v093-v2-06-reconcile-repair.yml' and run['id']<current and run['status']!='completed':
+                  previous.append(run['id']);api('/actions/runs/'+str(run['id'])+'/cancel','POST')
+          deadline=time.monotonic()+240
+          while previous:
+              previous=[run for run in previous if api('/actions/runs/'+str(run))['status']!='completed']
+              if previous and time.monotonic()>=deadline:raise RuntimeError('OLD_STAGE06_NOT_TERMINAL_CHECKPOINTS_PRESERVED')
+              if previous:time.sleep(5)
+          if os.environ.get('GITHUB_EVENT_NAME')=='push':
+              api('/actions/workflows/v093-v2-02-qa.yml/dispatches','POST',{'ref':'main','inputs':{'minutes':'60'}})
+          print('STAGE06_INDEPENDENT_CUTOVER_READY_QA1_DISPATCHED')
+          PYCODE
   repair:
+    needs: prepare
     concurrency:
       group: jarvis-v093-live-reconcile-repair
       cancel-in-progress: false
@@ -38,10 +78,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.v093_stage06_live --minutes 60 --continuous --recheck-seconds 300
   financial-repairs:
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 75
     concurrency:
-      group: jarvis-v093-live-financial
+      group: jarvis-v093-stage06-financial
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -51,11 +92,11 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: python -m pip install -r requirements-qa.lock
-      - name: Check API budget before acquiring the FINANCIAL owner
+      - name: Check API budget before acquiring the independent stage-six FINANCIAL owner
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
-      - name: Consume approved repairs under the existing FINANCIAL owner pool
+      - name: Consume approved repairs in the independent stage-six FINANCIAL owner pool
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -64,10 +105,11 @@ jobs:
         run: python -m scripts.v093_stage06_live --owner-stage FINANCIAL --minutes 60
 
   price-repairs:
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 75
     concurrency:
-      group: jarvis-v093-live-price
+      group: jarvis-v093-stage06-price
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -77,11 +119,11 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: python -m pip install -r requirements-qa.lock
-      - name: Check API budget before acquiring the PRICE owner
+      - name: Check API budget before acquiring the independent stage-six PRICE owner
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
-      - name: Consume approved repairs under the existing PRICE owner pool
+      - name: Consume approved repairs in the independent stage-six PRICE owner pool
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -90,10 +132,11 @@ jobs:
         run: python -m scripts.v093_stage06_live --owner-stage PRICE --minutes 60
 
   raw-cleanup:
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 75
     concurrency:
-      group: jarvis-v093-live-raw
+      group: jarvis-v093-stage06-raw
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -103,11 +146,11 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: python -m pip install -r requirements-qa.lock
-      - name: Check API budget before acquiring the RAW owner
+      - name: Check API budget before acquiring the independent stage-six RAW owner
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
-      - name: Consume approved repairs under the existing RAW owner pool
+      - name: Consume approved repairs in the independent stage-six RAW owner pool
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -116,10 +159,11 @@ jobs:
         run: python -m scripts.v093_stage06_cleanup --stage RAW --minutes 60
 
   qa1-cleanup:
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 75
     concurrency:
-      group: jarvis-v093-live-qa1
+      group: jarvis-v093-stage06-qa1
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -129,11 +173,11 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: python -m pip install -r requirements-qa.lock
-      - name: Check API budget before acquiring the QA1 owner
+      - name: Check API budget before acquiring the independent stage-six QA1 owner
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
-      - name: Consume approved repairs under the existing QA1 owner pool
+      - name: Consume approved repairs in the independent stage-six QA1 owner pool
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -142,10 +186,11 @@ jobs:
         run: python -m scripts.v093_stage06_cleanup --stage QA1 --minutes 60
 
   chip-cleanup:
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 75
     concurrency:
-      group: jarvis-v093-live-chip
+      group: jarvis-v093-stage06-chip
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -155,11 +200,11 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: python -m pip install -r requirements-qa.lock
-      - name: Check API budget before acquiring the CHIP owner
+      - name: Check API budget before acquiring the independent stage-six CHIP owner
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
-      - name: Consume approved repairs under the existing CHIP owner pool
+      - name: Consume approved repairs in the independent stage-six CHIP owner pool
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
