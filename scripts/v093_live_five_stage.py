@@ -57,7 +57,7 @@ def payload(d,receipt,with_archive_hash=False):
     return (raw,archive_sha) if with_archive_hash else raw
 
 class Worker(Independent):
-    def __init__(self,stage,minutes,lease_suffix="",lease_ttl=3600):
+    def __init__(self,stage,minutes,lease_suffix="",lease_ttl=3600,isolated=False):
         self.stage=stage
         self.today=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date()
         native.TODAY=self.today
@@ -65,8 +65,11 @@ class Worker(Independent):
         self.until=time.monotonic()+minutes*60
         self.d=Drive(service())
         self.control=self.d.folder(native.REPORT_ROOT,RUN)
+        if isolated:
+            self.primary_control=self.control
+            self.control=self.d.folder(self.d.folder(self.control,'RECONCILE_REPAIR'),'WORKERS')
         self.stagectrl=self.d.folder(self.control,stage)
-        self.registry=FolderRegistry(self.d,self.d.folder(C1,'05_CONTROL'),namespace='LIVE_'+stage)
+        self.registry=FolderRegistry(self.d,self.d.folder(C1,'05_CONTROL'),namespace=('STAGE06_' if isolated else 'LIVE_')+stage)
         self.folders={};self.circuit=collections.Counter();self.request_counts=collections.Counter()
         self.active=None;self.processed=0;self.saved=0
         self.cursor=engine.getj(self.d,self.stagectrl,'CURSOR.json') or {'month_index':0,'run':RUN,'retry_months':[]}
