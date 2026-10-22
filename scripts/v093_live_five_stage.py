@@ -64,6 +64,8 @@ class Worker(Independent):
         engine.RUN=RUN
         self.until=time.monotonic()+minutes*60
         self.d=Drive(service())
+        # Only the primary RAW worker opts into ID-based readback verification.
+        self.d.direct_readback=(stage=='RAW' and not isolated)
         self.control=self.d.folder(native.REPORT_ROOT,RUN)
         if isolated:
             self.primary_control=self.control
@@ -121,6 +123,12 @@ class Worker(Independent):
         receipt['evidence_file']=file['id']+'/'+receipt['unit_id']+'.raw'
         receipt['archive_sha256']=archive_sha
         self.state[bucket][receipt['unit_id']]=receipt
+        if receipt['status']=='SAVED_BASIC_VERIFIED':
+            # Drive.put verified these exact archive bytes. Do not re-download
+            # our own archive for inventory when this month resumes.
+            self.state.setdefault('inventory',{})[file['id']]=dict(
+                name=name,source=j['source'],sha256=archive_sha,errors=[],
+                checked_utc=native.stamp(),verified_on_write=True)
         self.state['stocks']=sorted(set(self.state['stocks'])|set(receipt.get('codes_found',[])))
         self.save_state()
         if receipt['status']=='SAVED_BASIC_VERIFIED':self.saved+=1
