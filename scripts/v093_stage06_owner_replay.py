@@ -1,7 +1,8 @@
 """Owner replay boundary for QA1 and transforms; not wired into live workers.
 
-The artifact backend must call guard while holding its own write lock. Production
-Drive conditional publication and RAW HTTP replay are intentionally not supplied.
+Local artifacts call guard inside their write lock. Remote immutable candidates
+require an owner-fenced ledger; only the CAS receipt publishes them. Live worker
+wiring and RAW HTTP replay remain separate.
 """
 import hashlib
 import json
@@ -14,6 +15,9 @@ def sha(raw):
 def replay_one(ledger,owner,worker,processor_version,rule_version,read_input,transform,
                validate_output,artifacts,assert_owner_lease,ttl=5400):
     if owner not in ('QA1','PRICE','FINANCIAL','CHIP'):raise ValueError('RAW_REQUIRES_DURABLE_HTTP_ADAPTER')
+    if getattr(artifacts,'requires_owner_fenced_store',False):
+        if not getattr(ledger.store,'owner_fenced',False) or ledger.store.owner!=worker or ledger.store.stage!=owner:
+            raise ValueError('OWNER_FENCED_LEDGER_REQUIRED')
     assert_owner_lease()
     task=ledger.claim(owner,worker,ttl,processor_version=processor_version,rule_version=rule_version,
                       gap_kinds={'BASIC_QA','PARSER_MAPPING'})
@@ -38,6 +42,8 @@ def replay_one(ledger,owner,worker,processor_version,rule_version,read_input,tra
         if not all(checks.get(k) is True for k in RULES[gap['kind']][1]):raise ValueError('GAP_SPECIFIC_VALIDATION_REQUIRED')
         proof=dict(task_id=tid,owner=owner,fence=fence,input_sha256=task['input_sha256'],output_sha256=output_hash,
             processor_version=processor_version,rule_version=rule_version,unit=unit,validation=validation)
+        if hasattr(artifacts,'private_reference'):
+            proof['output_artifact']=artifacts.private_reference(key)
         proof_bytes=json.dumps(proof,sort_keys=True,separators=(',',':')).encode()
         proof_key='stage06/'+owner+'/'+tid+'/validation-'+str(fence)
         guard();artifacts.put_immutable(proof_key,proof_bytes,guard)
@@ -46,6 +52,8 @@ def replay_one(ledger,owner,worker,processor_version,rule_version,read_input,tra
         receipt=dict(task_id=tid,owner=owner,fence=fence,input_sha256=task['input_sha256'],
             processor_version=processor_version,rule_version=rule_version,output_sha256=output_hash,
             validation_evidence_sha256=sha(proof_bytes),checks=checks,output_key=key,validation_key=proof_key)
+        if hasattr(artifacts,'reference'):
+            receipt.update(output_artifact=artifacts.reference(key),validation_artifact=artifacts.reference(proof_key))
         guard()
         return ledger.complete(tid,worker,fence,receipt)
     except StaleClaim:
