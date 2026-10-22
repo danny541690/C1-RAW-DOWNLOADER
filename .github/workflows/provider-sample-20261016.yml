@@ -58,7 +58,6 @@ jobs:
                   subprocess.run([sys.executable,'-m','pip','install','--quiet','finlab'],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=240)
                   import finlab
                   if legacy:finlab.login(legacy)
-                  else:finlab.login()
                   from finlab import data
                   results=[]
                   for field in ('price:收盤價','price:成交股數'):
