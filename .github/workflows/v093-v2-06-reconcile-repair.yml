@@ -1,4 +1,4 @@
-# Independent V2 restart at 2026-10; distinct per-stage folders, preserve prior checkpoints.
+# Resume saved checkpoints with bounded API retry and contention recovery.
 # Independent stage-six workers: separate Actions pools, leases, and Drive ledgers.
 # Live cleanup: reverse months, durable five-attempt limit; no isolated trial jobs.
 name: JARVIS v0.93 LIVE RECONCILE REPAIR
@@ -29,7 +29,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          python -m unittest tests.test_stage06_independence -q
+          python -m unittest tests.test_stage06_independence tests.test_stage06_git_resilience -q
           python - <<'PYCODE'
           import json, os, time, urllib.request
           base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
@@ -48,9 +48,7 @@ jobs:
               previous=[run for run in previous if api('/actions/runs/'+str(run))['status']!='completed']
               if previous and time.monotonic()>=deadline:raise RuntimeError('OLD_STAGE06_NOT_TERMINAL_CHECKPOINTS_PRESERVED')
               if previous:time.sleep(5)
-          if os.environ.get('GITHUB_EVENT_NAME')=='push':
-              api('/actions/workflows/v093-v2-02-qa.yml/dispatches','POST',{'ref':'main','inputs':{'minutes':'60'}})
-          print('STAGE06_INDEPENDENT_CUTOVER_READY_QA1_DISPATCHED')
+          print('STAGE06_INDEPENDENT_CUTOVER_READY_CHECKPOINTS_PRESERVED')
           PYCODE
   repair:
     needs: prepare
