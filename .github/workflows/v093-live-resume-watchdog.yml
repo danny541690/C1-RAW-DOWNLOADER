@@ -41,6 +41,23 @@ jobs:
                   if run['status']!='completed':
                       active.setdefault(run['path'],[]).append({'id':run['id'],'status':run['status']})
               if len(runs)<100:break
+          # Recover only the observed RAW run that never acquired a runner.
+          # Recheck its status and jobs immediately before cancellation.
+          if os.environ.get('GITHUB_EVENT_NAME')=='push':
+              raw_path='.github/workflows/v093-v2-01-raw.yml'
+              stale=api('/actions/runs/39611764652')
+              if stale['status']=='queued':
+                  jobs=api('/actions/runs/39611764652/jobs')['jobs']
+                  if all(j['status']=='queued' and not j.get('steps') for j in jobs):
+                      api('/actions/runs/39611764652/cancel','POST')
+                      deadline=time.monotonic()+60
+                      while api('/actions/runs/39611764652')['status']!='completed':
+                          if time.monotonic()>deadline:raise RuntimeError('RAW_CANCEL_NOT_CONFIRMED_NO_DUPLICATE_DISPATCH')
+                          time.sleep(3)
+                      active[raw_path]=[r for r in active.get(raw_path,[]) if r['id']!=39611764652]
+                      print(json.dumps({'workflow':'v093-v2-01-raw.yml','decision':'CLEARED_OBSERVED_UNSTARTED_RAW_QUEUE'}),flush=True)
+                  elif not any(r['id']==39611764652 for r in active.get(raw_path,[])):
+                      active.setdefault(raw_path,[]).append({'id':39611764652,'status':stale['status']})
           for name in paths:
               path='.github/workflows/'+name
               if active.get(path):
