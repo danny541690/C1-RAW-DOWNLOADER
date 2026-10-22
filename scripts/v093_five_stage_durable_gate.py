@@ -6,6 +6,7 @@ transaction with Google Drive. Production activation remains blocked.
 import base64
 import hashlib
 import json
+import re
 import time
 import urllib.error
 import urllib.request
@@ -44,6 +45,31 @@ def _put(api_url,token,sha,payload,message):
             return False
         raise
 
+
+def terminal_owner(api_url, token, key, lease):
+    """Only a completed, matching workflow can surrender an unexpired lease."""
+    match=re.fullmatch(r'([0-9]+)/(RAW|QA1|PRICE|FINANCIAL|CHIP|RECONCILE)',lease.get('owner',''))
+    if not match:return False
+    run,stage=match.groups()
+    pools={'RAW':'POOL_RAW_REPLAN_201404_V1','QA1':'POOL_CONSUMER_QA1_REPLAN_201404_V1',
+           'PRICE':'POOL_CONSUMER_PRICE_REPLAN_201404_V1','FINANCIAL':'POOL_CONSUMER_FINANCIAL_REPLAN_201404_V1',
+           'CHIP':'POOL_CONSUMER_CHIP_REPLAN_201404_V1','RECONCILE':'POOL_STAGE06_REPAIR_V1'}
+    if pools[stage]!=key:return False
+    prefix=api_url.split('/contents/')[0]
+    if not re.fullmatch(r'https://api.github.com/repos/[\w.-]+/[\w.-]+',prefix):return False
+    request=urllib.request.Request(prefix+'/actions/runs/'+run,headers={
+        'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'})
+    try:
+        result,_=open_json(request,30)
+    except urllib.error.HTTPError as exc:
+        if exc.code==404:return False
+        raise
+    primary={'RAW':'01-raw','QA1':'02-qa','PRICE':'03-price','FINANCIAL':'04-financial','CHIP':'05-chip'}
+    allowed={'.github/workflows/v093-v2-06-reconcile-repair.yml'}
+    if stage in primary:allowed.add('.github/workflows/v093-v2-'+primary[stage]+'.yml')
+    return result.get('id')==int(run) and result.get('status')=='completed' and result.get('path') in allowed
+
+
 def acquire(api_url,token,key,owner,now=None,ttl=900,retries=12):
     if not key or not owner or ttl<=0:
         raise ValueError('INVALID_LEASE_REQUEST')
@@ -53,7 +79,13 @@ def acquire(api_url,token,key,owner,now=None,ttl=900,retries=12):
         row=payload['jobs'].get(key,{})
         lease=row.get('lease') or {}
         if lease.get('expires_at',0)>instant:
-            raise LeaseBusy(key)
+            if not terminal_owner(api_url,token,key,lease):
+                raise LeaseBusy(key)
+            # This CAS also acquires the successor fence. If any writer changed
+            # the manifest, reload and revalidate the run instead of stealing it.
+            row['recovery']={'previous_owner':lease['owner'],'previous_fence':lease['fence'],
+                             'reason':'TERMINAL_WORKFLOW_CONFIRMED_CHECKPOINT_RETAINED'}
+            print('STAGE06_TERMINAL_OWNER_RECOVERED '+lease['owner'],flush=True)
         fence=max(int(lease.get('fence',0)),int(row.get('last_fence',0)))+1
         row['lease']={'owner':owner,'expires_at':instant+ttl,'fence':fence}
         payload['jobs'][key]=row
