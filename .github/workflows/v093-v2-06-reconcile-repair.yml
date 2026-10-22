@@ -1,3 +1,4 @@
+# Independent V2 restart at 2026-10; distinct per-stage folders, preserve prior checkpoints.
 # Independent stage-six workers: separate Actions pools, leases, and Drive ledgers.
 # Live cleanup: reverse months, durable five-attempt limit; no isolated trial jobs.
 name: JARVIS v0.93 LIVE RECONCILE REPAIR
