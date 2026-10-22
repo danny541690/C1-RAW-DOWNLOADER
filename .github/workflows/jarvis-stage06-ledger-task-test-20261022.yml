@@ -1,0 +1,28 @@
+name: Jarvis stage06 ledger and repair task tests
+on:
+  push:
+    paths:
+      - '.github/workflows/jarvis-stage06-ledger-task-test-20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-stage06-ledger-test
+  cancel-in-progress: false
+jobs:
+  isolated-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install locked test dependencies
+        run: python -m pip install -r requirements-qa.lock
+      - name: Regression tests
+        run: python -m unittest discover -s tests -q
+      - name: Isolated cloud ledger CAS canary
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_stage06_canary
