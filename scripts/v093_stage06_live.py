@@ -223,6 +223,13 @@ class Reconciler:
         count = 0; last = None;control=None;last_saved=0
         cycles = 0
         try:
+            revision='INDEPENDENT_STAGE06_20261022_V2'
+            previous=self.runtime.snapshot().get('control',{})
+            if previous.get('independent_revision')!=revision:
+                def restart(doc,now):
+                    doc['prior_independent_checkpoint']=copy.deepcopy(doc.get('control',{}))
+                    doc['control']=dict(month_index=0,independent_revision=revision)
+                self.runtime.transaction(restart)
             index = self.runtime.snapshot().get('control',{}).get('month_index',0)
             if index >= len(base.MONTHS): index = 0
             while time.monotonic() < self.until-45:
@@ -246,7 +253,7 @@ class Reconciler:
                 except ReconcileBudgetEnded: break
                 index += 1; count += 1; last = month
                 if index == len(base.MONTHS):cycles += 1
-                control = dict(month_index=index, last_scanned_month=month,
+                control = dict(month_index=index, last_scanned_month=month,independent_revision=revision,
                     next_month=base.MONTHS[index] if index<len(base.MONTHS) else (base.MONTHS[0] if continuous else None),
                     phase='SWEEP_COMPLETE' if index==len(base.MONTHS) else 'SCANNING',
                     continuous=continuous,recheck_seconds=recheck_seconds,
