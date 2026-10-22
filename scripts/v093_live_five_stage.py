@@ -111,12 +111,15 @@ class Worker(Independent):
         receipt=dict(receipt,unit_id=engine.key(j),bucket=bucket,month=self.active,
                      numeric_verified=False,pit_verified=False,run=RUN)
         blob=engine.packed([(receipt,raw)])
-        name=RUN+'_'+receipt['unit_id']+'_'+native.sha(raw)[:20]+'.zip'
+        # ZIP timestamps and receipt metadata may change while RAW bytes stay equal.
+        # Address the full archive so retries preserve older immutable evidence.
+        archive_sha=native.sha(blob)
+        name=RUN+'_'+receipt['unit_id']+'_'+native.sha(raw)[:20]+'_'+archive_sha+'.zip'
         parent=self.folder(j['source'],self.active) if receipt['status']=='SAVED_BASIC_VERIFIED' else self.d.folder(self.monthctrl,'QUARANTINE')
         self.owned();self.d.put(parent,name,blob,'application/zip',overwrite=False)
         file=self.d.find(parent,name)
         receipt['evidence_file']=file['id']+'/'+receipt['unit_id']+'.raw'
-        receipt['archive_sha256']=native.sha(blob)
+        receipt['archive_sha256']=archive_sha
         self.state[bucket][receipt['unit_id']]=receipt
         self.state['stocks']=sorted(set(self.state['stocks'])|set(receipt.get('codes_found',[])))
         self.save_state()
