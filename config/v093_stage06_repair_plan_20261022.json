@@ -1,6 +1,6 @@
 {
   "plan_id": "V093_STAGE06_RECONCILE_REPAIR_DRAFT_20261022",
-  "status": "NATIVE_PARSER_REPAIR_TRIAL_PASSED_NOT_DEPLOYED",
+  "status": "DRIVE_FENCED_PUBLISH_INTEGRATION_TESTED_NOT_DEPLOYED",
   "enabled": false,
   "stage": "RECONCILE_REPAIR",
   "schedule_proposal": {
@@ -53,7 +53,7 @@
   "unknown_identity_holds_implemented": true,
   "implementation_validation": {
     "new_ledger_tests_passed": 25,
-    "cloud_run_id": 39715227178,
+    "cloud_run_id": 39717112663,
     "cloud_cas_canary": "PASS_SYNTHETIC_ONLY",
     "real_quarantine_rows": 16,
     "test_gap_tasks": 16,
@@ -61,13 +61,13 @@
     "real_repairs_completed": 0,
     "source_downloads_performed": 0,
     "previous_local_regression_tests_passed": 306,
-    "cloud_regression_tests_passed": 348,
+    "cloud_regression_tests_passed": 370,
     "new_owner_identity_tests_passed": 19,
-    "total_stage06_tests_passed": 67,
+    "total_stage06_tests_passed": 89,
     "cloud_identity_canary": "PASS_REAL_RECEIPT_METADATA_ONLY",
     "identities_reconciled": 3,
     "owner_runtime_integrated": false,
-    "local_regression_tests_passed": 348,
+    "local_regression_tests_passed": 370,
     "new_native_tests_passed": 23,
     "isolated_native_units_replayed": 16,
     "isolated_native_records": 1041,
@@ -77,11 +77,26 @@
     "formal_candidate_tasks_still_blocked": 16,
     "native_parser_version": "NATIVE_INDEX_EVENT_REPAIR_V1",
     "raw_archives_unchanged": true,
-    "artifact_zip_readback": "PASS_SHA256_AND_67_FILES"
+    "artifact_zip_readback": "PASS_SHA256_AND_67_FILES",
+    "new_drive_publication_tests_passed": 22,
+    "cloud_drive_integration_run_id": 39717112663,
+    "real_drive_native_units_replayed": 4,
+    "real_drive_native_cells_compared": 737,
+    "owner_takeover_recovery_trials": 1,
+    "stale_stage_owner_publication_rejected": true,
+    "duplicate_identical_drive_objects_reconciled": true,
+    "saved_drive_output_reused": true,
+    "conflicting_drive_output_rejected": true,
+    "drive_github_result_readback_match": true,
+    "live_stage_locks_written": false,
+    "live_cursors_written": false
   },
   "owner_replay_boundary_implemented": true,
   "native_identity_reconciliation_implemented": true,
   "owner_replay_artifact_backend_live": false,
   "native_parser_repair_trial_implemented": true,
-  "local_immutable_artifacts_implemented": true
+  "local_immutable_artifacts_implemented": true,
+  "drive_immutable_artifacts_implemented": true,
+  "owner_fenced_publication_implemented": true,
+  "real_drive_integration_passed": true
 }
