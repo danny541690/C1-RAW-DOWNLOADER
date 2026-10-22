@@ -61,12 +61,13 @@ def newest_receipts(upstream):
     return sorted(receipts,key=lambda e:(e.get('period',''),e.get('category',''),e.get('unit_id','')),reverse=True)
 
 class Worker(base.Worker):
-    def __init__(self,stage,minutes):
-        super().__init__(stage,minutes,lease_suffix=lease_suffix_for(stage),lease_ttl=lease_ttl_for(minutes))
+    def __init__(self,stage,minutes,stage06=False):
+        suffix='_STAGE06_'+stage+'_V1' if stage06 else lease_suffix_for(stage)
+        super().__init__(stage,minutes,lease_suffix=suffix,lease_ttl=lease_ttl_for(minutes),isolated=stage06)
         self.cache=ArchiveCache();self.last_processed_month=None;self.last_processed_period=None
         self.primary_month=None;self.phase='INITIALIZING';self.indexed=0;self.corrections=0
         self.budget_seconds=minutes*60
-        if stage=='RAW':
+        if stage=='RAW' and not stage06:
             try:self.initialize_history_cursor()
             except Exception as exc:
                 try:commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(type(exc).__name__.encode()))
@@ -93,6 +94,18 @@ class Worker(base.Worker):
 
     def restore(self,month,ctrl):
         super().restore(month,ctrl)
+        if self.stage=='RAW' and hasattr(self,'primary_control') and not self.state.get('stage06_primary_snapshot'):
+            primary_root=self.d.find(self.primary_control,'RAW')
+            primary_month=self.d.find(primary_root['id'],month) if primary_root else None
+            primary=engine.getj(self.d,primary_month['id'],'MONTH_STATE.json') if primary_month else None
+            if primary:
+                for bucket in ('units','financial_units','finmind_units'):
+                    snapshot=copy.deepcopy(primary.get(bucket,{}))
+                    snapshot.update(self.state.get(bucket,{}));self.state[bucket]=snapshot
+                merge_attempts(self.state,primary)
+                self.state['stocks']=sorted(set(self.state.get('stocks',[]))|set(primary.get('stocks',[])))
+            self.state['stage06_primary_snapshot']=True
+            self.save_state()
         if self.stage!='RAW' or month not in RAW_MONTHS or self.state.get('legacy_attempts_imported'):return
         oldroot=self.d.find(native.REPORT_ROOT,PLAN['legacy_checkpoint_namespace'])
         oldfolder=self.d.find(oldroot['id'],month) if oldroot else None
@@ -157,7 +170,8 @@ class Worker(base.Worker):
         root=self.d.folder(qa_root,'RAW_INDEX')
         folder=self.d.folder(root,month)
         self.restore(month,folder)
-        raw_root=self.d.find(self.control,'RAW');raw_folder=self.d.find(raw_root['id'],month) if raw_root else None
+        read_control=getattr(self,'primary_control',self.control)
+        raw_root=self.d.find(read_control,'RAW');raw_folder=self.d.find(raw_root['id'],month) if raw_root else None
         main=engine.getj(self.d,raw_folder['id'],'MONTH_STATE.json') if raw_folder else None
         if main:
             for bucket in ('units','financial_units'):
@@ -165,6 +179,16 @@ class Worker(base.Worker):
                     if receipt.get('status')=='SAVED_BASIC_VERIFIED' and receipt.get('evidence_file'):
                         self.state[bucket][key]=receipt
             self.state['inventory'].update(main.get('inventory',{}))
+        if hasattr(self,'primary_control'):
+            primary_qa=self.d.find(self.primary_control,'QA1')
+            primary_index=self.d.find(primary_qa['id'],'RAW_INDEX') if primary_qa else None
+            primary_month=self.d.find(primary_index['id'],month) if primary_index else None
+            indexed=engine.getj(self.d,primary_month['id'],'MONTH_STATE.json') if primary_month else None
+            if indexed:
+                for bucket in ('units','financial_units'):
+                    for key,receipt in indexed.get(bucket,{}).items():
+                        if receipt.get('status')=='SAVED_BASIC_VERIFIED' and receipt.get('evidence_file'):
+                            self.state[bucket][key]=copy.deepcopy(receipt)
         self.state.setdefault('index_sources_done',[])
         # Consume already indexed units first; do not spend the entire QA budget
         # rescanning a month while verified RAW receipts are already waiting.
@@ -276,8 +300,8 @@ class Worker(base.Worker):
         try:
             from scripts.v093_stage06_worker_bridge import run_pending_repairs
             repair_report=run_pending_repairs(self)
-            from scripts.v093_stage06_live import repair_owner
-            live_repair_report=repair_owner(self)
+            # Stage six executes its own repairs; primary workers only do their stage.
+            live_repair_report={'completed':0,'status':'INDEPENDENT_STAGE06_WORKERS'}
             self.raw() if self.stage=='RAW' else self.consume()
             report={'worker_budget_minutes':self.budget_seconds/60,'lease_ttl_seconds':lease_ttl_for(self.budget_seconds/60),'stage':self.stage,'run':base.RUN,'execution_plan':REVISION,'updated_utc':native.stamp(),
                     'processed_this_run':self.processed,'saved_this_run':self.saved,'indexed_files_this_run':self.indexed,
