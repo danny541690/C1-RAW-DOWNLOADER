@@ -1,0 +1,44 @@
+name: JARVIS v0.93 RAW ascending helper 07
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-v2-07-raw-ascending.yml'
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: Worker budget in minutes
+        default: '60'
+        required: false
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-v093-raw-ascending
+  cancel-in-progress: false
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Verify oldest-first capture and stop-on-meeting rules
+        run: python -m unittest tests.test_stage07_ascending -q
+      - name: Check API budget before acquiring the ascending helper lease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 200 --max-wait 600
+      - name: Download oldest to newest and stop at the primary frontier
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          WORKER_MINUTES: ${{ inputs.minutes || '60' }}
+        run: python -m scripts.v093_stage07_ascending --minutes "$WORKER_MINUTES"
