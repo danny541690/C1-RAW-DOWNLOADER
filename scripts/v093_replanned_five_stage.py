@@ -9,6 +9,7 @@ from scripts import v093_live_five_stage as base
 from scripts import v093_history_reverse as engine
 from scripts import v093_three_year_repair as native
 from scripts.v093_five_stage_durable_gate import commit,_read
+from scripts.v093_raw_month_coordination import capture_history_month
 
 PLAN=json.loads((Path(__file__).resolve().parents[1]/'config/v093_execution_plan_20261021.json').read_text())
 REVISION=PLAN['revision']
@@ -154,11 +155,11 @@ class Worker(base.Worker):
         for month in list(self.cursor.get('retry_months',[]))[:1]:
             if month not in RAW_MONTHS:continue
             if time.monotonic()>=self.until:break
-            self.primary_month=month;self.capture_month(month,quota=self.processed+1)
+            self.primary_month=month;capture_history_month(self,month,quota=self.processed+1)
         while self.cursor['month_index']<len(RAW_MONTHS) and time.monotonic()<self.until:
             month=RAW_MONTHS[self.cursor['month_index']];self.primary_month=month
             base.emit(stage='RAW',phase=self.phase,primary_month=month,execution_plan=REVISION)
-            if not self.capture_month(month):break
+            if not capture_history_month(self,month):break
             self.cursor['month_index']+=1;self.save_cursor()
         self.save_cursor();self.until=final_until
         self.phase='BOUNDED_LATEST_INCREMENT'
