@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "activation_authorized": true,
+  "revision": "ASCENDING_RAW_200001_MEET_PRIMARY_V1",
+  "start_month": "2000-01",
+  "end_month": "2012-12",
+  "direction": "OLDEST_TO_NEWEST",
+  "stop_when_meeting_primary": true,
+  "source_policy": "INHERIT_V093_PRIMARY_RAW",
+  "success_redownload": false,
+  "meeting_does_not_certify_coverage": true
+}
