@@ -137,16 +137,15 @@ class LiveActivationTests(unittest.TestCase):
         result=live.repair_owner(worker)
         self.assertEqual(result['completed'],0);worker.d.find.assert_not_called()
 
-    def test_actual_worker_calls_live_binding_and_keeps_primary_work(self):
+    def test_primary_work_does_not_call_stage06_repair_binding(self):
         from scripts import v093_replanned_five_stage as module
         worker=object.__new__(module.Worker)
-        worker.stage='PRICE';worker.consume=Mock()
+        worker.stage='PRICE';worker.consume=Mock(side_effect=RuntimeError('primary work reached'))
         worker.api='test';worker.token='test';worker.lock='test';worker.owner='test';worker.fence=1
         worker.putj=Mock(side_effect=RuntimeError('stop after primary work'))
-        # The binding is reached before primary work; a lease failure stops both.
-        with patch.object(live,'repair_owner',side_effect=RuntimeError('lost owner')),patch.object(module,'commit'):
-            with self.assertRaisesRegex(RuntimeError,'lost owner'):worker.run()
-        worker.consume.assert_not_called()
+        with patch.object(live,'repair_owner',side_effect=RuntimeError('repair must be independent')) as repair,patch.object(module,'commit'):
+            with self.assertRaisesRegex(RuntimeError,'primary work reached'):worker.run()
+        worker.consume.assert_called_once();repair.assert_not_called()
 
 
 if __name__=='__main__':unittest.main()
