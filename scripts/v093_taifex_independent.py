@@ -5,7 +5,7 @@ OpenAPI snapshots have no invented historical date arguments. Published CSV form
 and annual archives supply history; every receipt records the actual response range.
 """
 import argparse, calendar, csv, datetime as dt, hashlib, html, http.cookiejar
-import io, json, os, re, time, urllib.error, urllib.parse, urllib.request, zipfile
+import io, json, os, pathlib, re, time, urllib.error, urllib.parse, urllib.request, zipfile
 from html.parser import HTMLParser
 ROOT = '1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn'
 REPORT = '1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit'
@@ -20,6 +20,8 @@ def stamp(): return dt.datetime.now(dt.timezone.utc).isoformat()
 def digest(b): return hashlib.sha256(b).hexdigest()
 def encode(v): return json.dumps(v, ensure_ascii=False, sort_keys=True).encode()
 def parse_date(v):
+    v=str(v).strip()
+    if re.fullmatch(r'20\d{6}',v):v=v[:4]+'/'+v[4:6]+'/'+v[6:]
     m = re.fullmatch(r'\s*(\d{3,4})[-/](\d{1,2})[-/](\d{1,2})(?:\s+.*)?', str(v))
     if not m: return None
     y, mo, day = map(int, m.groups())
@@ -60,7 +62,9 @@ def validate(raw, job):
         rows = json.loads(raw.decode('utf-8-sig'))
         if not isinstance(rows, (list, dict)) or not rows: raise ValueError('EMPTY_OR_INVALID_API_RESPONSE')
         if isinstance(rows, dict) and any(k.lower() in ('error', 'errors') for k in rows): raise ValueError('API_ERROR')
-        return {'rows': len(rows), 'content_period': None, 'period_semantics': 'CURRENT_NATIVE_RESPONSE_NO_HISTORICAL_PARAMETERS'}
+        dates=[parse_date(v.get('Date','')) for v in rows if isinstance(v,dict)] if isinstance(rows,list) else []
+        dates=[d.isoformat() for d in dates if d]
+        return {'rows': len(rows), 'content_period': {'min':min(dates),'max':max(dates)} if dates else None, 'period_semantics': 'ACTUAL_SOURCE_DATE_ONLY_NO_HISTORICAL_PARAMETERS'}
     if kind in ('annual', 'tick'):
         with zipfile.ZipFile(io.BytesIO(raw)) as z:
             members = z.infolist()
@@ -169,12 +173,12 @@ class Worker:
             requested_range={'min':'2000-01-01','max':self.today.isoformat()},
             historical_forms=len(self.state['catalog']), tick_files_discovered=len(self.state['tick_jobs']))
         self.d.put(self.ctrl,'STATUS.json',encode(report),'application/json',overwrite=True)
-    def request(self,url,fields=None):
+    def request(self,url,fields=None,timeout=45):
         if urllib.parse.urlparse(url).hostname not in ('www.taifex.com.tw','openapi.taifex.com.tw'): raise ValueError('NON_OFFICIAL_HOST')
         time.sleep(0.5); self.requests+=1
         data=urllib.parse.urlencode(fields).encode() if fields is not None else None
         req=urllib.request.Request(url,data=data,headers={'User-Agent':'Mozilla/5.0 JARVIS-TAIFEX/1.0', 'Referer':SITE+'/cht/3/futDailyMarketView'})
-        with self.opener.open(req, timeout=45) as r:
+        with self.opener.open(req, timeout=timeout) as r:
             if urllib.parse.urlparse(r.geturl()).hostname not in ('www.taifex.com.tw','openapi.taifex.com.tw'): raise ValueError('NON_OFFICIAL_REDIRECT')
             raw=r.read(MAX_BYTES+1)
         if len(raw)>MAX_BYTES: raise ValueError('RESPONSE_SIZE_LIMIT_UNRESOLVED')
@@ -202,6 +206,8 @@ class Worker:
             entry.update(ev,status='SAVED_BASIC_VERIFIED',file_id=file['id'],sha256=digest(raw),bytes=len(raw),
                          remote_readback_hash_verified=True,captured_utc=stamp(),numeric_verified=False,pit_verified=False)
             self.saved+=1
+            if job['url'].endswith('/DailyMarketReportFut') and ev.get('content_period'):
+                self.state['latest_trading_date']=ev['content_period']['max']
             print(json.dumps({'key':key,'status':entry['status'],'bytes':len(raw),'range':ev.get('content_period')}),flush=True)
         except Exception as exc:
             entry.update(status='UNRESOLVED',error=type(exc).__name__+':'+str(exc)[:220])
@@ -211,55 +217,65 @@ class Worker:
             print(json.dumps({'key':key,'status':entry['status'],'error':entry['error']}),flush=True)
         self.state['receipts'][key]=entry; self.save(); return self.live()
     def page(self,name):
-        raw=self.request(SITE+'/cht/3/'+name)
+        raw=self.request(SITE+'/cht/3/'+name,timeout=12)
         self.evidence('AVAILABILITY_'+name, raw)
         return raw
     def discover(self):
-        # Commit each page's discovery so a process interruption does not repeat the catalogue.
+        # Catalogue was verified against real official downloads before deployment.
+        # Its bounded refresh must never block accessible OpenAPI captures.
+        seed=json.loads(pathlib.Path(__file__).with_name('taifex_verified_catalog.json').read_text())
+        seed['tick_jobs']={}
+        for directory,names in seed['published_files'].items():
+            for name in names:
+                match=re.search(r'(20\d{2})_?(\d{2})_?(\d{2})(?:_[A-Z])?\.(?:zip|csv)$',name)
+                if not match:continue
+                date=dt.date(*map(int,match.groups()));path=directory+'/'+name;key='TICK|'+path
+                seed['tick_jobs'][key]=make_job(key,SITE+'/file/taifex/Dailydownload/'+path,'tick' if name.endswith('.zip') else 'csv',date,date)
+        for key in ('api_paths','futures_annual_years','options_annual_years','latest_trading_date','discovery_pages'):
+            self.state.setdefault(key,seed[key])
+        for key in ('catalog','tick_jobs'):
+            for k,v in seed[key].items():self.state[key].setdefault(k,v)
+        self.state['availability']={'verified_catalog_utc':seed['verified_utc'],
+            'futures_annual_years':self.state['futures_annual_years'],
+            'options_annual_years':self.state['options_annual_years'],
+            'institution_download_first':seed['catalog']['futContractsDateDown']['first'],
+            'institution_download_last':seed['catalog']['futContractsDateDown']['last'],
+            'ticks':'PUBLISHED_PREVIOUS_30_TRADING_DAY_LINKS_ONLY',
+            'api_dataset_count':len(self.state['api_paths']),
+            'api_history':'NO_HISTORICAL_ARGUMENTS; SOURCE_DATE_RECORDED',
+            'unavailable_paid_history':'EXCLUDED_NOT_DOWNLOADED',
+            'other_history':'PER_FORM_CONFIRMED_OR_EXPLICIT_UNCONFIRMED_BOUNDS'}
+        self.evidence('VERIFIED_CATALOG',encode(seed))
         marker=self.today.isoformat()
         if self.state.get('bootstrap_date')!=marker:
-            spec=self.request(SPEC); parsed=json.loads(spec.decode('utf-8-sig'))
-            self.evidence('OPENAPI_SPEC',spec)
-            self.state['api_paths']={p:v['get'].get('summary',p) for p,v in parsed['paths'].items()
-                if 'get' in v and not any(x.get('required') for x in v['get'].get('parameters',[]))}
-            market=self.page('futDailyMarketView'); options=self.page('optDailyMarketView')
-            for name,raw in [('futures',market),('options',options)]:
-                p=FormParser();p.feed(raw.decode('utf-8-sig'))
-                years=sorted({int(x) for f in p.forms for x in f['options'].get('his_year',[]) if x.isdigit()},reverse=True)
-                if not years: raise ValueError('ANNUAL_YEAR_MENU_NOT_FOUND:'+name)
-                self.state[name+'_annual_years']=[x for x in years if x>=2000]
-            linked=sorted(set(re.findall(r'href=[\'"](/cht/3/[A-Za-z0-9]+)[?\'\"]',market.decode('utf-8-sig'))))
-            pages=[x.rsplit('/',1)[-1] for x in linked if ('View' in x or x.rsplit('/',1)[-1] in ('dlPcRatio','dlOptDailyDelta'))]
-            self.state['discovery_pages']=pages
-            boundary=self.page('futContractsDateView'); forms=forms_from_page(boundary,'futContractsDateView')
-            if not forms: raise ValueError('TRADING_DATE_BOUNDARY_MISSING')
-            self.state['latest_trading_date']=forms[0]['last']
-            for f in forms:self.state['catalog'][f['action']]=f
-            self.state['availability']={'futures_annual_years':self.state['futures_annual_years'],
-                'options_annual_years':self.state['options_annual_years'], 'institution_download_first':forms[0]['first'],
-                'institution_download_last':forms[0]['last'], 'ticks':'ONLY_LINKS_PUBLISHED_IN_PREVIOUS_30_TRADING_DAY_DOWNLOAD_PAGES',
-                'api_dataset_count':len(self.state['api_paths']), 'api_history':'CURRENT_RESPONSE_ONLY_WITHOUT_DATE_ARGUMENTS',
-                'other_history':'PER_FORM_CONFIRMED_BOUNDS_OR_EXPLICIT_UNCONFIRMED_BOUNDARY',
-                'unavailable_paid_history':'EXCLUDED_NOT_MARKED_DOWNLOADED', 'checked_utc':stamp()}
-            self.state['bootstrap_date']=marker;self.save()
-        if self.state.get('tick_discovery_date')!=marker:
-            for name in TICK_PAGES:
-                if not self.live():return
-                try:
-                    raw=self.page(name); text=html.unescape(raw.decode('utf-8-sig'))
-                    urls=set(re.findall(r'(https://www\.taifex\.com\.tw)?(/file/taifex/Dailydownload/[^\s\'\"<>]+\.(?:zip|csv))',text))
-                    for _,path in urls:
-                        m=re.search(r'(20\d{2})_?(\d{2})_?(\d{2})(?:_[A-Z])?\.(?:zip|csv)$',path)
-                        if not m:continue
-                        date=dt.date(*map(int,m.groups()))
-                        if not FLOOR<=date<=self.today:continue
-                        key='TICK|'+path.split('/Dailydownload/',1)[-1]
-                        self.state['tick_jobs'][key]=make_job(key,SITE+path,'tick' if path.endswith('.zip') else 'csv',date,date)
-                except Exception as exc:
-                    self.state.setdefault('discovery_errors',{})[name]=str(exc)[:200]
-                    if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):raise
-                self.save()
-            self.state['tick_discovery_date']=marker;self.save()
+            try:
+                spec=self.request(SPEC,timeout=15);parsed=json.loads(spec.decode('utf-8-sig'))
+                self.evidence('OPENAPI_SPEC',spec)
+                self.state['api_paths']={p:v['get'].get('summary',p) for p,v in parsed['paths'].items()
+                    if 'get' in v and not any(x.get('required') for x in v['get'].get('parameters',[]))}
+            except Exception as exc:self.state['api_catalog_refresh_error']=str(exc)[:200]
+            self.state['bootstrap_date']=marker
+        self.save()
+    def refresh_tick_catalog(self):
+        done=self.state.setdefault('tick_page_attempted_dates',{})
+        marker=self.today.isoformat()
+        for name in TICK_PAGES:
+            if done.get(name)==marker:continue
+            if not self.live():return
+            try:
+                raw=self.page(name);text=html.unescape(raw.decode('utf-8-sig'))
+                urls=set(re.findall(r'(https://www\.taifex\.com\.tw)?(/file/taifex/Dailydownload/[^\s\'\"<>]+\.(?:zip|csv))',text))
+                for _,path in urls:
+                    m=re.search(r'(20\d{2})_?(\d{2})_?(\d{2})(?:_[A-Z])?\.(?:zip|csv)$',path)
+                    if not m:continue
+                    date=dt.date(*map(int,m.groups()))
+                    if not FLOOR<=date<=self.today:continue
+                    key='TICK|'+path.split('/Dailydownload/',1)[-1]
+                    self.state['tick_jobs'][key]=make_job(key,SITE+path,'tick' if path.endswith('.zip') else 'csv',date,date)
+                self.state.setdefault('tick_page_success_dates',{})[name]=marker
+            except Exception as exc:self.state.setdefault('discovery_errors',{})[name]=str(exc)[:200]
+            done[name]=marker;self.save()
+            break
     def history_jobs(self):
         latest=min(self.today,dt.date.fromisoformat(self.state['latest_trading_date']))
         # Annual native archives reduce requests and include every product in each year.
@@ -272,6 +288,9 @@ class Worker:
                 jobs.append(make_job('ANNUAL|'+label+'|'+str(y),SITE+'/cht/3/'+action,'annual',dt.date(y,1,1),dt.date(y,12,31),{'down_type':'2','his_year':str(y)}))
         for action,form in self.state['catalog'].items():
             first=max(FLOOR,dt.date.fromisoformat(form['first'])); last=min(latest,dt.date.fromisoformat(form['last']))
+            if form['boundary_confirmed']:
+                rolling=dt.date(latest.year-3,latest.month,min(latest.day,calendar.monthrange(latest.year-3,latest.month)[1]))
+                first=max(first,rolling);last=latest
             for start,end in months_desc(last,first):
                 fields=dict(form['fields'],queryStartDate=start.strftime('%Y/%m/%d'),queryEndDate=end.strftime('%Y/%m/%d'))
                 key='HISTORY|'+action+'|'+start.strftime('%Y-%m')
@@ -297,16 +316,16 @@ class Worker:
         if not self.live():return
         try:
             self.discover()
-            # First prove both all-product daily-market downloads, then interleave
-            # expiring ticks, full API catalogue, and descending historical work.
-            for job in [j for j in self.history_jobs() if j['key'].startswith('MARKET')][:2]:
-                if not self.process(job):return
+            # Preserve data through reachable official APIs before slower website probes.
+            priority=['/DailyMarketReportFut','/DailyMarketReportOpt','/PutCallRatio','/DailyOptionsDelta']
+            self.batch([make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in priority if p in self.state['api_paths']],4)
             while self.live():
                 before=self.requests
                 ticks=sorted(self.state['tick_jobs'].values(),key=lambda j:(j['end'],j['key']),reverse=True)
                 self.batch(ticks,6)
                 api=[make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in self.state['api_paths']]
                 self.batch(api,12)
+                self.refresh_tick_catalog()
                 self.discover_more(4)
                 self.batch(self.history_jobs(),24)
                 if self.requests==before:break
