@@ -24,6 +24,24 @@ exec(compile(ast.Module(body=nodes,type_ignores=[]),'official_worker','exec'),ns
 Worker=ns['OfficialWorker']
 
 class OfficialTests(unittest.TestCase):
+    def test_descending_worker_adopts_old_frontier_without_claiming_gaps_complete(self):
+        w=object.__new__(Worker);w.direction='DESC';w.months=ns['months_through']('2026-10')[::-1]
+        w.cursor={'month_index':0,'retry_months':['2026-09']};w.d=Mock();w.legacy_stagectrl='old';w.stagectrl='new'
+        w.owned=Mock();w.save_cursor=Mock()
+        ns['native']=SimpleNamespace(sha=lambda b:'hash')
+        ns['engine'].getj=Mock(return_value={'execution_plan':'RAW_201404_AUDIT_202610_V1','month_index':25,'retry_months':['2013-12']})
+        w.adopt_download_frontier()
+        self.assertEqual(w.cursor['active_month'],'2012-03')
+        self.assertEqual(w.cursor['retry_months'],[])
+        self.assertEqual(w.cursor['deferred_to_official_repair_months'],['2026-09','2013-12'])
+        calls=w.save_cursor.call_count;w.adopt_download_frontier();self.assertEqual(w.save_cursor.call_count,calls)
+    def test_frontier_adoption_never_rewinds_an_already_older_worker(self):
+        w=object.__new__(Worker);w.direction='DESC';w.months=ns['months_through']('2026-10')[::-1]
+        w.cursor={'month_index':w.months.index('2011-01'),'active_month':'2011-01'}
+        w.d=Mock();w.legacy_stagectrl='old';w.stagectrl='new';w.owned=Mock();w.save_cursor=Mock()
+        ns['native']=SimpleNamespace(sha=lambda b:'hash')
+        ns['engine'].getj=Mock(return_value={'execution_plan':'RAW_201404_AUDIT_202610_V1','month_index':25})
+        w.adopt_download_frontier();self.assertEqual(w.cursor['active_month'],'2011-01')
     def test_old_qa_raw_index_is_reused_without_replacing_an_existing_success(self):
         w=object.__new__(Worker);w.state={'units':{'keep':{'status':'SAVED_BASIC_VERIFIED','sha256':'original'}},'financial_units':{},'inventory':{},'stocks':[]}
         w.d=Mock();w.indexed_month=Mock(return_value='qa-index');w.save_state=Mock()
