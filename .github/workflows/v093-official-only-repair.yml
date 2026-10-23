@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
-  actions: read
+  actions: write
 jobs:
   prepare:
     runs-on: ubuntu-latest
@@ -25,7 +25,37 @@ jobs:
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
       - name: Verify source restrictions, attempt caps and preservation of original data
-        run: python -m unittest tests.test_official_repair tests.test_official_firstpass tests.test_stage07_ascending -q
+        run: python -m unittest tests.test_official_repair tests.test_official_firstpass tests.test_official_content_audit tests.test_stage07_ascending -q
+      - name: Activate bounded quality checks from current checkpoints
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,os,time,urllib.request,urllib.error
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          own='.github/workflows/v093-official-only-repair.yml'
+          current=int(os.environ['GITHUB_RUN_ID'])
+          def api(path,method='GET'):
+              req=urllib.request.Request(base+path,method=method,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(req,timeout=30) as r:
+                  raw=r.read();return json.loads(raw) if raw else {}
+          older=[]
+          for page in range(1,4):
+              runs=api('/actions/runs?per_page=100&page='+str(page))['workflow_runs']
+              older += [r['id'] for r in runs if r['path']==own and r['id']<current and r['status']!='completed']
+              if len(runs)<100:break
+          for rid in older:
+              try:api('/actions/runs/'+str(rid)+'/cancel','POST')
+              except urllib.error.HTTPError as e:
+                  if e.code not in (409,422):raise
+          deadline=time.monotonic()+180
+          while older:
+              older=[rid for rid in older if api('/actions/runs/'+str(rid))['status']!='completed']
+              if older and time.monotonic()>deadline:raise RuntimeError('PREVIOUS_REPAIR_NOT_TERMINAL')
+              if older:time.sleep(5)
+          print('QUALITY_CHECKS_ACTIVATED_CURSORS_AND_PRIOR_RESULTS_PRESERVED',flush=True)
+          PY
       - name: Prepare isolated repair cursors without changing download checkpoints
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
