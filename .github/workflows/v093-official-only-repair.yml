@@ -1,0 +1,80 @@
+name: JARVIS official-only targeted repairs 3 and 4
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-official-only-repair.yml'
+  schedule:
+    - cron: '5,15,25,35,45,55 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: jarvis-official-repair-prepare
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Verify source restrictions, attempt caps and preservation of original data
+        run: python -m unittest tests.test_official_repair tests.test_official_firstpass tests.test_stage07_ascending -q
+      - name: Prepare isolated repair cursors without changing download checkpoints
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python - <<'PY'
+          from scripts.annual_actual_firstpass import Drive,service
+          from scripts.v093_live_five_stage import RUN
+          from scripts.v093_three_year_repair import REPORT_ROOT
+          drive=Drive(service());root=drive.folder(REPORT_ROOT,RUN)
+          for direction in ('DESC','ASC'):
+              folder=drive.folder(root,'OFFICIAL_REPAIR_'+direction)
+              print('OFFICIAL_REPAIR_CONTROL_READY',direction,folder,flush=True)
+          PY
+  repair:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - direction: DESC
+            number: 3
+          - direction: ASC
+            number: 4
+    name: Official repair ${{ matrix.number }} ${{ matrix.direction }}
+    concurrency:
+      group: jarvis-official-repair-${{ matrix.direction }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Check shared GitHub control budget before taking repair ownership
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 250 --max-wait 600
+      - name: Validate flagged official RAW and redownload missing or invalid units only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          DIRECTION: ${{ matrix.direction }}
+        run: python -m scripts.v093_official_repair --direction "$DIRECTION" --minutes 40
