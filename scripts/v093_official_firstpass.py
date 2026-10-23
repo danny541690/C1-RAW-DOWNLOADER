@@ -238,7 +238,7 @@ class OfficialWorker(PreviousWorker):
             financial=[j for j in financial if dt.date.fromisoformat(j['period'])<=cutoff]
             source_jobs=[j for j in jobs if j['source']==source]
             # Known receipts suffice to skip completed data; inventory only unknown requests.
-            unknown=any(engine.key(j) not in self.state[b] and not self.saved_coverage(j,b)
+            unknown=any((engine.key(j) not in self.state[b] or self.state[b][engine.key(j)].get('status')=='REQUEST_INTENT_INTERRUPTED_OR_UNCONFIRMED') and not self.saved_coverage(j,b)
                 and engine.key(j) not in self.state.get('protected_legacy_receipts',{}) and not is_before_source_start(j)
                 for b,items in (('units',source_jobs),('financial_units',financial)) for j in items)
             if unknown and not self.inventory_existing((source,)):return False
