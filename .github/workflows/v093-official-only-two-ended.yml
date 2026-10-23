@@ -12,7 +12,7 @@ permissions:
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 25
     concurrency:
       group: jarvis-official-firstpass-prepare
       cancel-in-progress: false
@@ -26,6 +26,10 @@ jobs:
       - run: pip install -r requirements-qa.lock
       - name: Verify official-only rules and immutable batch capture
         run: python -m unittest tests.test_official_firstpass tests.test_stage07_ascending -q
+      - name: Wait for control API budget before cutover
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_github_budget --minimum 150 --max-wait 1200
       - name: Confirm legacy workers stopped and create both independent control folders
         env:
           GH_TOKEN: ${{ github.token }}
@@ -43,7 +47,8 @@ jobs:
                   raw=r.read();return json.loads(raw) if raw else {}
           # Explicitly retire all seven old schedules, including the former recovery loop.
           for name in ['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml','v093-v2-04-financial.yml','v093-v2-05-chip.yml','v093-v2-06-reconcile-repair.yml','v093-v2-07-raw-ascending.yml']:
-              api('/actions/workflows/'+name+'/disable','PUT')
+              w=api('/actions/workflows/'+name)
+              if w['state']=='active':api('/actions/workflows/'+name+'/disable','PUT')
           deadline=time.monotonic()+240
           while True:
               active=[]
