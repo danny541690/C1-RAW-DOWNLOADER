@@ -50,7 +50,7 @@ def validate_history(raw,date,code):
  body=s[s.find('</form>')+7:]
  flat=re.sub('<[^>]*>',' ',body);digits=re.sub(r'\s','',flat)
  if not any(x in digits for x in (date,date[:4]+'/'+date[4:6]+'/'+date[6:],date[:4]+'年'+date[4:6]+'月'+date[6:],str(int(date[:4])-1911)+'年'+date[4:6]+'月'+date[6:])):raise ValueError('HISTORY_RESULT_DATE_NOT_CONFIRMED')
- if code not in digits:raise ValueError('HISTORY_RESULT_CODE_NOT_CONFIRMED')
+ if not re.search(r'證券代號[：:]\s*'+re.escape(code)+r'(?![0-9A-Za-z])',flat):raise ValueError('HISTORY_RESULT_CODE_NOT_CONFIRMED')
  rows=candidates[0]
  if len(rows)<10:raise ValueError('HISTORY_ROWS_INCOMPLETE')
  return len(rows)-1
