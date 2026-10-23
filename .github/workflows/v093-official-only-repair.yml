@@ -1,3 +1,4 @@
+# Preserve prior downloaded/checked records; reuse QA RAW index; keep current cursors.
 name: JARVIS official-only targeted repairs 3 and 4
 on:
   push:
