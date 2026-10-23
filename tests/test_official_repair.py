@@ -2,6 +2,7 @@ import ast
 import collections
 import datetime as dt
 import json
+import re
 import time
 import unittest
 from pathlib import Path
@@ -12,12 +13,53 @@ from scripts.v093_five_stage_durable_gate import terminal_owner
 source=ast.parse((Path(__file__).resolve().parents[1]/'scripts/v093_official_repair.py').read_text())
 ns=dict(OfficialWorker=object,SOURCES=('TWSE','TPEx','MOPS'),SAVED={'SAVED_BASIC_VERIFIED','RAW_DOWNLOADED_UNVERIFIED'},
     native=SimpleNamespace(sha=lambda b:'a'*64,stamp=lambda:'now',request=Mock(return_value=b'raw'),request_data=Mock(return_value=None)),engine=SimpleNamespace(key=lambda j:'key'),
-    assert_official=Mock(),is_before_source_start=Mock(return_value=None),time=time,json=json)
+    assert_official=Mock(),is_before_source_start=Mock(return_value=None),time=time,json=json,re=re,dt=dt)
 nodes=[n for n in source.body if not isinstance(n,(ast.Import,ast.ImportFrom,ast.If))]
 exec(compile(ast.Module(body=nodes,type_ignores=[]),'actual_repair','exec'),ns)
 Worker=ns['RepairWorker']
 
 class RepairTests(unittest.TestCase):
+    def test_explicit_historical_bound_is_not_a_transient_failure(self):
+        result=ns['source_failure'](ValueError('SOURCE_STATUS:查詢開始日期小於100年1月1日，請重新查詢!'),
+            dict(period='2000-07-03'))
+        self.assertEqual(result,dict(status='OFFICIAL_PERIOD_NOT_PROVIDED',terminal=True,source_start='2011-01-01'))
+        self.assertIsNone(ns['source_failure'](ValueError('查詢開始日期小於92年5月5日'),dict(period='2026-06-01')))
+
+    def test_empty_and_incomplete_source_responses_remain_unresolved(self):
+        self.worker()
+        for message,status in [('EMPTY_RESPONSE_NOT_COVERAGE','SOURCE_NO_DATA_UNCONFIRMED'),
+                ('EMPTY_EVENT_UNPROVEN','SOURCE_NO_DATA_UNCONFIRMED'),
+                ('SOURCE_STATUS:很抱歉，沒有符合條件的資料','SOURCE_NO_DATA_UNCONFIRMED'),
+                ('FINANCIAL_REQUESTED_COMPANIES_OR_PERIOD_INCOMPLETE','SOURCE_CONTENT_INCOMPLETE')]:
+            result=ns['source_failure'](ValueError(message),dict(period='2000-07-03'))
+            self.assertEqual(result,dict(status=status,terminal=False))
+
+    def test_official_no_data_response_stops_immediate_repeats_without_counting_repair(self):
+        w=self.worker();ns['validate_content']=Mock(side_effect=ValueError('EMPTY_RESPONSE_NOT_COVERAGE'))
+        w.repair_one(self.job(),'units',[])
+        self.assertEqual(sum(w.source_requests.values()),1)
+        self.assertEqual(w.repaired,0)
+        row=w.journal['units']['key']
+        self.assertEqual(row['status'],'SOURCE_NO_DATA_UNCONFIRMED')
+        self.assertFalse(row['complete']);self.assertGreater(row['next_retry_at'],time.time())
+
+    def test_official_historical_bound_is_saved_and_not_retried(self):
+        w=self.worker();job=self.job();job['period']='2000-07-03'
+        ns['validate_content']=Mock(side_effect=ValueError('SOURCE_STATUS:查詢開始日期小於92年5月5日'))
+        w.repair_one(job,'units',[]);w.repair_one(job,'units',[])
+        self.assertEqual(sum(w.source_requests.values()),1)
+        self.assertEqual(w.repaired,0)
+        self.assertEqual(w.journal['units']['key']['status'],'OFFICIAL_PERIOD_NOT_PROVIDED')
+        self.assertFalse(w.journal['units']['key']['complete'])
+
+    def test_prior_explicit_bound_reclassified_without_another_network_request(self):
+        w=self.worker();job=self.job();job['period']='2000-07-03'
+        w.journal['units']['key']=dict(quality_revision=ns['QUALITY_REVISION'],input_signature='a'*64,
+            status='UNRESOLVED_ATTEMPT_LIMIT',attempts=3,next_retry_at=time.time()+3600,
+            error='ValueError:SOURCE_STATUS:查詢開始日期小於100年1月1日')
+        w.repair_one(job,'units',[])
+        self.assertEqual(w.journal['units']['key']['status'],'OFFICIAL_PERIOD_NOT_PROVIDED')
+        ns['native'].request.assert_not_called()
     def worker(self):
         w=object.__new__(Worker);w.state={'units':{}};w.journal={'units':{}};w.checked=0;w.repaired=0;w.downloaded=0
         w.circuit=collections.Counter();w.source_requests=collections.Counter();w.save_journal=Mock();w.save_state=Mock()

@@ -3,6 +3,7 @@ import argparse
 import collections
 import datetime as dt
 import json
+import re
 import time
 from scripts import v093_live_five_stage as base
 from scripts import v093_history_reverse as engine
@@ -29,9 +30,28 @@ def incident_retry_due(journal,now):
     return any(row.get('quality_revision')==QUALITY_REVISION
         and not row.get('terminal') and not row.get('complete')
         and row.get('status') in ('UNRESOLVED_SOURCE_BACKOFF','UNRESOLVED_SOURCE_LIMIT',
-            'UNRESOLVED_ATTEMPT_LIMIT','UNRESOLVED_TIME_LIMIT')
+            'UNRESOLVED_ATTEMPT_LIMIT','UNRESOLVED_TIME_LIMIT',
+            'SOURCE_NO_DATA_UNCONFIRMED','SOURCE_CONTENT_INCOMPLETE')
         and row.get('next_retry_at',0)<=now
         for row in journal.get('units',{}).values())
+
+def source_failure(exc,job):
+    message=str(exc)
+    # Only an explicit official lower-bound response proves historical unavailability.
+    match=re.search(r'查詢開始日期小於\s*(\d{2,4})年\s*(\d{1,2})月\s*(\d{1,2})日',message)
+    if match:
+        year=int(match[1]);year=year+1911 if year<1911 else year
+        try:earliest=dt.date(year,int(match[2]),int(match[3])).isoformat()
+        except ValueError:earliest=None
+        if earliest and job['period']<earliest:
+            return dict(status='OFFICIAL_PERIOD_NOT_PROVIDED',terminal=True,source_start=earliest)
+    if isinstance(exc,base.urllib.error.HTTPError) and exc.code==404:
+        return dict(status='OFFICIAL_ROUTE_NOT_FOUND',terminal=True)
+    if any(text in message for text in ('EMPTY_RESPONSE','EMPTY_EVENT','沒有符合條件','查無資料')):
+        return dict(status='SOURCE_NO_DATA_UNCONFIRMED',terminal=False)
+    if message=='FINANCIAL_REQUESTED_COMPANIES_OR_PERIOD_INCOMPLETE':
+        return dict(status='SOURCE_CONTENT_INCOMPLETE',terminal=False)
+    return None
 
 def needs_review(receipt,flagged):
     if receipt.get('source') not in SOURCES:return False
@@ -99,6 +119,18 @@ class RepairWorker(OfficialWorker):
     def save_journal(self):
         self.journal['updated_utc']=native.stamp()
         self.putj(self.monthctrl,'OFFICIAL_REPAIR_STATE.json',self.journal)
+        if time.monotonic()-getattr(self,'_last_progress',0)>=60:
+            report=dict(self.cursor,run_id=self.owner,updated_utc=native.stamp(),
+                current_work_month=self.journal.get('month'),batch_complete=False,
+                checked_this_run=self.checked,repaired_this_run=self.repaired,
+                source_requests_this_run=dict(self.source_requests),download_responses_this_run=self.downloaded,
+                month_result_counts=dict(collections.Counter(row.get('status','UNKNOWN')
+                    for row in self.journal.get('units',{}).values())),
+                quality_revision=QUALITY_REVISION,numeric_verified=False,pit_verified=False,
+                repair_success_definition='VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED')
+            self.putj(self.stagectrl,'STATUS.json',report)
+            print('OFFICIAL_REPAIR_PROGRESS '+json.dumps(report),flush=True)
+            self._last_progress=time.monotonic()
 
     def repair_one(self,job,bucket,flags):
         key=engine.key(job);old=self.state[bucket].get(key,{})
@@ -107,6 +139,12 @@ class RepairWorker(OfficialWorker):
         prior=self.journal['units'].get(key,{})
         if prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and prior.get('raw_sha256')==old.get('sha256') and not flags:
             return  # Preserve previously checked unchanged RAW; no repeat source request.
+        if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature:
+            known=source_failure(ValueError(prior.get('error','')),job)
+            if known and known['status']=='OFFICIAL_PERIOD_NOT_PROVIDED':
+                prior.update(known,complete=False)
+                self.save_journal()
+                return
         if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature and prior.get('terminal'):
             return
         if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature and prior.get('next_retry_at',0)>time.time():return
@@ -191,10 +229,15 @@ class RepairWorker(OfficialWorker):
                         self.owned();self.d.put(q,key+'_'+digest+'.raw',raw,'application/octet-stream',overwrite=False)
                         row['last_response_sha256']=digest
                     row.update(status='CHECK_FAILED',error=type(exc).__name__+':'+str(exc)[:300],complete=False)
+                    disposition=source_failure(exc,job)
+                    if disposition:
+                        row.update(disposition)
+                        break
                     # Rate limits are retried after a durable cooldown, with a bounded cycle count.
                     if isinstance(exc,base.urllib.error.HTTPError) and exc.code in (403,429):
                         row.update(status='UNRESOLVED_SOURCE_LIMIT',terminal=False);break
-            if not row.get('terminal') and row.get('status') not in ('UNRESOLVED_SOURCE_BACKOFF','UNRESOLVED_SOURCE_LIMIT'):
+            if not row.get('terminal') and row.get('status') not in ('UNRESOLVED_SOURCE_BACKOFF','UNRESOLVED_SOURCE_LIMIT',
+                    'SOURCE_NO_DATA_UNCONFIRMED','SOURCE_CONTENT_INCOMPLETE'):
                 row.update(status='UNRESOLVED_ATTEMPT_LIMIT' if row['attempts']>=MAX_POINT_ATTEMPTS else 'UNRESOLVED_TIME_LIMIT',
                            terminal=False,complete=False)
         finally:

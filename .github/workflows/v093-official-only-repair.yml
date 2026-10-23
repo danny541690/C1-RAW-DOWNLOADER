@@ -1,9 +1,10 @@
-# V3: JSON form repair, bounded cooled retries, remote readback; preserve prior downloaded/checked records; reuse QA RAW index; keep current cursors.
+# Live repair deployment: resume due retries, classify official bounds, publish minute progress.
 name: JARVIS official-only targeted repairs 3 and 4
 on:
   push:
     paths:
       - '.github/workflows/v093-official-only-repair.yml'
+      - 'scripts/v093_official_repair.py'
   schedule:
     - cron: '5,15,25,35,45,55 * * * *'
   workflow_dispatch:
@@ -50,9 +51,17 @@ jobs:
               try:api('/actions/runs/'+str(rid)+'/cancel','POST')
               except urllib.error.HTTPError as e:
                   if e.code not in (409,422):raise
-          deadline=time.monotonic()+180
+          graceful_until=time.monotonic()+30
+          deadline=time.monotonic()+210
+          forced=False
           while older:
               older=[rid for rid in older if api('/actions/runs/'+str(rid))['status']!='completed']
+              if older and not forced and time.monotonic()>graceful_until:
+                  for rid in older:
+                      try:api('/actions/runs/'+str(rid)+'/force-cancel','POST')
+                      except urllib.error.HTTPError as e:
+                          if e.code not in (409,422):raise
+                  forced=True
               if older and time.monotonic()>deadline:raise RuntimeError('PREVIOUS_REPAIR_NOT_TERMINAL')
               if older:time.sleep(5)
           print('QUALITY_CHECKS_ACTIVATED_CURSORS_AND_PRIOR_RESULTS_PRESERVED',flush=True)
