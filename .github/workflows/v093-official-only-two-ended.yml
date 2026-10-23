@@ -1,3 +1,4 @@
+# Adopt proven primary historical frontier once; preserve newer gap backlog for repairs.
 # Preserve prior downloaded/checked records; reuse QA RAW index; keep current cursors.
 name: JARVIS official-only first pass - two ends
 on:
