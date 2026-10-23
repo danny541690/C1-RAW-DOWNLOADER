@@ -131,6 +131,9 @@ class OfficialWorker(PreviousWorker):
         for job in items:
             assert_official(job)
             key=engine.key(job);old=self.state[bucket].get(key,{})
+            if key in self.state.get('protected_legacy_receipts',{}) and old.get('status') not in SAVED:
+                self.skipped['prior_saved_receipt_preserved']+=1
+                continue
             attempts=self.state['attempt_ledger'].setdefault(bucket,{})
             if old.get('status') not in SAVED and old.get('firstpass_revision')!=REVISION and not is_before_source_start(job):
                 # First pass gets one fresh bounded opportunity for previously failed downloads.
