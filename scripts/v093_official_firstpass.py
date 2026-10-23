@@ -63,6 +63,37 @@ def firstpass_receipt(raw,job):
         note='Original response preserved; format/content review deferred to later pass')
 
 class OfficialWorker(PreviousWorker):
+    def indexed_month(self,month):
+        if not hasattr(self,'qa_index_root'):
+            qa=self.d.find(self.control,'QA1')
+            root=self.d.find(qa['id'],'RAW_INDEX') if qa else None
+            self.qa_index_root=root['id'] if root else None
+        folder=self.d.find(self.qa_index_root,month) if self.qa_index_root else None
+        return folder['id'] if folder else None
+
+    def restore(self,month,ctrl):
+        super().restore(month,ctrl)
+        indexed=self.indexed_month(month)
+        index=engine.getj(self.d,indexed,'MONTH_STATE.json') if indexed else None
+        if not index:return
+        changed=False
+        for bucket in ('units','financial_units'):
+            for key,receipt in index.get(bucket,{}).items():
+                if (receipt.get('source') in SOURCES and receipt.get('status') in SAVED
+                    and receipt.get('sha256') and receipt.get('evidence_file')
+                    and self.state[bucket].get(key,{}).get('status') not in SAVED):
+                    self.state[bucket][key]=dict(receipt,reused_qa_raw_index=True)
+                    changed=True
+        for fid,evidence in index.get('inventory',{}).items():
+            if evidence.get('source') in SOURCES and fid not in self.state['inventory']:
+                self.state['inventory'][fid]=evidence;changed=True
+        if changed:
+            self.state['stocks']=sorted(set(self.state['stocks'])|{code for bucket in ('units','financial_units')
+                for receipt in self.state[bucket].values() if receipt.get('source') in SOURCES
+                for code in receipt.get('codes_found',[])})
+            self.state['existing_qa_index_reused']=True
+            self.save_state()
+
     def __init__(self,direction,minutes):
         base.Worker.__init__(self,'RAW',minutes,lease_suffix='_OFFICIAL_'+direction+'_V1',lease_ttl=5400)
         try:
