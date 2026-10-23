@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 25
     concurrency:
       group: jarvis-official-firstpass-prepare
-      cancel-in-progress: false
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -54,7 +54,16 @@ jobs:
               active=[]
               for page in range(1,5):
                   runs=api('/actions/runs?per_page=100&page='+str(page))['workflow_runs']
-                  active += [r for r in runs if r['status']!='completed' and r['path'] not in (own,'.github/workflows/v093-live-resume-watchdog.yml')]
+                  for r in runs:
+                      if r['path']=='.github/workflows/v093-live-resume-watchdog.yml':continue
+                      older_deploy=(os.environ.get('GITHUB_EVENT_NAME')=='push' and r['path']==own and r['id']<int(os.environ['GITHUB_RUN_ID']))
+                      legacy=r['path']!=own
+                      if not (legacy or older_deploy) or r['status']=='completed':continue
+                      try:api('/actions/runs/'+str(r['id'])+'/cancel','POST')
+                      except urllib.error.HTTPError as e:
+                          if e.code not in (409,422):raise
+                      if r['status']=='in_progress':active.append(r)
+                      else:print('QUEUED_LEGACY_CANCEL_REQUESTED',r['id'],flush=True)
                   if len(runs)<100:break
               if not active:break
               for r in active:
