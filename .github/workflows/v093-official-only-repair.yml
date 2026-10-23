@@ -1,4 +1,4 @@
-# Preserve prior downloaded/checked records; reuse QA RAW index; keep current cursors.
+# V3: JSON form repair, bounded cooled retries, remote readback; preserve prior downloaded/checked records; reuse QA RAW index; keep current cursors.
 name: JARVIS official-only targeted repairs 3 and 4
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
       - name: Verify source restrictions, attempt caps and preservation of original data
-        run: python -m unittest tests.test_official_repair tests.test_official_firstpass tests.test_official_content_audit tests.test_stage07_ascending -q
+        run: python -m unittest tests.test_official_repair tests.test_official_firstpass tests.test_official_content_audit tests.test_stage07_ascending tests.test_repair_request_encoding -q
       - name: Activate bounded quality checks from current checkpoints
         if: github.event_name == 'push'
         env:

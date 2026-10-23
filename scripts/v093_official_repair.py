@@ -17,7 +17,9 @@ from scripts.v093_five_stage_durable_gate import commit, LeaseBusy
 from scripts.v093_raw_month_coordination import capture_history_month
 
 REVISION='OFFICIAL_TARGETED_REPAIR_20261023_V1'
-QUALITY_REVISION='OFFICIAL_ROW_AND_SOURCE_CHECK_V2'
+QUALITY_REVISION='OFFICIAL_ROW_AND_SOURCE_CHECK_V3'
+MAX_RETRY_CYCLES=5
+RETRY_COOLDOWN_SECONDS=3600
 MAX_POINT_ATTEMPTS=3
 MAX_POINT_SECONDS=90
 
@@ -65,7 +67,7 @@ class RepairWorker(OfficialWorker):
             self.save_cursor()
         self.months=months_through(self.cursor['upper_month'])
         if direction=='DESC':self.months.reverse()
-        self.cache=ArchiveCache();self.checked=0;self.repaired=0;self.source_requests=collections.Counter()
+        self.cache=ArchiveCache();self.checked=0;self.repaired=0;self.downloaded=0;self.source_requests=collections.Counter()
         self.roots={}
         for stage in ('RAW','QA1','PRICE','FINANCIAL','CHIP'):
             folder=self.d.find(self.control,stage);self.roots[stage]=folder['id'] if folder else None
@@ -93,13 +95,18 @@ class RepairWorker(OfficialWorker):
         signature=native.sha(json.dumps(dict(quality_revision=QUALITY_REVISION,
             sha=old.get('sha256'),flags=flags),sort_keys=True).encode())
         prior=self.journal['units'].get(key,{})
-        if prior.get('status')=='BASIC_CONTENT_PASS' and prior.get('raw_sha256')==old.get('sha256') and not flags:
+        if prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and prior.get('raw_sha256')==old.get('sha256') and not flags:
             return  # Preserve previously checked unchanged RAW; no repeat source request.
         if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature and prior.get('terminal'):
             return
+        if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature and prior.get('next_retry_at',0)>time.time():return
         row=prior if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature else dict(
             unit_id=key,source=job['source'],quality_revision=QUALITY_REVISION,input_signature=signature,
             attempts=0,work_seconds=0,prior_result=prior.get('status'))
+        if row.get('next_retry_at',0) and row['next_retry_at']<=time.time():
+            row=dict(row,attempts=0,work_seconds=0,retry_cycle=row.get('retry_cycle',0)+1)
+            row.pop('next_retry_at',None)
+        row.update(category=job.get('category'),period=job.get('period'),report_period=job.get('report_period'))
         self.journal['units'][key]=row
         if not job.get('url'):
             row.update(status='UNRESOLVED_OFFICIAL_ROUTE',terminal=True,complete=False);self.save_journal();return
@@ -126,13 +133,15 @@ class RepairWorker(OfficialWorker):
             # Fresh official requests are restricted to unresolved/invalid content, never an unchanged previous pass.
             while row['attempts']<MAX_POINT_ATTEMPTS and time.monotonic()+20<deadline:
                 if self.circuit[job['source']]>=2:
-                    row.update(status='UNRESOLVED_SOURCE_BACKOFF',terminal=True,complete=False);break
+                    row.update(status='UNRESOLVED_SOURCE_BACKOFF',terminal=False,complete=False);break
                 row.update(status='SOURCE_CHECK_REQUEST_INTENT',attempts=row['attempts']+1)
                 self.save_journal()
                 raw=None
                 try:
+                    native.request_data(job.get('params'))  # Reject local encoding failures before counting sends.
                     self.source_requests[job['source']]+=1
                     raw=native.request(job['url'],job.get('params'))
+                    self.downloaded+=1
                     stats=validate_content(raw,job)
                     equal=local_raw is not None and value_digest(local_raw)==value_digest(raw)
                     open_checks=stats.get('row_audit',{}).get('unverified',[])
@@ -142,6 +151,18 @@ class RepairWorker(OfficialWorker):
                             supersedes_evidence_file=old.get('evidence_file'),supersedes_sha256=old.get('sha256'),
                             numeric_verified=False,pit_verified=False,validation_level='ROW_CHECK_AND_FRESH_OFFICIAL_SOURCE_COMPARISON')
                         base.Worker.record_payload(self,job,raw,receipt,bucket)
+                        try:
+                            readback,_=cached_payload(self.d,self.state[bucket][key],ArchiveCache())
+                            if native.sha(readback)!=native.sha(raw):raise ValueError('REPAIR_READBACK_HASH_MISMATCH')
+                            validate_content(readback,job)
+                        except Exception:
+                            # Preserve a previously valid receipt if remote readback cannot confirm the replacement.
+                            if old:self.state[bucket][key]=old
+                            else:self.state[bucket].pop(key,None)
+                            self.save_state()
+                            raise
+                        row['saved_evidence_file']=self.state[bucket][key]['evidence_file']
+                        row['readback_verified']=True
                         self.repaired+=1
                     row.update(status='OFFICIAL_VALUES_CONFIRMED' if equal else 'REPLACED_WITH_OFFICIAL_RESPONSE',
                         terminal=True,complete=not bool(open_checks or flags),
@@ -160,13 +181,18 @@ class RepairWorker(OfficialWorker):
                         self.owned();self.d.put(q,key+'_'+digest+'.raw',raw,'application/octet-stream',overwrite=False)
                         row['last_response_sha256']=digest
                     row.update(status='CHECK_FAILED',error=type(exc).__name__+':'+str(exc)[:300],complete=False)
-                    # Source rate limits require waiting, so defer this point permanently for this version.
+                    # Rate limits are retried after a durable cooldown, with a bounded cycle count.
                     if isinstance(exc,base.urllib.error.HTTPError) and exc.code in (403,429):
-                        row.update(status='UNRESOLVED_SOURCE_LIMIT',terminal=True);break
-            if not row.get('terminal'):
+                        row.update(status='UNRESOLVED_SOURCE_LIMIT',terminal=False);break
+            if not row.get('terminal') and row.get('status') not in ('UNRESOLVED_SOURCE_BACKOFF','UNRESOLVED_SOURCE_LIMIT'):
                 row.update(status='UNRESOLVED_ATTEMPT_LIMIT' if row['attempts']>=MAX_POINT_ATTEMPTS else 'UNRESOLVED_TIME_LIMIT',
-                           terminal=True,complete=False)
+                           terminal=False,complete=False)
         finally:
+            if not row.get('terminal'):
+                row['retry_cycle']=row.get('retry_cycle',0)
+                if row['retry_cycle']+1>=MAX_RETRY_CYCLES:
+                    row.update(status='UNRESOLVED_RETRY_CYCLES_EXHAUSTED',terminal=True,complete=False)
+                else:row['next_retry_at']=time.time()+RETRY_COOLDOWN_SECONDS
             row['work_seconds']=row.get('work_seconds',0)+time.monotonic()-started
             row['maximum_attempts']=MAX_POINT_ATTEMPTS;row['maximum_seconds']=MAX_POINT_SECONDS
             self.save_journal()
@@ -206,6 +232,13 @@ class RepairWorker(OfficialWorker):
 
     def run(self):
         try:
+            # Repair the proven JSON-parameter incident without resetting either history cursor.
+            if self.direction=='DESC' and self.cursor.get('parameter_incident_revisited')!=QUALITY_REVISION:
+                self.month_incomplete=False
+                revisited=capture_history_month(self,'2026-06')
+                if revisited and not self.month_incomplete:
+                    self.cursor['parameter_incident_revisited']=QUALITY_REVISION
+                    self.save_cursor()
             while self.cursor['month_index']<len(self.months) and time.monotonic()<self.until:
                 month=self.months[self.cursor['month_index']]
                 self.cursor.update(status='ACTIVE',active_month=month);self.save_cursor()
@@ -220,7 +253,9 @@ class RepairWorker(OfficialWorker):
             if self.cursor['month_index']>=len(self.months):
                 self.cursor.update(month_index=0,sweeps=self.cursor['sweeps']+1,status='SWEEP_ENDED_REVISIT_CHANGED_OR_RETRY_ITEMS')
             report=dict(self.cursor,checked_this_run=self.checked,repaired_this_run=self.repaired,
-                source_requests_this_run=dict(self.source_requests),sources=list(SOURCES),finmind_enabled=False,
+                source_requests_this_run=dict(self.source_requests),download_responses_this_run=self.downloaded,
+                repair_success_definition='VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED',
+                sources=list(SOURCES),finmind_enabled=False,
                 numeric_verified=False,pit_verified=False,updated_utc=native.stamp(),run_id=self.owner)
             self.save_cursor();self.putj(self.stagectrl,'STATUS.json',report)
             print('OFFICIAL_REPAIR_STATUS '+json.dumps(report),flush=True)

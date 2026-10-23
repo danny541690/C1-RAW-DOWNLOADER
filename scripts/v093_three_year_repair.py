@@ -127,8 +127,18 @@ def validate(raw,source,cat,period):
   if not dates or any(not v or v[:7]!=period for v in dates):raise ValueError('EVENT_PERIOD_UNPROVEN')
  return {'rows':len(rows),'codes':sorted(codes),'period':period}
 
+def request_data(params):
+ # JSON round-trips tuples into lists; retain repeated companyId parameters.
+ if params is None:return None
+ if hasattr(params,'items'):pairs=list(params.items())
+ elif isinstance(params,(list,tuple)):
+  if any(not isinstance(p,(list,tuple)) or len(p)!=2 for p in params):raise ValueError('INVALID_FORM_PARAMETER_PAIR')
+  pairs=[tuple(p) for p in params]
+ else:raise ValueError('INVALID_FORM_PARAMETERS')
+ return urllib.parse.urlencode(pairs).encode()
+
 def request(url,params=None):
- data=urllib.parse.urlencode(params).encode() if params else None
+ data=request_data(params)
  req=urllib.request.Request(url,data=data,headers={'User-Agent':'Mozilla/5.0','Accept-Encoding':'identity','Referer':'https://mopsfin.twse.com.tw/'})
  with urllib.request.urlopen(req,timeout=18) as r:
   raw=r.read(32000001)
