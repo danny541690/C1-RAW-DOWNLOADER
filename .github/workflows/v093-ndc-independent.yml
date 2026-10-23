@@ -1,0 +1,36 @@
+name: JARVIS independent NDC download 7
+on:
+  push:
+    paths:
+      - '.github/workflows/v093-ndc-independent.yml'
+      - 'scripts/v093_ndc_independent.py'
+      - 'tests/test_ndc_independent.py'
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-independent-ndc-stage07
+  cancel-in-progress: false
+jobs:
+  download:
+    name: Independent NDC latest to 2000 monthly history
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Verify NDC dates, immutable receipts and source archive parsing
+        run: python -m unittest tests.test_ndc_independent -v
+      - name: Capture official NDC RAW and descending monthly history
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_ndc_independent --minutes 45

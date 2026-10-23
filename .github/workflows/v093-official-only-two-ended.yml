@@ -59,7 +59,7 @@ jobs:
                   for r in runs:
                       if r['path']=='.github/workflows/v093-live-resume-watchdog.yml':continue
                       older_deploy=(os.environ.get('GITHUB_EVENT_NAME')=='push' and r['path']==own and r['id']<int(os.environ['GITHUB_RUN_ID']))
-                      legacy=r['path'] not in (own,'.github/workflows/v093-official-only-repair.yml','.github/workflows/v093-tdcc-independent.yml','.github/workflows/v093-taifex-independent.yml')
+                      legacy=r['path'] not in (own,'.github/workflows/v093-official-only-repair.yml','.github/workflows/v093-tdcc-independent.yml','.github/workflows/v093-taifex-independent.yml','.github/workflows/v093-ndc-independent.yml')
                       if not (legacy or older_deploy) or r['status']=='completed':continue
                       try:api('/actions/runs/'+str(r['id'])+'/cancel','POST')
                       except urllib.error.HTTPError as e:
