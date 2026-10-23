@@ -101,4 +101,58 @@ class RepairTests(unittest.TestCase):
             with patch('scripts.v093_five_stage_durable_gate.open_json',return_value=({'id':123,'status':'completed','path':path},{})):
                 self.assertEqual(terminal_owner(api,'token','POOL_RAW_OFFICIAL_REPAIR_ASC_V1',{'owner':'123/RAW'}),allowed)
 
+    def test_priority_retry_only_selects_due_unresolved_rows(self):
+        row=dict(quality_revision=ns['QUALITY_REVISION'],status='UNRESOLVED_SOURCE_BACKOFF',
+                 terminal=False,complete=False,next_retry_at=100)
+        def due(**changes):return ns['incident_retry_due']({'units':{'k':dict(row,**changes)}},200)
+        self.assertTrue(due())
+        self.assertFalse(due(next_retry_at=300))
+        self.assertFalse(due(terminal=True))
+        self.assertFalse(due(complete=True))
+        self.assertFalse(due(status='CONTENT_CHECK_PASS'))
+        self.assertFalse(due(quality_revision='V2'))
+
+    def priority_worker(self,direction='DESC'):
+        w=self.worker();w.direction=direction;w.roots={'RAW':'raw'}
+        w.cursor={'parameter_incident_revisited':ns['QUALITY_REVISION'],'month_index':300}
+        w.save_cursor=Mock();w.d.find.return_value={'id':'june'}
+        ns['engine'].getj=Mock(return_value={'units':{'k':dict(quality_revision=ns['QUALITY_REVISION'],
+            status='UNRESOLVED_SOURCE_BACKOFF',terminal=False,next_retry_at=0)}})
+        return w
+
+    def test_expired_incident_revisited_after_migration_without_resetting_cursor(self):
+        w=self.priority_worker();deadline=w.until
+        def capture(worker,month):
+            self.assertEqual(month,'2026-06')
+            self.assertLess(worker.until,deadline)
+            return True
+        with patch.dict(ns,capture_history_month=Mock(side_effect=capture)):
+            w.revisit_parameter_incident()
+        self.assertEqual(w.until,deadline);self.assertEqual(w.cursor['month_index'],300)
+
+    def test_incident_does_not_revisit_completed_or_cooling_rows(self):
+        w=self.priority_worker();ns['engine'].getj.return_value['units']['k']['next_retry_at']=time.time()+3600
+        with patch.dict(ns,capture_history_month=Mock()) as env:
+            w.revisit_parameter_incident();env['capture_history_month'].assert_not_called()
+
+    def test_asc_leaves_incident_retry_to_desc(self):
+        w=self.priority_worker('ASC')
+        with patch.dict(ns,capture_history_month=Mock()) as env:
+            w.revisit_parameter_incident();env['capture_history_month'].assert_not_called()
+        ns['engine'].getj.assert_not_called()
+
+    def test_priority_failure_restores_full_run_deadline(self):
+        w=self.priority_worker();deadline=w.until
+        with patch.dict(ns,capture_history_month=Mock(side_effect=RuntimeError('read failed'))):
+            with self.assertRaisesRegex(RuntimeError,'read failed'):w.revisit_parameter_incident()
+        self.assertEqual(w.until,deadline)
+
+    def test_busy_priority_month_preserves_frontier_and_migration_state(self):
+        w=self.priority_worker();w.cursor.pop('parameter_incident_revisited');deadline=w.until
+        with patch.dict(ns,capture_history_month=Mock(return_value=False)):
+            w.revisit_parameter_incident()
+        self.assertEqual(w.until,deadline);self.assertEqual(w.cursor['month_index'],300)
+        self.assertNotIn('parameter_incident_revisited',w.cursor)
+        w.save_cursor.assert_not_called()
+
 if __name__=='__main__':unittest.main()

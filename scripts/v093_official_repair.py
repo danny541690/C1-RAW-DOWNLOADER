@@ -22,6 +22,16 @@ MAX_RETRY_CYCLES=5
 RETRY_COOLDOWN_SECONDS=3600
 MAX_POINT_ATTEMPTS=3
 MAX_POINT_SECONDS=90
+PARAMETER_INCIDENT_MONTH='2026-06'
+PRIORITY_RETRY_SECONDS=600
+
+def incident_retry_due(journal,now):
+    return any(row.get('quality_revision')==QUALITY_REVISION
+        and not row.get('terminal') and not row.get('complete')
+        and row.get('status') in ('UNRESOLVED_SOURCE_BACKOFF','UNRESOLVED_SOURCE_LIMIT',
+            'UNRESOLVED_ATTEMPT_LIMIT','UNRESOLVED_TIME_LIMIT')
+        and row.get('next_retry_at',0)<=now
+        for row in journal.get('units',{}).values())
 
 def needs_review(receipt,flagged):
     if receipt.get('source') not in SOURCES:return False
@@ -230,15 +240,34 @@ class RepairWorker(OfficialWorker):
             checked=self.checked,repaired=self.repaired,source_requests=dict(self.source_requests))),flush=True)
         return True
 
+    def revisit_parameter_incident(self):
+        if self.direction!='DESC':return
+        first_visit=self.cursor.get('parameter_incident_revisited')!=QUALITY_REVISION
+        if not first_visit:
+            folder=self.d.find(self.roots['RAW'],PARAMETER_INCIDENT_MONTH) if self.roots['RAW'] else None
+            journal=engine.getj(self.d,folder['id'],'OFFICIAL_REPAIR_STATE.json') if folder else {}
+            if not incident_retry_due(journal or {},time.time()):return
+        # Cooldown expiry must revisit this month even after the one-time migration.
+        # Reserve most of the run for the normal historical frontier.
+        run_deadline=self.until
+        budget=min(PRIORITY_RETRY_SECONDS,max(0,(run_deadline-time.monotonic())/3))
+        if budget<30:return
+        self.month_incomplete=False
+        self.until=min(run_deadline,time.monotonic()+budget)
+        try:
+            revisited=capture_history_month(self,PARAMETER_INCIDENT_MONTH)
+        finally:
+            self.until=run_deadline
+        if revisited and not self.month_incomplete:
+            self.cursor['parameter_incident_revisited']=QUALITY_REVISION
+            self.save_cursor()
+        print('OFFICIAL_REPAIR_PRIORITY_REVISIT '+json.dumps(dict(
+            month=PARAMETER_INCIDENT_MONTH,acquired=bool(revisited),
+            month_incomplete=self.month_incomplete,budget_seconds=budget)),flush=True)
+
     def run(self):
         try:
-            # Repair the proven JSON-parameter incident without resetting either history cursor.
-            if self.direction=='DESC' and self.cursor.get('parameter_incident_revisited')!=QUALITY_REVISION:
-                self.month_incomplete=False
-                revisited=capture_history_month(self,'2026-06')
-                if revisited and not self.month_incomplete:
-                    self.cursor['parameter_incident_revisited']=QUALITY_REVISION
-                    self.save_cursor()
+            self.revisit_parameter_incident()
             while self.cursor['month_index']<len(self.months) and time.monotonic()<self.until:
                 month=self.months[self.cursor['month_index']]
                 self.cursor.update(status='ACTIVE',active_month=month);self.save_cursor()
