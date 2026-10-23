@@ -158,6 +158,8 @@ class Worker:
         self.state=json.loads(raw) if raw else {'revision':'TAIFEX_INDEPENDENT_V1','receipts':{},'catalog':{},'tick_jobs':{}}
         self.until=time.monotonic()+minutes*60; self.today=dt.datetime.now(TZ).date()
         self.started=stamp(); self.saved=0; self.requests=0; self.folders={}
+        self.state['status']='RUNNING_INDEPENDENT_CAPTURE'
+        self.state.pop('last_error',None)
         self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     def live(self): return time.monotonic()<self.until-100 and time.time()>=self.state.get('resume_after_epoch',0)
     def save(self):
