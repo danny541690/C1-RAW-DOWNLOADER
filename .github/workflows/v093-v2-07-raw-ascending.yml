@@ -13,11 +13,45 @@ on:
         required: false
 permissions:
   contents: write
-concurrency:
-  group: jarvis-v093-raw-ascending
-  cancel-in-progress: false
+  actions: write
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    concurrency:
+      group: jarvis-v093-raw-ascending-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Activate fixed stage seven while preserving all source evidence
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json,os,time,urllib.request
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          current=int(os.environ['GITHUB_RUN_ID'])
+          def api(path,method='GET'):
+              req=urllib.request.Request(base+path,method=method,headers={
+                  'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(req,timeout=30) as response:
+                  raw=response.read();return json.loads(raw) if raw else {}
+          older=[r['id'] for r in api('/actions/runs?per_page=100')['workflow_runs']
+                 if r['path']=='.github/workflows/v093-v2-07-raw-ascending.yml'
+                 and r['id']<current and r['status']!='completed']
+          for run in older:api('/actions/runs/'+str(run)+'/cancel','POST')
+          deadline=time.monotonic()+240
+          while older:
+              older=[run for run in older if api('/actions/runs/'+str(run))['status']!='completed']
+              if older and time.monotonic()>deadline:raise RuntimeError('OLD_STAGE07_NOT_TERMINAL')
+              if older:time.sleep(5)
+          print('STAGE07_FIXED_DOWNLOAD_CUTOVER_READY')
+          PY
   worker:
+    needs: prepare
+    concurrency:
+      group: jarvis-v093-raw-ascending
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
@@ -29,7 +63,7 @@ jobs:
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
       - name: Verify oldest-first capture and stop-on-meeting rules
-        run: python -m unittest tests.test_stage07_ascending -q
+        run: python -m unittest tests.test_stage07_ascending tests.test_stage07_finmind -q
       - name: Check API budget before acquiring the ascending helper lease
         env:
           GH_TOKEN: ${{ github.token }}
@@ -40,5 +74,7 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+          FINMIND_API_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
           WORKER_MINUTES: ${{ inputs.minutes || '60' }}
         run: python -m scripts.v093_stage07_ascending --minutes "$WORKER_MINUTES"
