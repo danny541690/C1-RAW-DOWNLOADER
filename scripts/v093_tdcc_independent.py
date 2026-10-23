@@ -113,7 +113,7 @@ class Worker:
      month=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).strftime('%Y-%m')
      if url.endswith('/1-5'):
       self.state['bulk_distribution_date']=period.get('max','')
-      self.state['distribution_codes']=sorted({str(r.get('證券代號','')) for r in rows if re.fullmatch('[1-9][0-9]{3}',str(r.get('證券代號','')))})
+      self.state['distribution_codes']=sorted({str(r.get('證券代號','')).strip() for r in rows if re.fullmatch('[1-9][0-9]{3}',str(r.get('證券代號','')).strip())})
     evidence=self.persist(raw,label,month,'html' if date else 'json')
     e.update(evidence,status='SAVED_BASIC_VERIFIED',rows=count,content_period=period,captured_utc=stamp(),period_semantics='SOURCE_RESPONSE_RANGE_NOT_REQUESTED_MONTH',numeric_verified=False,pit_verified=False)
     bucket[key]=e;self.save();print(json.dumps({'key':key,'status':e['status'],'rows':count,'range':period}),flush=True);return True
@@ -147,6 +147,16 @@ class Worker:
   else:self.state['snapshot_catalog_completed_date']=today
   # Weekly jobs are bounded by the source's real date menu, never manufactured dates.
   codes=self.state.get('distribution_codes',[])
+  if not codes:
+   receipts=[r for k,r in self.state['receipts'].items() if k.endswith('/1-5') and r.get('file_id') and r.get('status')=='SAVED_BASIC_VERIFIED']
+   if receipts:
+    saved=max(receipts,key=lambda r:r.get('captured_utc',''))
+    native=self.d.call(lambda:self.d.api.files().get_media(fileId=saved['file_id']))
+    if sha(native)!=saved['sha256']:raise ValueError('UNIVERSE_RAW_HASH_MISMATCH')
+    native=json.loads(native.decode('utf-8-sig'))
+    codes=sorted({str(r.get('證券代號','')).strip() for r in native if re.fullmatch('[1-9][0-9]{3}',str(r.get('證券代號','')).strip())})
+    self.state.update(distribution_codes=codes,completed_dates=[],universe_padding_migration='STRIP_SOURCE_PADDING_V2');self.save()
+  if not codes:raise ValueError('NO_HISTORICAL_CANDIDATES_NOT_COMPLETE')
   for date in dates:
    if time.time()<self.state.get('resume_after_epoch',0):break
    if date in self.state.get('completed_dates',[]):continue
