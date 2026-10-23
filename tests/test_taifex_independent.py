@@ -51,7 +51,8 @@ class TAIFEXTests(unittest.TestCase):
         w.request=lambda *args,**kwargs: (_ for _ in ()).throw(TimeoutError('offline'))
         w.discover()
         self.assertEqual(len(w.state['api_paths']),135)
-        self.assertEqual(len(w.state['tick_jobs']),270)
+        self.assertEqual(len(w.state['tick_jobs']),262)
+        self.assertTrue(all(j['end']<='2026-10-23' for j in w.state['tick_jobs'].values()))
         self.assertEqual(w.state['latest_trading_date'],'2026-10-22')
     def test_resume_skips_success_and_exhausted_failure(self):
         w=object.__new__(m.Worker);w.state={'receipts':{'ok':{'status':'SAVED_BASIC_VERIFIED'},'bad':{'attempts':3,'status':'UNRESOLVED'}}}
