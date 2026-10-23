@@ -56,8 +56,9 @@ def terminal_owner(api_url, token, key, lease):
            'CHIP':'POOL_CONSUMER_CHIP_REPLAN_201404_V1','RECONCILE':'POOL_STAGE06_REPAIR_V1'}
     independent=('POOL_RAW' if stage=='RAW' else 'POOL_CONSUMER')+'_STAGE06_'+stage+'_V1'
     ascending=stage=='RAW' and key=='POOL_RAW_STAGE07_ASCENDING_V1'
+    official=stage=='RAW' and key in ('POOL_RAW_OFFICIAL_ASC_V1','POOL_RAW_OFFICIAL_DESC_V1')
     monthly=stage=='RAW' and bool(re.fullmatch(r'RAW_HISTORY_MONTH_20[0-9]{2}_(0[1-9]|1[0-2])',key))
-    if key not in (pools[stage],independent) and not ascending and not monthly:return False
+    if key not in (pools[stage],independent) and not ascending and not monthly and not official:return False
     prefix=api_url.split('/contents/')[0]
     if not re.fullmatch(r'https://api.github.com/repos/[\w.-]+/[\w.-]+',prefix):return False
     request=urllib.request.Request(prefix+'/actions/runs/'+run,headers={
@@ -71,6 +72,7 @@ def terminal_owner(api_url, token, key, lease):
     allowed={'.github/workflows/v093-v2-06-reconcile-repair.yml'} if not ascending and not monthly else set()
     if ascending or monthly:allowed.add('.github/workflows/v093-v2-07-raw-ascending.yml')
     if monthly:allowed.add('.github/workflows/v093-v2-01-raw.yml')
+    if monthly or official:allowed.add('.github/workflows/v093-official-only-two-ended.yml')
     if stage in primary and key==pools[stage]:allowed.add('.github/workflows/v093-v2-'+primary[stage]+'.yml')
     return result.get('id')==int(run) and result.get('status')=='completed' and result.get('path') in allowed
 
