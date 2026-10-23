@@ -1,11 +1,12 @@
 """Two-ended official-only capture; reuse immutable v0.93 receipts, no FinMind."""
 import argparse
+import calendar
 import collections
 import datetime as dt
 import json
 import re
 import time
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode
 from scripts import v093_live_five_stage as base
 from scripts import v093_history_reverse as engine
 from scripts import v093_three_year_repair as native
@@ -78,9 +79,31 @@ class OfficialWorker(PreviousWorker):
             self.skipped['prior_unresolved_hold']+=1;return
         PreviousWorker.fetch_job(self,job,bucket)
 
+    def financial_jobs(self):
+        prior=self.state['stocks']
+        # FinMind-only codes cannot define an official-source historical universe.
+        self.state['stocks']=sorted({code for bucket in ('units','financial_units')
+            for entry in self.state[bucket].values()
+            if entry.get('source') in SOURCES and entry.get('status')=='SAVED_BASIC_VERIFIED'
+            for code in entry.get('codes_found',[])})
+        self.official_financial_universe_count=len(self.state['stocks'])
+        try:return engine.History.financial_jobs(self)
+        finally:self.state['stocks']=prior
+
     def capture_month(self,month,quota=None):
         self.restore(month,self.monthfolder('RAW',month))
         jobs=native.Audit.jobs(object.__new__(native.Audit),month,set())
+        # Historical Saturday trading must not be lost by the older weekday plan.
+        year,mo=map(int,month.split('-'))
+        for day in range(1,calendar.monthrange(year,mo)[1]+1):
+            date=dt.date(year,mo,day)
+            if date.weekday()!=5 or date>self.today:continue
+            for source,datasets in native.DAILY.items():
+                for category,path,extra in datasets:
+                    arg=date.strftime('%Y%m%d' if source=='TWSE' else '%Y/%m/%d')
+                    root='https://www.twse.com.tw/' if source=='TWSE' else 'https://www.tpex.org.tw/www/zh-tw/'
+                    jobs.append(dict(source=source,category=category,period=date.isoformat(),month=month,
+                        url=root+path+'?'+urlencode(dict(date=arg,response='json',**extra))))
         now=dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
         cutoff=self.today if now.hour>=18 else self.today-dt.timedelta(days=1)
         jobs=[j for j in jobs if len(j['period'])!=10 or j['period']<=cutoff.isoformat()]
@@ -104,7 +127,8 @@ class OfficialWorker(PreviousWorker):
         self.save_state()
         result={'revision':REVISION,'month':month,'sources':list(SOURCES),'finmind_enabled':False,
             'queue_visited':True,'download_complete':False,'numeric_verified':False,'pit_verified':False,
-            'financial_universe_known':bool(self.state.get('stocks')),
+            'official_financial_universe_count':getattr(self,'official_financial_universe_count',0),
+            'historical_universe_complete':False,
             'source_counts':{s:dict(collections.Counter(e['status'] for e in records if e['source']==s)) for s in SOURCES},
             'updated_utc':native.stamp()}
         self.putj(self.monthctrl,'OFFICIAL_FIRSTPASS_RESULT.json',result)
