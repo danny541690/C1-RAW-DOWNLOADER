@@ -15,12 +15,25 @@ from scripts.v093_five_stage_durable_gate import terminal_owner
 
 source=ast.parse((Path(__file__).resolve().parents[1]/'scripts/v093_official_firstpass.py').read_text())
 nodes=[n for n in source.body if not isinstance(n,(ast.Import,ast.ImportFrom)) and not isinstance(n,ast.If)]
-ns=dict(PreviousWorker=object,urlparse=urlparse,collections=collections,dt=dt,json=json,time=time,
+class FakePreviousWorker:
+    def restore(self,month,ctrl):pass
+
+ns=dict(PreviousWorker=FakePreviousWorker,urlparse=urlparse,collections=collections,dt=dt,json=json,time=time,
         concurrent=concurrent,urllib=urllib,re=re,engine=SimpleNamespace(getj=Mock(),key=lambda j:j['period']))
 exec(compile(ast.Module(body=nodes,type_ignores=[]),'official_worker','exec'),ns)
 Worker=ns['OfficialWorker']
 
 class OfficialTests(unittest.TestCase):
+    def test_old_qa_raw_index_is_reused_without_replacing_an_existing_success(self):
+        w=object.__new__(Worker);w.state={'units':{'keep':{'status':'SAVED_BASIC_VERIFIED','sha256':'original'}},'financial_units':{},'inventory':{},'stocks':[]}
+        w.d=Mock();w.indexed_month=Mock(return_value='qa-index');w.save_state=Mock()
+        good=dict(source='TWSE',status='SAVED_BASIC_VERIFIED',sha256='saved',evidence_file='archive/member',codes_found=['2330'])
+        ns['engine'].getj=Mock(return_value={'units':{'prior':good,'keep':dict(good,sha256='other'),'fm':dict(good,source='FinMind')},'inventory':{}})
+        w.restore('2025-06','raw-month')
+        self.assertEqual(w.state['units']['keep']['sha256'],'original')
+        self.assertEqual(w.state['units']['prior']['evidence_file'],'archive/member')
+        self.assertNotIn('fm',w.state['units'])
+        w.save_state.assert_called_once()
     def test_prior_financial_company_coverage_survives_different_batch_grouping(self):
         w=object.__new__(Worker)
         w.state={'financial_units':{
