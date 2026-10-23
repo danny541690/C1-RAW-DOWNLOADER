@@ -10,11 +10,40 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: jarvis-independent-ndc-stage07
-  cancel-in-progress: false
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify dates, source gaps, native precision and immutable receipts
+        run: python -m unittest tests.test_ndc_independent -v
+      - name: Inspect official ZIP archive layout on deployment
+        if: github.event_name == 'push'
+        run: |
+          python - <<'PY'
+          import json
+          from scripts import v093_ndc_independent as n
+          probe=object.__new__(n.Worker);probe.requests=0
+          try:
+              raw=probe.request(n.ZIP_URL)
+              z=n.bounded_zip(raw)
+              print('NDC_OFFICIAL_ZIP_MEMBERS',json.dumps(z.namelist(),ensure_ascii=False),flush=True)
+              for name in z.namelist():
+                  if name.lower().endswith('manifest.csv'):
+                      print('NDC_OFFICIAL_MANIFEST',repr(z.read(name)[:1600]),flush=True)
+              print('NDC_ZIP_AVAILABILITY',json.dumps(n.availability(n.parse_bundle(raw)),ensure_ascii=False),flush=True)
+          except Exception as exc:
+              print('NDC_SOURCE_PROBE_OPEN_ITEM',type(exc).__name__,str(exc)[:500],flush=True)
+          PY
   download:
+    needs: validate
+    concurrency:
+      group: jarvis-independent-ndc-stage07
+      cancel-in-progress: false
     name: Independent NDC latest to 2000 monthly history
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -26,8 +55,6 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
-      - name: Verify NDC dates, immutable receipts and source archive parsing
-        run: python -m unittest tests.test_ndc_independent -v
       - name: Capture official NDC RAW and descending monthly history
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
