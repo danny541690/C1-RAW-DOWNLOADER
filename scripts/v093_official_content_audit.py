@@ -31,7 +31,7 @@ def audit_json(raw,job):
         if not fields:unverified.append('TABLE_WITHOUT_FIELD_NAMES');continue
         codeidx=next((i for i,f in enumerate(fields) if f in IDENTIFIERS),None)
         pcols={PRICE[f]:i for i,f in enumerate(fields) if f in PRICE}
-        ncols={i for i,f in enumerate(fields) if f in NONNEGATIVE or (('持股比率' in f or '持股比例' in f) and '上限' not in f)}
+        ncols={i for i,f in enumerate(fields) if any(token in f for token in NONNEGATIVE) or (('持股比率' in f or '持股比例' in f) and '上限' not in f)}
         seen=set()
         for ri,row in enumerate(rows):
             if not isinstance(row,list) or len(row)!=len(fields):raise ValueError('ROW_WIDTH_MISMATCH')
@@ -60,6 +60,8 @@ def audit_json(raw,job):
     if not counts['rows_checked']:raise ValueError('NO_ROWS_AUDITED')
     if job['category'] in ('prices','prices_indices') and not counts['ohlc_rows_checked']:
         unverified.append('OHLC_FIELDS_NOT_RECOGNIZED')
+    if not counts['numeric_cells_checked'] and not counts['ohlc_rows_checked']:
+        unverified.append('NUMERIC_FIELD_RULES_NOT_COVERED')
     return dict(**counts,checks=checked+['SECURITY_DUPLICATES','RECOGNIZED_NUMERIC_DOMAINS','OHLC_RELATIONSHIPS'],
                 unverified=sorted(set(unverified)),units_policy='NATIVE_UNITS_PRESERVED_NO_UNPROVEN_CONVERSION',
                 cross_source_verified=False,pit_verified=False)
