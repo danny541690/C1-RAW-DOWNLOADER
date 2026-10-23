@@ -63,6 +63,28 @@ def firstpass_receipt(raw,job):
         note='Original response preserved; format/content review deferred to later pass')
 
 class OfficialWorker(PreviousWorker):
+    def adopt_download_frontier(self):
+        if self.direction!='DESC' or self.cursor.get('legacy_frontier_adopted'):return
+        legacy=engine.getj(self.d,self.legacy_stagectrl,'CURSOR.json')
+        if not legacy or legacy.get('execution_plan')!='RAW_201404_AUDIT_202610_V1':
+            raise ValueError('PRIOR_DOWNLOAD_FRONTIER_UNPROVEN')
+        plan=list(reversed(months_through('2014-04')))
+        index=legacy.get('month_index')
+        if type(index) is not int or not 0<=index<len(plan):raise ValueError('PRIOR_DOWNLOAD_INDEX_UNPROVEN')
+        target=plan[index];current=self.months[self.cursor['month_index']]
+        backup=json.dumps(self.cursor,ensure_ascii=False,sort_keys=True).encode()
+        self.owned();self.d.put(self.stagectrl,'BEFORE_FRONTIER_ADOPTION_'+native.sha(backup)+'.json',backup,'application/json',overwrite=False)
+        pending=sorted(set(self.cursor.get('retry_months',[]))|set(legacy.get('retry_months',[]))|set(legacy.get('prior_recent_repairs',[])),reverse=True)
+        self.cursor.update(legacy_frontier_adopted=True,prior_download_frontier=target,
+            prior_download_checkpoint_updated_utc=legacy.get('updated_utc'),
+            deferred_to_official_repair_months=pending,retry_months=[])
+        if current>target:
+            self.cursor.update(month_index=self.months.index(target),active_month=target,next_month=target,
+                status='ACTIVE',last_visited_month=plan[index-1] if index else None)
+        self.save_cursor()
+        print('PRIOR_DOWNLOAD_FRONTIER_ADOPTED '+json.dumps(dict(previous=current,next_month=self.cursor.get('active_month'),
+            missing_months_preserved_for_repairs=pending,coverage_certified=False)),flush=True)
+
     def indexed_month(self,month):
         if not hasattr(self,'qa_index_root'):
             qa=self.d.find(self.control,'QA1')
@@ -98,6 +120,7 @@ class OfficialWorker(PreviousWorker):
         base.Worker.__init__(self,'RAW',minutes,lease_suffix='_OFFICIAL_'+direction+'_V1',lease_ttl=5400)
         try:
             self.direction=direction
+            self.legacy_stagectrl=self.stagectrl
             self.stagectrl=self.d.folder(self.control,'OFFICIAL_ONLY_'+direction)
             self.otherctrl=self.d.folder(self.control,'OFFICIAL_ONLY_'+('ASC' if direction=='DESC' else 'DESC'))
             self.registry=FolderRegistry(self.d,self.d.folder(C1,'05_CONTROL'),namespace='OFFICIAL_ONLY_'+direction)
@@ -111,6 +134,7 @@ class OfficialWorker(PreviousWorker):
             self.max_source_attempts=3
             self.skipped=collections.Counter()
             self.source_requests=collections.Counter()
+            self.adopt_download_frontier()
         except Exception:
             commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(b'INIT_FAILED'))
             raise
@@ -312,10 +336,7 @@ class OfficialWorker(PreviousWorker):
 
     def run(self):
         try:
-            # Retry only transient download failures; no second-round numerical repair.
-            for month in list(self.cursor.get('retry_months',[]))[:1]:
-                if time.monotonic()>=self.until:break
-                capture_history_month(self,month,quota=self.processed+3)
+            # Primary download moves forward only; schedules 3/4 own the gap backlog.
             while self.cursor.get('status')!='PRIMARY_RANGE_VISITED' and time.monotonic()<self.until:
                 index=self.cursor['month_index']
                 if index>=len(self.months):self.cursor['status']='PRIMARY_RANGE_VISITED';break
