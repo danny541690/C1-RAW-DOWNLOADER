@@ -54,6 +54,30 @@ class TAIFEXTests(unittest.TestCase):
         self.assertEqual(len(w.state['tick_jobs']),262)
         self.assertTrue(all(j['end']<='2026-10-23' for j in w.state['tick_jobs'].values()))
         self.assertEqual(w.state['latest_trading_date'],'2026-10-22')
+    def test_empty_and_unpublished_skip_once_and_continue(self):
+        import urllib.error
+        for failure,expected in [
+            (m.OfficialEmpty('NO_ROWS'),'SKIPPED_SOURCE_EMPTY'),
+            (urllib.error.HTTPError('https://www.taifex.com.tw/missing',404,'missing',{},None),'SKIPPED_NOT_PUBLISHED'),
+            (TimeoutError('timeout'),'UNRESOLVED'),
+            (ValueError('HTML_ERROR'),'UNRESOLVED')]:
+            w=object.__new__(m.Worker);w.state={'receipts':{}};w.saved=0
+            w.live=lambda:True;w.save=lambda:None
+            def fail(*args):raise failure
+            w.request=fail
+            job={'key':'missing','url':'https://www.taifex.com.tw/missing','kind':'csv','start':'2000-01-01','end':'2000-01-31'}
+            self.assertTrue(w.process(job))
+            self.assertEqual(w.state['receipts']['missing']['status'],expected)
+            if expected.startswith('SKIPPED'):
+                self.assertTrue(w.process(job))
+                self.assertEqual(w.state['receipts']['missing']['attempts'],1)
+                self.assertFalse(w.state['receipts']['missing']['historical_absence_certified'])
+    def test_batch_advances_past_skipped_source_data(self):
+        w=object.__new__(m.Worker)
+        w.state={'receipts':{'empty':{'status':'SKIPPED_SOURCE_EMPTY'},'gone':{'status':'SKIPPED_NOT_PUBLISHED'}}}
+        called=[];w.process=lambda job:called.append(job['key']) or True
+        w.batch([{'key':'empty'},{'key':'gone'},{'key':'older'}],1)
+        self.assertEqual(called,['older'])
     def test_resume_skips_success_and_exhausted_failure(self):
         w=object.__new__(m.Worker);w.state={'receipts':{'ok':{'status':'SAVED_BASIC_VERIFIED'},'bad':{'attempts':3,'status':'UNRESOLVED'}}}
         self.assertTrue(w.process({'key':'ok'}));self.assertTrue(w.process({'key':'bad'}))
