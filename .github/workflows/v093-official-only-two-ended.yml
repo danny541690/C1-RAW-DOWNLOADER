@@ -1,5 +1,8 @@
 name: JARVIS official-only first pass - two ends
 on:
+  push:
+    paths:
+      - '.github/workflows/v093-official-only-two-ended.yml'
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
