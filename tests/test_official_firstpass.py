@@ -21,6 +21,16 @@ exec(compile(ast.Module(body=nodes,type_ignores=[]),'official_worker','exec'),ns
 Worker=ns['OfficialWorker']
 
 class OfficialTests(unittest.TestCase):
+    def test_prior_financial_company_coverage_survives_different_batch_grouping(self):
+        w=object.__new__(Worker)
+        w.state={'financial_units':{
+            'old1':dict(source='MOPS',category='IncomeStatement',period='2025-06-30',report_period='20252',
+                status='SAVED_BASIC_VERIFIED',evidence_file='a/raw',sha256='a',codes_found=['1101']),
+            'old2':dict(source='MOPS',category='IncomeStatement',period='2025-06-30',report_period='20252',
+                status='RAW_DOWNLOADED_UNVERIFIED',evidence_file='b/raw',sha256='b',codes_found=['2330'])}}
+        j=dict(source='MOPS',category='IncomeStatement',period='2025-06-30',report_period='20252',codes=['2330','1101'])
+        self.assertTrue(w.saved_coverage(j,'financial_units'))
+        j['codes'].append('2317');self.assertFalse(w.saved_coverage(j,'financial_units'))
     def test_scope_contains_all_months_and_no_future_month(self):
         months=ns['months_through']('2026-10')
         self.assertEqual((months[0],months[-1],len(months)),('2000-01','2026-10',322))
