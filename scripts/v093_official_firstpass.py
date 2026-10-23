@@ -21,6 +21,7 @@ from scripts.v093_raw_month_coordination import capture_history_month
 REVISION='OFFICIAL_ONLY_TWO_ENDS_20261023_V1'
 SOURCES=('TWSE','TPEx','MOPS')
 HOSTS={'www.twse.com.tw','www.tpex.org.tw','mopsov.twse.com.tw','mopsfin.twse.com.tw'}
+SAVED={'SAVED_BASIC_VERIFIED','RAW_DOWNLOADED_UNVERIFIED'}
 # Explicit lower bounds returned by the corresponding official endpoints.
 LOWER_BOUNDS={('TWSE','prices_indices'):'2004-02-11',
  ('TWSE','institutional'):'2012-05-02',('TWSE','margin'):'2001-01-01',
@@ -38,6 +39,28 @@ def is_before_source_start(job):
 def assert_official(job):
     if job['source'] not in SOURCES or urlparse(job['url']).hostname not in HOSTS:
         raise ValueError('NON_OFFICIAL_SOURCE_FORBIDDEN')
+
+def firstpass_receipt(raw,job):
+    """Classify a response for storage, without numeric/full-market/PIT acceptance."""
+    if not raw:raise ValueError('EMPTY_RESPONSE')
+    try:obj=json.loads(raw.decode('utf-8-sig'))
+    except (ValueError,UnicodeDecodeError):obj=None
+    if isinstance(obj,dict):
+        status=str(obj.get('stat',obj.get('status',''))).lower()
+        rows,codes,_=native.tabular(obj)
+        if status not in ('','ok','200') or not rows:
+            return dict(status='OFFICIAL_NO_DATA_RETURNED',rows=len(rows),codes_found=[],
+                note='Response preserved; empty/status response is not proof of source historical absence')
+        return dict(status='RAW_DOWNLOADED_UNVERIFIED',rows=len(rows),codes_found=sorted(codes))
+    text=raw.decode('utf-8',errors='replace')
+    if '<table' not in text.lower():
+        try:text=raw.decode('cp950')
+        except UnicodeDecodeError:pass
+    if '<table' in text.lower():
+        codes=sorted(set(re.findall(r'<td[^>]*>\s*([1-9]\d{3})\s*</td>',text,re.I)))
+        return dict(status='RAW_DOWNLOADED_UNVERIFIED',rows=None,codes_found=codes)
+    return dict(status='RAW_RESPONSE_REVIEW_HOLD',rows=None,codes_found=[],
+        note='Original response preserved; format/content review deferred to later pass')
 
 class OfficialWorker(PreviousWorker):
     def __init__(self,direction,minutes):
@@ -65,7 +88,7 @@ class OfficialWorker(PreviousWorker):
         assert_official(job)
         key=engine.key(job)
         old=self.state[bucket].get(key,{})
-        if old.get('status')=='SAVED_BASIC_VERIFIED':
+        if old.get('status') in SAVED:
             self.skipped['already_saved']+=1;return
         earliest=is_before_source_start(job)
         if earliest:
@@ -87,11 +110,20 @@ class OfficialWorker(PreviousWorker):
         # FinMind-only codes cannot define an official-source historical universe.
         self.state['stocks']=sorted({code for bucket in ('units','financial_units')
             for entry in self.state[bucket].values()
-            if entry.get('source') in SOURCES and entry.get('status')=='SAVED_BASIC_VERIFIED'
+            if entry.get('source') in SOURCES and entry.get('status') in SAVED
             for code in entry.get('codes_found',[])})
         self.official_financial_universe_count=len(self.state['stocks'])
         try:return engine.History.financial_jobs(self)
         finally:self.state['stocks']=prior
+
+    def inspect_payload(self,source,name,raw,meta,file_ref):
+        if meta.get('firstpass_revision')==REVISION and meta.get('status') in SAVED:
+            if source not in SOURCES or meta.get('source')!=source or meta.get('month')!=self.active or native.sha(raw)!=meta.get('sha256'):
+                raise ValueError('FIRSTPASS_ARCHIVE_IDENTITY_MISMATCH')
+            self.state[meta.get('bucket','units')][meta['unit_id']]=dict(meta,evidence_file=file_ref)
+            self.state['stocks']=sorted(set(self.state['stocks'])|set(meta.get('codes_found',[])))
+            return
+        super().inspect_payload(source,name,raw,meta,file_ref)
 
     def fetch_batch(self,items,bucket):
         """Network threads never touch Drive/state; archive and commit on one thread."""
@@ -100,10 +132,17 @@ class OfficialWorker(PreviousWorker):
             assert_official(job)
             key=engine.key(job);old=self.state[bucket].get(key,{})
             attempts=self.state['attempt_ledger'].setdefault(bucket,{})
-            if (old.get('status')=='SAVED_BASIC_VERIFIED' or is_before_source_start(job)
+            if old.get('status') not in SAVED and old.get('firstpass_revision')!=REVISION and not is_before_source_start(job):
+                # First pass gets one fresh bounded opportunity for previously failed downloads.
+                old=dict(old,firstpass_revision=REVISION,permanent_hold=False,retry_exhausted=False,next_retry_at=0)
+                attempts[key]=0;self.state[bucket][key]=old
+            if (old.get('status') in SAVED or is_before_source_start(job)
                 or old.get('permanent_hold') or old.get('retry_exhausted')
-                or old.get('status') in ('OFFICIAL_PERIOD_NOT_PROVIDED','OFFICIAL_NO_DATA_RETURNED','OFFICIAL_REVIEW_HOLD')):
-                self.fetch_job(job,bucket);continue
+                or old.get('status') in ('OFFICIAL_PERIOD_NOT_PROVIDED','OFFICIAL_NO_DATA_RETURNED','RAW_RESPONSE_REVIEW_HOLD')):
+                if old.get('status') in SAVED:self.skipped['already_saved']+=1
+                elif is_before_source_start(job):self.fetch_job(job,bucket)
+                else:self.skipped['deferred_to_later_pass']+=1
+                continue
             if attempts.get(key,0)>=3 or old.get('next_retry_at',0)>time.time():continue
             if self.circuit[job['source']]>=2:
                 self.state[bucket][key]=dict(job,unit_id=key,status='RETRY_WAIT',
@@ -112,7 +151,7 @@ class OfficialWorker(PreviousWorker):
             attempts[key]=attempts.get(key,0)+1
             receipt=dict(job,unit_id=key,attempts=attempts[key],
                 status='REQUEST_INTENT_INTERRUPTED_OR_UNCONFIRMED',numeric_verified=False,pit_verified=False,
-                bucket=bucket,month=self.active,run=base.RUN)
+                bucket=bucket,month=self.active,run=base.RUN,firstpass_revision=REVISION)
             self.state[bucket][key]=receipt;pending.append((job,receipt))
         if not pending:return
         self.save_state()  # Durable intent precedes all source requests.
@@ -120,14 +159,7 @@ class OfficialWorker(PreviousWorker):
             job,receipt=pair;receipt=dict(receipt);raw=None
             try:
                 raw=native.request(job['url'],job.get('params'))
-                if bucket=='financial_units':
-                    holder=object.__new__(native.Audit);holder.year=int(self.active[:4]);holder.financial={}
-                    native.Audit.financial_payload(holder,raw,job['category'],job['url'])
-                    found=sorted({c for c,r,p in holder.financial if r==job['category'] and p==job['report_period'] and c in job['codes']})
-                    if not found:raise ValueError('NO_EXPLICIT_COMPANY_QUARTER_NUMERIC_CELLS')
-                    stats={'rows':len(found),'codes':found};receipt['partial_financial_cells_only']=True
-                else:stats=native.validate(raw,job['source'],job['category'],job['period'])
-                receipt.update(status='SAVED_BASIC_VERIFIED',rows=stats['rows'],codes_found=stats['codes'])
+                receipt.update(firstpass_receipt(raw,job))
             except Exception as exc:
                 transient=base.retryable(exc);delay=min(3600,60*2**(receipt['attempts']-1))
                 if isinstance(exc,urllib.error.HTTPError) and exc.headers:
@@ -143,9 +175,9 @@ class OfficialWorker(PreviousWorker):
         groups=collections.defaultdict(list)
         for job,receipt,raw in results:
             source=job['source'];self.source_requests[source]+=1;self.processed+=1
-            self.circuit[source]=0 if receipt['status']=='SAVED_BASIC_VERIFIED' else self.circuit[source]+int(not receipt.get('permanent_hold'))
+            self.circuit[source]=self.circuit[source]+1 if receipt['status']=='RETRY_WAIT' else 0
             if raw is None:self.state[bucket][receipt['unit_id']]=receipt
-            else:groups[(source,receipt['status']=='SAVED_BASIC_VERIFIED')].append((receipt,raw))
+            else:groups[(source,receipt['status'] in SAVED)].append((receipt,raw))
         for (source,success),entries in groups.items():
             blob=engine.packed(entries);digest=native.sha(blob)
             parent=self.folder(source,self.active) if success else self.d.folder(self.monthctrl,'QUARANTINE')
@@ -162,7 +194,7 @@ class OfficialWorker(PreviousWorker):
                 errors=[],checked_utc=native.stamp(),verified_on_write=True)
         self.save_state()
         print('OFFICIAL_BATCH_SAVED '+json.dumps(dict(month=self.active,source=items[0]['source'],
-            requests=len(results),saved=sum(r['status']=='SAVED_BASIC_VERIFIED' for _,r,_ in results),
+            requests=len(results),saved=sum(r['status'] in SAVED for _,r,_ in results),
             network_concurrency=2,archive_count=len(groups))),flush=True)
 
     def capture_month(self,month,quota=None):
