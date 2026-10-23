@@ -231,10 +231,13 @@ class Worker:
             for name in names:
                 match=re.search(r'(20\d{2})_?(\d{2})_?(\d{2})(?:_[A-Z])?\.(?:zip|csv)$',name)
                 if not match:continue
-                date=dt.date(*map(int,match.groups()));path=directory+'/'+name;key='TICK|'+path
+                date=dt.date(*map(int,match.groups()))
+                if not FLOOR<=date<=self.today:continue
+                path=directory+'/'+name;key='TICK|'+path
                 seed['tick_jobs'][key]=make_job(key,SITE+'/file/taifex/Dailydownload/'+path,'tick' if name.endswith('.zip') else 'csv',date,date)
         for key in ('api_paths','futures_annual_years','options_annual_years','latest_trading_date','discovery_pages'):
             self.state.setdefault(key,seed[key])
+        self.state['tick_jobs']={k:v for k,v in self.state['tick_jobs'].items() if v['end']<=self.today.isoformat()}
         for key in ('catalog','tick_jobs'):
             for k,v in seed[key].items():self.state[key].setdefault(k,v)
         self.state['availability']={'verified_catalog_utc':seed['verified_utc'],
