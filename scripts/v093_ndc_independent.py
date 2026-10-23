@@ -100,7 +100,8 @@ def parse_bundle(raw):
     else:
         out=[]
         for path in z.namelist():
-            if posixpath.basename(path).lower()=='manifest.csv':continue
+            base=posixpath.basename(path).lower()
+            if base=='manifest.csv' or base.startswith('schema-'):continue
             if path.lower().endswith('.xlsx'):out.extend(xlsx_tables(z.read(path),path+'::'))
             elif path.lower().endswith('.csv'):
                 b=z.read(path)

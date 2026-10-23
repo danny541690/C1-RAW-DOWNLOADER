@@ -47,6 +47,7 @@ class NdcTests(unittest.TestCase):
         b=io.BytesIO()
         with zipfile.ZipFile(b,'w') as z:
             z.writestr('manifest.csv','filename,url\nndc.csv,official\n')
+            z.writestr('schema-ndc.csv','name,type\nDATE,string\n')
             z.writestr('ndc.csv','DATE,領先指標綜合指數\n2000-01,123.45678901234567\n')
         self.assertEqual(n.parse_bundle(b.getvalue())[0]['rows']['2000-01'][1],'123.45678901234567')
 

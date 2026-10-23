@@ -35,6 +35,9 @@ jobs:
               for name in z.namelist():
                   if name.lower().endswith('manifest.csv'):
                       print('NDC_OFFICIAL_MANIFEST',repr(z.read(name)[:1600]),flush=True)
+              for name in z.namelist():
+                  if name.lower().endswith('.csv') and not name.startswith('schema-') and name!='manifest.csv':
+                      print('NDC_OFFICIAL_CSV_HEADER',name,repr(z.read(name)[:800]),flush=True)
               print('NDC_ZIP_AVAILABILITY',json.dumps(n.availability(n.parse_bundle(raw)),ensure_ascii=False),flush=True)
           except Exception as exc:
               print('NDC_SOURCE_PROBE_OPEN_ITEM',type(exc).__name__,str(exc)[:500],flush=True)
