@@ -113,7 +113,7 @@ class Worker:
      month=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).strftime('%Y-%m')
      if url.endswith('/1-5'):
       self.state['bulk_distribution_date']=period.get('max','')
-      self.state['distribution_codes']=sorted({str(r.get('證券代號','')).strip() for r in rows if re.fullmatch('[1-9][0-9]{3}',str(r.get('證券代號','')).strip())})
+      self.state['distribution_codes']=sorted({str(r.get('證券代號','')).strip() for r in rows if re.fullmatch('[0-9A-Za-z]{4,8}',str(r.get('證券代號','')).strip())})
     evidence=self.persist(raw,label,month,'html' if date else 'json')
     e.update(evidence,status='SAVED_BASIC_VERIFIED',rows=count,content_period=period,captured_utc=stamp(),period_semantics='SOURCE_RESPONSE_RANGE_NOT_REQUESTED_MONTH',numeric_verified=False,pit_verified=False)
     bucket[key]=e;self.save();print(json.dumps({'key':key,'status':e['status'],'rows':count,'range':period}),flush=True);return True
@@ -154,7 +154,7 @@ class Worker:
     native=self.d.call(lambda:self.d.api.files().get_media(fileId=saved['file_id']))
     if sha(native)!=saved['sha256']:raise ValueError('UNIVERSE_RAW_HASH_MISMATCH')
     native=json.loads(native.decode('utf-8-sig'))
-    codes=sorted({str(r.get('證券代號','')).strip() for r in native if re.fullmatch('[1-9][0-9]{3}',str(r.get('證券代號','')).strip())})
+    codes=sorted({str(r.get('證券代號','')).strip() for r in native if re.fullmatch('[0-9A-Za-z]{4,8}',str(r.get('證券代號','')).strip())})
     self.state.update(distribution_codes=codes,completed_dates=[],universe_padding_migration='STRIP_SOURCE_PADDING_V2');self.save()
   if not codes:raise ValueError('NO_HISTORICAL_CANDIDATES_NOT_COMPLETE')
   for date in dates:
@@ -175,7 +175,7 @@ class Worker:
    break
   else:self.state['status']='AVAILABLE_HISTORY_VISITED_WITH_UNRESOLVED_ITEMS'
   self.save()
-  report=dict(status=self.state.get('status','CATALOG_CAPTURE'),active_date=self.state.get('active_date'),active_code=self.state.get('active_code'),availability=self.state.get('availability'),source_requests_this_run=self.requests,saved_this_run=self.saved,skipped_this_run=self.skipped,snapshot_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['receipts'].values()),history_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['history_receipts'].values()),unresolved=sum(r.get('status')!='SAVED_BASIC_VERIFIED' for b in ('receipts','history_receipts') for r in self.state[b].values()),scope='ALL_OFFICIAL_OPENAPI_DATASETS_PLUS_WEEKLY_FOUR_DIGIT_NONZERO_SECURITY_CANDIDATES',historical_universe_complete=False,coverage_certified=False,numeric_verified=False,pit_verified=False,started_utc=self.started,updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
+  report=dict(status=self.state.get('status','CATALOG_CAPTURE'),active_date=self.state.get('active_date'),active_code=self.state.get('active_code'),availability=self.state.get('availability'),source_requests_this_run=self.requests,saved_this_run=self.saved,skipped_this_run=self.skipped,snapshot_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['receipts'].values()),history_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['history_receipts'].values()),unresolved=sum(r.get('status')!='SAVED_BASIC_VERIFIED' for b in ('receipts','history_receipts') for r in self.state[b].values()),scope='ALL_OFFICIAL_OPENAPI_DATASETS_PLUS_WEEKLY_CURRENT_DISTRIBUTION_SECURITY_CANDIDATES',historical_universe_complete=False,coverage_certified=False,numeric_verified=False,pit_verified=False,started_utc=self.started,updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
   self.d.put(self.ctrl,'STATUS.json',json.dumps(report,ensure_ascii=False).encode(),'application/json',overwrite=True);print(json.dumps(report,ensure_ascii=False),flush=True)
 def main():
  p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);a=p.parse_args()
