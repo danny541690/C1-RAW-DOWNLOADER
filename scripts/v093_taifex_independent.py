@@ -16,6 +16,10 @@ TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
 TICK_PAGES = ['dlFutPrevious30DaysSalesData', 'dlOptPrevious30DaysSalesData',
               'dlFutPrevious30DaysSpreadSalesData', 'dlFutPrevious30DaysSpreadOrdersReport', 'dlOptDailyDelta']
+TERMINAL = {'SAVED_BASIC_VERIFIED', 'SKIPPED_SOURCE_EMPTY', 'SKIPPED_NOT_PUBLISHED'}
+class OfficialEmpty(ValueError):
+    """Valid native empty response; skip without certifying historical absence."""
+
 def stamp(): return dt.datetime.now(dt.timezone.utc).isoformat()
 def digest(b): return hashlib.sha256(b).hexdigest()
 def encode(v): return json.dumps(v, ensure_ascii=False, sort_keys=True).encode()
@@ -52,7 +56,7 @@ def csv_evidence(raw, start, end):
         lo = min(lo, date) if lo else date; hi = max(hi, date) if hi else date; count += 1
         if contract is not None and contract < len(row): products.add(row[contract].strip())
         if session is not None and session < len(row): sessions.add(row[session].strip())
-    if not count: raise ValueError('EMPTY_NOT_PROOF_OF_NO_DATA')
+    if not count: raise OfficialEmpty('EMPTY_NOT_PROOF_OF_NO_DATA')
     return dict(rows=count, content_period={'min': lo.isoformat(), 'max': hi.isoformat()},
                 products=sorted(products), sessions=sorted(sessions), schema=header)
 
@@ -60,6 +64,7 @@ def validate(raw, job):
     kind = job['kind']; start = dt.date.fromisoformat(job['start']); end = dt.date.fromisoformat(job['end'])
     if kind == 'snapshot':
         rows = json.loads(raw.decode('utf-8-sig'))
+        if rows == []: raise OfficialEmpty('EMPTY_NATIVE_JSON_ARRAY_NOT_HISTORICAL_ABSENCE_PROOF')
         if not isinstance(rows, (list, dict)) or not rows: raise ValueError('EMPTY_OR_INVALID_API_RESPONSE')
         if isinstance(rows, dict) and any(k.lower() in ('error', 'errors') for k in rows): raise ValueError('API_ERROR')
         dates=[parse_date(v.get('Date','')) for v in rows if isinstance(v,dict)] if isinstance(rows,list) else []
@@ -159,6 +164,7 @@ class Worker:
         self.until=time.monotonic()+minutes*60; self.today=dt.datetime.now(TZ).date()
         self.started=stamp(); self.saved=0; self.requests=0; self.folders={}
         self.state['status']='RUNNING_INDEPENDENT_CAPTURE'
+        self.state['missing_data_policy']='DOWNLOAD_AVAILABLE; SKIP_NATIVE_EMPTY_OR_404_410; MAX_3_TRANSIENT_ATTEMPTS; CONTINUE_DESCENDING'
         self.state.pop('last_error',None)
         self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     def live(self): return time.monotonic()<self.until-100 and time.time()>=self.state.get('resume_after_epoch',0)
@@ -171,6 +177,7 @@ class Worker:
         report.update(started_utc=self.started, saved_this_run=self.saved, source_requests_this_run=self.requests,
             saved_total=sum(v.get('status')=='SAVED_BASIC_VERIFIED' for v in receipts.values()),
             unresolved=sum(v.get('status')=='UNRESOLVED' for v in receipts.values()),
+            skipped_unavailable=sum(v.get('status') in ('SKIPPED_SOURCE_EMPTY','SKIPPED_NOT_PUBLISHED') for v in receipts.values()),
             actual_saved_range={'min':min(v['min'] for v in periods) if periods else None,'max':max(v['max'] for v in periods) if periods else None},
             requested_range={'min':'2000-01-01','max':self.today.isoformat()},
             historical_forms=len(self.state['catalog']), tick_files_discovered=len(self.state['tick_jobs']))
@@ -189,7 +196,7 @@ class Worker:
         self.d.put(self.ctrl,name+'_'+digest(raw)+'.raw',raw,overwrite=False)
     def process(self,job):
         key=job['key']; old=self.state['receipts'].get(key,{})
-        if old.get('status')=='SAVED_BASIC_VERIFIED': return True
+        if old.get('status') in TERMINAL: return True
         if old.get('attempts',0)>=3: return True
         if not self.live(): return False
         self.state['active_unit']={k:v for k,v in job.items() if k!='fields'}
@@ -215,6 +222,10 @@ class Worker:
             entry.update(status='UNRESOLVED',error=type(exc).__name__+':'+str(exc)[:220])
             if raw is not None:
                 self.evidence('UNRESOLVED',raw); entry['response_sha256']=digest(raw)
+            if isinstance(exc,OfficialEmpty):
+                entry.update(status='SKIPPED_SOURCE_EMPTY', historical_absence_certified=False, skip_reason='VALID_NATIVE_RESPONSE_HAS_NO_ROWS_CONTINUE_OLDER_UNITS')
+            elif isinstance(exc,urllib.error.HTTPError) and exc.code in (404,410):
+                entry.update(status='SKIPPED_NOT_PUBLISHED', http_status=exc.code, historical_absence_certified=False, skip_reason='OFFICIAL_DOWNLOAD_URL_NOT_AVAILABLE_CONTINUE_OLDER_UNITS')
             if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429): self.state['resume_after_epoch']=time.time()+900
             print(json.dumps({'key':key,'status':entry['status'],'error':entry['error']}),flush=True)
         self.state['receipts'][key]=entry; self.save(); return self.live()
@@ -349,7 +360,7 @@ class Worker:
         count=0
         for j in jobs:
             old=self.state['receipts'].get(j['key'],{})
-            if old.get('status')=='SAVED_BASIC_VERIFIED' or old.get('attempts',0)>=3:continue
+            if old.get('status') in TERMINAL or old.get('attempts',0)>=3:continue
             if not self.process(j):break
             count+=1
             if count>=limit:break
