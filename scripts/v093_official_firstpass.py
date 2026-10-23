@@ -84,11 +84,23 @@ class OfficialWorker(PreviousWorker):
             commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(b'INIT_FAILED'))
             raise
 
+    def saved_coverage(self,job,bucket):
+        """Reuse source/period/company coverage even when an old batch has another key."""
+        exact=self.state[bucket].get(engine.key(job),{})
+        if exact.get('status') in SAVED:return True
+        entries=[e for e in self.state[bucket].values() if e.get('status') in SAVED
+            and e.get('source')==job['source'] and e.get('category')==job['category']
+            and e.get('period')==job['period'] and e.get('evidence_file') and e.get('sha256')]
+        if bucket!='financial_units':return bool(entries)
+        requested=set(job.get('codes',[]))
+        covered={c for e in entries if e.get('report_period')==job.get('report_period') for c in e.get('codes_found',[])}
+        return bool(requested) and requested.issubset(covered)
+
     def fetch_job(self,job,bucket):
         assert_official(job)
         key=engine.key(job)
         old=self.state[bucket].get(key,{})
-        if old.get('status') in SAVED:
+        if self.saved_coverage(job,bucket):
             self.skipped['already_saved']+=1;return
         earliest=is_before_source_start(job)
         if earliest:
@@ -131,6 +143,8 @@ class OfficialWorker(PreviousWorker):
         for job in items:
             assert_official(job)
             key=engine.key(job);old=self.state[bucket].get(key,{})
+            if self.saved_coverage(job,bucket):
+                self.skipped['already_saved']+=1;continue
             if key in self.state.get('protected_legacy_receipts',{}) and old.get('status') not in SAVED:
                 self.skipped['prior_saved_receipt_preserved']+=1
                 continue
@@ -219,10 +233,16 @@ class OfficialWorker(PreviousWorker):
         jobs=[j for j in jobs if len(j['period'])!=10 or j['period']<=cutoff.isoformat()]
         jobs.sort(key=lambda j:(j['period'],j['category']),reverse=self.direction=='DESC')
         for source in SOURCES:
-            if not self.inventory_existing((source,)):return False
             financial=self.financial_jobs() if source=='MOPS' else []
             # Unpublished current-quarter statements are not missing downloads.
             financial=[j for j in financial if dt.date.fromisoformat(j['period'])<=cutoff]
+            source_jobs=[j for j in jobs if j['source']==source]
+            # Known receipts suffice to skip completed data; inventory only unknown requests.
+            unknown=any(engine.key(j) not in self.state[b] and not self.saved_coverage(j,b)
+                and engine.key(j) not in self.state.get('protected_legacy_receipts',{}) and not is_before_source_start(j)
+                for b,items in (('units',source_jobs),('financial_units',financial)) for j in items)
+            if unknown and not self.inventory_existing((source,)):return False
+            if source=='MOPS':financial=[j for j in self.financial_jobs() if dt.date.fromisoformat(j['period'])<=cutoff]
             for bucket,items in (('units',[j for j in jobs if j['source']==source]),('financial_units',financial)):
                 for offset in range(0,len(items),6):
                     if time.monotonic()>=self.until:return False
@@ -270,7 +290,7 @@ class OfficialWorker(PreviousWorker):
                 if index>=len(self.months):self.cursor['status']='PRIMARY_RANGE_VISITED';break
                 month=self.months[index]
                 if not self.may_start(month):break
-                self.cursor.update(status='ACTIVE',active_month=month)
+                self.cursor.update(status='ACTIVE',active_month=month,next_month=month)
                 self.save_cursor()
                 if not capture_history_month(self,month,can_start=lambda:self.may_start(month)):break
                 self.cursor['month_index']+=1
