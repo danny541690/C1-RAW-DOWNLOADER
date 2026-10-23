@@ -28,15 +28,21 @@ jobs:
                   headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
               with urllib.request.urlopen(req,timeout=30) as r:
                   raw=r.read();return json.loads(raw) if raw else {}
-          for w in api('/actions/workflows?per_page=100')['workflows']:
-              if w['path']=='.github/workflows/v093-live-resume-watchdog.yml':continue
+          workflows=[]
+          for page in range(1,10):
+              batch=api('/actions/workflows?per_page=100&page='+str(page))['workflows']
+              workflows+=batch
+              if len(batch)<100:break
+          for w in workflows:
+              if w['path'] in ('.github/workflows/v093-live-resume-watchdog.yml','.github/workflows/v093-official-only-two-ended.yml'):continue
               if w['state']=='active':
                   api('/actions/workflows/'+str(w['id'])+'/disable','PUT')
                   print('DISABLED',w['path'],flush=True)
+          print('WORKFLOWS_INSPECTED',len(workflows),flush=True)
           active=[]
           for page in range(1,5):
               runs=api('/actions/runs?per_page=100&page='+str(page))['workflow_runs']
-              active += [r['id'] for r in runs if r['id']!=current and r['status']!='completed']
+              active += [r['id'] for r in runs if r['id']!=current and r['status']!='completed' and r['path']!='.github/workflows/v093-official-only-two-ended.yml']
               if len(runs)<100:break
           for rid in active:
               try:api('/actions/runs/'+str(rid)+'/cancel','POST')
@@ -46,6 +52,12 @@ jobs:
           while active:
               active=[rid for rid in active if api('/actions/runs/'+str(rid))['status']!='completed']
               if active and time.monotonic()>deadline:raise RuntimeError('LEGACY_RUNS_NOT_TERMINAL')
-              if active:time.sleep(5)
+              if active:
+                  print('WAIT_CANCEL',active,flush=True)
+                  for rid in active:
+                      try:api('/actions/runs/'+str(rid)+'/force-cancel','POST')
+                      except urllib.error.HTTPError as e:
+                          if e.code not in (409,422):raise
+                  time.sleep(5)
           print('ALL_LEGACY_SCHEDULES_STOPPED_CHECKPOINTS_PRESERVED',flush=True)
           PY
