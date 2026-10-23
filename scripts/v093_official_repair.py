@@ -8,6 +8,7 @@ from scripts import v093_live_five_stage as base
 from scripts import v093_history_reverse as engine
 from scripts import v093_three_year_repair as native
 from scripts.v093_independent_raw import price_checks
+from scripts.v093_official_content_audit import audit_rows, value_digest
 from scripts.v093_official_firstpass import OfficialWorker, SOURCES, SAVED, months_through, assert_official, is_before_source_start
 from scripts.v093_replanned_five_stage import ArchiveCache, cached_payload
 from scripts.v093_folder_registry import FolderRegistry
@@ -16,6 +17,9 @@ from scripts.v093_five_stage_durable_gate import commit, LeaseBusy
 from scripts.v093_raw_month_coordination import capture_history_month
 
 REVISION='OFFICIAL_TARGETED_REPAIR_20261023_V1'
+QUALITY_REVISION='OFFICIAL_ROW_AND_SOURCE_CHECK_V2'
+MAX_POINT_ATTEMPTS=3
+MAX_POINT_SECONDS=90
 
 def needs_review(receipt,flagged):
     if receipt.get('source') not in SOURCES:return False
@@ -29,7 +33,7 @@ def validate_content(raw,job):
         expected=set(job.get('codes',[]))
         found={c for c,r,p in holder.financial if r==job['category'] and p==job['report_period']}
         if not expected or not expected.issubset(found):raise ValueError('FINANCIAL_REQUESTED_COMPANIES_OR_PERIOD_INCOMPLETE')
-        return dict(rows=len(found),codes=sorted(found),validation_level='EXPLICIT_COMPANY_REPORT_PERIOD_BASIC_CELLS')
+        return dict(rows=len(found),codes=sorted(found),row_audit=audit_rows(raw,job),validation_level='EXPLICIT_COMPANY_REPORT_PERIOD_AND_ROW_CHECKS')
     try:stats=native.validate(raw,job['source'],job['category'],job['period'])
     except ValueError as exc:
         # Historical market size is not a correctness threshold.
@@ -42,6 +46,7 @@ def validate_content(raw,job):
         if check['ohlc_violations']:raise ValueError('OHLC_RELATIONSHIP_VIOLATION')
         if check['null_cells']:raise ValueError('PRICE_MISSING_OR_NONTRADING_REVIEW_REQUIRED')
         stats['basic_price_check']=check
+    stats['row_audit']=audit_rows(raw,job)
     return stats
 
 class RepairWorker(OfficialWorker):
@@ -54,6 +59,10 @@ class RepairWorker(OfficialWorker):
         self.cursor=engine.getj(self.d,self.stagectrl,'CURSOR.json') or dict(revision=REVISION,
             direction=direction,month_index=0,upper_month=min(self.today.strftime('%Y-%m'),'2026-12'),sweeps=0)
         if self.cursor.get('revision')!=REVISION:raise ValueError('REPAIR_PLAN_MISMATCH')
+        if self.cursor.get('quality_revision')!=QUALITY_REVISION:
+            self.cursor['prior_quality_checkpoint']=dict(self.cursor)
+            self.cursor.update(quality_revision=QUALITY_REVISION,status='ACTIVE')
+            self.save_cursor()
         self.months=months_through(self.cursor['upper_month'])
         if direction=='DESC':self.months.reverse()
         self.cache=ArchiveCache();self.checked=0;self.repaired=0;self.source_requests=collections.Counter()
@@ -80,62 +89,87 @@ class RepairWorker(OfficialWorker):
         self.putj(self.monthctrl,'OFFICIAL_REPAIR_STATE.json',self.journal)
 
     def repair_one(self,job,bucket,flags):
-        key=engine.key(job)
-        old=self.state[bucket].get(key,{})
-        row=self.journal['units'].setdefault(key,dict(unit_id=key,source=job['source'],attempts=0))
+        key=engine.key(job);old=self.state[bucket].get(key,{})
+        signature=native.sha(json.dumps(dict(quality_revision=QUALITY_REVISION,
+            sha=old.get('sha256'),flags=flags),sort_keys=True).encode())
+        prior=self.journal['units'].get(key,{})
+        if prior.get('status')=='BASIC_CONTENT_PASS' and prior.get('raw_sha256')==old.get('sha256') and not flags:
+            return  # Preserve previously checked unchanged RAW; no repeat source request.
+        if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature and prior.get('terminal'):
+            return
+        row=prior if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature else dict(
+            unit_id=key,source=job['source'],quality_revision=QUALITY_REVISION,input_signature=signature,
+            attempts=0,work_seconds=0,prior_result=prior.get('status'))
+        self.journal['units'][key]=row
         if not job.get('url'):
-            row.update(status='OFFICIAL_ROUTE_REQUIRES_REVIEW',error='Receipt has no proven official request URL');return
+            row.update(status='UNRESOLVED_OFFICIAL_ROUTE',terminal=True,complete=False);self.save_journal();return
         assert_official(job)
-        signature=native.sha(json.dumps(dict(sha=old.get('sha256'),status=old.get('status'),flags=flags),sort_keys=True).encode())
-        if row.get('input_signature')==signature and row.get('status') in ('BASIC_CONTENT_PASS','BASIC_PASS_FLAG_REQUIRES_REVIEW','UNRESOLVED_AFTER_THREE_ATTEMPTS','OFFICIAL_PERIOD_NOT_PROVIDED'):return
-        if row.get('next_retry_at',0)>time.time():return
         if is_before_source_start(job):
-            row.update(status='OFFICIAL_PERIOD_NOT_PROVIDED',input_signature=signature);return
-        if old.get('evidence_file') and old.get('status') in SAVED:
-            try:
-                raw,_=cached_payload(self.d,old,self.cache);stats=validate_content(raw,job)
-                row.update(status='BASIC_PASS_FLAG_REQUIRES_REVIEW' if flags else 'BASIC_CONTENT_PASS',
-                    raw_sha256=old['sha256'],input_signature=signature,validation=stats,
-                    numeric_verified=False,pit_verified=False,review_flags=flags,checked_utc=native.stamp())
-                self.checked+=1
-                if not flags and old['status']=='RAW_DOWNLOADED_UNVERIFIED':
-                    self.state[bucket][key]=dict(old,status='SAVED_BASIC_VERIFIED',repair_revision=REVISION,
-                        validation_level='BASIC_CONTENT_ONLY_NOT_FULL_CORRECTNESS',numeric_verified=False,pit_verified=False)
-                    self.save_state()
-                return
-            except (ValueError,KeyError,TypeError) as exc:row['validation_error']=str(exc)[:300]
-        if row['attempts']>=3:
-            row.update(status='UNRESOLVED_AFTER_THREE_ATTEMPTS',input_signature=signature);return
-        if self.circuit[job['source']]>=2:
-            row.update(status='SOURCE_BACKOFF',next_retry_at=time.time()+900);return
-        row.update(status='REPAIR_REQUEST_INTENT',attempts=row['attempts']+1,input_signature=signature)
-        self.save_journal()  # Attempt limit survives restarts and both directions.
-        raw=None
+            row.update(status='OFFICIAL_PERIOD_NOT_PROVIDED',terminal=True,complete=False);self.save_journal();return
+        started=time.monotonic()
+        deadline=min(self.until,started+max(0,MAX_POINT_SECONDS-row.get('work_seconds',0)))
+        local_raw=None;local_stats=None
         try:
-            self.source_requests[job['source']]+=1
-            raw=native.request(job['url'],job.get('params'));stats=validate_content(raw,job)
-            receipt=dict(job,unit_id=key,status='SAVED_BASIC_VERIFIED',rows=stats['rows'],codes_found=stats['codes'],
-                sha256=native.sha(raw),repair_revision=REVISION,repair_attempt=row['attempts'],
-                supersedes_evidence_file=old.get('evidence_file'),supersedes_sha256=old.get('sha256'),
-                numeric_verified=False,pit_verified=False,validation_level='BASIC_CONTENT_ONLY_NOT_FULL_CORRECTNESS')
-            base.Worker.record_payload(self,job,raw,receipt,bucket)
-            row.update(status='SOURCE_REDOWNLOADED_BASIC_PASS',replacement_sha256=receipt['sha256'],
-                       original_sha256=old.get('sha256'),review_flags=flags,next_retry_at=0)
-            self.repaired+=1;self.circuit[job['source']]=0
-        except Exception as exc:
-            transient=base.retryable(exc);self.circuit[job['source']]+=int(transient)
-            if raw is not None:
-                # Keep failed replacement evidence separately; never replace an old RAW receipt with an error page.
-                digest=native.sha(raw);q=self.d.folder(self.monthctrl,'REPAIR_EVIDENCE')
-                name=key+'_'+digest+'.raw';self.owned();self.d.put(q,name,raw,'application/octet-stream',overwrite=False)
-                row['last_response_sha256']=digest
-            delay=900 if transient else 3600
-            if isinstance(exc,base.urllib.error.HTTPError) and exc.headers:
-                try:delay=max(delay,float(exc.headers.get('Retry-After','0')))
-                except ValueError:pass
-            row.update(status='UNRESOLVED_AFTER_THREE_ATTEMPTS' if row['attempts']>=3 else 'RETRY_LATER',
-                error=type(exc).__name__+':'+str(exc)[:300],next_retry_at=time.time()+delay)
-        self.save_journal()
+            if old.get('evidence_file') and old.get('status') in SAVED:
+                try:
+                    local_raw,_=cached_payload(self.d,old,self.cache)
+                    local_stats=validate_content(local_raw,job)
+                    row['local_check']=local_stats;self.checked+=1
+                    if not flags and not local_stats.get('row_audit',{}).get('unverified',[]):
+                        row.update(status='CONTENT_CHECK_PASS',terminal=True,complete=True,raw_sha256=old['sha256'],
+                            checked_utc=native.stamp(),numeric_verified=False,pit_verified=False)
+                        self.state[bucket][key]=dict(old,status='SAVED_BASIC_VERIFIED',quality_revision=QUALITY_REVISION,
+                            validation_level='ROW_CONTENT_CHECKS_PASSED_SOURCE_RAW_PRESERVED',numeric_verified=False,pit_verified=False)
+                        self.save_state()
+                        return
+                except Exception as exc:row['local_error']=type(exc).__name__+':'+str(exc)[:300]
+            # Fresh official requests are restricted to unresolved/invalid content, never an unchanged previous pass.
+            while row['attempts']<MAX_POINT_ATTEMPTS and time.monotonic()+20<deadline:
+                if self.circuit[job['source']]>=2:
+                    row.update(status='UNRESOLVED_SOURCE_BACKOFF',terminal=True,complete=False);break
+                row.update(status='SOURCE_CHECK_REQUEST_INTENT',attempts=row['attempts']+1)
+                self.save_journal()
+                raw=None
+                try:
+                    self.source_requests[job['source']]+=1
+                    raw=native.request(job['url'],job.get('params'))
+                    stats=validate_content(raw,job)
+                    equal=local_raw is not None and value_digest(local_raw)==value_digest(raw)
+                    open_checks=stats.get('row_audit',{}).get('unverified',[])
+                    if not equal or local_stats is None:
+                        receipt=dict(job,unit_id=key,status='SAVED_BASIC_VERIFIED',rows=stats['rows'],codes_found=stats['codes'],
+                            sha256=native.sha(raw),repair_revision=REVISION,quality_revision=QUALITY_REVISION,
+                            supersedes_evidence_file=old.get('evidence_file'),supersedes_sha256=old.get('sha256'),
+                            numeric_verified=False,pit_verified=False,validation_level='ROW_CHECK_AND_FRESH_OFFICIAL_SOURCE_COMPARISON')
+                        base.Worker.record_payload(self,job,raw,receipt,bucket)
+                        self.repaired+=1
+                    row.update(status='OFFICIAL_VALUES_CONFIRMED' if equal else 'REPLACED_WITH_OFFICIAL_RESPONSE',
+                        terminal=True,complete=not bool(open_checks or flags),
+                        original_sha256=old.get('sha256'),official_sha256=native.sha(raw),
+                        official_value_digest=value_digest(raw),values_equal=equal,validation=stats,
+                        open_checks=open_checks,review_flags=flags,numeric_verified=False,pit_verified=False,
+                        checked_utc=native.stamp())
+                    # A source check never silently closes unresolved derived/PIT findings.
+                    if open_checks or flags:row['status']='SOURCE_CHECKED_OPEN_QUALITY_ITEMS'
+                    self.circuit[job['source']]=0
+                    break
+                except Exception as exc:
+                    transient=base.retryable(exc);self.circuit[job['source']]+=int(transient)
+                    if raw is not None:
+                        digest=native.sha(raw);q=self.d.folder(self.monthctrl,'REPAIR_EVIDENCE')
+                        self.owned();self.d.put(q,key+'_'+digest+'.raw',raw,'application/octet-stream',overwrite=False)
+                        row['last_response_sha256']=digest
+                    row.update(status='CHECK_FAILED',error=type(exc).__name__+':'+str(exc)[:300],complete=False)
+                    # Source rate limits require waiting, so defer this point permanently for this version.
+                    if isinstance(exc,base.urllib.error.HTTPError) and exc.code in (403,429):
+                        row.update(status='UNRESOLVED_SOURCE_LIMIT',terminal=True);break
+            if not row.get('terminal'):
+                row.update(status='UNRESOLVED_ATTEMPT_LIMIT' if row['attempts']>=MAX_POINT_ATTEMPTS else 'UNRESOLVED_TIME_LIMIT',
+                           terminal=True,complete=False)
+        finally:
+            row['work_seconds']=row.get('work_seconds',0)+time.monotonic()-started
+            row['maximum_attempts']=MAX_POINT_ATTEMPTS;row['maximum_seconds']=MAX_POINT_SECONDS
+            self.save_journal()
 
     def capture_month(self,month,quota=None):
         folder=self.d.find(self.roots['RAW'],month) if self.roots['RAW'] else None
@@ -158,9 +192,9 @@ class RepairWorker(OfficialWorker):
                 key=engine.key(job)
                 if len(job['period'])==10 and job['period']>cutoff.isoformat():continue
                 if key not in self.state['units'] and not is_before_source_start(job):candidates[key]=(job,'units',[])
-        stop=min(self.until,time.monotonic()+90);before=sum(self.source_requests.values())
         for job,bucket,marked in candidates.values():
-            if time.monotonic()>=stop or sum(self.source_requests.values())-before>=12:break
+            if time.monotonic()+25>=self.until:
+                self.save_journal();self.month_incomplete=True;return False
             self.repair_one(job,bucket,marked)
         self.save_journal()
         self.cursor.update(last_month=month,flagged_candidates=len(candidates))
@@ -174,7 +208,9 @@ class RepairWorker(OfficialWorker):
                 month=self.months[self.cursor['month_index']]
                 self.cursor.update(status='ACTIVE',active_month=month);self.save_cursor()
                 # A download owns its active month first; repair skips busy months and revisits next sweep.
+                self.month_incomplete=False
                 complete=capture_history_month(self,month)
+                if self.month_incomplete:break
                 self.cursor['month_index']+=1
                 self.cursor['last_visited_month']=month
                 self.cursor['last_month_busy']=not complete
