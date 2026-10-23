@@ -166,7 +166,7 @@ class Worker:
         self.state.update(updated_utc=stamp(), run_id=os.environ.get('GITHUB_RUN_ID'), source='TAIFEX',
             finmind_enabled=False, coverage_certified=False, numeric_verified=False, pit_verified=False)
         self.d.put(self.ctrl,'CURSOR.json',encode(self.state),'application/json',overwrite=True)
-        receipts=self.state['receipts']; periods=[v.get('content_period') for v in receipts.values() if v.get('status')=='SAVED_BASIC_VERIFIED' and v.get('content_period')]
+        receipts=self.state['receipts']; periods=[v.get('content_period') for v in receipts.values() if v.get('status')=='SAVED_BASIC_VERIFIED' and v.get('content_period') and v['content_period']['max']<=self.today.isoformat()]
         report={k:v for k,v in self.state.items() if k not in ('receipts','catalog','tick_jobs')}
         report.update(started_utc=self.started, saved_this_run=self.saved, source_requests_this_run=self.requests,
             saved_total=sum(v.get('status')=='SAVED_BASIC_VERIFIED' for v in receipts.values()),
@@ -238,6 +238,11 @@ class Worker:
         for key in ('api_paths','futures_annual_years','options_annual_years','latest_trading_date','discovery_pages'):
             self.state.setdefault(key,seed[key])
         self.state['tick_jobs']={k:v for k,v in self.state['tick_jobs'].items() if v['end']<=self.today.isoformat()}
+        for receipt in self.state['receipts'].values():
+            req=receipt.get('request',{})
+            if req.get('kind')=='tick' and req.get('end','')>self.today.isoformat():
+                receipt['capture_status_before_date_exclusion']=receipt['status']
+                receipt['status']='EXCLUDED_FUTURE_PUBLISHED_LINK'
         for key in ('catalog','tick_jobs'):
             for k,v in seed[key].items():self.state[key].setdefault(k,v)
         self.state['availability']={'verified_catalog_utc':seed['verified_utc'],
