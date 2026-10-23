@@ -173,7 +173,9 @@ class RepairWorker(OfficialWorker):
 
     def capture_month(self,month,quota=None):
         folder=self.d.find(self.roots['RAW'],month) if self.roots['RAW'] else None
-        if not folder:return True
+        if not folder:
+            if not self.indexed_month(month):return True
+            folder={'id':self.monthfolder('RAW',month)}
         # Shared month ownership was acquired before loading mutable RAW receipts.
         self.restore(month,folder['id'])
         self.journal=engine.getj(self.d,self.monthctrl,'OFFICIAL_REPAIR_STATE.json') or dict(revision=REVISION,month=month,units={})
