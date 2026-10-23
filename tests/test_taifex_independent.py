@@ -30,7 +30,8 @@ class TAIFEXTests(unittest.TestCase):
         self.assertTrue(m.validate(self.archive(b'20261022,TX,123\n'),self.job('tick','2026-10-22','2026-10-22'))['zip_crc_verified'])
     def test_snapshot_never_claims_historical_date(self):
         ev=m.validate(b'[{"Date":"20261022"}]',self.job('snapshot'))
-        self.assertIsNone(ev['content_period'])
+        self.assertEqual(ev['content_period'],{'min':'2026-10-22','max':'2026-10-22'})
+        self.assertIn('NO_HISTORICAL_PARAMETERS',ev['period_semantics'])
     def test_clamp_retention_boundary(self):
         periods=list(m.months_desc(dt.date(2026,10,22),dt.date(2023,10,22)))
         self.assertEqual(periods[0],(dt.date(2026,10,1),dt.date(2026,10,22)))
@@ -43,6 +44,15 @@ class TAIFEXTests(unittest.TestCase):
     def test_do_not_silently_select_one_product(self):
         page=b'<form action="someDown"><input name="queryStartDate"><input name="queryEndDate"><select name="product"><option value="TX">TX</option></select></form>'
         self.assertEqual(m.forms_from_page(page,'someView'),[])
+    def test_official_html_unavailable_does_not_block_bootstrap(self):
+        w=object.__new__(m.Worker);w.today=dt.date(2026,10,23)
+        w.state={'receipts':{},'catalog':{},'tick_jobs':{}}
+        w.evidence=lambda *args:None;w.save=lambda:None
+        w.request=lambda *args,**kwargs: (_ for _ in ()).throw(TimeoutError('offline'))
+        w.discover()
+        self.assertEqual(len(w.state['api_paths']),135)
+        self.assertEqual(len(w.state['tick_jobs']),270)
+        self.assertEqual(w.state['latest_trading_date'],'2026-10-22')
     def test_resume_skips_success_and_exhausted_failure(self):
         w=object.__new__(m.Worker);w.state={'receipts':{'ok':{'status':'SAVED_BASIC_VERIFIED'},'bad':{'attempts':3,'status':'UNRESOLVED'}}}
         self.assertTrue(w.process({'key':'ok'}));self.assertTrue(w.process({'key':'bad'}))
