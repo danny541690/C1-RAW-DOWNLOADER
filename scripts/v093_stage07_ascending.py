@@ -11,6 +11,7 @@ from scripts.v093_folder_registry import FolderRegistry
 from scripts.v093_standard_r1 import C1
 from scripts.v093_five_stage_durable_gate import commit, LeaseBusy
 from scripts.v093_raw_month_coordination import capture_history_month
+from scripts.v093_stage07_finmind import supplement
 
 REVISION7='ASCENDING_RAW_200001_MEET_PRIMARY_V1'
 MONTHS7=[f'{year}-{month:02d}' for year in range(2000,2013) for month in range(1,13)]
@@ -42,10 +43,33 @@ class AscendingWorker(Worker):
             index=self.cursor.get('month_index')
             if type(index) is not int or not 0<=index<=len(MONTHS7):
                 raise ValueError('ASCENDING_CURSOR_INDEX_UNPROVEN')
+            if self.cursor.get('four_source_revision')!='FINMIND_DOWNLOAD_FIX_V1':
+                # Earlier visits had zero FinMind requests; revisit without deleting
+                # any original receipts or successful immutable source files.
+                self.cursor['prior_four_source_checkpoint']=dict(self.cursor)
+                self.cursor.update(month_index=0,status='ACTIVE',
+                    four_source_revision='FINMIND_DOWNLOAD_FIX_V1')
+                self.save_cursor()
             self.phase='HISTORY_DOWNLOAD'
         except Exception:
             commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(b'STAGE07_INIT_FAILED'))
             raise
+
+    def capture_month(self,month,quota=None):
+        if not super().capture_month(month,quota=quota):return False
+        complete=supplement(self,month)
+        counts={}
+        for bucket in ('units','financial_units','finmind_units'):
+            for receipt in self.state.get(bucket,{}).values():
+                source=receipt.get('source','UNKNOWN')
+                row=counts.setdefault(source,dict(saved=0,missing_or_held=0))
+                row['saved' if receipt.get('status')=='SAVED_BASIC_VERIFIED' else 'missing_or_held']+=1
+        self.putj(self.monthctrl,'DOWNLOAD_RESULT.json',dict(
+            month=month,source_counts=counts,queue_visit_complete=complete,
+            all_market_complete=False,numeric_verified=False,pit_verified=False,
+            updated_utc=native.stamp()))
+        print('STAGE07_MONTH_DOWNLOAD_COUNTS '+json.dumps(dict(month=month,source_counts=counts)),flush=True)
+        return complete
 
     def may_start(self,month):
         primary=engine.getj(self.d,self.primary_stagectrl,'CURSOR.json')
