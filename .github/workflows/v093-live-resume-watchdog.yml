@@ -1,4 +1,4 @@
-name: JARVIS resume all six from saved checkpoints
+name: JARVIS resume all seven from saved checkpoints
 on:
   push:
     paths:
@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Resume idle stages without cancelling active workers or changing cursors
+      - name: Resume all seven without cancelling active workers or changing cursors
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           python3 - <<'PY'
-          import json,os,time,urllib.request
+          import json,os,urllib.request,urllib.error
           repo=os.environ['GITHUB_REPOSITORY']
           base='https://api.github.com/repos/'+repo
           def api(path,method='GET',body=None):
@@ -32,58 +32,31 @@ jobs:
               with urllib.request.urlopen(request,timeout=30) as response:
                   raw=response.read();return json.loads(raw) if raw else {}
           paths=['v093-v2-01-raw.yml','v093-v2-02-qa.yml','v093-v2-03-price.yml',
-                 'v093-v2-04-financial.yml','v093-v2-05-chip.yml','v093-v2-06-reconcile-repair.yml']
+                 'v093-v2-04-financial.yml','v093-v2-05-chip.yml',
+                 'v093-v2-06-reconcile-repair.yml','v093-v2-07-raw-ascending.yml']
           active={}
-          # Use unfiltered recent runs: filtered status reads can lag transitions.
+          # If inventory cannot be read, fail closed rather than creating duplicates.
           for page in range(1,4):
               runs=api('/actions/runs?per_page=100&page='+str(page))['workflow_runs']
               for run in runs:
                   if run['status']!='completed':
                       active.setdefault(run['path'],[]).append({'id':run['id'],'status':run['status']})
               if len(runs)<100:break
-          # Recover only the observed RAW run that never acquired a runner.
-          # Recheck its status and jobs immediately before cancellation.
-          if os.environ.get('GITHUB_EVENT_NAME')=='push':
-              raw_path='.github/workflows/v093-v2-01-raw.yml'
-              stale=api('/actions/runs/39611764652')
-              if stale['status']=='queued':
-                  jobs=api('/actions/runs/39611764652/jobs')['jobs']
-                  if all(j['status']=='queued' and not j.get('steps') for j in jobs):
-                      api('/actions/runs/39611764652/cancel','POST')
-                      deadline=time.monotonic()+60
-                      while api('/actions/runs/39611764652')['status']!='completed':
-                          if time.monotonic()>deadline:raise RuntimeError('RAW_CANCEL_NOT_CONFIRMED_NO_DUPLICATE_DISPATCH')
-                          time.sleep(3)
-                      active[raw_path]=[r for r in active.get(raw_path,[]) if r['id']!=39611764652]
-                      print(json.dumps({'workflow':'v093-v2-01-raw.yml','decision':'CLEARED_OBSERVED_UNSTARTED_RAW_QUEUE'}),flush=True)
-                  elif not any(r['id']==39611764652 for r in active.get(raw_path,[])):
-                      active.setdefault(raw_path,[]).append({'id':39611764652,'status':stale['status']})
           for name in paths:
               path='.github/workflows/'+name
               if active.get(path):
-                  # One-time recovery of the observed queued CHIP run. Never cancel
-                  # any running job, or repeatedly replace queued runs on the timer.
-                  observed=active[path]
-                  if os.environ.get('GITHUB_EVENT_NAME')=='push' and name=='v093-v2-05-chip.yml' and any(r['id']==39803517719 for r in observed) and all(r['status']=='queued' for r in observed):
-                      idle=True
-                      for run in observed:
-                          jobs=api('/actions/runs/'+str(run['id'])+'/jobs')['jobs']
-                          idle=idle and all(j['status']=='queued' and not j.get('steps') for j in jobs)
-                      if idle:
-                          for run in observed:api('/actions/runs/'+str(run['id'])+'/cancel','POST')
-                          deadline=time.monotonic()+60
-                          while any(api('/actions/runs/'+str(r['id']))['status']!='completed' for r in observed):
-                              if time.monotonic()>deadline:raise RuntimeError('QUEUED_CHIP_CANCEL_NOT_CONFIRMED_NO_DUPLICATE_DISPATCH')
-                              time.sleep(3)
-                          print(json.dumps({'workflow':name,'decision':'REPLACE_UNSTARTED_QUEUED_RUN_ONCE'}),flush=True)
-                      else:
-                          print(json.dumps({'workflow':name,'decision':'KEEP_STARTED_CHIP'}),flush=True)
-                          continue
-                  else:
-                      print(json.dumps({'workflow':name,'decision':'KEEP_EXISTING','runs':observed}),flush=True)
-                      continue
+                  print(json.dumps({'workflow':name,'decision':'KEEP_EXISTING','runs':active[path]}),flush=True)
+                  continue
               payload={'ref':'main'}
-              if name!=paths[-1]:payload['inputs']={'minutes':'60'}
-              api('/actions/workflows/'+name+'/dispatches','POST',payload)
-              print(json.dumps({'workflow':name,'decision':'RESUME_SAVED_CHECKPOINT_DISPATCHED'}),flush=True)
+              if name!='v093-v2-06-reconcile-repair.yml':
+                  payload['inputs']={'minutes':'60'}
+              # Stage seven also checks its durable stop-on-meeting state before any
+              # source request. Recovery never clears that state or any worker cursor.
+              try:
+                  api('/actions/workflows/'+name+'/dispatches','POST',payload)
+                  print(json.dumps({'workflow':name,'decision':'RESUME_SAVED_CHECKPOINT_DISPATCHED'}),flush=True)
+              except urllib.error.HTTPError as exc:
+                  print(json.dumps({'workflow':name,'decision':'RETRY_NEXT_CHECK',
+                                    'http_status':exc.code,
+                                    'reset':exc.headers.get('X-RateLimit-Reset') if exc.headers else None}),flush=True)
           PY
