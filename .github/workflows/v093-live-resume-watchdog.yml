@@ -1,4 +1,4 @@
-name: JARVIS resume all seven from saved checkpoints
+name: JARVIS resume unpaused stages from saved checkpoints
 on:
   push:
     paths:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Resume all seven without cancelling active workers or changing cursors
+      - name: Resume stages 1-5 and 7; keep stage six paused
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -44,6 +44,9 @@ jobs:
               if len(runs)<100:break
           for name in paths:
               path='.github/workflows/'+name
+              if name=='v093-v2-06-reconcile-repair.yml':
+                  print(json.dumps({'workflow':name,'decision':'PAUSED_BY_USER_FIRST_PASS'}),flush=True)
+                  continue
               if active.get(path):
                   print(json.dumps({'workflow':name,'decision':'KEEP_EXISTING','runs':active[path]}),flush=True)
                   continue
