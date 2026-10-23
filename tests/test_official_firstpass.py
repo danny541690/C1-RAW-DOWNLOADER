@@ -3,6 +3,7 @@ import collections
 import concurrent.futures
 import datetime as dt
 import json
+import re
 import time
 import urllib
 import unittest
@@ -15,7 +16,7 @@ from scripts.v093_five_stage_durable_gate import terminal_owner
 source=ast.parse((Path(__file__).resolve().parents[1]/'scripts/v093_official_firstpass.py').read_text())
 nodes=[n for n in source.body if not isinstance(n,(ast.Import,ast.ImportFrom)) and not isinstance(n,ast.If)]
 ns=dict(PreviousWorker=object,urlparse=urlparse,collections=collections,dt=dt,json=json,time=time,
-        concurrent=concurrent,urllib=urllib,engine=SimpleNamespace(getj=Mock(),key=lambda j:j['period']))
+        concurrent=concurrent,urllib=urllib,re=re,engine=SimpleNamespace(getj=Mock(),key=lambda j:j['period']))
 exec(compile(ast.Module(body=nodes,type_ignores=[]),'official_worker','exec'),ns)
 Worker=ns['OfficialWorker']
 
@@ -50,14 +51,16 @@ class OfficialTests(unittest.TestCase):
         w.active='2026-10';w.circuit=collections.Counter();w.source_requests=collections.Counter()
         w.processed=0;w.saved=0;w.d=Mock();w.d.find.return_value={'id':'archive'}
         w.folder=Mock(return_value='folder');w.owned=Mock();w.save_state=Mock()
-        ns['native']=SimpleNamespace(request=Mock(return_value=b'original'),validate=Mock(return_value={'rows':1,'codes':['2330']}),sha=lambda b:'a'*64,stamp=lambda:'now')
+        original=b'{"stat":"OK","data":[["2330","--"]]}'
+        ns['native']=SimpleNamespace(request=Mock(return_value=original),tabular=Mock(return_value=([['2330','--']],{'2330'},0)),sha=lambda b:'a'*64,stamp=lambda:'now')
         ns['base']=SimpleNamespace(RUN='RAW',retryable=lambda e:False)
         ns['engine'].packed=Mock(return_value=b'archive')
         jobs=[dict(source='TWSE',url='https://www.twse.com.tw/a',category='prices_indices',period=p) for p in ('2026-10-21','2026-10-22')]
         w.fetch_batch(jobs,'units')
         self.assertEqual(w.saved,2);self.assertEqual(w.d.put.call_count,1)
         entries=ns['engine'].packed.call_args.args[0]
-        self.assertEqual([raw for receipt,raw in entries],[b'original',b'original'])
+        self.assertEqual([raw for receipt,raw in entries],[original,original])
+        self.assertTrue(all(e['status']=='RAW_DOWNLOADED_UNVERIFIED' and e['numeric_verified'] is False for e in w.state['units'].values()))
         self.assertTrue(all(e['evidence_file'].startswith('archive/') for e in w.state['units'].values()))
 
 if __name__=='__main__':unittest.main()
