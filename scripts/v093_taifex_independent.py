@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_ROUTE_HEALTH_AND_DUE_TRANSPORT_RECOVERY_V8_1_20261025'
+REPAIR_REVISION = 'TAIFEX_ROUTE_HEALTH_AND_DUE_TRANSPORT_RECOVERY_V8_2_20261025'
 # These official aliases have 238 paired saved responses with identical SHA.
 ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('largeTraderFutDown','dlLargeTraderFutDown'),
@@ -749,6 +749,14 @@ class Worker:
                 if self.state['discovery_attempts'][name]>=3:completed.append(name)
                 if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):raise
             self.save()
+    def wait_short_source_cooldown(self):
+        # A transient 60s pause must not turn into a whole scheduled interval.
+        # Long rate limits still checkpoint; never bypass or shorten host backoff.
+        now=time.time()
+        waits=[until-now for until in self.state.get('source_backoff',{}).values() if 0<until-now<=60]
+        if not waits or not self.live():return False
+        time.sleep(min(5,min(waits)))
+        return True
     def retry_due_history(self):
         jobs=[]
         for entry in self.state['receipts'].values():
@@ -773,7 +781,9 @@ class Worker:
                     history=self.history_jobs()
                     self.batch([j for j in history if j['kind']=='annual'],2)
                     self.batch(history,24)
-                    if (self.requests,self.saved)==before:break
+                    if (self.requests,self.saved)==before:
+                        if self.wait_short_source_cooldown():continue
+                        break
                 self.state['status']='ASC_CHECKPOINTED_WITH_OPEN_ITEMS'
                 return
             # Preserve data through reachable official APIs before slower website probes.
@@ -793,7 +803,9 @@ class Worker:
                 # Recover their retained rejected ZIPs first; newest years first.
                 self.batch([j for j in history if j['kind']=='annual'],2)
                 self.batch(history,24)
-                if (self.requests,self.saved)==before:break
+                if (self.requests,self.saved)==before:
+                    if self.wait_short_source_cooldown():continue
+                    break
             self.state['status']='CHECKPOINTED_CONTINUE_NEXT_WAKE' if self.live() else 'TIME_BUDGET_OR_BACKOFF_CHECKPOINT'
         except Exception as exc:
             self.state.update(status='BOOTSTRAP_OR_DISCOVERY_ERROR',last_error=type(exc).__name__+':'+str(exc)[:300])
