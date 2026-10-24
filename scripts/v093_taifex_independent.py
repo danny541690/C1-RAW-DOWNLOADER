@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_PEER_RECOVERY_AND_BOUNDED_TRANSPORT_V4_20261024'
+REPAIR_REVISION = 'TAIFEX_API_NATIVE_JSON_CSV_V5_20261025'
 # These official aliases have 238 paired saved responses with identical SHA.
 ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('largeTraderFutDown','dlLargeTraderFutDown'),
@@ -124,17 +124,41 @@ def csv_evidence(raw, start, end):
     return dict(rows=count, content_period={'min': lo.isoformat(), 'max': hi.isoformat()},
                 products=sorted(products), sessions=sorted(sessions), schema=header,footnotes=footnotes)
 
+API_CSV_SCHEMAS = {'DailyForeignExchangeRates': ['日期', '美元_新台幣(匯率)', '人民幣_新台幣(匯率)', '歐元_美元(匯率)', '美元_日幣(匯率)', '英鎊_美元(匯率)', '澳幣_美元(匯率)', '美元_港幣(匯率)', '美元_人民幣(匯率)', '美元_南非幣(匯率)', '紐幣_美元(匯率)'], 'DailyMarketReportOpt': ['日期', '契約', '到期月份(週別)', '履約價', '買賣權', '開盤價', '最高價', '最低價', '最後成交價', '成交量', '結算價', '未沖銷契約量', '最後最佳買價', '最後最佳賣價', '歷史最高價', '歷史最低價', '是否因訊息面暫停交易', '交易時段'], 'MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheDate': ['日期', '商品名稱', '身份別', '多方交易口數', '多方交易契約金額(千元)', '空方交易口數', '空方交易契約金額(千元)', '多空交易口數淨額', '多空交易契約金額淨額(千元)', '多方未平倉口數', '多方未平倉契約金額(千元)', '空方未平倉口數', '空方未平倉契約金額(千元)', '多空未平倉口數淨額', '多空未平倉契約金額淨額(千元)']}
+
+def api_csv_evidence(raw,job):
+    parsed=urllib.parse.urlparse(job.get('url',''))
+    route=parsed.path.removeprefix('/v1/')
+    if parsed.scheme!='https' or parsed.hostname!='openapi.taifex.com.tw' or parsed.path!='/v1/'+route:
+        raise ValueError('UNRECOGNIZED_API_CSV_ROUTE')
+    rows=list(csv.reader(io.StringIO(native_text(raw))))
+    if route=='DailyMarketReportFut':
+        required={'日期','契約','到期月份(週別)','開盤價','最高價','最低價','最後成交價','成交量','結算價','未沖銷契約量','交易時段'}
+        if not rows or rows[0][:3]!=['日期','契約','到期月份(週別)'] or not required.issubset(rows[0]) or len(set(rows[0]))!=len(rows[0]):
+            raise ValueError('API_CSV_SCHEMA_MISMATCH')
+    elif route not in API_CSV_SCHEMAS:raise ValueError('UNRECOGNIZED_API_CSV_ROUTE')
+    elif not rows or rows[0]!=API_CSV_SCHEMAS[route]:raise ValueError('API_CSV_SCHEMA_MISMATCH')
+    for row in rows[1:]:
+        if not any(v.strip() for v in row):continue
+        if len(row)!=len(rows[0]):raise ValueError('API_CSV_ROW_WIDTH')
+    # No historical arguments: use actual source dates, never capture day as data day.
+    ev=csv_evidence(raw,FLOOR,dt.date.fromisoformat(job['end']))
+    ev.update(native_format='csv',period_semantics='ACTUAL_SOURCE_DATE_ONLY_NO_HISTORICAL_PARAMETERS',
+              numeric_verified=False,pit_verified=False)
+    return ev
+
 def validate(raw, job):
     kind = job['kind']; start = dt.date.fromisoformat(job['start']); end = dt.date.fromisoformat(job['end'])
     if kind == 'snapshot':
         text=native_text(raw);reject_html(text)
+        if not text.lstrip().startswith(('{','[')):return api_csv_evidence(raw,job)
         rows = json.loads(text)
         if rows == []: raise OfficialEmpty('EMPTY_NATIVE_JSON_ARRAY_NOT_HISTORICAL_ABSENCE_PROOF')
         if not isinstance(rows, (list, dict)) or not rows: raise ValueError('EMPTY_OR_INVALID_API_RESPONSE')
         if isinstance(rows, dict) and any(k.lower() in ('error', 'errors') for k in rows): raise ValueError('API_ERROR')
         dates=[parse_date(v.get('Date','')) for v in rows if isinstance(v,dict)] if isinstance(rows,list) else []
         dates=[d.isoformat() for d in dates if d]
-        return {'rows': len(rows), 'content_period': {'min':min(dates),'max':max(dates)} if dates else None, 'period_semantics': 'ACTUAL_SOURCE_DATE_ONLY_NO_HISTORICAL_PARAMETERS'}
+        return {'native_format':'json','rows': len(rows), 'content_period': {'min':min(dates),'max':max(dates)} if dates else None, 'period_semantics': 'ACTUAL_SOURCE_DATE_ONLY_NO_HISTORICAL_PARAMETERS'}
     if kind in ('annual', 'tick'):
         with zipfile.ZipFile(io.BytesIO(raw)) as z:
             members = z.infolist()
@@ -358,7 +382,7 @@ class Worker:
         cache_key=year+'/'+period
         if cache_key not in self.folders:
             self.folders[cache_key]=self.d.folder(self.d.folder(self.d.folder(ROOT,year),'TAIFEX'),period)
-        parent=self.folders[cache_key];extension='zip' if job['kind'] in ('tick','annual') else ('json' if job['kind']=='snapshot' else 'csv')
+        parent=self.folders[cache_key];extension='zip' if job['kind'] in ('tick','annual') else (ev.get('native_format','json') if job['kind']=='snapshot' else 'csv')
         name=re.sub('[^a-zA-Z0-9_-]','_',job['key'])+'_'+digest(raw)+'.'+extension
         self.d.put(parent,name,raw,overwrite=False);file=self.d.find(parent,name)
         entry.update(ev,status='SAVED_BASIC_VERIFIED',file_id=file['id'],sha256=digest(raw),bytes=len(raw),
