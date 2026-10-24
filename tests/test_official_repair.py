@@ -9,9 +9,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock,patch
 from scripts.v093_five_stage_durable_gate import terminal_owner
+from scripts.v093_official_problem_catalog import problem_summary, unresolved_items
 
 source=ast.parse((Path(__file__).resolve().parents[1]/'scripts/v093_official_repair.py').read_text())
-ns=dict(OfficialWorker=object,SOURCES=('TWSE','TPEx','MOPS'),SAVED={'SAVED_BASIC_VERIFIED','RAW_DOWNLOADED_UNVERIFIED'},
+ns=dict(problem_summary=problem_summary,unresolved_items=unresolved_items,OfficialWorker=object,SOURCES=('TWSE','TPEx','MOPS'),SAVED={'SAVED_BASIC_VERIFIED','RAW_DOWNLOADED_UNVERIFIED'},
     native=SimpleNamespace(sha=lambda b:'a'*64,stamp=lambda:'now',request=Mock(return_value=b'raw'),request_data=Mock(return_value=None)),engine=SimpleNamespace(key=lambda j:'key',FIN_REPORTS=('CashflowStatement','IncomeStatement','BalanceSheet')),
     assert_official=Mock(),is_before_source_start=Mock(return_value=None),time=time,json=json,re=re,dt=dt)
 nodes=[n for n in source.body if not isinstance(n,(ast.Import,ast.ImportFrom,ast.If))]

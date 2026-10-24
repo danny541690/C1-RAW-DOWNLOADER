@@ -6,6 +6,9 @@ on:
       - '.github/workflows/v093-official-four-lane-repair.yml'
       - 'scripts/v093_official_repair.py'
       - 'scripts/v093_official_content_audit.py'
+      - 'scripts/v093_repair_coordination.py'
+      - 'scripts/v093_official_problem_catalog.py'
+      - 'tests/test_official_repair_v6.py'
   schedule:
     - cron: '7 * * * *'
   workflow_dispatch:

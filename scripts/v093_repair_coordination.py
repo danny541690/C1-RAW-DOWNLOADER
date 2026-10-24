@@ -69,3 +69,17 @@ def reserve_source(api, token, source, now=None, interval=3, retries=12):
         windows[source]=instant+interval
         if _put(api,token,sha,manifest,'repair: reserve shared source request window'):return True
     raise LeaseConflict('REPAIR_SOURCE_WINDOW_CAS_EXHAUSTED')
+
+
+def defer_source(api, token, source, seconds, now=None, retries=12):
+    """Share a source error cooldown across workers without shortening it."""
+    if source not in ('TWSE','TPEx','MOPS') or not 0 < seconds <= 86400:
+        raise ValueError('INVALID_SOURCE_COOLDOWN')
+    deadline=(time.time() if now is None else now)+seconds
+    for _ in range(retries):
+        sha,manifest=_read(api,token)
+        windows=manifest['jobs'].setdefault(PLAN+'_SOURCE_WINDOWS',{})
+        if windows.get(source,0)>=deadline:return windows[source]
+        windows[source]=deadline
+        if _put(api,token,sha,manifest,'repair: share source error cooldown across four lanes'):return deadline
+    raise LeaseConflict('REPAIR_SOURCE_COOLDOWN_CAS_EXHAUSTED')
