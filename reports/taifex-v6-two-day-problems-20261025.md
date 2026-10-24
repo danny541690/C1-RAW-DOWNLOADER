@@ -43,3 +43,5 @@ V6驗證同步14個官方表單定義。每份核對官方來源頁、action、�
 V6完整695項測試通過，含目錄來源／參數／日期安全、ASC分區、入口去重保留成功／空回覆／既有失敗次數、逐筆頁失敗重試、主機冷卻與摘要節流，兩端工作流程上線後各自再次執行全庫測試。
 
 官方參考：https://openapi.taifex.com.tw/ 、https://www.taifex.com.tw/cht/3/productOrderView 、https://www.taifex.com.tw/cht/9/tradersQAIS 、https://www.taifex.com.tw/cht/3/futContractsDateView 。官方提供不同項目與期間，不存在統一2000年起全項目免費歷史的保證。
+
+V6.1雲端驗證補充：V6的摘要統計對舊UNRESOLVED紀錄缺少interrupted_request時，sum收到None而使六中止（run40135548495）。CURSOR已持久化，六之一已開始新增表單補查。修正為明確布林計數，追加缺欄與null測試，且以實際DESC舊帳本重播save；完整696項測試通過。此為摘要錯誤，不是來源資料或SHA不一致。
