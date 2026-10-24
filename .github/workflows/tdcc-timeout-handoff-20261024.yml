@@ -1,0 +1,43 @@
+name: TDCC timeout checkpoint handoff
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/tdcc-timeout-handoff-20261024.yml']
+permissions:
+  contents: read
+  actions: write
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Release only the known obsolete TDCC run for the queued timeout worker
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os,json,time,urllib.request,urllib.error
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          def api(path,method='GET'):
+              req=urllib.request.Request(base+path,method=method,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(req,timeout=25) as r:
+                  b=r.read();return json.loads(b) if b else {}
+          rid=40083971629
+          old=api('/actions/runs/'+str(rid))
+          assert old['path']=='.github/workflows/v093-tdcc-independent.yml'
+          assert old['head_sha'].startswith('49b6cbc')
+          if old['status']!='completed':
+              try:api('/actions/runs/'+str(rid)+'/cancel','POST')
+              except urllib.error.HTTPError as e:
+                  if e.code not in (409,422):raise
+              force_at=time.monotonic()+30;deadline=time.monotonic()+150;forced=False
+              while api('/actions/runs/'+str(rid))['status']!='completed':
+                  if time.monotonic()>force_at and not forced:
+                      try:api('/actions/runs/'+str(rid)+'/force-cancel','POST')
+                      except urllib.error.HTTPError as e:
+                          if e.code not in (409,422):raise
+                      forced=True
+                  if time.monotonic()>deadline:raise RuntimeError('OLD_TDCC_RUN_NOT_TERMINAL')
+                  time.sleep(5)
+          print('TDCC_timeout_HANDOFF_READY_RAW_AND_CHECKPOINTS_PRESERVED',flush=True)
+          PY
