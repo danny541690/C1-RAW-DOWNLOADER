@@ -1,1 +1,1 @@
-{"jobs":{}}
+{"jobs": {"REPAIR_FOUR_FRONTIERS_20261024_V1": {"plan": "REPAIR_FOUR_FRONTIERS_20261024_V1", "workers": {"EARLY_DESC": {"status": "ACTIVE", "active_month": "2006-06"}}, "months": {"2006-06": {"lane": "EARLY_DESC", "status": "CLAIMED_NOT_CERTIFIED"}}}}}
