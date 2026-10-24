@@ -1,0 +1,17 @@
+name: Four-source repair review
+on:
+  push:
+    branches: [review/four-source-repair-20261024]
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Verify repair, meeting election, request encoding and RAW preservation
+        run: python -m unittest tests.test_repair_prelaunch.MeetingTests tests.test_official_repair tests.test_official_content_audit tests.test_repair_request_encoding tests.test_stage06_ledger tests.test_stage06_prelaunch_bridge -q

@@ -72,6 +72,25 @@ class RepairTests(unittest.TestCase):
         return dict(source='TWSE',url='https://www.twse.com.tw/a',category='prices_indices',month='2026-10',period='2026-10-22')
     def test_finmind_never_selected(self):
         self.assertFalse(ns['needs_review']({'source':'FinMind','status':'ISOLATED_MISSING'},{}))
+    def test_local_parameter_failure_is_not_a_source_call(self):
+        w=self.worker()
+        with patch.object(ns['native'],'request_data',side_effect=ValueError('INVALID_PARAMS')):
+            w.repair_one(self.job(),'units',[])
+        row=w.journal['units']['key']
+        self.assertEqual(row['status'],'LOCAL_PARAM_ENCODING_ERROR')
+        self.assertEqual(row['attempts'],0)
+        self.assertEqual(sum(w.source_requests.values()),0)
+        ns['native'].request.assert_not_called()
+
+    def test_shared_source_window_wait_does_not_count_attempt(self):
+        w=self.worker();w.lane='EARLY_ASC';w.api='api';w.token='token'
+        with patch.dict(ns,reserve_source=Mock(return_value=False)):
+            w.repair_one(self.job(),'units',[])
+        row=w.journal['units']['key']
+        self.assertEqual(row['status'],'UNRESOLVED_SOURCE_BACKOFF')
+        self.assertEqual(row['attempts'],0)
+        self.assertLess(row['next_retry_at'],time.time()+5)
+        ns['native'].request.assert_not_called()
     def test_known_unsupported_period_not_selected(self):
         self.assertFalse(ns['needs_review']({'source':'TWSE','status':'OFFICIAL_PERIOD_NOT_PROVIDED'},{}))
     def test_verified_and_unflagged_skipped(self):
@@ -89,8 +108,8 @@ class RepairTests(unittest.TestCase):
         w=self.worker();w.state['units']['key']=dict(self.job(),status='SAVED_BASIC_VERIFIED',sha256='s',evidence_file='f/a')
         ns['cached_payload']=Mock(return_value=(b'raw','archive'));ns['validate_content']=Mock(return_value={'rows':1,'codes':['2330'],'row_audit':{'unverified':[]}})
         w.repair_one(self.job(),'units',[{'kind':'PARSER_OR_SEMANTIC_CORRECTION_REQUIRED'}])
-        self.assertEqual(w.journal['units']['key']['status'],'SOURCE_CHECKED_OPEN_QUALITY_ITEMS')
-        self.assertEqual(sum(w.source_requests.values()),1)
+        self.assertEqual(w.journal['units']['key']['status'],'LOCAL_CONTENT_CHECKED_OPEN_QUALITY_ITEMS')
+        self.assertEqual(sum(w.source_requests.values()),0)
         self.assertFalse(w.journal['units']['key']['complete'])
     def test_attempt_cap_survives_new_runner(self):
         w=self.worker();w.journal['units']['key']={'attempts':3,'quality_revision':ns['QUALITY_REVISION'],'input_signature':'a'*64}
@@ -130,12 +149,12 @@ class RepairTests(unittest.TestCase):
         w.journal['units']['key']={'status':'CONTENT_CHECK_PASS','raw_sha256':'same','quality_revision':'V2'}
         w.repair_one(self.job(),'units',[])
         ns['native'].request.assert_not_called()
-    def test_exhausted_cooldown_cycles_remain_visible(self):
+    def test_circuit_wait_does_not_exhaust_download_cycles(self):
         w=self.worker();w.circuit['TWSE']=2
         w.journal['units']['key']={'quality_revision':ns['QUALITY_REVISION'],'input_signature':'a'*64,
             'attempts':3,'retry_cycle':3,'next_retry_at':time.time()-1}
         w.repair_one(self.job(),'units',[])
-        self.assertEqual(w.journal['units']['key']['status'],'UNRESOLVED_RETRY_CYCLES_EXHAUSTED')
+        self.assertEqual(w.journal['units']['key']['status'],'UNRESOLVED_SOURCE_BACKOFF')
         self.assertFalse(w.journal['units']['key']['complete'])
     def test_lease_recovery_matches_repair_workflow(self):
         api='https://api.github.com/repos/o/r/contents/.github/live-state/five-stage-leases.json'

@@ -80,7 +80,8 @@ class SparseCheckpointTests(unittest.TestCase):
 
     def test_real_gap_month_and_explicit_limit_checkpoint_immediately(self):
         result,writes,control=self.run_reconciler({'PRICE':{'gaps':1}},2)
-        self.assertEqual(writes,2);self.assertEqual(control['next_month'],'2026-08')
+        # One revision migration plus two per-month checkpoints.
+        self.assertEqual(writes,3);self.assertEqual(control['next_month'],'2026-08')
 
 
 if __name__=='__main__':unittest.main()
