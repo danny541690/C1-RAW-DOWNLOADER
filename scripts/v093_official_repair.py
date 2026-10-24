@@ -17,6 +17,7 @@ from scripts.v093_standard_r1 import C1
 from scripts.v093_five_stage_durable_gate import commit, LeaseBusy
 from scripts.v093_raw_month_coordination import capture_history_month
 from scripts.v093_repair_coordination import LANES, lane_months, claim_month, reserve_source
+from scripts.v093_repair_execution import reparse_financial,pending_month,due_months,REPARSE_REVISION
 
 REVISION='OFFICIAL_TARGETED_REPAIR_20261023_V1'
 QUALITY_REVISION='OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4'
@@ -103,6 +104,7 @@ class RepairWorker(OfficialWorker):
         if direction=='DESC':self.months.reverse()
         if lane is not None:self.months=lane_months(lane)
         self.cache=ArchiveCache();self.checked=0;self.repaired=0;self.downloaded=0;self.source_requests=collections.Counter()
+        self.pending_index=engine.getj(self.d,self.stagectrl,'RETRY_MONTHS.json') or {}
         self.roots={}
         for stage in ('RAW','QA1','PRICE','FINANCIAL','CHIP'):
             folder=self.d.find(self.control,stage);self.roots[stage]=folder['id'] if folder else None
@@ -126,6 +128,9 @@ class RepairWorker(OfficialWorker):
     def save_journal(self):
         self.journal['updated_utc']=native.stamp()
         self.putj(self.monthctrl,'OFFICIAL_REPAIR_STATE.json',self.journal)
+        if hasattr(self,'pending_index'):
+            self.pending_index[self.journal['month']]=pending_month(self.journal)
+            self.putj(self.stagectrl,'RETRY_MONTHS.json',self.pending_index)
         if time.monotonic()-getattr(self,'_last_progress',0)>=60:
             report=dict(self.cursor,run_id=self.owner,updated_utc=native.stamp(),
                 current_work_month=self.journal.get('month'),batch_complete=False,
@@ -179,12 +184,22 @@ class RepairWorker(OfficialWorker):
                     local_stats=validate_content(local_raw,job)
                     row['local_check']=local_stats;self.checked+=1
                     if flags or local_stats.get('row_audit',{}).get('unverified',[]):
+                        if job['category'] in engine.FIN_REPORTS and (row.get('reparse_receipt',{}).get('parser_revision')!=REPARSE_REVISION or row.get('reparse_receipt',{}).get('raw_sha256')!=old['sha256']):
+                            try:
+                                target=self.d.folder(self.monthctrl,'REPARSE_STAGING')
+                                row['reparse_receipt']=reparse_financial(local_raw,dict(job,unit_id=key),old['sha256'],self.owned,
+                                    lambda name,data:self.d.put(target,name,data,'application/octet-stream',overwrite=False),
+                                    lambda name:self.d.read(target,name))
+                            except Exception as exc:
+                                row.update(status='LOCAL_REPARSE_FAILED',terminal=True,complete=False,
+                                    error=type(exc).__name__+':'+str(exc)[:300],next_action='FIX_PARSER_KEEP_RAW')
+                                return
                         # Derived/parser/PIT flags are not evidence that source bytes are bad.
                         # Preserve RAW and route the unresolved quality finding to reparse.
                         row.update(status='LOCAL_CONTENT_CHECKED_OPEN_QUALITY_ITEMS',terminal=True,
                             complete=False,raw_sha256=old['sha256'],review_flags=flags,
                             open_checks=local_stats.get('row_audit',{}).get('unverified',[]),
-                            next_action='REPARSE_EXISTING_RAW',source_rechecked=False,
+                            next_action='VERIFY_ACCOUNTING_UNITS_AND_PIT' if row.get('reparse_receipt') else 'REPARSE_EXISTING_RAW',source_rechecked=False,
                             numeric_verified=False,pit_verified=False)
                         return
                     if not flags and not local_stats.get('row_audit',{}).get('unverified',[]):
@@ -335,8 +350,21 @@ class RepairWorker(OfficialWorker):
             month=PARAMETER_INCIDENT_MONTH,acquired=bool(revisited),
             month_incomplete=self.month_incomplete,budget_seconds=budget)),flush=True)
 
+    def run_due_work(self):
+        # Due work runs even after a frontier is paused at its meeting point.
+        original=self.until;budget=min(480,max(0,(original-time.monotonic())/4))
+        if budget<30:return
+        self.until=min(original,time.monotonic()+budget)
+        try:
+            for month in due_months(getattr(self,'pending_index',{})):
+                if time.monotonic()+30>=self.until:break
+                self.month_incomplete=False
+                capture_history_month(self,month)
+        finally:self.until=original
+
     def run(self):
         try:
+            if getattr(self,'lane',None):self.run_due_work()
             self.revisit_parameter_incident()
             while self.cursor['month_index']<len(self.months) and time.monotonic()<self.until:
                 month=self.months[self.cursor['month_index']]
