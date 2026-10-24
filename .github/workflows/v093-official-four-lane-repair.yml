@@ -9,6 +9,7 @@ on:
       - 'scripts/v093_repair_coordination.py'
       - 'scripts/v093_official_problem_catalog.py'
       - 'tests/test_official_repair_v6.py'
+      - 'tests/test_official_repair_v7.py'
   schedule:
     - cron: '7 * * * *'
   workflow_dispatch:
