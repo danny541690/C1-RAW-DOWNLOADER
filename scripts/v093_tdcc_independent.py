@@ -96,12 +96,26 @@ def restore_history(state,read):
  state['history_receipts']=json.loads(raw) if raw else {}
  return state['history_receipts']
 
+PARTITION_DATE='20260501'
+def assigned_dates(dates,direction):
+ return sorted({d for d in dates if (d<PARTITION_DATE)==(direction=='ASC')},reverse=direction=='DESC')
+
 class Worker:
- def __init__(self,minutes):
+ def __init__(self,minutes,direction='DESC'):
   from scripts.annual_actual_firstpass import Drive,service
   self.d=Drive(service());self.d.direct_readback=True
-  self.ctrl=self.d.folder(REPORT,'TDCC_INDEPENDENT_STAGE05')
+  self.direction=direction
+  self.ctrl=self.d.folder(REPORT,'TDCC_INDEPENDENT_STAGE05_ASC' if direction=='ASC' else 'TDCC_INDEPENDENT_STAGE05')
   raw=self.d.read(self.ctrl,'CURSOR.json');self.state=json.loads(raw) if raw else {'revision':'TDCC_INDEPENDENT_V1','receipts':{},'history_receipts':{},'history_date_index':0,'history_code_index':0}
+  if direction=='ASC':
+   inherited=self.d.read(self.d.folder(REPORT,'TDCC_INDEPENDENT_STAGE05'),'CURSOR.json')
+   if inherited:
+    previous=json.loads(inherited)
+    for key in ('distribution_codes','bulk_distribution_date','catalog_spec'):
+     if key not in self.state and key in previous:self.state[key]=previous[key]
+    for key,entry in previous.get('receipts',{}).items():
+     if entry.get('status')=='SAVED_BASIC_VERIFIED':self.state['receipts'].setdefault(key,entry)
+  self.state['direction']=direction
   restore_history(self.state,lambda name:self.d.read(self.ctrl,name))
   self.until=time.monotonic()+minutes*60;self.started=stamp();self.requests=0;self.saved=0;self.skipped=0;self.folders={}
   self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
@@ -137,7 +151,7 @@ class Worker:
   self.d.put(self.ctrl,'CURSOR.json',json.dumps(cursor,ensure_ascii=False).encode(),'application/json',overwrite=True)
   self.write_status()
  def write_status(self):
-  report=dict(repair_revision=REPAIR_REVISION,source_empty=sum(r.get('status')=='SKIPPED_SOURCE_EMPTY' for b in ('receipts','history_receipts') for r in self.state[b].values()),status=self.state.get('status','CATALOG_CAPTURE'),active_date=self.state.get('active_date'),active_code=self.state.get('active_code'),availability=self.state.get('availability'),source_requests_this_run=self.requests,saved_this_run=self.saved,skipped_this_run=self.skipped,snapshot_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['receipts'].values()),history_saved=sum(r.get('saved',0) for date,r in self.state.get('history_date_results',{}).items() if date!=self.state.get('history_receipt_date'))+sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['history_receipts'].values()),history_saved_scope='RECONCILED_DATE_RECEIPTS_ONLY',pending_history_dates=[d for d,r in self.state.get('history_date_results',{}).items() if r.get('unresolved',0)],unresolved=sum(r.get('status')=='UNRESOLVED' for b in ('receipts','history_receipts') for r in self.state[b].values()),scope='ALL_OFFICIAL_OPENAPI_DATASETS_PLUS_WEEKLY_CURRENT_DISTRIBUTION_SECURITY_CANDIDATES',historical_universe_complete=False,coverage_certified=False,numeric_verified=False,pit_verified=False,started_utc=self.started,updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
+  report=dict(direction=self.state.get('direction','DESC'),assigned_range={'min':'2000-01-01' if self.state.get('direction')=='ASC' else '2026-05-01','max':'2026-04-30' if self.state.get('direction')=='ASC' else 'LATEST_OFFICIAL'},repair_revision=REPAIR_REVISION,source_empty=sum(r.get('status')=='SKIPPED_SOURCE_EMPTY' for b in ('receipts','history_receipts') for r in self.state[b].values()),status=self.state.get('status','CATALOG_CAPTURE'),active_date=self.state.get('active_date'),active_code=self.state.get('active_code'),availability=self.state.get('availability'),source_requests_this_run=self.requests,saved_this_run=self.saved,skipped_this_run=self.skipped,snapshot_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['receipts'].values()),history_saved=sum(r.get('saved',0) for date,r in self.state.get('history_date_results',{}).items() if date!=self.state.get('history_receipt_date'))+sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['history_receipts'].values()),history_saved_scope='RECONCILED_DATE_RECEIPTS_ONLY',pending_history_dates=[d for d,r in self.state.get('history_date_results',{}).items() if r.get('unresolved',0)],unresolved=sum(r.get('status')=='UNRESOLVED' for b in ('receipts','history_receipts') for r in self.state[b].values()),scope='ALL_OFFICIAL_OPENAPI_DATASETS_PLUS_WEEKLY_CURRENT_DISTRIBUTION_SECURITY_CANDIDATES',historical_universe_complete=False,coverage_certified=False,numeric_verified=False,pit_verified=False,started_utc=self.started,updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
   date=self.state.get('history_receipt_date')
   report['active_date_progress']=history_summary(date,self.state.get('distribution_codes',[]),self.state.get('history_receipts',{})) if date else None
   report['unresolved_error_counts']={}
@@ -231,6 +245,7 @@ class Worker:
   self.d.put(self.ctrl,'DATE_OPTIONS_'+sha(page)+'.html',page,'text/html',overwrite=False);self.save()
   priority=['/v1/opendata/1-5','/v1/opendata/1-1','/v1/opendata/1-4']
   paths=sorted(spec['paths'],key=lambda p:(priority.index(p) if p in priority else 9,p))
+  if self.direction=='ASC':paths=[]  # Live snapshots are owned by DESC only.
   for path in paths:
    if time.monotonic()>self.until-40:break
    if not re.fullmatch('/v1/opendata/[0-9]+-[0-9]+(?:-[0-9]+)?',path):continue
@@ -250,6 +265,9 @@ class Worker:
     self.state.update(distribution_codes=codes,completed_dates=[],universe_padding_migration='STRIP_SOURCE_PADDING_V2');self.save()
   if not codes:raise ValueError('NO_HISTORICAL_CANDIDATES_NOT_COMPLETE')
   if migrate_history(self.state):self.save()
+  dates=assigned_dates(dates,self.direction)
+  self.state['assigned_available_dates']=dates
+  self.state['outside_official_menu']='NOT_PROVIDED_BY_THIS_QUERY_NO_SYNTHETIC_DOWNLOADS'
   for date in dates:
    if time.time()<self.state.get('resume_after_epoch',0):break
    if date in self.state.get('visited_dates',[]) and not self.state.get('history_date_results',{}).get(date,{}).get('unresolved',0):continue
@@ -277,7 +295,7 @@ class Worker:
   self.save()
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');a=p.parse_args()
  if not 1<=a.minutes<=50:raise ValueError('INVALID_RUNTIME')
- Worker(a.minutes).run()
+ Worker(a.minutes,a.direction).run()
 if __name__=='__main__':main()
