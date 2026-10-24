@@ -70,13 +70,19 @@ def migrate_history(state):
  state.update(completed_dates=[],visited_dates=[],history_date_results={},history_completion_revision=REPAIR_REVISION,status='RESTART_NEWEST_OFFICIAL_DATE')
  return True
 
+def restore_history(state,read):
+ date=state.get('history_receipt_date')
+ raw=read('HISTORY_'+date+'.json') if date else None
+ state['history_receipts']=json.loads(raw) if raw else {}
+ return state['history_receipts']
+
 class Worker:
  def __init__(self,minutes):
   from scripts.annual_actual_firstpass import Drive,service
   self.d=Drive(service());self.d.direct_readback=True
   self.ctrl=self.d.folder(REPORT,'TDCC_INDEPENDENT_STAGE05')
   raw=self.d.read(self.ctrl,'CURSOR.json');self.state=json.loads(raw) if raw else {'revision':'TDCC_INDEPENDENT_V1','receipts':{},'history_receipts':{},'history_date_index':0,'history_code_index':0}
-  self.state.setdefault('history_receipts',{})
+  restore_history(self.state,lambda name:self.d.read(self.ctrl,name))
   self.until=time.monotonic()+minutes*60;self.started=stamp();self.requests=0;self.saved=0;self.skipped=0;self.folders={}
   self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
  def save(self):
