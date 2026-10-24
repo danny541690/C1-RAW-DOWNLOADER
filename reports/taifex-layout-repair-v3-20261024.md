@@ -7,3 +7,5 @@ Actual replay: 2021-06 block trades SHA d20c37941b0e1c315dce31da3c7ef922b38fa1ee
 Still open: multiple officially advertised OpenAPI routes redirect to the Swagger homepage (confirmed AcceptableCollateralGovernmentBonds), whereas DailyMarketReportFut returns JSON. Keep these routes unresolved with backoff, never report HTML as JSON or no-data. Generic HTML errors and exhausted HTTP520 remain distinct unresolved items. Official exact no-data alerts remain skipped without certifying permanent historical absence.
 
 Validation: 31 targeted TAIFEX tests and 622 repository tests passed locally. Both deployment workflows run the full repository suite before source/Drive work.
+
+Follow-up V3.1: official options large-trader CSV has 買賣權 before expiry and three 備註 footers. Both largeTraderOptDown and dlLargeTraderOptDown actual 2022-08 bytes now pass 10028 rows, SHA 3b5fa9cd3ed53d888fb014c797093007658917ea362e4242c2cf417f216ea5e9. Full suite now 623 passing tests. V3 cloud receipts already confirmed four retained 2004-07..10 futures files, 1992 rows, source SHA preserved and remote readback verified; V3.1 preserves them.
