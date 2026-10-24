@@ -9,6 +9,7 @@ on:
       - 'tests/test_taifex_recovery_v4.py'
       - 'tests/test_taifex_api_native_v5.py'
       - 'tests/test_taifex_catalog_v6.py'
+      - 'tests/test_taifex_official_mirror_v7.py'
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
