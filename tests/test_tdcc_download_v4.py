@@ -45,3 +45,31 @@ class DownloadV4Tests(unittest.TestCase):
   self.assertEqual(w.state['receipts']['old']['status'],'SKIPPED_SOURCE_EMPTY');self.assertEqual(w.state['receipts']['bad']['status'],'UNRESOLVED')
 
 if __name__=='__main__':unittest.main()
+
+class TimeoutResumeTests(unittest.TestCase):
+ def test_due_failed_codes_precede_new_candidates(self):
+  r={'20251031|2404':dict(status='UNRESOLVED',attempts=1,retry_after_epoch=10),
+     '20251031|2478':dict(status='UNRESOLVED',attempts=1,retry_after_epoch=99)}
+  codes=m.ordered_history_codes('20251031',['2330','2404','2478','0050'],r,now=20)
+  self.assertEqual(codes[0],'2404');self.assertEqual(codes[1:3],['0050','2330'])
+ def test_exhausted_and_saved_receipts_are_not_due(self):
+  r={'20251031|2404':dict(status='UNRESOLVED',attempts=3),
+     '20251031|2478':dict(status='SAVED_BASIC_VERIFIED',sha256='keep')}
+  self.assertEqual(m.ordered_history_codes('20251031',['2404','2330','2478'],r,now=20)[0],'2330')
+  self.assertEqual(r['20251031|2478']['sha256'],'keep')
+ def test_timeout_retry_preserves_cap_and_records_phase(self):
+  w=DownloadV4Tests().worker();w.state['history_receipts']['20251031|2404']=dict(status='UNRESOLVED',attempts=1,repair_revision=m.REPAIR_REVISION)
+  def fail(*args):raise TimeoutError('read timed out')
+  w.request=fail
+  w.process('20251031|2404',m.QUERY,'distribution_20251031_2404','html','20251031','2404')
+  e=w.state['history_receipts']['20251031|2404'];self.assertEqual(e['attempts'],2)
+  self.assertEqual(e['request_phase'],'GET_QUERY_FORM');self.assertEqual(e['error_class'],'TRANSPORT_ERROR')
+  self.assertEqual(e['status'],'UNRESOLVED');self.assertGreater(e['retry_after_epoch'],time.time())
+ def test_insufficient_run_budget_does_not_spend_attempt(self):
+  w=DownloadV4Tests().worker();w.until=time.monotonic()+90
+  w.request=lambda *args:self.fail('no request within reserved shutdown budget')
+  self.assertFalse(w.process('new',m.QUERY,'new'))
+  self.assertNotIn('new',w.state['receipts'])
+ def test_transport_release_does_not_restart_history_frontiers(self):
+  s=dict(history_completion_revision=m.REPAIR_REVISION,visited_dates=['20261022'],completed_dates=['20261022'])
+  self.assertFalse(m.migrate_history(s));self.assertEqual(s['visited_dates'],['20261022'])

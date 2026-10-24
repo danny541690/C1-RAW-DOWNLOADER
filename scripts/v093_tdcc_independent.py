@@ -6,6 +6,7 @@ REPORT='1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit'
 SPEC='https://openapi.tdcc.com.tw/tdcc-opendata-api-docs'
 QUERY='https://www.tdcc.com.tw/portal/zh/smWeb/qryStock'
 REPAIR_REVISION='TDCC_EMPTY_RETRY_AND_PROGRESS_V4'
+TRANSPORT_REVISION='TDCC_TIMEOUT_PRIORITY_RESUME_V5'
 class SourceEmpty(ValueError):pass
 class QueryForm(HTMLParser):
  def __init__(self):super().__init__();self.fields={}
@@ -100,6 +101,35 @@ PARTITION_DATE='20260501'
 def assigned_dates(dates,direction):
  return sorted({d for d in dates if (d<PARTITION_DATE)==(direction=='ASC')},reverse=direction=='DESC')
 
+def history_plan(dates,direction,today):
+ requested_start=dt.date(2000,1,1)
+ menu=sorted(set(dates));available=assigned_dates(menu,direction)
+ lower=requested_start if direction=='ASC' else dt.date(2026,5,1)
+ upper=min(today,dt.date(2026,4,30)) if direction=='ASC' else today
+ not_offered=[]
+ if menu:
+  first=dt.datetime.strptime(menu[0],'%Y%m%d').date()
+  end=min(upper,first-dt.timedelta(days=1))
+  if lower<=end:
+   not_offered.append(dict(start=lower.isoformat(),end=end.isoformat(),
+     status='NOT_OFFERED_BY_THIS_WEEKLY_QUERY',downloaded=False,
+     historical_absence_certified=False,next_action='OTHER_OFFICIAL_ARCHIVE_REQUIRED'))
+ return dict(requested_range={'start':requested_start.isoformat(),'end':today.isoformat()},
+   requested_scan_start=requested_start.isoformat() if direction=='ASC' else today.isoformat(),
+   direction=direction,assigned_range={'start':lower.isoformat(),'end':upper.isoformat()},
+   first_offered_date=menu[0] if menu else None,last_offered_date=menu[-1] if menu else None,
+   first_assigned_available_date=available[0] if available else None,
+   not_offered_intervals=not_offered,scope='OFFICIAL_WEEKLY_QUERY_MENU_ONLY',coverage_certified=False)
+
+def ordered_history_codes(date,codes,receipts,now=None):
+ now=time.time() if now is None else now
+ def priority(code):
+  entry=receipts.get(date+'|'+code,{})
+  due=(entry.get('status') in ('UNRESOLVED','REQUEST_INTENT') and entry.get('attempts',0)<3
+       and entry.get('retry_after_epoch',0)<=now)
+  return (not due,code not in ('2330','2317','0050'),code)
+ return sorted(codes,key=priority)
+
 class Worker:
  def __init__(self,minutes,direction='DESC'):
   from scripts.annual_actual_firstpass import Drive,service
@@ -155,6 +185,8 @@ class Worker:
   date=self.state.get('history_receipt_date')
   report['active_date_progress']=history_summary(date,self.state.get('distribution_codes',[]),self.state.get('history_receipts',{})) if date else None
   report['unresolved_error_counts']={}
+  report['transport_revision']=TRANSPORT_REVISION
+  report['history_plan']=self.state.get('history_plan')
   for b in ('receipts','history_receipts'):
    for entry in self.state.get(b,{}).values():
     if entry.get('status')=='UNRESOLVED':
@@ -166,7 +198,7 @@ class Worker:
   time.sleep(1)
   self.requests+=1
   req=urllib.request.Request(url,data=data,headers={'User-Agent':'Mozilla/5.0 JARVIS-TDCC/1.0','Accept':'application/json,text/html','Referer':QUERY})
-  with self.opener.open(req,timeout=22) as r:
+  with self.opener.open(req,timeout=40) as r:
    if urllib.parse.urlparse(r.geturl()).hostname not in ('www.tdcc.com.tw','openapi.tdcc.com.tw'):raise ValueError('NON_OFFICIAL_REDIRECT')
    b=r.read(80000001)
   if len(b)>80000000:raise ValueError('RESPONSE_LIMIT')
@@ -190,18 +222,20 @@ class Worker:
    old=dict(old,prior_error=old.get('error'),prior_attempts=old.get('attempts'),attempts=0,repair_revision=REPAIR_REVISION)
   if old.get('attempts',0)>=3:self.skipped+=1;return True
   if old.get('retry_after_epoch',0)>time.time():self.skipped+=1;return True
-  start=time.monotonic()
   for attempt in range(old.get('attempts',0),old.get('attempts',0)+1):
-   if time.monotonic()>self.until-35 or time.monotonic()-start>65:return False
+   if time.monotonic()>self.until-100:return False
    e=dict(old,status='REQUEST_INTENT',attempts=attempt+1,url=url,date=date,code=code,title=label);bucket[key]=e;self.save()
    raw=None
    try:
     if date:
+     e['request_phase']='GET_QUERY_FORM'
      page=self.request(QUERY).decode('utf-8-sig')
      fields=query_fields(page,date,code)
+     e['request_phase']='POST_HISTORY_QUERY'
      raw=self.request(QUERY,urllib.parse.urlencode(fields).encode());count=validate_history(raw,date,code)
      month=date[:4]+'-'+date[4:6];period={'min':date,'max':date}
     else:
+     e['request_phase']='GET_OPENAPI'
      raw=self.request(url);rows=json.loads(raw.decode('utf-8-sig'))
      if not isinstance(rows,list) or any(not isinstance(r,dict) for r in rows):raise ValueError('NOT_NATIVE_ROW_ARRAY')
      if not rows:raise SourceEmpty('EMPTY_NATIVE_JSON_NOT_ABSENCE_CERTIFICATION')
@@ -211,11 +245,15 @@ class Worker:
      if url.endswith('/1-5'):
       self.state['bulk_distribution_date']=period.get('max','')
       self.state['distribution_codes']=sorted({str(r.get('證券代號','')).strip() for r in rows if re.fullmatch('[0-9A-Za-z]{4,8}',str(r.get('證券代號','')).strip())})
+    e['request_phase']='PERSIST_AND_REMOTE_READBACK'
     evidence=self.persist(raw,label,month,'html' if date else 'json')
     e.pop('error',None)
     e.update(evidence,status='SAVED_BASIC_VERIFIED',rows=count,content_period=period,captured_utc=stamp(),period_semantics='SOURCE_RESPONSE_RANGE_NOT_REQUESTED_MONTH',numeric_verified=False,pit_verified=False)
     bucket[key]=e;self.save();print(json.dumps({'key':key,'status':e['status'],'rows':count,'range':period}),flush=True);return True
    except Exception as exc:
+    if isinstance(exc,(TimeoutError,ConnectionError,urllib.error.URLError)):
+     # A later bounded retry starts a fresh official session/form handshake.
+     self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     
     if raw is not None:
      qname='UNRESOLVED_'+sha(raw)+'.raw'
@@ -242,6 +280,7 @@ class Worker:
   page=self.request(QUERY);text=page.decode('utf-8-sig');dates=sorted(set(re.findall(r'<option\s+value="(20\d{6})"',text)),reverse=True)
   dates=[d for d in dates if '20000101'<=d<=today.replace('-','')]
   self.state['availability']={'weekly_distribution_dates':dates,'earliest':min(dates) if dates else None,'latest':max(dates) if dates else None,'official_retention':'ONE_YEAR_FOR_WEEKLY_DISTRIBUTION','requested_floor':'2000-01-01','outside_retention':'NOT_AVAILABLE_THROUGH_THIS_OFFICIAL_QUERY_NOT_DOWNLOADED','other_endpoints':'NO_DATE_PARAMETERS_IN_OPENAPI_CAPTURE_ALL_RETURNED_ROWS_AND_REPORT_ACTUAL_RANGE','checked_utc':stamp()}
+  self.state['history_plan']=history_plan(dates,self.direction,dt.date.fromisoformat(today))
   self.d.put(self.ctrl,'DATE_OPTIONS_'+sha(page)+'.html',page,'text/html',overwrite=False);self.save()
   priority=['/v1/opendata/1-5','/v1/opendata/1-1','/v1/opendata/1-4']
   paths=sorted(spec['paths'],key=lambda p:(priority.index(p) if p in priority else 9,p))
@@ -279,7 +318,7 @@ class Worker:
     self.state['history_receipt_date']=date
     previous=self.d.read(self.ctrl,'HISTORY_'+date+'.json')
     self.state['history_receipts']=json.loads(previous) if previous else {}
-   ordered=sorted(codes,key=lambda c:(c not in ('2330','2317','0050'),c))
+   ordered=ordered_history_codes(date,codes,self.state['history_receipts'])
    for code in ordered:
     if time.monotonic()>self.until-45:break
     self.state.update(active_date=date,active_code=code,status='HISTORICAL_DOWNLOAD')

@@ -1,0 +1,23 @@
+{
+  "menu": {
+    "earliest": "20251031",
+    "latest": "20261022"
+  },
+  "requests": [
+    {
+      "date": "20000107",
+      "status": "OFFICIAL_SOURCE_EMPTY_NOT_ABSENCE_CERTIFIED",
+      "sha256": "5dcd0167b4f7313aa284d4fbda1855458c50c2a642ece3aad52ea1575a98a9d8"
+    },
+    {
+      "date": "20130104",
+      "status": "OFFICIAL_SOURCE_EMPTY_NOT_ABSENCE_CERTIFIED",
+      "sha256": "6a1d6f1c57bc21e1a8d61bc45b18b0badb972a4bc674430923c0419dad305439"
+    },
+    {
+      "date": "20200103",
+      "status": "OFFICIAL_SOURCE_EMPTY_NOT_ABSENCE_CERTIFIED",
+      "sha256": "35a0dedafea486e88a18b82bb6c89db754d6905564276e29caf39ee5d63ab655"
+    }
+  ]
+}
