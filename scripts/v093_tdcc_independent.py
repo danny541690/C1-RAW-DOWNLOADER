@@ -5,7 +5,17 @@ ROOT='1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn'
 REPORT='1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit'
 SPEC='https://openapi.tdcc.com.tw/tdcc-opendata-api-docs'
 QUERY='https://www.tdcc.com.tw/portal/zh/smWeb/qryStock'
-REPAIR_REVISION='TDCC_HISTORY_RESTART_SUCCESS_RECEIPTS_V3'
+REPAIR_REVISION='TDCC_EMPTY_RETRY_AND_PROGRESS_V4'
+class SourceEmpty(ValueError):pass
+class QueryForm(HTMLParser):
+ def __init__(self):super().__init__();self.fields={}
+ def handle_starttag(self,tag,attrs):
+  a=dict(attrs)
+  if tag=='input' and a.get('name') and a.get('type','').lower()=='hidden':self.fields[a['name']]=a.get('value','')
+def query_fields(page,date,code):
+ p=QueryForm();p.feed(page)
+ p.fields.update(scaDate=date,sqlMethod='StockNo',stockNo=code,stockName='')
+ return p.fields
 def stamp():return dt.datetime.now(dt.timezone.utc).isoformat()
 def sha(b):return hashlib.sha256(b).hexdigest()
 class Tables(HTMLParser):
@@ -36,7 +46,7 @@ def dates_in_rows(rows):
    dates.append(d.isoformat())
  return dict(min=min(dates) if dates else None,max=max(dates) if dates else None)
 def distribution_json(rows):
- if not rows:raise ValueError('EMPTY_NOT_PROOF_OF_NO_DATA')
+ if not rows:raise SourceEmpty('EMPTY_NATIVE_JSON_NOT_ABSENCE_CERTIFICATION')
  for r in rows:
   if not all(any(k.lstrip('\ufeff')==x for k in r) for x in ('資料日期','證券代號','持股分級','股數','人數')):raise ValueError('DISTRIBUTION_SCHEMA')
   for k,v in r.items():
@@ -48,19 +58,29 @@ def validate_history(raw,date,code):
  candidates=[t for t in p.tables if any(('持股分級' in ''.join(r) or '持股/單位數分級' in ''.join(r)) and '股數' in ''.join(r) for r in t)]
  if not candidates:raise ValueError('HISTORICAL_DISTRIBUTION_TABLE_MISSING')
  # Date must be in rendered result, not merely an echoed dropdown option.
- body=s[s.find('</form>')+7:]
+ if '</form>' not in s:raise ValueError('HISTORY_RESULT_FORM_MISSING')
+ body=s.split('</form>',1)[1]
+ if re.search(r'>\s*查無此資料\s*<',body):raise SourceEmpty('OFFICIAL_HISTORY_NO_DATA_NOT_ABSENCE_CERTIFICATION')
  flat=re.sub('<[^>]*>',' ',body);digits=re.sub(r'\s','',flat)
  if not any(x in digits for x in (date,date[:4]+'/'+date[4:6]+'/'+date[6:],date[:4]+'年'+date[4:6]+'月'+date[6:],str(int(date[:4])-1911)+'年'+date[4:6]+'月'+date[6:])):raise ValueError('HISTORY_RESULT_DATE_NOT_CONFIRMED')
  if not re.search(r'證券代號[：:]\s*'+re.escape(code)+r'(?![0-9A-Za-z])',flat):raise ValueError('HISTORY_RESULT_CODE_NOT_CONFIRMED')
  rows=candidates[0]
  if len(rows)<10:raise ValueError('HISTORY_ROWS_INCOMPLETE')
+ for row in rows[1:]:
+  if len(row)!=5:raise ValueError('HISTORY_ROW_STRUCTURE')
+  if row[1].startswith('差異數調整'):
+   if row[2].strip() or not re.fullmatch(r'-?\d+',row[3].replace(',','').strip()):raise ValueError('HISTORY_ADJUSTMENT_ROW')
+  else:
+   for value in row[2:4]:
+    if not value.replace(',','').strip().isdigit():raise ValueError('HISTORY_NONNEGATIVE_INTEGER')
  return len(rows)-1
 def history_summary(date,codes,receipts):
  expected={date+'|'+code for code in codes}
  saved={key for key in expected if receipts.get(key,{}).get('status')=='SAVED_BASIC_VERIFIED'
         and receipts[key].get('file_id') and receipts[key].get('sha256')
         and receipts[key].get('remote_readback_hash_verified') is True}
- return dict(expected_candidates=len(expected),saved=len(saved),unresolved=len(expected-saved),
+ empty={key for key in expected if receipts.get(key,{}).get('status')=='SKIPPED_SOURCE_EMPTY'}
+ return dict(expected_candidates=len(expected),saved=len(saved),source_empty=len(empty),unresolved=len(expected-saved-empty),
              candidate_set_complete=bool(expected) and expected==saved,
              historical_universe_complete=False)
 
@@ -85,6 +105,28 @@ class Worker:
   restore_history(self.state,lambda name:self.d.read(self.ctrl,name))
   self.until=time.monotonic()+minutes*60;self.started=stamp();self.requests=0;self.saved=0;self.skipped=0;self.folders={}
   self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+ def reclassify_retained_errors(self):
+  if self.state.get('error_classification_revision')==REPAIR_REVISION:return
+  cache={}
+  for bucket in ('receipts','history_receipts'):
+   for entry in self.state.get(bucket,{}).values():
+    if entry.get('status')!='UNRESOLVED' or not entry.get('quarantine_file'):continue
+    if entry.get('error','').split(':',1)[-1] not in ('EMPTY_NOT_PROOF_OF_NO_DATA','HISTORY_RESULT_DATE_NOT_CONFIRMED'):continue
+    name=entry['quarantine_file']
+    if name not in cache:cache[name]=self.d.read(self.ctrl,name)
+    raw=cache[name]
+    if raw is None or sha(raw)!=entry.get('response_sha256'):continue
+    empty=False
+    if entry.get('date'):
+     try:validate_history(raw,entry['date'],entry['code'])
+     except SourceEmpty:empty=True
+     except ValueError:pass
+    else:
+     try:empty=json.loads(raw.decode('utf-8-sig'))==[]
+     except (UnicodeError,ValueError):pass
+    if empty:entry.update(status='SKIPPED_SOURCE_EMPTY',error_class='SOURCE_EMPTY_UNCONFIRMED',historical_absence_certified=False,reclassified_utc=stamp(),repair_revision=REPAIR_REVISION)
+  self.state['error_classification_revision']=REPAIR_REVISION
+  self.save()
  def save(self):
   self.state.update(updated_utc=stamp(),sources=['TDCC'],finmind_enabled=False,coverage_certified=False,numeric_verified=False,pit_verified=False)
   
@@ -93,6 +135,17 @@ class Worker:
    self.d.put(self.ctrl,'HISTORY_'+self.state['history_receipt_date']+'.json',json.dumps(history,ensure_ascii=False).encode(),'application/json',overwrite=True)
   cursor={k:v for k,v in self.state.items() if k!='history_receipts'}
   self.d.put(self.ctrl,'CURSOR.json',json.dumps(cursor,ensure_ascii=False).encode(),'application/json',overwrite=True)
+  self.write_status()
+ def write_status(self):
+  report=dict(repair_revision=REPAIR_REVISION,source_empty=sum(r.get('status')=='SKIPPED_SOURCE_EMPTY' for b in ('receipts','history_receipts') for r in self.state[b].values()),status=self.state.get('status','CATALOG_CAPTURE'),active_date=self.state.get('active_date'),active_code=self.state.get('active_code'),availability=self.state.get('availability'),source_requests_this_run=self.requests,saved_this_run=self.saved,skipped_this_run=self.skipped,snapshot_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['receipts'].values()),history_saved=sum(r.get('saved',0) for date,r in self.state.get('history_date_results',{}).items() if date!=self.state.get('history_receipt_date'))+sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['history_receipts'].values()),history_saved_scope='RECONCILED_DATE_RECEIPTS_ONLY',pending_history_dates=[d for d,r in self.state.get('history_date_results',{}).items() if r.get('unresolved',0)],unresolved=sum(r.get('status')=='UNRESOLVED' for b in ('receipts','history_receipts') for r in self.state[b].values()),scope='ALL_OFFICIAL_OPENAPI_DATASETS_PLUS_WEEKLY_CURRENT_DISTRIBUTION_SECURITY_CANDIDATES',historical_universe_complete=False,coverage_certified=False,numeric_verified=False,pit_verified=False,started_utc=self.started,updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
+  date=self.state.get('history_receipt_date')
+  report['active_date_progress']=history_summary(date,self.state.get('distribution_codes',[]),self.state.get('history_receipts',{})) if date else None
+  report['unresolved_error_counts']={}
+  for b in ('receipts','history_receipts'):
+   for entry in self.state.get(b,{}).values():
+    if entry.get('status')=='UNRESOLVED':
+     key=entry.get('error_class','LEGACY_UNCLASSIFIED');report['unresolved_error_counts'][key]=report['unresolved_error_counts'].get(key,0)+1
+  self.d.put(self.ctrl,'STATUS.json',json.dumps(report,ensure_ascii=False).encode(),'application/json',overwrite=True)
  def request(self,url,data=None):
   host=urllib.parse.urlparse(url).hostname
   if host not in ('www.tdcc.com.tw','openapi.tdcc.com.tw'):raise ValueError('NON_OFFICIAL_SOURCE')
@@ -100,6 +153,7 @@ class Worker:
   self.requests+=1
   req=urllib.request.Request(url,data=data,headers={'User-Agent':'Mozilla/5.0 JARVIS-TDCC/1.0','Accept':'application/json,text/html','Referer':QUERY})
   with self.opener.open(req,timeout=22) as r:
+   if urllib.parse.urlparse(r.geturl()).hostname not in ('www.tdcc.com.tw','openapi.tdcc.com.tw'):raise ValueError('NON_OFFICIAL_REDIRECT')
    b=r.read(80000001)
   if len(b)>80000000:raise ValueError('RESPONSE_LIMIT')
   return b
@@ -117,25 +171,26 @@ class Worker:
  def process(self,key,url,label,kind='json',date=None,code=None):
   bucket=self.state['history_receipts'] if date else self.state['receipts'];old=bucket.get(key,{})
   if old.get('status')=='SAVED_BASIC_VERIFIED':self.skipped+=1;return True
+  if old.get('status')=='SKIPPED_SOURCE_EMPTY':self.skipped+=1;return True
   if old.get('repair_revision')!=REPAIR_REVISION:
    old=dict(old,prior_error=old.get('error'),prior_attempts=old.get('attempts'),attempts=0,repair_revision=REPAIR_REVISION)
   if old.get('attempts',0)>=3:self.skipped+=1;return True
+  if old.get('retry_after_epoch',0)>time.time():self.skipped+=1;return True
   start=time.monotonic()
-  for attempt in range(old.get('attempts',0),3):
+  for attempt in range(old.get('attempts',0),old.get('attempts',0)+1):
    if time.monotonic()>self.until-35 or time.monotonic()-start>65:return False
    e=dict(old,status='REQUEST_INTENT',attempts=attempt+1,url=url,date=date,code=code,title=label);bucket[key]=e;self.save()
    raw=None
    try:
     if date:
      page=self.request(QUERY).decode('utf-8-sig')
-     fields=dict(re.findall(r'<input[^>]*name="([^"]+)"[^>]*value="([^"]*)"',page))
-     fields.update(scaDate=date,sqlMethod='StockNo',stockNo=code,stockName='')
+     fields=query_fields(page,date,code)
      raw=self.request(QUERY,urllib.parse.urlencode(fields).encode());count=validate_history(raw,date,code)
      month=date[:4]+'-'+date[4:6];period={'min':date,'max':date}
     else:
      raw=self.request(url);rows=json.loads(raw.decode('utf-8-sig'))
      if not isinstance(rows,list) or any(not isinstance(r,dict) for r in rows):raise ValueError('NOT_NATIVE_ROW_ARRAY')
-     if not rows:raise ValueError('EMPTY_NOT_PROOF_OF_NO_DATA')
+     if not rows:raise SourceEmpty('EMPTY_NATIVE_JSON_NOT_ABSENCE_CERTIFICATION')
      if url.endswith('/1-5'):distribution_json(rows)
      count=len(rows);period=dates_in_rows(rows)
      month=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).strftime('%Y-%m')
@@ -152,16 +207,24 @@ class Worker:
      qname='UNRESOLVED_'+sha(raw)+'.raw'
      self.d.put(self.ctrl,qname,raw,'application/octet-stream',overwrite=False)
      e['quarantine_file']=qname;e['response_sha256']=sha(raw)
-    e.update(error_class='SOURCE_EMPTY_UNCONFIRMED' if 'EMPTY_NOT_PROOF' in str(exc) else ('SOURCE_BACKOFF' if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429) else 'DOWNLOAD_OR_PARSER_ERROR'),status='UNRESOLVED',error=type(exc).__name__+':'+str(exc)[:220]);bucket[key]=e;self.save()
+    e.update(error_class='SOURCE_EMPTY_UNCONFIRMED' if isinstance(exc,SourceEmpty) else ('SOURCE_BACKOFF' if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429) else ('READBACK_MISMATCH' if 'SHA_MISMATCH' in str(exc) or 'readback hash' in str(exc) else ('FORMAT_OR_VALIDATION_ERROR' if isinstance(exc,ValueError) else 'TRANSPORT_ERROR'))),status='SKIPPED_SOURCE_EMPTY' if isinstance(exc,SourceEmpty) else 'UNRESOLVED',retry_after_epoch=time.time()+900,historical_absence_certified=False,error=type(exc).__name__+':'+str(exc)[:220]);bucket[key]=e;self.save()
     if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):
      self.state['resume_after_epoch']=time.time()+900;self.save();return False
-    if isinstance(exc,ValueError):e['attempts']=3;bucket[key]=e;self.save();return True
+    if isinstance(exc,SourceEmpty):return True
   return True
  def run(self):
-  if self.state.get('resume_after_epoch',0)>time.time():return
+  if self.state.get('resume_after_epoch',0)>time.time():
+   self.state['status']='SOURCE_BACKOFF';self.save();return
+  self.reclassify_retained_errors()
   # Probe catalogs once per day; endpoint receipts deduplicate successful snapshots.
   today=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date().isoformat()
-  spec=json.loads(self.request(SPEC));self.d.put(self.ctrl,'OPENAPI_SPEC_'+sha(json.dumps(spec,sort_keys=True).encode())+'.json',json.dumps(spec,ensure_ascii=False).encode(),'application/json',overwrite=False)
+  try:
+   spec=json.loads(self.request(SPEC));self.state['catalog_spec']=spec
+  except (ValueError,OSError) as exc:
+   self.state['catalog_refresh_error']=type(exc).__name__+':'+str(exc)[:200]
+   spec=self.state.get('catalog_spec')
+   if not spec:self.save();raise
+  self.d.put(self.ctrl,'OPENAPI_SPEC_'+sha(json.dumps(spec,sort_keys=True).encode())+'.json',json.dumps(spec,ensure_ascii=False).encode(),'application/json',overwrite=False)
   page=self.request(QUERY);text=page.decode('utf-8-sig');dates=sorted(set(re.findall(r'<option\s+value="(20\d{6})"',text)),reverse=True)
   dates=[d for d in dates if '20000101'<=d<=today.replace('-','')]
   self.state['availability']={'weekly_distribution_dates':dates,'earliest':min(dates) if dates else None,'latest':max(dates) if dates else None,'official_retention':'ONE_YEAR_FOR_WEEKLY_DISTRIBUTION','requested_floor':'2000-01-01','outside_retention':'NOT_AVAILABLE_THROUGH_THIS_OFFICIAL_QUERY_NOT_DOWNLOADED','other_endpoints':'NO_DATE_PARAMETERS_IN_OPENAPI_CAPTURE_ALL_RETURNED_ROWS_AND_REPORT_ACTUAL_RANGE','checked_utc':stamp()}
@@ -189,7 +252,7 @@ class Worker:
   if migrate_history(self.state):self.save()
   for date in dates:
    if time.time()<self.state.get('resume_after_epoch',0):break
-   if date in self.state.get('visited_dates',[]):continue
+   if date in self.state.get('visited_dates',[]) and not self.state.get('history_date_results',{}).get(date,{}).get('unresolved',0):continue
    if date==str(self.state.get('bulk_distribution_date','')).replace('-',''):
     self.state.setdefault('visited_dates',[]).append(date)
     self.state.setdefault('history_date_results',{})[date]=dict(status='BULK_SNAPSHOT_SAVED',historical_universe_complete=False)
@@ -206,14 +269,13 @@ class Worker:
    else:
     summary=history_summary(date,codes,self.state['history_receipts'])
     self.state.setdefault('history_date_results',{})[date]=summary
-    self.state.setdefault('visited_dates',[]).append(date)
+    if date not in self.state.setdefault('visited_dates',[]):self.state['visited_dates'].append(date)
     if summary['candidate_set_complete']:self.state.setdefault('completed_dates',[]).append(date)
     self.save();continue
    break
   else:self.state['status']='AVAILABLE_HISTORY_VISITED_WITH_UNRESOLVED_ITEMS'
   self.save()
-  report=dict(status=self.state.get('status','CATALOG_CAPTURE'),active_date=self.state.get('active_date'),active_code=self.state.get('active_code'),availability=self.state.get('availability'),source_requests_this_run=self.requests,saved_this_run=self.saved,skipped_this_run=self.skipped,snapshot_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['receipts'].values()),history_saved=sum(r.get('saved',0) for date,r in self.state.get('history_date_results',{}).items() if date!=self.state.get('history_receipt_date'))+sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['history_receipts'].values()),history_saved_scope='RECONCILED_DATE_RECEIPTS_ONLY',pending_history_dates=[d for d,r in self.state.get('history_date_results',{}).items() if r.get('unresolved',0)],unresolved=sum(r.get('status')!='SAVED_BASIC_VERIFIED' for b in ('receipts','history_receipts') for r in self.state[b].values()),scope='ALL_OFFICIAL_OPENAPI_DATASETS_PLUS_WEEKLY_CURRENT_DISTRIBUTION_SECURITY_CANDIDATES',historical_universe_complete=False,coverage_certified=False,numeric_verified=False,pit_verified=False,started_utc=self.started,updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
-  self.d.put(self.ctrl,'STATUS.json',json.dumps(report,ensure_ascii=False).encode(),'application/json',overwrite=True);print(json.dumps(report,ensure_ascii=False),flush=True)
+
 def main():
  p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);a=p.parse_args()
  if not 1<=a.minutes<=50:raise ValueError('INVALID_RUNTIME')

@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v093-tdcc-independent.yml'
+      - 'scripts/v093_tdcc_independent.py'
+      - 'tests/test_tdcc_download_v4.py'
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
@@ -11,7 +13,7 @@ permissions:
   contents: read
 concurrency:
   group: jarvis-independent-tdcc-stage05
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   download:
     name: Independent TDCC latest to oldest
@@ -25,7 +27,7 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
-      - run: python -m unittest tests.test_tdcc_history_repair -q
+      - run: python -m unittest tests.test_tdcc_history_repair tests.test_tdcc_download_v4 -q
       - name: Download TDCC only; resume verified immutable receipts
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
