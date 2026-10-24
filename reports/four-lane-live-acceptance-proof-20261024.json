@@ -1,0 +1,58 @@
+{
+  "workflow_run": 40071042568,
+  "workflow_conclusion": "success",
+  "offline_regression_tests": 130,
+  "crash_recovery": {
+    "actual_cross_job_resume": true,
+    "actual_github_cas_collision_winners": 1,
+    "actual_process_crash": true,
+    "certified": false,
+    "elapsed_resume_seconds": 12.499,
+    "fences": [
+      2,
+      3
+    ],
+    "immutable_payload_readback": true,
+    "limitation": "Sandbox adapter recovery only; five production stage paths remain unconnected.",
+    "production_data_writes": 0,
+    "production_schedules_changed": false,
+    "real_wall_clock_expiry": true,
+    "test_namespace": "per-run PRELAUNCH_SANDBOX and GitHub test-state"
+  },
+  "initial_reparse": {
+    "run_id": "40071042568",
+    "phase": "write",
+    "successfully_reparsed_units": 5,
+    "cells_roundtripped": 4975,
+    "source_incomplete_units": 1,
+    "test_parent_id": "1r5tQaEnjby_UNV1tsCuRftH6GKa2PMS2",
+    "source_archive_id": "1oOiOX6zDRAUoWWbfJtQNuyLJTO3rHSAk",
+    "source_archive_sha256": "19829c5d55c35cf7d65b1736fccc5775f820dbf423156674ea4ba7ea638ad94d",
+    "real_google_drive_write_readback": true,
+    "cross_job_resume": false,
+    "source_download_requests": 0,
+    "production_raw_writes": 0,
+    "production_schedules_changed": false,
+    "numeric_semantics_verified": false,
+    "pit_verified": false,
+    "production_gate": "BLOCKED"
+  },
+  "cross_job_reparse": {
+    "run_id": "40071042568",
+    "phase": "restart",
+    "successfully_reparsed_units": 5,
+    "cells_roundtripped": 4975,
+    "source_incomplete_units": 1,
+    "test_parent_id": "1r5tQaEnjby_UNV1tsCuRftH6GKa2PMS2",
+    "source_archive_id": "1oOiOX6zDRAUoWWbfJtQNuyLJTO3rHSAk",
+    "source_archive_sha256": "19829c5d55c35cf7d65b1736fccc5775f820dbf423156674ea4ba7ea638ad94d",
+    "real_google_drive_write_readback": true,
+    "cross_job_resume": true,
+    "source_download_requests": 0,
+    "production_raw_writes": 0,
+    "production_schedules_changed": false,
+    "numeric_semantics_verified": false,
+    "pit_verified": false,
+    "production_gate": "BLOCKED"
+  }
+}

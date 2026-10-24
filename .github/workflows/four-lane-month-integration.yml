@@ -1,0 +1,136 @@
+name: Four-lane monthly scheduler isolated integration
+on:
+  push:
+    branches: [review/four-source-repair-20261024]
+    paths:
+      - '.github/workflows/four-lane-month-integration.yml'
+      - 'scripts/v093_four_lane_month_acceptance.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: four-lane-monthly-sandbox
+  cancel-in-progress: false
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Offline orchestration and regression gates
+        run: python -m unittest tests.test_four_lane_month_flow tests.test_repair_execution tests.test_repair_prelaunch.MeetingTests tests.test_official_repair tests.test_official_content_audit tests.test_repair_request_encoding tests.test_stage06_ledger tests.test_stage06_prelaunch_bridge tests.test_stage06_financial_repair -q
+      - name: Seed isolated GitHub manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_prelaunch_live_recovery seed
+      - name: Seed only six synthetic sandbox months and four initial frontiers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_four_lane_month_acceptance seed
+  frontier:
+    needs: seed
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        lane: [EARLY_ASC, EARLY_DESC, RECENT_ASC, RECENT_DESC]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Run actual worker with synthetic transport in sandbox
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_four_lane_month_acceptance frontier --lane "${{ matrix.lane }}"
+  verify-frontier:
+    needs: frontier
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Verify both meeting pairs and retained pending work
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_four_lane_month_acceptance verify-frontier
+      - uses: actions/upload-artifact@v4
+        with:
+          name: four-month-frontier-proof
+          path: reports/four-month-flow-frontier.json
+  resume:
+    needs: verify-frontier
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        lane: [EARLY_ASC, EARLY_DESC, RECENT_ASC, RECENT_DESC]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Run actual worker with synthetic transport in sandbox
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_four_lane_month_acceptance resume --lane "${{ matrix.lane }}"
+  verify-resume:
+    needs: resume
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Verify all twelve synthetic units and no remaining due work
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_four_lane_month_acceptance verify-resume
+      - name: Restart all four paused or completed frontiers without another source call
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          for lane in EARLY_ASC EARLY_DESC RECENT_ASC RECENT_DESC; do
+            python -m scripts.v093_four_lane_month_acceptance resume --lane "$lane"
+          done
+          python -m scripts.v093_four_lane_month_acceptance verify-resume
+      - uses: actions/upload-artifact@v4
+        with:
+          name: four-month-resume-proof
+          path: reports/four-month-flow-resume.json

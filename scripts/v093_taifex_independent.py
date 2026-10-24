@@ -26,6 +26,7 @@ def digest(b): return hashlib.sha256(b).hexdigest()
 def encode(v): return json.dumps(v, ensure_ascii=False, sort_keys=True).encode()
 def parse_date(v):
     v=str(v).strip()
+    v=re.sub(r'\s*([/-])\s*',r'\1',v)
     if re.fullmatch(r'(?:19|20)\d{6}',v):v=v[:4]+'/'+v[4:6]+'/'+v[6:]
     elif re.fullmatch(r'\d{7}',v):v=v[:3]+'/'+v[3:5]+'/'+v[5:]
     m = re.fullmatch(r'\s*(\d{3,4})[-/](\d{1,2})[-/](\d{1,2})(?:\s+.*)?', str(v))

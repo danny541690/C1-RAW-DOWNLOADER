@@ -57,7 +57,7 @@ def terminal_owner(api_url, token, key, lease):
     independent=('POOL_RAW' if stage=='RAW' else 'POOL_CONSUMER')+'_STAGE06_'+stage+'_V1'
     ascending=stage=='RAW' and key=='POOL_RAW_STAGE07_ASCENDING_V1'
     official=stage=='RAW' and key in ('POOL_RAW_OFFICIAL_ASC_V1','POOL_RAW_OFFICIAL_DESC_V1')
-    repair=stage=='RAW' and key in ('POOL_RAW_OFFICIAL_REPAIR_ASC_V1','POOL_RAW_OFFICIAL_REPAIR_DESC_V1')
+    repair=stage=='RAW' and bool(re.fullmatch(r'POOL_RAW_OFFICIAL_REPAIR_(?:ASC|DESC|EARLY_ASC|EARLY_DESC|RECENT_ASC|RECENT_DESC)_V1',key))
     monthly=stage=='RAW' and bool(re.fullmatch(r'RAW_HISTORY_MONTH_20[0-9]{2}_(0[1-9]|1[0-2])',key))
     if key not in (pools[stage],independent) and not ascending and not monthly and not official and not repair:return False
     prefix=api_url.split('/contents/')[0]

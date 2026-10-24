@@ -1,0 +1,7 @@
+# Four-lane repair release 2026-10-24
+
+Authorized replacement of paused legacy schedules 1–4, preserving their checkpoints and all RAW. New lane controls start at 2000-01, 2012-12, 2013-01 and 2026-10. Full regression: 615 tests passed locally. Cloud monthly integration run 40072397501 passed all 11 jobs: six synthetic months, twelve remote SHA verified receipts, two meeting elections, durable retries, and four restarts with zero additional source calls. Actual GitHub CAS and Drive were exercised; source payloads were fixtures, not historical market completeness evidence.
+
+Earlier actual June financial reparse run 40071042568 passed five files/4975 cells, rejecting a sixth with missing source companies. Four rejected company selectors remain unresolved; same single-company parameters succeed for control 2330. Official selector rejection is now separately classified; it is not no-data. Numeric semantics, source universe and PIT remain uncertified. Full coverage is never inferred from workflow success.
+
+Deployment starts four bounded 40-minute workers after full tests; hourly recurrence, separate per-lane concurrency, shared month ownership/source pacing, retry checkpoints and meeting pause. Valid saved and checked RAW is preserved. Reparse output remains staged pending further accounting/PIT validation. No change to schedules 5–7. TAIFEX whitespace date parsing also receives the one-line regression fix.

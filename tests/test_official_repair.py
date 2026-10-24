@@ -12,13 +12,24 @@ from scripts.v093_five_stage_durable_gate import terminal_owner
 
 source=ast.parse((Path(__file__).resolve().parents[1]/'scripts/v093_official_repair.py').read_text())
 ns=dict(OfficialWorker=object,SOURCES=('TWSE','TPEx','MOPS'),SAVED={'SAVED_BASIC_VERIFIED','RAW_DOWNLOADED_UNVERIFIED'},
-    native=SimpleNamespace(sha=lambda b:'a'*64,stamp=lambda:'now',request=Mock(return_value=b'raw'),request_data=Mock(return_value=None)),engine=SimpleNamespace(key=lambda j:'key'),
+    native=SimpleNamespace(sha=lambda b:'a'*64,stamp=lambda:'now',request=Mock(return_value=b'raw'),request_data=Mock(return_value=None)),engine=SimpleNamespace(key=lambda j:'key',FIN_REPORTS=('CashflowStatement','IncomeStatement','BalanceSheet')),
     assert_official=Mock(),is_before_source_start=Mock(return_value=None),time=time,json=json,re=re,dt=dt)
 nodes=[n for n in source.body if not isinstance(n,(ast.Import,ast.ImportFrom,ast.If))]
 exec(compile(ast.Module(body=nodes,type_ignores=[]),'actual_repair','exec'),ns)
 Worker=ns['RepairWorker']
 
 class RepairTests(unittest.TestCase):
+    def test_source_rejected_company_is_not_no_data_or_local_parameter_error(self):
+        result=ns['source_failure'](ValueError('OFFICIAL_COMPANY_SELECTOR_REJECTED'),dict(period='2026-06-30'))
+        self.assertEqual(result,dict(status='UNRESOLVED_COMPANY_OR_ENDPOINT_SCOPE',terminal=True))
+    def test_financial_selector_error_html_is_rejected_before_parsing(self):
+        raw='<table><tr><td>至少需要輸入一個正確的股號或股名!</td></tr></table>'.encode()
+        # Resolve the actual function body; fixture workers replace validation elsewhere.
+        module=ast.parse((Path(__file__).resolve().parents[1]/'scripts/v093_official_repair.py').read_text())
+        function=next(n for n in module.body if isinstance(n,ast.FunctionDef) and n.name=='validate_content')
+        local=dict(ns);exec(compile(ast.Module(body=[function],type_ignores=[]),'financial_validator','exec'),local)
+        with self.assertRaisesRegex(ValueError,'OFFICIAL_COMPANY_SELECTOR_REJECTED'):
+            local['validate_content'](raw,dict(category='CashflowStatement'))
     def test_explicit_historical_bound_is_not_a_transient_failure(self):
         result=ns['source_failure'](ValueError('SOURCE_STATUS:查詢開始日期小於100年1月1日，請重新查詢!'),
             dict(period='2000-07-03'))
@@ -72,6 +83,25 @@ class RepairTests(unittest.TestCase):
         return dict(source='TWSE',url='https://www.twse.com.tw/a',category='prices_indices',month='2026-10',period='2026-10-22')
     def test_finmind_never_selected(self):
         self.assertFalse(ns['needs_review']({'source':'FinMind','status':'ISOLATED_MISSING'},{}))
+    def test_local_parameter_failure_is_not_a_source_call(self):
+        w=self.worker()
+        with patch.object(ns['native'],'request_data',side_effect=ValueError('INVALID_PARAMS')):
+            w.repair_one(self.job(),'units',[])
+        row=w.journal['units']['key']
+        self.assertEqual(row['status'],'LOCAL_PARAM_ENCODING_ERROR')
+        self.assertEqual(row['attempts'],0)
+        self.assertEqual(sum(w.source_requests.values()),0)
+        ns['native'].request.assert_not_called()
+
+    def test_shared_source_window_wait_does_not_count_attempt(self):
+        w=self.worker();w.lane='EARLY_ASC';w.api='api';w.token='token'
+        with patch.dict(ns,reserve_source=Mock(return_value=False)):
+            w.repair_one(self.job(),'units',[])
+        row=w.journal['units']['key']
+        self.assertEqual(row['status'],'UNRESOLVED_SOURCE_BACKOFF')
+        self.assertEqual(row['attempts'],0)
+        self.assertLess(row['next_retry_at'],time.time()+5)
+        ns['native'].request.assert_not_called()
     def test_known_unsupported_period_not_selected(self):
         self.assertFalse(ns['needs_review']({'source':'TWSE','status':'OFFICIAL_PERIOD_NOT_PROVIDED'},{}))
     def test_verified_and_unflagged_skipped(self):
@@ -89,8 +119,8 @@ class RepairTests(unittest.TestCase):
         w=self.worker();w.state['units']['key']=dict(self.job(),status='SAVED_BASIC_VERIFIED',sha256='s',evidence_file='f/a')
         ns['cached_payload']=Mock(return_value=(b'raw','archive'));ns['validate_content']=Mock(return_value={'rows':1,'codes':['2330'],'row_audit':{'unverified':[]}})
         w.repair_one(self.job(),'units',[{'kind':'PARSER_OR_SEMANTIC_CORRECTION_REQUIRED'}])
-        self.assertEqual(w.journal['units']['key']['status'],'SOURCE_CHECKED_OPEN_QUALITY_ITEMS')
-        self.assertEqual(sum(w.source_requests.values()),1)
+        self.assertEqual(w.journal['units']['key']['status'],'LOCAL_CONTENT_CHECKED_OPEN_QUALITY_ITEMS')
+        self.assertEqual(sum(w.source_requests.values()),0)
         self.assertFalse(w.journal['units']['key']['complete'])
     def test_attempt_cap_survives_new_runner(self):
         w=self.worker();w.journal['units']['key']={'attempts':3,'quality_revision':ns['QUALITY_REVISION'],'input_signature':'a'*64}
@@ -130,12 +160,12 @@ class RepairTests(unittest.TestCase):
         w.journal['units']['key']={'status':'CONTENT_CHECK_PASS','raw_sha256':'same','quality_revision':'V2'}
         w.repair_one(self.job(),'units',[])
         ns['native'].request.assert_not_called()
-    def test_exhausted_cooldown_cycles_remain_visible(self):
+    def test_circuit_wait_does_not_exhaust_download_cycles(self):
         w=self.worker();w.circuit['TWSE']=2
         w.journal['units']['key']={'quality_revision':ns['QUALITY_REVISION'],'input_signature':'a'*64,
             'attempts':3,'retry_cycle':3,'next_retry_at':time.time()-1}
         w.repair_one(self.job(),'units',[])
-        self.assertEqual(w.journal['units']['key']['status'],'UNRESOLVED_RETRY_CYCLES_EXHAUSTED')
+        self.assertEqual(w.journal['units']['key']['status'],'UNRESOLVED_SOURCE_BACKOFF')
         self.assertFalse(w.journal['units']['key']['complete'])
     def test_lease_recovery_matches_repair_workflow(self):
         api='https://api.github.com/repos/o/r/contents/.github/live-state/five-stage-leases.json'

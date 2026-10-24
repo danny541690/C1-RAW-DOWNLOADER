@@ -13,6 +13,7 @@ from scripts.v093_indexed_drive import IndexedDrive,CheckpointThrottle
 
 VERSION = 'NATIVE_R4_20261020_1'
 PARSER_REVISION = 'FINMIND_MONTH_SLICE_ROWS_V1'
+NATIVE_PARSER_REVISION = 'NATIVE_MATRIX_AND_INDEX_ROWS_V2'
 SYMBOLS = ('stock_id','SecuritiesCompanyCode','股票代號','證券代號','代號','公司代號','公司代碼','Code','StockCode','stockNo')
 DATES = ('date','Date','trade_date','資料日期','日期','年月日')
 PERIODS = ('資料年月','營收年月','revenue_month','年月')
@@ -91,7 +92,44 @@ def html_tables(text):
                 headers=[h if h==v or h in SYMBOLS else h+' / '+v for h,v in zip(headers,hr)]
         yield 'html_table_'+str(ti),headers,grid[data_start:]
 
+def mops_matrix_rows(name,raw,partition):
+    """Use the existing strict matrix adapter, retaining account/company axes."""
+    from scripts.v093_stage06_financial_repair import structure,number as financial_number,text as cell_text
+    root=html.fromstring(raw.decode('utf-8-sig'))
+    periods=set(root.xpath('//input[@name="yearseason"]/@value'))
+    if len(periods)!=1:raise ValueError('UNPROVEN_FINANCIAL_PERIOD')
+    match=re.fullmatch(r'(20\d{2})Q([1-4])',next(iter(periods)))
+    if not match:raise ValueError('UNPROVEN_FINANCIAL_PERIOD')
+    year,quarter=map(int,match.groups());mo=quarter*3
+    period=dt.date(year,mo,calendar.monthrange(year,mo)[1]).isoformat()
+    if period[:7]!=partition:raise ValueError('FINANCIAL_PARTITION_CONFLICT')
+    reports=[r for r in ('IncomeStatement','BalanceSheet','CashflowStatement') if r in name]
+    if len(reports)!=1:raise ValueError('FINANCIAL_REPORT_NAME_AMBIGUOUS')
+    unit=dict(source='MOPS',market='UNKNOWN',dataset=reports[0],security_id='ALL_MARKET',
+              period_start=period,period_end=period,native_unit_id=name)
+    matrix=structure(raw,unit);out=[]
+    for ri,cells in enumerate(matrix['cells']):
+        for ci,cell in enumerate(cells):
+            original=cell_text(cell);value=financial_number(original)
+            if value is None:continue
+            context=dict(company=matrix['names'][ci],account=matrix['labels'][ri],
+                         report=reports[0],period_kind=matrix['period_kind'],period_end=period)
+            out.append(dict(observation_period=period,date=period,stock_id=matrix['codes'][ci],
+                source='MOPS',native_member=name,native_table=reports[0],row_index=ri,
+                native_field=matrix['codes'][ci],native_metric=matrix['labels'][ri],
+                native_type=matrix['period_kind'],native_origin_name=matrix['labels'][ri],
+                native_unit=matrix['unit'],statement_scope=matrix['scopes'][ci],
+                native_record_json=json.dumps(context,ensure_ascii=False,sort_keys=True),
+                raw_value=original,numeric_decimal_text=value,date_proof='EXPLICIT_REPORT_PERIOD',
+                date_content_verified=True,unit_verified=False,numeric_semantics_verified=False,
+                pit_verified=False,ohlc_violation=False,status='STAGING_UNMAPPED'))
+    if not out:raise ValueError('NO_NATIVE_FINANCIAL_NUMERIC_CELLS')
+    return out,dict(STAGED_CELLS=len(out),NATIVE_RECORDS=len(matrix['cells']),
+                    MOPS_MATRIX_CELLS=len(out)), 'utf-8-sig'
+
 def parse_member(source,name,raw,partition):
+    if source=='MOPS' and any(r in name for r in ('IncomeStatement','BalanceSheet','CashflowStatement')):
+        return mops_matrix_rows(name,raw,partition)
     text,encoding=decode(raw); stats=collections.Counter();records=[]
     filename_days={day(m) for m in re.findall(r'(?<!\d)(20\d{6})(?!\d)',name)}-{None}
     filename_day=next(iter(filename_days)) if len(filename_days)==1 else None
@@ -147,7 +185,9 @@ def parse_member(source,name,raw,partition):
     out=[]; seen=set()
     for tab,i,vals,response_date in records:
         symbol=str(get(vals,SYMBOLS) or '').strip()
-        if not re.fullmatch(r'[0-9A-Za-z]{4,8}',symbol):stats['NO_SECURITY_ID']+=1;continue
+        index_name=get(vals,('指數','指數名稱')) if re.match(r'indices_',name) else None
+        if index_name:symbol=None
+        elif not re.fullmatch(r'[0-9A-Za-z]{4,8}',symbol):stats['NO_SECURITY_ID']+=1;continue
         rawdate=get(vals,DATES); rd=day(rawdate)
         if rawdate and not rd:stats['INVALID_DATE']+=1;continue
         rp=month(get(vals,PERIODS))
@@ -179,18 +219,21 @@ def parse_member(source,name,raw,partition):
             seen.add(key)
             original=str(vals[k]);nv=decimal.Decimal(v)
             if decimal.Decimal(number(original))!=nv:raise ValueError('NUMERIC_ROUNDTRIP_FAIL')
-            native_type=get(vals,('type','account','account_code','科目','科目代號','會計項目'))
+            native_type='INDEX' if index_name else get(vals,('type','account','account_code','科目','科目代號','會計項目'))
             context=json.dumps(vals,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)
-            out.append({'observation_period':observation,'date':obsday,'stock_id':symbol,'source':source,'native_member':name,'native_table':tab,'row_index':i,'native_field':str(k),'native_metric':str(native_type) if basekey(k) in ('value','Value','數值','金額') and native_type else basekey(k),'native_type':str(native_type) if native_type is not None else None,'native_origin_name':str(get(vals,('origin_name','科目名稱','會計項目名稱')) or ''),'native_unit':str(get(vals,('unit','單位')) or ''),'statement_scope':str(get(vals,('statement_scope','report_type','合併個別','報表類型')) or ''),'native_record_json':context,'raw_value':original,'numeric_decimal_text':v,'date_proof':proof,'date_content_verified':proof!='FILENAME_ONLY','unit_verified':False,'numeric_semantics_verified':False,'pit_verified':False,'ohlc_violation':price_fail,'status':'QUARANTINE_OHLC' if price_fail else 'STAGING_UNMAPPED'})
+            out.append({'observation_period':observation,'date':obsday,'stock_id':symbol,'source':source,'native_member':name,'native_table':tab,'row_index':i,'native_field':str(k),'native_metric':str(native_type) if basekey(k) in ('value','Value','數值','金額') and native_type else basekey(k),'native_type':str(native_type) if native_type is not None else None,'native_origin_name':str(index_name or get(vals,('origin_name','科目名稱','會計項目名稱')) or ''),'native_unit':str(get(vals,('unit','單位')) or ''),'statement_scope':str(get(vals,('statement_scope','report_type','合併個別','報表類型')) or ''),'native_record_json':context,'raw_value':original,'numeric_decimal_text':v,'date_proof':proof,'date_content_verified':proof!='FILENAME_ONLY','unit_verified':False,'numeric_semantics_verified':False,'pit_verified':False,'ohlc_violation':price_fail,'status':'QUARANTINE_OHLC' if price_fail else 'STAGING_UNMAPPED'})
     stats['STAGED_CELLS']=len(out);stats['NATIVE_RECORDS']=len(records)
     if not out:stats['NO_PARSED_NUMERIC_CELLS']+=1
     return out,dict(stats),encoding
 
 SCHEMA=pa.schema([(k,pa.int64() if k=='row_index' else pa.bool_() if k in ('date_content_verified','unit_verified','numeric_semantics_verified','pit_verified','ohlc_violation') else pa.string()) for k in ('observation_period','date','stock_id','source','native_archive','native_sha256','native_member','native_member_sha256','native_table','row_index','native_field','native_metric','native_type','native_origin_name','native_unit','statement_scope','native_record_json','raw_value','numeric_decimal_text','date_proof','date_content_verified','unit_verified','numeric_semantics_verified','pit_verified','ohlc_violation','status')])
 
-def receipt_key(source,raw_sha):
-    # Invalidate only FinMind receipts; retain all prior immutable payloads.
-    return hashlib.sha256((source+VERSION+(PARSER_REVISION if source=='FinMind' else '')+raw_sha).encode()).hexdigest()
+def receipt_key(source,raw_sha,name=''):
+    # Only affected adapters get a new immutable receipt; unchanged outputs stay valid.
+    revision=PARSER_REVISION if source=='FinMind' else ''
+    if (source=='MOPS' and any(r in name for r in ('IncomeStatement','BalanceSheet','CashflowStatement'))) or (source in ('TWSE','TPEx') and name.startswith('indices_')):
+        revision=NATIVE_PARSER_REVISION
+    return hashlib.sha256((source+VERSION+revision+raw_sha).encode()).hexdigest()
 
 def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
     started=time.monotonic();deadline=started+max_minutes*60
@@ -231,7 +274,7 @@ def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
             try:
                 if int(f.get('size',0))>LIMIT_ARCHIVE:raise ValueError('ARCHIVE_SIZE_LIMIT')
                 raw=timed('raw_download',lambda:d.call(lambda:d.api.files().get_media(fileId=f['id'])));sha=hashlib.sha256(raw).hexdigest()
-                key=receipt_key(source,sha);receipt_name=key+'.receipt.json'
+                key=receipt_key(source,sha,name);receipt_name=key+'.receipt.json'
                 saved=timed('receipt_read',lambda:d.read(dest,receipt_name))
                 if saved:
                     old=json.loads(saved)
