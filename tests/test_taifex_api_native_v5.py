@@ -19,3 +19,10 @@ class APINativeTests(unittest.TestCase):
             with self.assertRaises(ValueError):m.validate(raw,self.job())
     def test_json_still_supported_and_unmodified(self):
         ev=m.validate(b'[{"Date":"20261022"}]',self.job());self.assertEqual(ev['native_format'],'json');self.assertEqual(ev['rows'],1)
+
+    def test_futures_uses_its_actual_distinct_native_header(self):
+        header=m.API_CSV_SCHEMAS['DailyMarketReportFut'];self.assertIn('契約代號',header);self.assertIn('合計成交量',header)
+        raw=(','.join(header)+'\n20261022,'+','.join(['1']*(len(header)-1))+'\n').encode()
+        self.assertEqual(m.validate(raw,self.job('DailyMarketReportFut'))['rows'],1)
+        with self.assertRaisesRegex(ValueError,'SCHEMA_MISMATCH'):
+            m.validate(raw.replace('契約代號'.encode(),'契約'.encode()),self.job('DailyMarketReportFut'))

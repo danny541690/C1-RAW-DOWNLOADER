@@ -139,5 +139,46 @@
     "period_semantics": "ACTUAL_SOURCE_DATE_ONLY_NO_HISTORICAL_PARAMETERS",
     "numeric_verified": false,
     "pit_verified": false
+  },
+  {
+    "unit_id": "API|2026-10-25|/DailyMarketReportFut",
+    "sha256": "07900e7e674702000983404effc1dd5df7b3af8f57466213b4838846ea914ea0",
+    "bytes": 161572,
+    "rows": 2146,
+    "content_period": {
+      "min": "2026-10-22",
+      "max": "2026-10-22"
+    },
+    "products": [],
+    "sessions": [
+      "一般",
+      "盤後"
+    ],
+    "schema": [
+      "日期",
+      "契約代號",
+      "到期月份(週別)",
+      "開盤價",
+      "最高價",
+      "最低價",
+      "最後成交價",
+      "漲跌價",
+      "漲跌%",
+      "合計成交量",
+      "結算價",
+      "未沖銷契約數",
+      "最後最佳買價",
+      "最後最佳賣價",
+      "歷史最高價",
+      "歷史最低價",
+      "是否因訊息面暫停交易",
+      "交易時段",
+      "價差對單式委託成交量"
+    ],
+    "footnotes": [],
+    "native_format": "csv",
+    "period_semantics": "ACTUAL_SOURCE_DATE_ONLY_NO_HISTORICAL_PARAMETERS",
+    "numeric_verified": false,
+    "pit_verified": false
   }
 ]
