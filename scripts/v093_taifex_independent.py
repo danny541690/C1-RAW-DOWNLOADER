@@ -180,13 +180,31 @@ def migrate_repairs(state):
     state.update(repair_revision=REPAIR_REVISION, route_backoff={}, source_backoff={})
     state.pop('resume_after_epoch',None)
 
+def partition_jobs(jobs,direction):
+    boundary='2013-01-01'
+    result=[]
+    for job in jobs:
+        if job['start']<boundary<=job['end']:
+            raise ValueError('PARTITION_CROSSING_JOB')
+        if (job['end']<boundary)==(direction=='ASC'):result.append(job)
+    return result
+
 class Worker:
-    def __init__(self, minutes):
+    def __init__(self, minutes, direction='DESC'):
         from scripts.annual_actual_firstpass import Drive,service
         self.d=Drive(service()); self.d.direct_readback=True
-        self.ctrl=self.d.folder(REPORT, 'TAIFEX_INDEPENDENT_STAGE06')
+        self.direction=direction
+        self.ctrl=self.d.folder(REPORT, 'TAIFEX_INDEPENDENT_STAGE06_ASC' if direction=='ASC' else 'TAIFEX_INDEPENDENT_STAGE06')
         raw=self.d.read(self.ctrl,'CURSOR.json')
         self.state=json.loads(raw) if raw else {'revision':'TAIFEX_INDEPENDENT_V1','receipts':{},'catalog':{},'tick_jobs':{}}
+        if direction=='ASC':
+            previous=self.d.read(self.d.folder(REPORT,'TAIFEX_INDEPENDENT_STAGE06'),'CURSOR.json')
+            if previous:
+                for key,entry in json.loads(previous).get('receipts',{}).items():
+                    if entry.get('status')=='SAVED_BASIC_VERIFIED':
+                        self.state['receipts'].setdefault(key,entry)
+        self.state['direction']=direction
+        self.state['partition_policy']='ASC:2000-01-01..2012-12-31; DESC:2013-01-01..LATEST; NO_OVERLAP'
         migrate_repairs(self.state)
         self.until=time.monotonic()+minutes*60; self.today=dt.datetime.now(TZ).date()
         self.started=stamp(); self.saved=0; self.requests=0; self.folders={}
@@ -378,7 +396,8 @@ class Worker:
                 key='HISTORY|'+action+'|'+start.strftime('%Y-%m')
                 if end==last:key+='|'+end.isoformat()
                 jobs.append(make_job(key,SITE+'/cht/3/'+action,'csv',start,end,fields))
-        return sorted(jobs,key=lambda j:(j['end'],j['key'].startswith('MARKET'),j['key']),reverse=True)
+        jobs=partition_jobs(jobs,self.direction)
+        return sorted(jobs,key=lambda j:(j['end'],j['key'].startswith('MARKET'),j['key']),reverse=self.direction=='DESC')
     def discover_more(self,limit=4):
         completed=self.state.setdefault('discovery_done',[])
         for name in [n for n in self.state.get('discovery_pages',[]) if n not in completed][:limit]:
@@ -398,6 +417,15 @@ class Worker:
         if not self.live():return
         try:
             self.discover()
+            if self.direction=='ASC':
+                while self.live():
+                    before=self.requests
+                    history=self.history_jobs()
+                    self.batch([j for j in history if j['kind']=='annual'],2)
+                    self.batch(history,24)
+                    if self.requests==before:break
+                self.state['status']='ASC_CHECKPOINTED_WITH_OPEN_ITEMS'
+                return
             # Preserve data through reachable official APIs before slower website probes.
             priority=['/DailyMarketReportFut','/DailyMarketReportOpt','/PutCallRatio','/DailyOptionsDelta']
             self.batch([make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in priority if p in self.state['api_paths']],4)
@@ -430,7 +458,7 @@ class Worker:
             if count>=limit:break
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');a=p.parse_args()
     if not 1<=a.minutes<=50:raise ValueError('INVALID_RUNTIME')
-    Worker(a.minutes).run()
+    Worker(a.minutes,a.direction).run()
 if __name__=='__main__':main()
