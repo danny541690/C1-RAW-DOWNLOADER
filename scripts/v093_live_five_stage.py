@@ -17,7 +17,7 @@ from scripts.v093_five_stage_durable_gate import acquire, commit, _read, LeaseCo
 RUN = 'LIVE_FIVE_STAGE_202610_TO_200001_V1'
 MONTHS = [f'{y}-{m:02d}' for y in range(2026,1999,-1) for m in range(12,0,-1) if (y,m)<=(2026,10)]
 STAGES = ('RAW','QA1','PRICE','FINANCIAL','CHIP')
-STAGING_REVISION = 'R2_ARCHIVE_PROVENANCE'
+STAGING_REVISION = 'R3_MATRIX_INDEX_PROVENANCE'
 
 def emit(**obj):
     print('LIVE_FIVE_STAGE '+json.dumps(obj,ensure_ascii=False,sort_keys=True),flush=True)

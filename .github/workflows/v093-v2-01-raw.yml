@@ -1,6 +1,7 @@
 name: JARVIS v0.93 LIVE RAW
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/v093-v2-01-raw.yml'
       - 'scripts/v093_live_five_stage.py'

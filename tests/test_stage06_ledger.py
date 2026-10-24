@@ -159,15 +159,15 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(next(iter(self.ledger.snapshot()['attempts'].values()))['used'], 3)
         self.assertIsNotNone(self.claim('RAW'))
 
-    def test_fourth_attempt_is_final_and_new_version_does_not_reset(self):
-        self.raw(3); t = self.claim('RAW')
-        a = self.ledger.begin_request(t['task_id'], 'worker', t['fence'], 'request4')
-        self.assertTrue(a['send_allowed']); self.assertEqual(a['record']['attempt'], 4)
-        self.ledger.end_request(t['task_id'], 'worker', t['fence'], 'request4', OUT)
+    def test_fifth_attempt_is_final_and_new_version_does_not_reset(self):
+        self.raw(4); t = self.claim('RAW')
         a = self.ledger.begin_request(t['task_id'], 'worker', t['fence'], 'request5')
+        self.assertTrue(a['send_allowed']); self.assertEqual(a['record']['attempt'], 5)
+        self.ledger.end_request(t['task_id'], 'worker', t['fence'], 'request5', OUT)
+        a = self.ledger.begin_request(t['task_id'], 'worker', t['fence'], 'request6')
         self.assertFalse(a['send_allowed']); self.assertEqual(a['reason'], 'RETRY_EXHAUSTED')
         self.assertEqual(self.ledger.enqueue(t['gap_id'], H, 'V2', 'R2')['status'], 'RETRY_EXHAUSTED')
-        self.assertEqual(next(iter(self.ledger.snapshot()['attempts'].values()))['used'], 4)
+        self.assertEqual(next(iter(self.ledger.snapshot()['attempts'].values()))['used'], 5)
 
     def test_duplicate_request_id_never_authorizes_second_send(self):
         self.raw(); t = self.claim('RAW')
@@ -189,11 +189,11 @@ class LedgerTests(unittest.TestCase):
         self.ledger.complete(t['task_id'], 'new', t['fence'], self.receipt(t, 'RAW_MISSING'))
         self.assertEqual(next(iter(self.ledger.snapshot()['attempts'].values()))['used'], 4)
 
-    def test_lost_fourth_response_remains_exhausted(self):
-        self.raw(3); t = self.claim('RAW')
-        self.ledger.begin_request(t['task_id'], 'worker', t['fence'], 'r4')
+    def test_lost_fifth_response_remains_exhausted(self):
+        self.raw(4); t = self.claim('RAW')
+        self.ledger.begin_request(t['task_id'], 'worker', t['fence'], 'r5')
         self.now += 11; self.claim('RAW')
-        result = self.ledger.reconcile(t['task_id'], 'r4', PROOF)
+        result = self.ledger.reconcile(t['task_id'], 'r5', PROOF)
         self.assertEqual(result['status'], 'RETRY_EXHAUSTED'); self.assertIsNone(self.claim('RAW'))
 
     def test_raw_cannot_close_without_observed_matching_saved_response(self):

@@ -1,0 +1,67 @@
+{
+  "source_file_id": "1oOiOX6zDRAUoWWbfJtQNuyLJTO3rHSAk",
+  "results": [
+    {
+      "unit_id": "defa645bce0cc85f7af86ee9",
+      "sha256": "aa5b2d2cf936da99b060378d9a94de1524dec0df5e8bc1f8f7c8c27bc521ae27",
+      "category": "CashflowStatement",
+      "month": "2026-06",
+      "status": "LOCAL_REPARSE_PASS_NOT_PIT_CERTIFIED",
+      "cells": 1100,
+      "companies": 20
+    },
+    {
+      "unit_id": "bac62ef1275463b2d2c78b86",
+      "sha256": "dafc5be57725a26c6fecd03252885c2552cb19fccbec3408f291761854f9975b",
+      "category": "CashflowStatement",
+      "month": "2026-06",
+      "status": "LOCAL_REPARSE_PASS_NOT_PIT_CERTIFIED",
+      "cells": 1081,
+      "companies": 20
+    },
+    {
+      "unit_id": "ad9cb6a1e82a6a37e8e42ee5",
+      "sha256": "55550e5cf5bcfae837b87bc1e54b5fbaa7b8b09e3523a8f58a906c82774be5ee",
+      "category": "CashflowStatement",
+      "month": "2026-06",
+      "status": "LOCAL_REPARSE_PASS_NOT_PIT_CERTIFIED",
+      "cells": 1197,
+      "companies": 20
+    },
+    {
+      "unit_id": "654fa677c284792a1eb211ea",
+      "sha256": "a599c97a79918cecb9b7150a962d7d8ad5a88fb7064bef223aba23b2ccb7793a",
+      "category": "CashflowStatement",
+      "month": "2026-06",
+      "status": "HELD_MISSING_RECEIPT_SHA",
+      "error": "Current RAW receipt has no sha256; parsed archive bytes are not accepted as a verified replacement receipt."
+    },
+    {
+      "unit_id": "fa171235083b0f7ce058d888",
+      "sha256": "d0eef07aa57a27a0797a461f630918a825d661eefbfbf2e741d3fae2f1f90d0c",
+      "category": "CashflowStatement",
+      "month": "2026-06",
+      "status": "LOCAL_REPARSE_PASS_NOT_PIT_CERTIFIED",
+      "cells": 1172,
+      "companies": 20
+    },
+    {
+      "unit_id": "3d52eca0af2d8fc4d1b97ae4",
+      "sha256": "dc24578d99ea2710145a6e23093518db87ead9e64a346dce23fcb386f03ae5d7",
+      "category": "CashflowStatement",
+      "month": "2026-06",
+      "status": "LOCAL_REPARSE_PASS_NOT_PIT_CERTIFIED",
+      "cells": 425,
+      "companies": 8
+    }
+  ],
+  "summary": {
+    "LOCAL_REPARSE_PASS_NOT_PIT_CERTIFIED": 5,
+    "HELD_MISSING_RECEIPT_SHA": 1
+  },
+  "source_redownloaded": false,
+  "drive_modified": false,
+  "numeric_semantics_verified": false,
+  "pit_verified": false,
+  "validation_scope": "Six members of one existing June RAW archive; five receipt-SHA matches and 4975 staged cells. Not all 213 or 300 units."
+}

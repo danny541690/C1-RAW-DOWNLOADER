@@ -1,6 +1,7 @@
 name: Jarvis stage06 real Drive fenced publication test
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/jarvis-stage06-drive-publish-test-20261022.yml'
       - 'scripts/v093_stage06_fenced_store.py'

@@ -25,7 +25,9 @@ def digest(b): return hashlib.sha256(b).hexdigest()
 def encode(v): return json.dumps(v, ensure_ascii=False, sort_keys=True).encode()
 def parse_date(v):
     v=str(v).strip()
-    if re.fullmatch(r'20\d{6}',v):v=v[:4]+'/'+v[4:6]+'/'+v[6:]
+    if re.fullmatch(r'(?:19|20)\d{6}',v):v=v[:4]+'/'+v[4:6]+'/'+v[6:]
+    elif re.fullmatch(r'\d{7}',v):v=v[:3]+'/'+v[3:5]+'/'+v[5:]
+    v=re.sub(r'\s*([/-])\s*',r'\1',v)
     m = re.fullmatch(r'\s*(\d{3,4})[-/](\d{1,2})[-/](\d{1,2})(?:\s+.*)?', str(v))
     if not m: return None
     y, mo, day = map(int, m.groups())
@@ -38,6 +40,7 @@ def csv_evidence(raw, start, end):
         try: text = raw.decode(encoding); break
         except UnicodeDecodeError: pass
     else: raise ValueError('CSV_ENCODING')
+    if text.lstrip().startswith(('<','{','[')):raise ValueError('NOT_CSV_ERROR_OR_HTML')
     reader = csv.reader(io.StringIO(text)); header = next(reader, [])
     indexes = [i for i, k in enumerate(header) if any(x in k for x in ('日期', '年月日', 'Date', 'date'))]
     if not indexes: raise ValueError('CSV_DATE_HEADER_MISSING')
@@ -46,11 +49,8 @@ def csv_evidence(raw, start, end):
     session = next((i for i, x in enumerate(header) if x.strip() == '交易時段'), None)
     for row in reader:
         if not any(x.strip() for x in row): continue
-        dates = [parse_date(row[i]) for i in indexes if i < len(row)]
-        dates = [x for x in dates if x]
-        # Expiry dates may lie outside the request. Use the first date column
-        # (trade/publication date), not the contract's expiry date.
-        date = dates[0] if dates else None
+        # Never substitute a valid expiry date for a missing trade date.
+        date = parse_date(row[indexes[0]]) if indexes[0] < len(row) else None
         if not date: raise ValueError('CSV_ROW_DATE_MISSING')
         if not start <= date <= end: raise ValueError('RESPONSE_DATE_OUTSIDE_REQUEST:' + date.isoformat())
         lo = min(lo, date) if lo else date; hi = max(hi, date) if hi else date; count += 1
