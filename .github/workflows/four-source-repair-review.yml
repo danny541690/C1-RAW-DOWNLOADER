@@ -14,4 +14,4 @@ jobs:
           python-version: '3.11'
       - run: pip install -r requirements-qa.lock
       - name: Verify repair, meeting election, request encoding and RAW preservation
-        run: python -m unittest tests.test_repair_execution tests.test_repair_prelaunch.MeetingTests tests.test_official_repair tests.test_official_content_audit tests.test_repair_request_encoding tests.test_stage06_ledger tests.test_stage06_prelaunch_bridge tests.test_stage06_financial_repair -q
+        run: python -m unittest discover -s tests -q

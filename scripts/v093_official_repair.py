@@ -39,6 +39,8 @@ def incident_retry_due(journal,now):
 
 def source_failure(exc,job):
     message=str(exc)
+    if message=='OFFICIAL_COMPANY_SELECTOR_REJECTED':
+        return dict(status='UNRESOLVED_COMPANY_OR_ENDPOINT_SCOPE',terminal=True)
     # Only an explicit official lower-bound response proves historical unavailability.
     match=re.search(r'查詢開始日期小於\s*(\d{2,4})年\s*(\d{1,2})月\s*(\d{1,2})日',message)
     if match:
@@ -62,6 +64,8 @@ def needs_review(receipt,flagged):
 
 def validate_content(raw,job):
     if job['category'] in engine.FIN_REPORTS:
+        if '至少需要輸入一個正確的股號或股名' in raw.decode('utf-8-sig',errors='replace'):
+            raise ValueError('OFFICIAL_COMPANY_SELECTOR_REJECTED')
         holder=object.__new__(native.Audit);holder.year=int(job['month'][:4]);holder.financial={}
         native.Audit.financial_payload(holder,raw,job['category'],'official raw')
         expected=set(job.get('codes',[]))

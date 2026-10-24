@@ -19,6 +19,17 @@ exec(compile(ast.Module(body=nodes,type_ignores=[]),'actual_repair','exec'),ns)
 Worker=ns['RepairWorker']
 
 class RepairTests(unittest.TestCase):
+    def test_source_rejected_company_is_not_no_data_or_local_parameter_error(self):
+        result=ns['source_failure'](ValueError('OFFICIAL_COMPANY_SELECTOR_REJECTED'),dict(period='2026-06-30'))
+        self.assertEqual(result,dict(status='UNRESOLVED_COMPANY_OR_ENDPOINT_SCOPE',terminal=True))
+    def test_financial_selector_error_html_is_rejected_before_parsing(self):
+        raw='<table><tr><td>至少需要輸入一個正確的股號或股名!</td></tr></table>'.encode()
+        # Resolve the actual function body; fixture workers replace validation elsewhere.
+        module=ast.parse((Path(__file__).resolve().parents[1]/'scripts/v093_official_repair.py').read_text())
+        function=next(n for n in module.body if isinstance(n,ast.FunctionDef) and n.name=='validate_content')
+        local=dict(ns);exec(compile(ast.Module(body=[function],type_ignores=[]),'financial_validator','exec'),local)
+        with self.assertRaisesRegex(ValueError,'OFFICIAL_COMPANY_SELECTOR_REJECTED'):
+            local['validate_content'](raw,dict(category='CashflowStatement'))
     def test_explicit_historical_bound_is_not_a_transient_failure(self):
         result=ns['source_failure'](ValueError('SOURCE_STATUS:查詢開始日期小於100年1月1日，請重新查詢!'),
             dict(period='2000-07-03'))
