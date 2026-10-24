@@ -1,0 +1,39 @@
+[
+  {
+    "route": "DailyOptionsDelta",
+    "bytes": 341169,
+    "rows": 8334,
+    "content_period": null,
+    "sha256": "a609317be4c1425dbb1b515e2cc86d630f242fee5868ab44d6b49e516344f234"
+  },
+  {
+    "route": "SSFRefferedOpeningPrice",
+    "bytes": 4011,
+    "rows": 72,
+    "content_period": {
+      "min": "2026-09-23",
+      "max": "2026-10-22"
+    },
+    "sha256": "3df0f17491302b5c5d6b5607359798136564fef05e0df06df997f83201a453b9"
+  },
+  {
+    "route": "SSFRefferedOpeningPriceAh",
+    "bytes": 874,
+    "rows": 15,
+    "content_period": {
+      "min": "2026-08-21",
+      "max": "2026-09-16"
+    },
+    "sha256": "92cb6f06f9a4f83860d5dae08a932e71aa3c3af27b1b44a6f7ba1b0cbb3d81eb"
+  },
+  {
+    "route": "productsExemptedAH",
+    "bytes": 1099,
+    "rows": 26,
+    "content_period": {
+      "min": "2026-10-23",
+      "max": "2026-10-23"
+    },
+    "sha256": "e83dbb36fb4e0072a38735980d428250151b58580e50e71448fb80de7097a2d6"
+  }
+]
