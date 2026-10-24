@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_VERIFIED_OFFICIAL_CSV_MIRRORS_V7_20261025'
+REPAIR_REVISION = 'TAIFEX_ROUTE_HEALTH_AND_DUE_TRANSPORT_RECOVERY_V8_20261025'
 # These official aliases have 238 paired saved responses with identical SHA.
 ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('largeTraderFutDown','dlLargeTraderFutDown'),
@@ -136,10 +136,18 @@ API_CSV_SCHEMAS['DailyMarketReportFut'] = ['日期', '契約代號', '到期月�
 OFFICIAL_CSV_MIRRORS = {
     'AcceptableCollateralGovernmentBonds': 'https://data.gov.tw/dataset/11351',
     'IndexFuturesAndOptionsMargining': 'https://data.gov.tw/dataset/11604',
+    'DailyOptionsDelta': 'https://data.gov.tw/dataset/11321',
+    'SSFRefferedOpeningPrice': 'https://data.gov.tw/dataset/136666',
+    'SSFRefferedOpeningPriceAh': 'https://data.gov.tw/dataset/157963',
+    'productsExemptedAH': 'https://data.gov.tw/dataset/170553',
 }
 API_CSV_SCHEMAS.update({
     'AcceptableCollateralGovernmentBonds': ['日期','公債代號','公債名稱','交易幣別'],
     'IndexFuturesAndOptionsMargining': ['商品別','結算保證金','維持保證金','原始保證金','日期'],
+    'DailyOptionsDelta': ['契約','買賣權','到期月份(週別)','履約價格','Delta值','契約到期日'],
+    'SSFRefferedOpeningPrice': ['日期','股票代號','商品名稱','商品契約代號','月份','開盤參考價'],
+    'SSFRefferedOpeningPriceAh': ['日期','股票代號','商品名稱','商品代號','月份','開盤參考價'],
+    'productsExemptedAH': ['中文簡稱','商品契約代號','是否為盤後交易時段豁免代為沖銷商品','日期'],
 })
 
 def official_csv_mirror(job,today):
@@ -165,6 +173,27 @@ def api_csv_evidence(raw,job):
     for row in rows[1:]:
         if not any(v.strip() for v in row):continue
         if len(row)!=len(rows[0]):raise ValueError('API_CSV_ROW_WIDTH')
+    if route=='DailyOptionsDelta':
+        from decimal import Decimal, InvalidOperation
+        seen=set()
+        for row in rows[1:]:
+            if not any(v.strip() for v in row):continue
+            try:
+                strike=Decimal(row[3]);delta=Decimal(row[4])
+            except InvalidOperation:raise ValueError('DELTA_INVALID_NUMBER')
+            if (not row[0].strip() or row[1] not in ('買權','賣權')
+                    or not re.fullmatch(r'20\d{2}(?:0[1-9]|1[0-2])(?:[WF][1-5])?',row[2])
+                    or not strike.is_finite() or strike<=0 or not delta.is_finite()
+                    or not (-1<=delta<=1) or not parse_date(row[5])):
+                raise ValueError('DELTA_INVALID_NATIVE_ROW')
+            key=tuple(row[:4])
+            if key in seen:raise ValueError('DELTA_DUPLICATE_CONTRACT')
+            seen.add(key)
+        if not seen:raise OfficialEmpty('EMPTY_DELTA_SNAPSHOT')
+        # Expiry is not the publication/trade date. This resource omits that date.
+        return dict(native_format='csv',rows=len(seen),schema=rows[0],content_period=None,
+                    period_semantics='UNDATED_LATEST_SNAPSHOT_CAPTURE_ONLY_NOT_EXPIRY_DATE',
+                    publication_date_verified=False,numeric_verified=False,pit_verified=False)
     # No historical arguments: use actual source dates, never capture day as data day.
     ev=csv_evidence(raw,FLOOR,dt.date.fromisoformat(job['end']))
     ev.update(native_format='csv',period_semantics='ACTUAL_SOURCE_DATE_ONLY_NO_HISTORICAL_PARAMETERS',
@@ -363,6 +392,41 @@ def canonical_history_jobs(jobs,receipts):
         if prior is None or rank(job)<rank(prior):groups[key]=job
     return list(groups.values())
 
+def snapshot_route_health(receipts):
+    latest={};failures=[]
+    for key,entry in receipts.items():
+        job=entry.get('request',{})
+        if job.get('kind')!='snapshot':continue
+        route=job.get('url')
+        if (entry.get('status')=='SAVED_BASIC_VERIFIED' and entry.get('remote_readback_hash_verified')
+                and entry.get('file_id') and entry.get('sha256')):
+            prior=latest.get(route)
+            if prior is None or job.get('end','')>prior[1]['request'].get('end',''):
+                latest[route]=(key,entry)
+        elif entry.get('status')=='UNRESOLVED' and 'SWAGGER_HTML' in entry.get('error',''):
+            failures.append((key,entry))
+    interrupted={}
+    for key,entry in receipts.items():
+        job=entry.get('request',{})
+        if not entry.get('interrupted_request') or job.get('kind')!='snapshot':continue
+        saved=latest.get(job.get('url'))
+        if saved and saved[1]['request'].get('end','')>job.get('end',''):
+            interrupted[key]=dict(unit_id=saved[0],file_id=saved[1]['file_id'],sha256=saved[1]['sha256'],
+                                  content_period=saved[1].get('content_period'),original_capture_recreated=False)
+    no_capture=sorted({v['request']['url'] for _,v in failures}-set(latest))
+    later={}
+    for key,entry in failures:
+        saved=latest.get(entry['request']['url'])
+        if saved and saved[1]['request'].get('end','')>entry['request'].get('end',''):
+            later[key]=dict(unit_id=saved[0],sha256=saved[1]['sha256'],file_id=saved[1]['file_id'],
+                            original_capture_recreated=False)
+    return dict(historical_swagger_failure_units=len(failures),
+                swagger_failure_units_with_later_verified_capture=len(later),
+                swagger_routes_without_any_verified_capture=no_capture,
+                swagger_routes_without_any_verified_capture_count=len(no_capture),
+                later_verified_captures=later,interrupted_capture_followups=interrupted,
+                historical_capture_gaps_preserved=True)
+
 class Worker:
     def __init__(self, minutes, direction='DESC'):
         from scripts.annual_actual_firstpass import Drive,service
@@ -428,6 +492,7 @@ class Worker:
         report['retry_cycles_exhausted_units']=sum(v.get('status')=='UNRESOLVED' and v.get('attempts',0)>=3 and v.get('transport_retry_cycle',1)>=MAX_RETRY_CYCLES for v in assigned)
         report['exhausted_units']=sum(v.get('status')=='UNRESOLVED' and v.get('attempts',0)>=3 for v in receipts.values())
         report['unresolved_api_route_count']=len({v.get('request',{}).get('url') for v in receipts.values() if v.get('status')=='UNRESOLVED' and 'SWAGGER_HTML' in v.get('error','')})
+        report['snapshot_route_health']=snapshot_route_health(receipts)
         report['source_empty_units']=sum(v.get('status')=='SKIPPED_SOURCE_EMPTY' for v in receipts.values())
         report['unavailable_url_units']=sum(v.get('status')=='SKIPPED_NOT_PUBLISHED' for v in receipts.values())
         plan=self.history_jobs()
@@ -557,7 +622,7 @@ class Worker:
                 self.state['latest_trading_date']=ev['content_period']['max']
             print(json.dumps({'key':key,'status':entry['status'],'bytes':len(raw),'range':ev.get('content_period')}),flush=True)
         except Exception as exc:
-            entry.update(status='UNRESOLVED',error=type(exc).__name__+':'+str(exc)[:220],retry_after_epoch=time.time()+900)
+            entry.update(status='UNRESOLVED',error=type(exc).__name__+':'+str(exc)[:220],retry_after_epoch=time.time()+(60 if transient_error(type(exc).__name__+':'+str(exc)) else 900))
             if raw is not None:
                 self.evidence('UNRESOLVED',raw); entry['response_sha256']=digest(raw)
             if isinstance(exc,OfficialEmpty):
@@ -682,6 +747,16 @@ class Worker:
                 if self.state['discovery_attempts'][name]>=3:completed.append(name)
                 if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):raise
             self.save()
+    def retry_due_history(self):
+        jobs=[]
+        for entry in self.state['receipts'].values():
+            job=entry.get('request',{})
+            if (entry.get('status')=='UNRESOLVED' and transient_error(entry.get('error',''))
+                    and job.get('kind') in ('csv','annual','tick') and job.get('end')
+                    and ((job['end']<'2013-01-01')==(self.direction=='ASC'))
+                    and self.eligible(job)):
+                jobs.append(job)
+        return sorted(jobs,key=lambda j:j['key'])
     def run(self):
         if not self.live():return
         try:
@@ -692,6 +767,7 @@ class Worker:
             if self.direction=='ASC':
                 while self.live():
                     before=(self.requests,self.saved)
+                    self.batch(self.retry_due_history(),4)
                     history=self.history_jobs()
                     self.batch([j for j in history if j['kind']=='annual'],2)
                     self.batch(history,24)
@@ -699,10 +775,11 @@ class Worker:
                 self.state['status']='ASC_CHECKPOINTED_WITH_OPEN_ITEMS'
                 return
             # Preserve data through reachable official APIs before slower website probes.
-            priority=['/DailyMarketReportFut','/DailyMarketReportOpt','/PutCallRatio','/DailyOptionsDelta']
-            self.batch([make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in priority if p in self.state['api_paths']],4)
+            priority=['/DailyOptionsDelta','/SSFRefferedOpeningPrice','/SSFRefferedOpeningPriceAh','/productsExemptedAH','/DailyMarketReportFut','/DailyMarketReportOpt','/PutCallRatio']
+            self.batch([make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in priority if p in self.state['api_paths']],8)
             while self.live():
                 before=(self.requests,self.saved)
+                self.batch(self.retry_due_history(),4)
                 ticks=sorted(self.state['tick_jobs'].values(),key=lambda j:(j['end'],j['key']),reverse=True)
                 self.batch(ticks,6)
                 api=[make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in self.state['api_paths']]
@@ -725,6 +802,7 @@ class Worker:
             self.publish_open_items()
     def publish_open_items(self):
         items=[]
+        health=snapshot_route_health(self.state['receipts'])
         for key,entry in self.state['receipts'].items():
             if entry.get('status')=='SAVED_BASIC_VERIFIED':continue
             error=entry.get('error','')
@@ -739,7 +817,8 @@ class Worker:
                 attempts=entry.get('attempts',0),lifetime_attempts=entry.get('lifetime_attempts',entry.get('attempts',0)),
                 retry_cycle=entry.get('transport_retry_cycle',1),retry_after_epoch=entry.get('retry_after_epoch'),
                 request=entry.get('request'),sha256=entry.get('response_sha256'),
-                historical_absence_certified=False))
+                later_verified_capture=health['later_verified_captures'].get(key) or health['interrupted_capture_followups'].get(key),
+                original_capture_recreated=False,historical_absence_certified=False))
         self.d.put(self.ctrl,'OPEN_ITEMS.json',encode(dict(updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'),
             repair_revision=REPAIR_REVISION,items=items,coverage_certified=False,numeric_verified=False,pit_verified=False)),
             'application/json',overwrite=True)
