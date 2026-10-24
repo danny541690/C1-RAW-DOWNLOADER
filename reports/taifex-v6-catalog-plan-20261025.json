@@ -1,0 +1,25 @@
+{
+  "before_forms": 9,
+  "after_forms": 23,
+  "added": [
+    "bargainOrderDown",
+    "callsAndPutsDateAhDown",
+    "combinationOrderDown",
+    "dlBargainOrderDown",
+    "dlCombinationOrderDown",
+    "dlLargeTraderFutDown",
+    "dlLargeTraderOptDown",
+    "dlProductOrderDown",
+    "dlSingleOrderDown",
+    "flexFcmsApplyDown",
+    "futContractsDateAhDown",
+    "optContractsDateAhDown",
+    "productOrderDown",
+    "singleOrderDown"
+  ],
+  "before_plan": 649,
+  "after_plan": 1429,
+  "unattempted_after": 780,
+  "scope": "CANONICAL_KNOWN_FORM_PLAN_NOT_PROOF_OF_OFFICIAL_AVAILABILITY",
+  "coverage_certified": false
+}

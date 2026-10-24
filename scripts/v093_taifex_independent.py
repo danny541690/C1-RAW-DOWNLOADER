@@ -14,11 +14,14 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_API_NATIVE_JSON_CSV_V5_1_20261025'
+REPAIR_REVISION = 'TAIFEX_CATALOG_PARITY_AND_NATIVE_RECOVERY_V6_20261025'
 # These official aliases have 238 paired saved responses with identical SHA.
 ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('largeTraderFutDown','dlLargeTraderFutDown'),
-               ('largeTraderOptDown','dlLargeTraderOptDown'))
+               ('largeTraderOptDown','dlLargeTraderOptDown'),
+               ('productOrderDown','dlProductOrderDown'),
+               ('singleOrderDown','dlSingleOrderDown'),
+               ('combinationOrderDown','dlCombinationOrderDown'))
 MAX_RETRY_CYCLES = 3
 TICK_PAGES = ['dlFutPrevious30DaysSalesData', 'dlOptPrevious30DaysSalesData',
               'dlFutPrevious30DaysSpreadSalesData', 'dlFutPrevious30DaysSpreadOrdersReport', 'dlOptDailyDelta']
@@ -271,6 +274,9 @@ def migrate_repairs(state):
         entry['prior_attempts']=entry.get('attempts',0)
         entry['prior_error']=entry.get('error')
         entry.update(attempts=0, retry_after_epoch=0, repair_revision=REPAIR_REVISION)
+    for name,day in list(state.get('tick_page_attempted_dates',{}).items()):
+        if state.get('tick_page_success_dates',{}).get(name)!=day:
+            state['tick_page_attempted_dates'].pop(name,None)
     state.update(repair_revision=REPAIR_REVISION)
     state.pop('resume_after_epoch',None)
 
@@ -301,6 +307,37 @@ def partition_jobs(jobs,direction):
         if (job['end']<boundary)==(direction=='ASC'):result.append(job)
     return result
 
+def import_history_catalog(state,peer):
+    added=[]
+    for action,form in peer.get('catalog',{}).items():
+        if action in state.setdefault('catalog',{}):continue
+        if not re.fullmatch(r'[A-Za-z0-9]+Down',action) or form.get('action')!=action:continue
+        page=form.get('source_page','')
+        if not re.fullmatch(re.escape(SITE)+r'/cht/3/[A-Za-z0-9]+',page):continue
+        fields=form.get('fields')
+        if not isinstance(fields,dict) or not {'queryStartDate','queryEndDate'}<=fields.keys():continue
+        if any(not isinstance(k,str) or not isinstance(v,str) for k,v in fields.items()):continue
+        try:first=dt.date.fromisoformat(form['first']);last=dt.date.fromisoformat(form['last'])
+        except (KeyError,TypeError,ValueError):continue
+        if first>last:continue
+        state['catalog'][action]=dict(form,fields=dict(fields),catalog_imported_from_run=peer.get('run_id'))
+        added.append(action)
+    return added
+
+def canonical_history_jobs(jobs,receipts):
+    groups={}
+    for job in jobs:
+        alias=alias_job(job)
+        route=min(job['url'],alias['url']) if alias else job['url']
+        key=(job['kind'],job['start'],job['end'],route,
+             json.dumps({k:v for k,v in (job.get('fields') or {}).items() if v!=''},sort_keys=True))
+        prior=groups.get(key)
+        rank=lambda j:(receipts.get(j['key'],{}).get('status')!='SAVED_BASIC_VERIFIED',
+                       receipts.get(j['key'],{}).get('status') not in TERMINAL,
+                       j['key'] not in receipts,j['key'])
+        if prior is None or rank(job)<rank(prior):groups[key]=job
+    return list(groups.values())
+
 class Worker:
     def __init__(self, minutes, direction='DESC'):
         from scripts.annual_actual_firstpass import Drive,service
@@ -312,7 +349,10 @@ class Worker:
         if direction=='ASC':
             previous=self.d.read(self.d.folder(REPORT,'TAIFEX_INDEPENDENT_STAGE06'),'CURSOR.json')
             if previous:
-                for key,entry in json.loads(previous).get('receipts',{}).items():
+                peer=json.loads(previous)
+                added=import_history_catalog(self.state,peer)
+                self.state['catalog_sync']=dict(from_run=peer.get('run_id'),added=added,total_forms=len(self.state['catalog']),checked_utc=stamp())
+                for key,entry in peer.get('receipts',{}).items():
                     if entry.get('status')=='SAVED_BASIC_VERIFIED':
                         self.state['receipts'].setdefault(key,entry)
         self.state['direction']=direction
@@ -321,7 +361,7 @@ class Worker:
         migrate_repairs(self.state)
         self.until=time.monotonic()+minutes*60; self.today=dt.datetime.now(TZ).date()
         self.started=stamp(); self.saved=0; self.requests=0; self.folders={}
-        self.peer_recovered=0; self.evidence_recovered=0
+        self.peer_recovered=0; self.evidence_recovered=0; self._status_last=0
         self.state['status']='RUNNING_INDEPENDENT_CAPTURE'
         self.state['missing_data_policy']='DOWNLOAD_AVAILABLE; EMPTY_NOT_ABSENCE; MAX_3_ATTEMPTS_PER_CYCLE_MAX_3_TRANSIENT_CYCLES; CONTINUE_ASSIGNED_DIRECTION'
         self.state.pop('last_error',None)
@@ -334,10 +374,11 @@ class Worker:
                 and old.get('attempts',0)<3 and time.time()>=old.get('retry_after_epoch',0)
                 and time.time()>=self.state.get('route_backoff',{}).get(route,0)
                 and time.time()>=self.state.get('source_backoff',{}).get(host,0))
-    def save(self):
+    def save(self,force_status=False):
         self.state.update(updated_utc=stamp(), run_id=os.environ.get('GITHUB_RUN_ID'), source='TAIFEX',
             finmind_enabled=False, coverage_certified=False, numeric_verified=False, pit_verified=False)
         self.d.put(self.ctrl,'CURSOR.json',encode(self.state),'application/json',overwrite=True)
+        if not force_status and time.monotonic()-getattr(self,'_status_last',0)<30:return
         receipts=self.state['receipts']; periods=[v.get('content_period') for v in receipts.values() if v.get('status')=='SAVED_BASIC_VERIFIED' and v.get('content_period') and v['content_period']['max']<=self.today.isoformat()]
         report={k:v for k,v in self.state.items() if k not in ('receipts','catalog','tick_jobs')}
         report.update(started_utc=self.started, saved_this_run=self.saved, source_requests_this_run=self.requests,
@@ -360,7 +401,17 @@ class Worker:
         report['imported_or_outside_partition_saved_units']=report['saved_total']-report['assigned_saved_units']
         report['retry_cycles_exhausted_units']=sum(v.get('status')=='UNRESOLVED' and v.get('attempts',0)>=3 and v.get('transport_retry_cycle',1)>=MAX_RETRY_CYCLES for v in assigned)
         report['exhausted_units']=sum(v.get('status')=='UNRESOLVED' and v.get('attempts',0)>=3 for v in receipts.values())
+        report['unresolved_api_route_count']=len({v.get('request',{}).get('url') for v in receipts.values() if v.get('status')=='UNRESOLVED' and 'SWAGGER_HTML' in v.get('error','')})
+        report['source_empty_units']=sum(v.get('status')=='SKIPPED_SOURCE_EMPTY' for v in receipts.values())
+        report['unavailable_url_units']=sum(v.get('status')=='SKIPPED_NOT_PUBLISHED' for v in receipts.values())
+        plan=self.history_jobs()
+        report['planned_history_units']=len(plan)
+        report['planned_history_unattempted_units']=sum(j['key'] not in receipts for j in plan)
+        report['planned_history_saved_units']=sum(receipts.get(j['key'],{}).get('status')=='SAVED_BASIC_VERIFIED' for j in plan)
+        report['planned_history_source_empty_units']=sum(receipts.get(j['key'],{}).get('status')=='SKIPPED_SOURCE_EMPTY' for j in plan)
+        report['missed_snapshot_units']=sum(v.get('status')=='UNRESOLVED' and v.get('interrupted_request') and v.get('request',{}).get('kind')=='snapshot' and v.get('request',{}).get('end','')<self.today.isoformat() for v in receipts.values())
         self.d.put(self.ctrl,'STATUS.json',encode(report),'application/json',overwrite=True)
+        self._status_last=time.monotonic()
     def request(self,url,fields=None,timeout=45):
         if urllib.parse.urlparse(url).hostname not in ('www.taifex.com.tw','openapi.taifex.com.tw'): raise ValueError('NON_OFFICIAL_HOST')
         if time.time()<self.state.get('source_backoff',{}).get(urllib.parse.urlparse(url).hostname,0):
@@ -545,6 +596,9 @@ class Worker:
         marker=self.today.isoformat()
         for name in TICK_PAGES:
             if done.get(name)==marker:continue
+            retry=self.state.setdefault('tick_page_retry',{}).get(name,{})
+            if retry.get('date')==marker and (retry.get('attempts',0)>=3 or time.time()<retry.get('after',0)):continue
+            if time.time()<self.state.get('source_backoff',{}).get('www.taifex.com.tw',0):return
             if not self.live():return
             try:
                 raw=self.page(name);text=html.unescape(raw.decode('utf-8-sig'))
@@ -557,8 +611,14 @@ class Worker:
                     key='TICK|'+path.split('/Dailydownload/',1)[-1]
                     self.state['tick_jobs'][key]=make_job(key,SITE+path,'tick' if path.endswith('.zip') else 'csv',date,date)
                 self.state.setdefault('tick_page_success_dates',{})[name]=marker
-            except Exception as exc:self.state.setdefault('discovery_errors',{})[name]=str(exc)[:200]
-            done[name]=marker;self.save()
+                done[name]=marker
+                self.state.get('discovery_errors',{}).pop(name,None)
+                self.state.setdefault('tick_page_retry',{}).pop(name,None)
+            except Exception as exc:
+                self.state.setdefault('discovery_errors',{})[name]=str(exc)[:200]
+                attempts=retry.get('attempts',0)+1 if retry.get('date')==marker else 1
+                self.state.setdefault('tick_page_retry',{})[name]=dict(date=marker,attempts=attempts,after=time.time()+900)
+            self.save()
             break
     def history_jobs(self):
         latest=min(self.today,dt.date.fromisoformat(self.state['latest_trading_date']))
@@ -577,7 +637,7 @@ class Worker:
                 key='HISTORY|'+action+'|'+start.strftime('%Y-%m')
                 if end==last:key+='|'+end.isoformat()
                 jobs.append(make_job(key,SITE+'/cht/3/'+action,'csv',start,end,fields))
-        jobs=partition_jobs(jobs,self.direction)
+        jobs=canonical_history_jobs(partition_jobs(jobs,self.direction),self.state.get('receipts',{}))
         return sorted(jobs,key=lambda j:(j['end'],j['key'].startswith('MARKET'),j['key']),reverse=self.direction=='DESC')
     def discover_more(self,limit=4):
         completed=self.state.setdefault('discovery_done',[])
@@ -588,6 +648,7 @@ class Worker:
                 for f in forms:self.state['catalog'][f['action']]=f
                 if not forms:self.state.setdefault('non_date_forms',[]).append(name)
                 completed.append(name)
+                self.state.get('discovery_errors',{}).pop(name,None)
             except Exception as exc:
                 self.state.setdefault('discovery_errors',{})[name]=str(exc)[:200]
                 self.state.setdefault('discovery_attempts',{})[name]=self.state.get('discovery_attempts',{}).get(name,0)+1
@@ -633,14 +694,15 @@ class Worker:
             if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):self.state['resume_after_epoch']=time.time()+900
             raise
         finally:
-            self.save()
+            self.save(force_status=True)
             self.publish_open_items()
     def publish_open_items(self):
         items=[]
         for key,entry in self.state['receipts'].items():
             if entry.get('status')=='SAVED_BASIC_VERIFIED':continue
             error=entry.get('error','')
-            category=('INTEGRITY_HOLD' if entry.get('integrity_hold') else
+            category=('MISSED_SNAPSHOT_CAPTURE_NOT_RECREATABLE' if entry.get('interrupted_request') and entry.get('request',{}).get('kind')=='snapshot' and entry.get('request',{}).get('end','')<self.today.isoformat() else
+                      'INTEGRITY_HOLD' if entry.get('integrity_hold') else
                       'FUTURE_PUBLISHED_LINK_NOT_REQUESTED' if entry.get('status')=='EXCLUDED_FUTURE_PUBLISHED_LINK' else
                       'SOURCE_EMPTY_UNCONFIRMED' if entry.get('status')=='SKIPPED_SOURCE_EMPTY' else
                       'OFFICIAL_URL_UNAVAILABLE_NOT_ABSENCE' if entry.get('status')=='SKIPPED_NOT_PUBLISHED' else
