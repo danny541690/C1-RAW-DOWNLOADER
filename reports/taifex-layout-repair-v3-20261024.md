@@ -1,0 +1,9 @@
+# TAIFEX native layout repair V3 — 2026-10-24
+
+Root causes verified against official retained/downloaded bytes: large-trader CSV footer notes, block-trade parent/leg rows with a second header, and Delta publication timestamp preceding its table. Strict layout-specific checks preserve original bytes and reject unknown notes, mismatched/missing legs, unexpected dates or malformed rows. Only addressed CSV date failures reset their bounded retry budget; saved receipts and unrelated exhausted transport errors are preserved. Revalidate retained evidence before network calls. Cached recovery now continues while either saved count or source request count changes. Transient 502/503/504/520 gets host cooldown.
+
+Actual replay: 2021-06 block trades SHA d20c37941b0e1c315dce31da3c7ef922b38fa1eefecc4c1de80a3fa1964def1a: 17 groups/36 legs, dates June 3–29; 2022-08 large-trader futures SHA 177b149499f025926a309d53b968dc52d3091d20952344abd05d71ffa73764e7: 24334 rows, August 1–31; 2026-10-22 Delta SHA a288eeb369c3904260c203ddc6bae0002295d5e42df11e05238652c6bd9c0c9c: 8334 rows, publication date October 22. Local format/date validation is not remote preservation or numerical/PIT certification.
+
+Still open: multiple officially advertised OpenAPI routes redirect to the Swagger homepage (confirmed AcceptableCollateralGovernmentBonds), whereas DailyMarketReportFut returns JSON. Keep these routes unresolved with backoff, never report HTML as JSON or no-data. Generic HTML errors and exhausted HTTP520 remain distinct unresolved items. Official exact no-data alerts remain skipped without certifying permanent historical absence.
+
+Validation: 31 targeted TAIFEX tests and 622 repository tests passed locally. Both deployment workflows run the full repository suite before source/Drive work.
