@@ -1,0 +1,26 @@
+[
+  {
+    "date": "20261016",
+    "code": "3629",
+    "rows": 16,
+    "sha256": "9934a63bb39098e9bb6af2ebdb4630740322c7892d34e6f8ce8a240dfd5cda11",
+    "seconds": 13.42,
+    "status": "SOURCE_CONTENT_VALIDATED_NOT_YET_REMOTE_SAVED"
+  },
+  {
+    "date": "20251031",
+    "code": "2404",
+    "rows": 16,
+    "sha256": "6567514b1604da1751589fe22c6786850de37cfc0bed5466fdcf65dc41054a93",
+    "seconds": 12.54,
+    "status": "SOURCE_CONTENT_VALIDATED_NOT_YET_REMOTE_SAVED"
+  },
+  {
+    "date": "20251031",
+    "code": "2478",
+    "rows": 16,
+    "sha256": "47d4c761c0f2b73b969513859b3176c4d2582f543e9f78b403b3cf41ea73cf34",
+    "seconds": 12.41,
+    "status": "SOURCE_CONTENT_VALIDATED_NOT_YET_REMOTE_SAVED"
+  }
+]
