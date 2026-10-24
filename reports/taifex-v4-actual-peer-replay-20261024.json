@@ -1,0 +1,47 @@
+[
+  {
+    "unit_id": "HISTORY|bargainOrderDown|2023-03",
+    "peer_unit": "HISTORY|dlBargainOrderDown|2023-03",
+    "sha256": "b05342441351ae7ec362972e4e3c35328ec67f9dc6a72cbc43ec629f0b64c022",
+    "bytes": 1985,
+    "rows": 42,
+    "content_period": {
+      "min": "2023-03-03",
+      "max": "2023-03-29"
+    },
+    "remote_file_id": "1pG_ps0brLAncz-QSAZvlgATs6fdomCxo",
+    "local_replay_only": true,
+    "numeric_verified": false,
+    "pit_verified": false
+  },
+  {
+    "unit_id": "HISTORY|dlLargeTraderFutDown|2023-11",
+    "peer_unit": "HISTORY|largeTraderFutDown|2023-11",
+    "sha256": "58eb8df703d31ce8d0cebc863bf1e8047d895ac44b164e0456c60a5ea199ba58",
+    "bytes": 1549871,
+    "rows": 25212,
+    "content_period": {
+      "min": "2023-11-01",
+      "max": "2023-11-30"
+    },
+    "remote_file_id": "1e9sQFpfc41O0VOUR-o6ljrkHgIYBCeFN",
+    "local_replay_only": true,
+    "numeric_verified": false,
+    "pit_verified": false
+  },
+  {
+    "unit_id": "HISTORY|dlLargeTraderOptDown|2023-10",
+    "peer_unit": "HISTORY|largeTraderOptDown|2023-10",
+    "sha256": "fb7dadd05ef66939919d5d62398f8871990afb991c8243312e29c73627fa7466",
+    "bytes": 459770,
+    "rows": 8400,
+    "content_period": {
+      "min": "2023-10-02",
+      "max": "2023-10-31"
+    },
+    "remote_file_id": "1adTaNiqOUur1cz-UuB6DfYs0QsLQVdqD",
+    "local_replay_only": true,
+    "numeric_verified": false,
+    "pit_verified": false
+  }
+]

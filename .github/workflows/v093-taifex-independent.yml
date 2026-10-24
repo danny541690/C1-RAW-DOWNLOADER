@@ -6,6 +6,7 @@ on:
       - '.github/workflows/v093-taifex-independent.yml'
       - 'scripts/v093_taifex_independent.py'
       - 'scripts/taifex_verified_catalog.json'
+      - 'tests/test_taifex_recovery_v4.py'
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:

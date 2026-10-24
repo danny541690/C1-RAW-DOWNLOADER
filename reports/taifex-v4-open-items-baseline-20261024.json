@@ -1,0 +1,2424 @@
+{
+  "scope": "2026-10-24 pre-V4 retained cursor snapshot; not total historical errors",
+  "items": [
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-23|/CCP_CMLists",
+      "status": "UNRESOLVED",
+      "error": "JSONDecodeError:Expecting value: line 1 column 1 (char 0)",
+      "attempts": 0,
+      "request": {
+        "end": "2026-10-23",
+        "fields": null,
+        "key": "API|2026-10-23|/CCP_CMLists",
+        "kind": "snapshot",
+        "start": "2026-10-23",
+        "url": "https://openapi.taifex.com.tw/v1/CCP_CMLists"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-23|/DailyOptionsDelta",
+      "status": "UNRESOLVED",
+      "error": "JSONDecodeError:Expecting value: line 1 column 1 (char 0)",
+      "attempts": 0,
+      "request": {
+        "end": "2026-10-23",
+        "fields": null,
+        "key": "API|2026-10-23|/DailyOptionsDelta",
+        "kind": "snapshot",
+        "start": "2026-10-23",
+        "url": "https://openapi.taifex.com.tw/v1/DailyOptionsDelta"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-23|/SSFRefferedOpeningPrice",
+      "status": "UNRESOLVED",
+      "error": "JSONDecodeError:Expecting value: line 1 column 1 (char 0)",
+      "attempts": 0,
+      "request": {
+        "end": "2026-10-23",
+        "fields": null,
+        "key": "API|2026-10-23|/SSFRefferedOpeningPrice",
+        "kind": "snapshot",
+        "start": "2026-10-23",
+        "url": "https://openapi.taifex.com.tw/v1/SSFRefferedOpeningPrice"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-23|/SSFRefferedOpeningPriceAh",
+      "status": "UNRESOLVED",
+      "error": "JSONDecodeError:Expecting value: line 1 column 1 (char 0)",
+      "attempts": 0,
+      "request": {
+        "end": "2026-10-23",
+        "fields": null,
+        "key": "API|2026-10-23|/SSFRefferedOpeningPriceAh",
+        "kind": "snapshot",
+        "start": "2026-10-23",
+        "url": "https://openapi.taifex.com.tw/v1/SSFRefferedOpeningPriceAh"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-23|/productsExemptedAH",
+      "status": "UNRESOLVED",
+      "error": "JSONDecodeError:Expecting value: line 1 column 1 (char 0)",
+      "attempts": 0,
+      "request": {
+        "end": "2026-10-23",
+        "fields": null,
+        "key": "API|2026-10-23|/productsExemptedAH",
+        "kind": "snapshot",
+        "start": "2026-10-23",
+        "url": "https://openapi.taifex.com.tw/v1/productsExemptedAH"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AcceptableCollateralGovernmentBonds",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AcceptableCollateralGovernmentBonds",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AcceptableCollateralGovernmentBonds"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AcceptableCollateralInternationalBonds",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AcceptableCollateralInternationalBonds",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AcceptableCollateralInternationalBonds"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AcceptableCollateralLogStock",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AcceptableCollateralLogStock",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AcceptableCollateralLogStock"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AcceptableCollateralStock",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AcceptableCollateralStock",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AcceptableCollateralStock"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AccumulatedIncomeStateF",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AccumulatedIncomeStateF",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AccumulatedIncomeStateF"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AccumulatedIncomeStateR",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AccumulatedIncomeStateR",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AccumulatedIncomeStateR"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AccumulatedIncomeStateS",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AccumulatedIncomeStateS",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AccumulatedIncomeStateS"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AccumulatedIncomeStatementBeforeTaxStatement",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AccumulatedIncomeStatementBeforeTaxStatement",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AccumulatedIncomeStatementBeforeTaxStatement"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AnnualTradingFX",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AnnualTradingFX",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AnnualTradingFX"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AnnualTradingGold",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AnnualTradingGold",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AnnualTradingGold"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AnnualTradingIR",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AnnualTradingIR",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AnnualTradingIR"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AnnualTradingIndexFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AnnualTradingIndexFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AnnualTradingIndexFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AnnualTradingIndexOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AnnualTradingIndexOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AnnualTradingIndexOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AnnualTradingSSF",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AnnualTradingSSF",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AnnualTradingSSF"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/AnnualTradingSSO",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/AnnualTradingSSO",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/AnnualTradingSSO"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/BTContinuousMatchingSingleOrderFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/BTContinuousMatchingSingleOrderFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/BTContinuousMatchingSingleOrderFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/BTContinuousMatchingSingleOrderOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/BTContinuousMatchingSingleOrderOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/BTContinuousMatchingSingleOrderOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/BTDailyTradeInformationFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/BTDailyTradeInformationFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/BTDailyTradeInformationFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/BTDailyTradeInformationOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/BTDailyTradeInformationOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/BTDailyTradeInformationOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/BlockTrade",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/BlockTrade",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/BlockTrade"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/BlockTradeContinuousMatchingCombinationOrder",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/BlockTradeContinuousMatchingCombinationOrder",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/BlockTradeContinuousMatchingCombinationOrder"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/BlockTradeContinuousMatchingSingleOrder",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/BlockTradeContinuousMatchingSingleOrder",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/BlockTradeContinuousMatchingSingleOrder"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/BlockTradeNegotiation",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/BlockTradeNegotiation",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/BlockTradeNegotiation"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/CCP_CMLists",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/CCP_CMLists",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/CCP_CMLists"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/CMLists",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/CMLists",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/CMLists"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/ClearingBankLists",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/ClearingBankLists",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/ClearingBankLists"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/CustodianBankLists",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/CustodianBankLists",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/CustodianBankLists"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/DailyOptionsDelta",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/DailyOptionsDelta",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/DailyOptionsDelta"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/DailySummaryOfBlockTradeFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/DailySummaryOfBlockTradeFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/DailySummaryOfBlockTradeFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/DailySummaryOfBlockTradeOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/DailySummaryOfBlockTradeOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/DailySummaryOfBlockTradeOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/DailyVolumeReportOnCalendarSpreadOrders",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/DailyVolumeReportOnCalendarSpreadOrders",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/DailyVolumeReportOnCalendarSpreadOrders"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Daily_FUT",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Daily_FUT",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Daily_FUT"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Daily_OPT",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Daily_OPT",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Daily_OPT"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Daily_OPT_W",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Daily_OPT_W",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Daily_OPT_W"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/EPSBeforeTaxF",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/EPSBeforeTaxF",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/EPSBeforeTaxF"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/EPSBeforeTaxR",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/EPSBeforeTaxR",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/EPSBeforeTaxR"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/EPSBeforeTaxS",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/EPSBeforeTaxS",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/EPSBeforeTaxS"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FCMBranchLists",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FCMBranchLists",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FCMBranchLists"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FCMLists",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FCMLists",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FCMLists"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FXFuturesAndOptionsMargining",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FXFuturesAndOptionsMargining",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FXFuturesAndOptionsMargining"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPrice",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPrice",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPrice"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceFx",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceFx",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceFx"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceGold",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceGold",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceGold"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceIR",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceIR",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceIR"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceIndexFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceIndexFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceIndexFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceIndexOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceIndexOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceIndexOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceSSF",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceSSF",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceSSF"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FinalSettlementPriceSSO",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FinalSettlementPriceSSO",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FinalSettlementPriceSSO"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/FuturesAndOptionsFeeSchedule",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/FuturesAndOptionsFeeSchedule",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/FuturesAndOptionsFeeSchedule"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/GoldFuturesAndOptionsMargining",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/GoldFuturesAndOptionsMargining",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/GoldFuturesAndOptionsMargining"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/IncomeStatementF",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/IncomeStatementF",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/IncomeStatementF"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/IncomeStatementR",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/IncomeStatementR",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/IncomeStatementR"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/IncomeStatementS",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/IncomeStatementS",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/IncomeStatementS"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/InterestRateFuturesMargining",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/InterestRateFuturesMargining",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/InterestRateFuturesMargining"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfCallsAndPutsBytheDate",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfCallsAndPutsBytheDate",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersDetailsOfCallsAndPutsBytheDate"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfCallsAndPutsBytheWeek",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfCallsAndPutsBytheWeek",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersDetailsOfCallsAndPutsBytheWeek"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheWeek",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheWeek",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheWeek"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfOptionsContractsBytheDate",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfOptionsContractsBytheDate",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersDetailsOfOptionsContractsBytheDate"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfOptionsContractsBytheWeek",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDetailsOfOptionsContractsBytheWeek",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersDetailsOfOptionsContractsBytheWeek"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDividedByFuturesAndOptionsBytheDate",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDividedByFuturesAndOptionsBytheDate",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersDividedByFuturesAndOptionsBytheDate"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDividedByFuturesAndOptionsBytheWeek",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersDividedByFuturesAndOptionsBytheWeek",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersDividedByFuturesAndOptionsBytheWeek"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersGeneralBytheDate",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersGeneralBytheDate",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersGeneralBytheDate"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersGeneralBytheWeek",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketDataOfMajorInstitutionalTradersGeneralBytheWeek",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersGeneralBytheWeek"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketMakerListsFut",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketMakerListsFut",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketMakerListsFut"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketMakerListsOpt",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketMakerListsOpt",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketMakerListsOpt"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MarketParticipants",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MarketParticipants",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MarketParticipants"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MonthlyTradingStatisticsFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MonthlyTradingStatisticsFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MonthlyTradingStatisticsFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/MonthlyTradingStatisticsOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/MonthlyTradingStatisticsOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/MonthlyTradingStatisticsOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Monthly_FUT",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Monthly_FUT",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Monthly_FUT"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Monthly_OPT",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Monthly_OPT",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Monthly_OPT"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/NetIncomeRankingF",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/NetIncomeRankingF",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/NetIncomeRankingF"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/NetIncomeRankingR",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/NetIncomeRankingR",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/NetIncomeRankingR"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/NetIncomeRankingS",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/NetIncomeRankingS",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/NetIncomeRankingS"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/NetValuePerShareF",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/NetValuePerShareF",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/NetValuePerShareF"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/NetValuePerShareR",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/NetValuePerShareR",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/NetValuePerShareR"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/NetValuePerShareS",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/NetValuePerShareS",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/NetValuePerShareS"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/NetValuePerShareStatement",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/NetValuePerShareStatement",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/NetValuePerShareStatement"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/OptionsTimeAndSalesData",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/OptionsTimeAndSalesData",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/OptionsTimeAndSalesData"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/PositionLimitEquity",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/PositionLimitEquity",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/PositionLimitEquity"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/PositionLimitNonEquity",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/PositionLimitNonEquity",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/PositionLimitNonEquity"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SSFRefferedOpeningPrice",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SSFRefferedOpeningPrice",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SSFRefferedOpeningPrice"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SSFRefferedOpeningPriceAh",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SSFRefferedOpeningPriceAh",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SSFRefferedOpeningPriceAh"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SSOLists",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SSOLists",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SSOLists"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/STFTop10",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/STFTop10",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/STFTop10"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsFX",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsFX",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsFX"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsFXFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsFXFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsFXFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsGold",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsGold",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsGold"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsIR",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsIR",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsIR"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsIndexFutures",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsIndexFutures",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsIndexFutures"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsIndexOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsIndexOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsIndexOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsOfContractsOnExpirationDate",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsOfContractsOnExpirationDate",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsOfContractsOnExpirationDate"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsSSF",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsSSF",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsSSF"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SettledPositionsSSO",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SettledPositionsSSO",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SettledPositionsSSO"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/SingleStockFuturesContractReferredOpeningPrice",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/SingleStockFuturesContractReferredOpeningPrice",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/SingleStockFuturesContractReferredOpeningPrice"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/TimeAndSalesData",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/TimeAndSalesData",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/TimeAndSalesData"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/TimeAndSalesDataOnCalendarSpreadOrders",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/TimeAndSalesDataOnCalendarSpreadOrders",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/TimeAndSalesDataOnCalendarSpreadOrders"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/TotalMarketPositionLimitForSingleStockFuturesAndEquityOptions",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/TotalMarketPositionLimitForSingleStockFuturesAndEquityOptions",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/TotalMarketPositionLimitForSingleStockFuturesAndEquityOptions"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Weekly_FUT",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Weekly_FUT",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Weekly_FUT"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Weekly_OPT",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Weekly_OPT",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Weekly_OPT"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Yearly_FUT",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Yearly_FUT",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Yearly_FUT"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/Yearly_OPT",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/Yearly_OPT",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/Yearly_OPT"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/eTradeQty",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/eTradeQty",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/eTradeQty"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/productsExemptedAH",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/productsExemptedAH",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/productsExemptedAH"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va01",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va01",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va01"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va02",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va02",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va02"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va03",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va03",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va03"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va04",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va04",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va04"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va05",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va05",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va05"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va06",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va06",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va06"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va07",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va07",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va07"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va08",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va08",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va08"
+      },
+      "response_sha256": "daf05a5885c192b7bcaa2d59054f7245085d354c5978d45071efd0450b024f8b"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va09",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va09",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va09"
+      },
+      "response_sha256": "fd93fd12aee4186f88d619d5a6fd363cd3f3393ab75b37a0d9385a7d8d8d3a74"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va10",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va10",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va10"
+      },
+      "response_sha256": "fd93fd12aee4186f88d619d5a6fd363cd3f3393ab75b37a0d9385a7d8d8d3a74"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va11",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va11",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va11"
+      },
+      "response_sha256": "fd93fd12aee4186f88d619d5a6fd363cd3f3393ab75b37a0d9385a7d8d8d3a74"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va12",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va12",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va12"
+      },
+      "response_sha256": "fd93fd12aee4186f88d619d5a6fd363cd3f3393ab75b37a0d9385a7d8d8d3a74"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va13",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va13",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va13"
+      },
+      "response_sha256": "fd93fd12aee4186f88d619d5a6fd363cd3f3393ab75b37a0d9385a7d8d8d3a74"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "API|2026-10-24|/va14",
+      "status": "UNRESOLVED",
+      "error": "ValueError:API_ROUTE_RETURNS_SWAGGER_HTML",
+      "attempts": 2,
+      "request": {
+        "end": "2026-10-24",
+        "fields": null,
+        "key": "API|2026-10-24|/va14",
+        "kind": "snapshot",
+        "start": "2026-10-24",
+        "url": "https://openapi.taifex.com.tw/v1/va14"
+      },
+      "response_sha256": "fd93fd12aee4186f88d619d5a6fd363cd3f3393ab75b37a0d9385a7d8d8d3a74"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|bargainOrderDown|2023-03",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2023-03-31",
+        "fields": {
+          "dateaddcnt": "",
+          "goDay": "",
+          "queryEndDate": "2023/03/31",
+          "queryStartDate": "2023/03/01",
+          "queryType": ""
+        },
+        "key": "HISTORY|bargainOrderDown|2023-03",
+        "kind": "csv",
+        "start": "2023-03-01",
+        "url": "https://www.taifex.com.tw/cht/3/bargainOrderDown"
+      },
+      "response_sha256": "b05342441351ae7ec362972e4e3c35328ec67f9dc6a72cbc43ec629f0b64c022"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlBargainOrderDown|2025-03",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2025-03-31",
+        "fields": {
+          "dateaddcnt": "",
+          "goDay": "",
+          "queryEndDate": "2025/03/31",
+          "queryStartDate": "2025/03/01",
+          "queryType": ""
+        },
+        "key": "HISTORY|dlBargainOrderDown|2025-03",
+        "kind": "csv",
+        "start": "2025-03-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlBargainOrderDown"
+      },
+      "response_sha256": "74bb3298ebb2c8a61fb212d1028de5ce1971a4202de1e4eb68a075132f06da53"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlBargainOrderDown|2025-08",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2025-08-31",
+        "fields": {
+          "dateaddcnt": "",
+          "goDay": "",
+          "queryEndDate": "2025/08/31",
+          "queryStartDate": "2025/08/01",
+          "queryType": ""
+        },
+        "key": "HISTORY|dlBargainOrderDown|2025-08",
+        "kind": "csv",
+        "start": "2025-08-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlBargainOrderDown"
+      },
+      "response_sha256": "c586b92c8b7953942fa2f498c00837b3f64924e460dbd55afdeabd0d455b8286"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlLargeTraderFutDown|2023-11",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2023-11-30",
+        "fields": {
+          "queryEndDate": "2023/11/30",
+          "queryStartDate": "2023/11/01"
+        },
+        "key": "HISTORY|dlLargeTraderFutDown|2023-11",
+        "kind": "csv",
+        "start": "2023-11-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlLargeTraderFutDown"
+      },
+      "response_sha256": "58eb8df703d31ce8d0cebc863bf1e8047d895ac44b164e0456c60a5ea199ba58"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlLargeTraderFutDown|2025-04",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2025-04-30",
+        "fields": {
+          "queryEndDate": "2025/04/30",
+          "queryStartDate": "2025/04/01"
+        },
+        "key": "HISTORY|dlLargeTraderFutDown|2025-04",
+        "kind": "csv",
+        "start": "2025-04-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlLargeTraderFutDown"
+      },
+      "response_sha256": "394a31da58a45d86569cd85a4dfbb47288beb5166b4ac9fb09eacc864d30bba4"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlLargeTraderFutDown|2026-09",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2026-09-30",
+        "fields": {
+          "queryEndDate": "2026/09/30",
+          "queryStartDate": "2026/09/01"
+        },
+        "key": "HISTORY|dlLargeTraderFutDown|2026-09",
+        "kind": "csv",
+        "start": "2026-09-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlLargeTraderFutDown"
+      },
+      "response_sha256": "57adce404080e86a8900b8e73a07129bd5f85eacf5e31872b7dc3e12afa511a7"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlLargeTraderOptDown|2023-10",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2023-10-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2023/10/31",
+          "queryStartDate": "2023/10/01"
+        },
+        "key": "HISTORY|dlLargeTraderOptDown|2023-10",
+        "kind": "csv",
+        "start": "2023-10-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlLargeTraderOptDown"
+      },
+      "response_sha256": "fb7dadd05ef66939919d5d62398f8871990afb991c8243312e29c73627fa7466"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlLargeTraderOptDown|2025-03",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2025-03-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2025/03/31",
+          "queryStartDate": "2025/03/01"
+        },
+        "key": "HISTORY|dlLargeTraderOptDown|2025-03",
+        "kind": "csv",
+        "start": "2025-03-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlLargeTraderOptDown"
+      },
+      "response_sha256": "cfef788d7d93205c70bd7784465e56a5d5e5f635dcc76c8558078992555f236f"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlLargeTraderOptDown|2026-05",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2026-05-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2026/05/31",
+          "queryStartDate": "2026/05/01"
+        },
+        "key": "HISTORY|dlLargeTraderOptDown|2026-05",
+        "kind": "csv",
+        "start": "2026-05-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlLargeTraderOptDown"
+      },
+      "response_sha256": "86af8fbc0242764fb1eddebf8fe244d2073fac250650b6f4556aa6c367b70f86"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|dlPcRatioDown|2019-10",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 1,
+      "request": {
+        "end": "2019-10-31",
+        "fields": {
+          "down_type": "1",
+          "queryEndDate": "2019/10/31",
+          "queryStartDate": "2019/10/01"
+        },
+        "key": "HISTORY|dlPcRatioDown|2019-10",
+        "kind": "csv",
+        "start": "2019-10-01",
+        "url": "https://www.taifex.com.tw/cht/3/dlPcRatioDown"
+      },
+      "response_sha256": null
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|largeTraderFutDown|2023-02",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2023-02-28",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2023/02/28",
+          "queryStartDate": "2023/02/01"
+        },
+        "key": "HISTORY|largeTraderFutDown|2023-02",
+        "kind": "csv",
+        "start": "2023-02-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderFutDown"
+      },
+      "response_sha256": "4e23e9dec705f8e575badb635d79540dd5be0efb44440770f4e11b9070a350cf"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|largeTraderOptDown|2022-10",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2022-10-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2022/10/31",
+          "queryStartDate": "2022/10/01"
+        },
+        "key": "HISTORY|largeTraderOptDown|2022-10",
+        "kind": "csv",
+        "start": "2022-10-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderOptDown"
+      },
+      "response_sha256": "5775d6274a8fe8f325d92139c4feaa7d0f004f4127a7c2d18ab31c278faadb1e"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|largeTraderOptDown|2025-08",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2025-08-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2025/08/31",
+          "queryStartDate": "2025/08/01"
+        },
+        "key": "HISTORY|largeTraderOptDown|2025-08",
+        "kind": "csv",
+        "start": "2025-08-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderOptDown"
+      },
+      "response_sha256": "eaaa97b48e2a89f2027ed9cdeae0e1aa24e81ba649e4f887799b03acbaa8778f"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|largeTraderOptDown|2025-12",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2025-12-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2025/12/31",
+          "queryStartDate": "2025/12/01"
+        },
+        "key": "HISTORY|largeTraderOptDown|2025-12",
+        "kind": "csv",
+        "start": "2025-12-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderOptDown"
+      },
+      "response_sha256": "6fbc99aa2a7252f552c3e888ee2ce34e7a216d0def4b4ead46b82c758a0d0477"
+    },
+    {
+      "lane": "desc",
+      "unit_id": "HISTORY|largeTraderOptDown|2026-02",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2026-02-28",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2026/02/28",
+          "queryStartDate": "2026/02/01"
+        },
+        "key": "HISTORY|largeTraderOptDown|2026-02",
+        "kind": "csv",
+        "start": "2026-02-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderOptDown"
+      },
+      "response_sha256": "136b2ffab25224da0944f23966f090d2de6818cb17b98b9dea5503694ac9b24c"
+    },
+    {
+      "lane": "asc",
+      "unit_id": "HISTORY|largeTraderFutDown|2009-02",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2009-02-28",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2009/02/28",
+          "queryStartDate": "2009/02/01"
+        },
+        "key": "HISTORY|largeTraderFutDown|2009-02",
+        "kind": "csv",
+        "start": "2009-02-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderFutDown"
+      },
+      "response_sha256": "1caa83d88079faedd5e35d2544612ca63b1e0bcc4204fc2fcc10285fab5de7e5"
+    },
+    {
+      "lane": "asc",
+      "unit_id": "HISTORY|largeTraderFutDown|2012-06",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2012-06-30",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2012/06/30",
+          "queryStartDate": "2012/06/01"
+        },
+        "key": "HISTORY|largeTraderFutDown|2012-06",
+        "kind": "csv",
+        "start": "2012-06-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderFutDown"
+      },
+      "response_sha256": "7867173e3c3a41a022c2829b9bde7e504554dff45c1eb4c7b014cba052dd9fee"
+    },
+    {
+      "lane": "asc",
+      "unit_id": "HISTORY|largeTraderOptDown|2005-01",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2005-01-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2005/01/31",
+          "queryStartDate": "2005/01/01"
+        },
+        "key": "HISTORY|largeTraderOptDown|2005-01",
+        "kind": "csv",
+        "start": "2005-01-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderOptDown"
+      },
+      "response_sha256": "2473b5a0a21e1c7579d16be01df04054b94271e1dbeed4a47289370c9f9b7cd3"
+    },
+    {
+      "lane": "asc",
+      "unit_id": "HISTORY|largeTraderOptDown|2011-07",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2011-07-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2011/07/31",
+          "queryStartDate": "2011/07/01"
+        },
+        "key": "HISTORY|largeTraderOptDown|2011-07",
+        "kind": "csv",
+        "start": "2011-07-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderOptDown"
+      },
+      "response_sha256": "dc1279cb0531116a1e2c074201f7669534cbc48d8004e8840b3f9a7dd2c45a20"
+    },
+    {
+      "lane": "asc",
+      "unit_id": "HISTORY|largeTraderOptDown|2011-08",
+      "status": "UNRESOLVED",
+      "error": "HTTPError:HTTP Error 520: <none>",
+      "attempts": 3,
+      "request": {
+        "end": "2011-08-31",
+        "fields": {
+          "menuid1": "",
+          "queryEndDate": "2011/08/31",
+          "queryStartDate": "2011/08/01"
+        },
+        "key": "HISTORY|largeTraderOptDown|2011-08",
+        "kind": "csv",
+        "start": "2011-08-01",
+        "url": "https://www.taifex.com.tw/cht/3/largeTraderOptDown"
+      },
+      "response_sha256": "7ccc70c2015eaf42170b2ea8ed03ac37f07771c2d202e59a0fd214bd11a6ae59"
+    }
+  ]
+}

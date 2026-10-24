@@ -1,0 +1,95 @@
+[
+  {
+    "unit_id": "HISTORY|largeTraderFutDown|2009-02",
+    "actual_request": {
+      "end": "2009-02-28",
+      "fields": {
+        "menuid1": "",
+        "queryEndDate": "2009/02/28",
+        "queryStartDate": "2009/02/01"
+      },
+      "key": "HISTORY|dlLargeTraderFutDown|2009-02",
+      "kind": "csv",
+      "start": "2009-02-01",
+      "url": "https://www.taifex.com.tw/cht/3/dlLargeTraderFutDown"
+    },
+    "bytes": 72276,
+    "sha256": "1caa83d88079faedd5e35d2544612ca63b1e0bcc4204fc2fcc10285fab5de7e5",
+    "validation": {
+      "rows": 880,
+      "content_period": {
+        "min": "2009-02-02",
+        "max": "2009-02-27"
+      },
+      "products": [],
+      "sessions": [],
+      "schema": [
+        "日期",
+        "商品(契約)",
+        "商品名稱(契約名稱)",
+        "到期月份(週別)",
+        "交易人類別",
+        "前五大交易人買方",
+        "前五大交易人賣方",
+        "前十大交易人買方",
+        "前十大交易人賣方",
+        "全市場未沖銷部位數"
+      ],
+      "footnotes": [
+        "月份類別格式: 666666為所有週到期契約合計，yyyymm為近月契約，999999 為所有契約(含各週到期契約與各到期月份契約)合計。",
+        "交易人類別格式： 0 為部位排序前五大或前十大交易人，1 為部位排序前五大或前十大交易人中，屬於特定法人者",
+        "-表當日收盤後無週到期期貨契約；\"0\"表該契約於當日收盤後無未沖銷部位。"
+      ]
+    },
+    "local_only_not_saved_to_drive": true,
+    "numeric_verified": false,
+    "pit_verified": false
+  },
+  {
+    "unit_id": "HISTORY|largeTraderOptDown|2005-01",
+    "actual_request": {
+      "end": "2005-01-31",
+      "fields": {
+        "menuid1": "",
+        "queryEndDate": "2005/01/31",
+        "queryStartDate": "2005/01/01"
+      },
+      "key": "HISTORY|dlLargeTraderOptDown|2005-01",
+      "kind": "csv",
+      "start": "2005-01-01",
+      "url": "https://www.taifex.com.tw/cht/3/dlLargeTraderOptDown"
+    },
+    "bytes": 338413,
+    "sha256": "2473b5a0a21e1c7579d16be01df04054b94271e1dbeed4a47289370c9f9b7cd3",
+    "validation": {
+      "rows": 6048,
+      "content_period": {
+        "min": "2005-01-03",
+        "max": "2005-01-31"
+      },
+      "products": [],
+      "sessions": [],
+      "schema": [
+        "日期",
+        "商品(契約)",
+        "商品名稱(契約名稱)",
+        "買賣權",
+        "到期月份(週別)",
+        "交易人類別",
+        "前五大交易人買方",
+        "前五大交易人賣方",
+        "前十大交易人買方",
+        "前十大交易人賣方",
+        "全市場未沖銷部位數"
+      ],
+      "footnotes": [
+        "備註一：666666為所有週到期契約合計；yyyymm為近月契約；999999 為所有契約(含各週到期契約與各到期月份契約)合計。",
+        "備註二：交易人類別格式：0 為部位排序前五大或前十大交易人，1 為部位排序前五大或前十大交易人中，屬於特定法人者",
+        "備註三：\"-\"表當日收盤後無週到期選擇權契約；\"0\"表該契約於當日收盤後無未沖銷部位。"
+      ]
+    },
+    "local_only_not_saved_to_drive": true,
+    "numeric_verified": false,
+    "pit_verified": false
+  }
+]
