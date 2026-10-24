@@ -1,0 +1,13 @@
+# TAIFEX V5：續接V4後的原生CSV/JSON修正
+
+2026-10-25台灣時間。V4正式批次40109795017已完成14個同期間官方入口憑證補正，另保存11個單元；40109795093從保留回應恢復5個單元，未解決下載錯誤為0。成功與空回應不等於完整涵蓋。
+
+V4結束時六仍有133筆未解決：126筆Swagger、4筆JSONDecodeError、2筆HTTP520、1筆舊中斷快照。四個JSON失敗入口為DailyMarketReportFut、DailyMarketReportOpt、DailyForeignExchangeRates及MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheDate。
+
+實際讀回保留原回應證實：選擇權11302列、匯率35列、法人期貨66列均為帶BOM的CSV，並非錯誤JSON。三份原始bytes與失敗憑證SHA相符。這次修正讓已辨識官方入口可接受原生JSON或CSV，不將CSV轉成JSON。CSV以.csv保存；日期使用內容實際日期（行情與法人2026-10-22，匯率2026-09-01..2026-10-22），不把10月25日的抓取日期冒充資料日期。
+
+安全限制：僅https://openapi.taifex.com.tw/v1的四個入口可採CSV；三種已有原始檔的表頭逐欄完全比對，期貨入口要求已知行情核心欄位與不重複欄名。每列欄數與日期均檢查，未來日期拒收。HTML/Swagger仍拒收，未知API入口不會泛用CSV規則。所有原始bytes保持原樣，保存後遠端回讀SHA；優先從既有失敗證據恢復，成功檔不重抓不覆寫。
+
+684項測試通過；包含未知來源、錯表頭、錯欄數、未來日期、HTML與JSON相容性測試。三份真實CSV回放證據另附taifex-api-native-v5-replay-20261025.json。正式新增成果需以V5執行後的Drive回讀憑證確認，不能用本地測試數冒充正式補正。
+
+未解決：126筆Swagger回應仍屬官方入口問題；HTTP520遵循V4有限輪次重試；舊日期未保存的快照不能用今天的最新回應冒充。數值語意、PIT與全量涵蓋保持未驗證。
