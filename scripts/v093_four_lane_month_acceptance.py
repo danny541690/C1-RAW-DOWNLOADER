@@ -100,7 +100,8 @@ def worker(d,root,url,token,run,lane,phase):
             return fixture_payload(dict(period=period))
         with patch.object(repair.native.Audit,'jobs',side_effect=lambda audit,m,closed:fixture_jobs(m)), \
              patch.object(repair.native,'request',side_effect=transport), \
-             patch.object(repair,'RETRY_COOLDOWN_SECONDS',3):
+             patch.object(repair,'RETRY_COOLDOWN_SECONDS',3), \
+             patch.object(repair,'SOURCE_LIMIT_COOLDOWN_SECONDS',3):
             w.run()
         if phase=='frontier' or not any(s.get('retry_units') for s in w.pending_index.values()):break
         time.sleep(3.2)

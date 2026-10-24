@@ -16,8 +16,10 @@ from scripts.v093_folder_registry import FolderRegistry
 from scripts.v093_standard_r1 import C1
 from scripts.v093_five_stage_durable_gate import commit, LeaseBusy
 from scripts.v093_raw_month_coordination import capture_history_month
-from scripts.v093_repair_coordination import LANES, lane_months, claim_month, reserve_source
+from scripts.v093_repair_coordination import LANES, lane_months, claim_month, reserve_source, defer_source
 from scripts.v093_repair_execution import reparse_financial,pending_month,due_months,REPARSE_REVISION
+
+from scripts.v093_official_problem_catalog import problem_summary, unresolved_items
 
 REVISION='OFFICIAL_TARGETED_REPAIR_20261023_V1'
 QUALITY_REVISION='OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4'
@@ -27,7 +29,10 @@ MAX_POINT_ATTEMPTS=3
 MAX_POINT_SECONDS=90
 PARAMETER_INCIDENT_MONTH='2026-06'
 PRIORITY_RETRY_SECONDS=600
-EXECUTION_REVISION='LOCAL_RAW_BEFORE_ROUTE_AND_EXPLICIT_ACTIVITY_V5'
+EXECUTION_REVISION='OFFLINE_RECOVERY_AND_SHARED_SOURCE_COOLDOWN_V6'
+SOURCE_LIMIT_COOLDOWN_SECONDS=3600
+TRANSIENT_COOLDOWN_SECONDS=120
+SOURCE_EMPTY_COOLDOWN_SECONDS=86400
 
 def incident_retry_due(journal,now):
     return any(row.get('quality_revision')==QUALITY_REVISION
@@ -143,6 +148,7 @@ class RepairWorker(OfficialWorker):
 
     def save_journal(self):
         self.journal['updated_utc']=native.stamp()
+        self.journal['problem_summary']=problem_summary(self.journal)
         self.putj(self.monthctrl,'OFFICIAL_REPAIR_STATE.json',self.journal)
         if hasattr(self,'pending_index'):
             self.pending_index[self.journal['month']]=pending_month(self.journal)
@@ -154,6 +160,7 @@ class RepairWorker(OfficialWorker):
                 source_requests_this_run=dict(self.source_requests),download_responses_this_run=self.downloaded,
                 month_result_counts=dict(collections.Counter(row.get('status','UNKNOWN')
                     for row in self.journal.get('units',{}).values())),
+                problem_summary=self.journal.get('problem_summary',{}),
                 quality_revision=QUALITY_REVISION,numeric_verified=False,pit_verified=False,
                 repair_success_definition='VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED',**self.activity_summary())
             self.putj(self.stagectrl,'STATUS.json',report)
@@ -165,15 +172,20 @@ class RepairWorker(OfficialWorker):
         signature=native.sha(json.dumps(dict(quality_revision=QUALITY_REVISION,
             sha=old.get('sha256'),flags=flags),sort_keys=True).encode())
         prior=self.journal['units'].get(key,{})
+        recovery_status=None
         if prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and prior.get('raw_sha256')==old.get('sha256') and not flags:
             self.note_activity('prior_verified_skipped_this_run',key,old.get('sha256'))
             return  # Preserve previously checked unchanged RAW; no repeat source request.
-        # V4 incorrectly blocked valid retained RAW before trying its local audit.
-        if prior.get('status')=='UNRESOLVED_OFFICIAL_ROUTE' and (job.get('url') or old.get('evidence_file')):
-            prior={}
-        elif old.get('evidence_file') and prior.get('local_error') and prior.get('execution_revision')!=EXECUTION_REVISION:
-            # Re-audit retained bytes once after a local validator fix, without
-            # resetting exhausted source attempts or rewriting saved RAW.
+        # Revisit retained failures once offline. Do not reset source caps,
+        # redownload successful RAW, or repeat an already completed local audit.
+        if (old.get('evidence_file') and not prior.get('complete')
+                and (prior.get('terminal') or prior.get('local_error'))
+                and prior.get('status')!='LOCAL_CONTENT_CHECKED_OPEN_QUALITY_ITEMS'
+                and prior.get('execution_revision')!=EXECUTION_REVISION
+                and prior.get('local_recovery_revision')!=EXECUTION_REVISION):
+            recovery_status=prior.get('status','UNRESOLVED_RETRY_CYCLES_EXHAUSTED')
+            prior=dict(prior,terminal=False,next_retry_at=0,local_recovery_revision=EXECUTION_REVISION)
+        elif prior.get('status')=='UNRESOLVED_OFFICIAL_ROUTE' and job.get('url'):
             prior=dict(prior,terminal=False,next_retry_at=0)
         if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature:
             known=source_failure(ValueError(prior.get('error','')),job)
@@ -235,6 +247,10 @@ class RepairWorker(OfficialWorker):
                         self.note_activity('unchanged_raw_checked_this_run',key,old['sha256'])
                         return
                 except Exception as exc:row['local_error']=type(exc).__name__+':'+str(exc)[:300]
+            if recovery_status:
+                row.update(status=recovery_status,terminal=True,complete=False,
+                    next_action='REVIEW_RETAINED_RAW_AND_SOURCE_SCOPE_NO_CAP_RESET')
+                return
             if not job.get('url'):
                 row.update(status='UNRESOLVED_OFFICIAL_ROUTE',terminal=True,complete=False);return
             assert_official(job)
@@ -242,6 +258,9 @@ class RepairWorker(OfficialWorker):
                 row.update(status='OFFICIAL_PERIOD_NOT_PROVIDED',terminal=True,complete=False);return
             # Fresh official requests are restricted to unresolved/invalid content, never an unchanged previous pass.
             while row['attempts']<MAX_POINT_ATTEMPTS and time.monotonic()+20<deadline:
+                if getattr(self,'_source_cooldowns',{}).get(job['source'],0)>time.time():
+                    row.update(status='UNRESOLVED_SOURCE_BACKOFF',terminal=False,complete=False,
+                        next_retry_at=self._source_cooldowns[job['source']]);break
                 if self.circuit[job['source']]>=2:
                     row.update(status='UNRESOLVED_SOURCE_BACKOFF',terminal=False,complete=False);break
                 row.update(status='SOURCE_CHECK_REQUEST_INTENT')
@@ -299,10 +318,20 @@ class RepairWorker(OfficialWorker):
                         digest=native.sha(raw);q=self.d.folder(self.monthctrl,'REPAIR_EVIDENCE')
                         self.owned();self.d.put(q,key+'_'+digest+'.raw',raw,'application/octet-stream',overwrite=False)
                         row['last_response_sha256']=digest
+                        row['last_response_evidence_file']=str(q)+'/'+key+'_'+digest+'.raw'
                     row.update(status='CHECK_FAILED',error=type(exc).__name__+':'+str(exc)[:300],complete=False)
+                    limited=isinstance(exc,base.urllib.error.HTTPError) and exc.code in (403,429)
+                    if limited or transient:
+                        seconds=SOURCE_LIMIT_COOLDOWN_SECONDS if limited else TRANSIENT_COOLDOWN_SECONDS
+                        pause_until=time.time()+seconds
+                        if getattr(self,'lane',None):pause_until=defer_source(self.api,self.token,job['source'],seconds)
+                        if not hasattr(self,'_source_cooldowns'):self._source_cooldowns={}
+                        self._source_cooldowns[job['source']]=pause_until
+                        row['next_retry_at']=pause_until
                     disposition=source_failure(exc,job)
                     if disposition:
                         row.update(disposition)
+                        if row['status']=='SOURCE_NO_DATA_UNCONFIRMED':row['next_retry_at']=time.time()+SOURCE_EMPTY_COOLDOWN_SECONDS
                         break
                     # Rate limits are retried after a durable cooldown, with a bounded cycle count.
                     if isinstance(exc,base.urllib.error.HTTPError) and exc.code in (403,429):
@@ -321,6 +350,12 @@ class RepairWorker(OfficialWorker):
             row['work_seconds']=row.get('work_seconds',0)+time.monotonic()-started
             row['maximum_attempts']=MAX_POINT_ATTEMPTS;row['maximum_seconds']=MAX_POINT_SECONDS
             self.save_journal()
+
+    def publish_unresolved(self):
+        report=dict(month=self.journal['month'],run_id=self.owner,execution_revision=EXECUTION_REVISION,
+            updated_utc=native.stamp(),summary=problem_summary(self.journal),units=unresolved_items(self.journal),
+            complete=False,numeric_verified=False,pit_verified=False)
+        self.putj(self.monthctrl,'OFFICIAL_UNRESOLVED_ITEMS.json',report)
 
     def capture_month(self,month,quota=None):
         folder=self.d.find(self.roots['RAW'],month) if self.roots['RAW'] else None
@@ -358,9 +393,10 @@ class RepairWorker(OfficialWorker):
             not bool(item[0].get('evidence_file'))))
         for job,bucket,marked in ordered:
             if time.monotonic()+25>=self.until:
-                self.save_journal();self.month_incomplete=True;return False
+                self.save_journal();self.publish_unresolved();self.month_incomplete=True;return False
             self.repair_one(job,bucket,marked)
         self.save_journal()
+        self.publish_unresolved()
         self.cursor.update(last_month=month,flagged_candidates=len(candidates))
         print('OFFICIAL_REPAIR_MONTH '+json.dumps(dict(month=month,candidates=len(candidates),
             checked=self.checked,repaired=self.repaired,source_requests=dict(self.source_requests))),flush=True)
