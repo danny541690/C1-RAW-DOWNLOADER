@@ -1,7 +1,7 @@
 import datetime as dt
 import time
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from scripts import v093_taifex_independent as m
 
 class RouteHealthTests(unittest.TestCase):
@@ -45,3 +45,13 @@ class RouteHealthTests(unittest.TestCase):
         self.assertEqual(ev['rows'],1);self.assertEqual(ev['content_period']['max'],'2026-10-23')
         self.assertIn('data_name=CCP_CMLists',m.official_csv_mirror(job,dt.date(2026,10,25))['url'])
         with self.assertRaises(ValueError):m.validate(raw.replace(b'20261023',b'20261026'),job)
+
+    def test_short_source_cooldown_waits_without_bypassing_or_long_sleep(self):
+        w=object.__new__(m.Worker);w.live=Mock(return_value=True);w.state={'source_backoff':{'www.taifex.com.tw':120}}
+        with patch.object(m.time,'time',return_value=100),patch.object(m.time,'sleep') as sleep:
+            self.assertTrue(w.wait_short_source_cooldown());sleep.assert_called_once_with(5)
+            self.assertEqual(w.state['source_backoff']['www.taifex.com.tw'],120)
+            w.state['source_backoff']['www.taifex.com.tw']=1000
+            self.assertFalse(w.wait_short_source_cooldown())
+            w.state['source_backoff']['www.taifex.com.tw']=90
+            self.assertFalse(w.wait_short_source_cooldown())
