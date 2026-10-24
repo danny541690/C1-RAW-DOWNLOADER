@@ -1,4 +1,4 @@
-name: TAIFEX V3 checkpoint handoff
+name: TAIFEX V3.1 checkpoint handoff
 on:
   push:
     branches: [main]
@@ -22,10 +22,10 @@ jobs:
               req=urllib.request.Request(base+path,method=method,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
               with urllib.request.urlopen(req,timeout=25) as r:
                   b=r.read();return json.loads(b) if b else {}
-          rid=40080964653
+          rid=40084471941
           old=api('/actions/runs/'+str(rid))
           assert old['path']=='.github/workflows/v093-taifex-independent.yml'
-          assert old['head_sha'].startswith('e416e56')
+          assert old['head_sha'].startswith('0651f4b')
           if old['status']!='completed':
               try:api('/actions/runs/'+str(rid)+'/cancel','POST')
               except urllib.error.HTTPError as e:
