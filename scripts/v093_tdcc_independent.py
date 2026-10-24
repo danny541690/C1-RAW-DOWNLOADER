@@ -7,6 +7,7 @@ SPEC='https://openapi.tdcc.com.tw/tdcc-opendata-api-docs'
 QUERY='https://www.tdcc.com.tw/portal/zh/smWeb/qryStock'
 REPAIR_REVISION='TDCC_EMPTY_RETRY_AND_PROGRESS_V4'
 TRANSPORT_REVISION='TDCC_TIMEOUT_PRIORITY_RESUME_V5'
+PROGRESS_REVISION='TDCC_DURABLE_JOURNAL_AND_PENDING_SPLIT_V6'
 class SourceEmpty(ValueError):pass
 class QueryForm(HTMLParser):
  def __init__(self):super().__init__();self.fields={}
@@ -81,7 +82,17 @@ def history_summary(date,codes,receipts):
         and receipts[key].get('file_id') and receipts[key].get('sha256')
         and receipts[key].get('remote_readback_hash_verified') is True}
  empty={key for key in expected if receipts.get(key,{}).get('status')=='SKIPPED_SOURCE_EMPTY'}
- return dict(expected_candidates=len(expected),saved=len(saved),source_empty=len(empty),unresolved=len(expected-saved-empty),
+ remaining=expected-saved-empty
+ failed={key for key in remaining if receipts.get(key,{}).get('status')=='UNRESOLVED'}
+ interrupted={key for key in remaining if receipts.get(key,{}).get('status')=='REQUEST_INTENT'}
+ exhausted={key for key in failed|interrupted if receipts[key].get('attempts',0)>=3}
+ deferred={key for key in (failed|interrupted)-exhausted if receipts[key].get('retry_after_epoch',0)>time.time()}
+ unattempted={key for key in remaining if not receipts.get(key,{}).get('attempts',0) and key not in failed|interrupted}
+ other=remaining-failed-interrupted-unattempted
+ return dict(expected_candidates=len(expected),saved=len(saved),source_empty=len(empty),
+             pending_total=len(remaining),not_attempted=len(unattempted),failed=len(failed),interrupted=len(interrupted),
+             retry_exhausted=len(exhausted),retry_cooldown=len(deferred),other_unverified=len(other),
+             unresolved=len(remaining),unresolved_semantics='LEGACY_BACKLOG_ALIAS_NOT_ERROR_COUNT',
              candidate_set_complete=bool(expected) and expected==saved,
              historical_universe_complete=False)
 
@@ -171,21 +182,39 @@ class Worker:
     if empty:entry.update(status='SKIPPED_SOURCE_EMPTY',error_class='SOURCE_EMPTY_UNCONFIRMED',historical_absence_certified=False,reclassified_utc=stamp(),repair_revision=REPAIR_REVISION)
   self.state['error_classification_revision']=REPAIR_REVISION
   self.save()
- def save(self):
+ def save(self,force=False):
   self.state.update(updated_utc=stamp(),sources=['TDCC'],finmind_enabled=False,coverage_certified=False,numeric_verified=False,pit_verified=False)
   
+  # The per-date journal is the authoritative restart checkpoint. Persist every
+  # changed request intent/result before moving on, but never rewrite identical
+  # large journals or duplicate derived CURSOR/STATUS files twice per security.
   history=self.state.get('history_receipts',{})
-  if self.state.get('history_receipt_date'):
-   self.d.put(self.ctrl,'HISTORY_'+self.state['history_receipt_date']+'.json',json.dumps(history,ensure_ascii=False).encode(),'application/json',overwrite=True)
-  cursor={k:v for k,v in self.state.items() if k!='history_receipts'}
-  self.d.put(self.ctrl,'CURSOR.json',json.dumps(cursor,ensure_ascii=False).encode(),'application/json',overwrite=True)
-  self.write_status()
+  date=self.state.get('history_receipt_date')
+  if date:
+   raw=json.dumps(history,ensure_ascii=False).encode()
+   digest=sha(raw)
+   if getattr(self,'_journal_saved',None)!=(date,digest):
+    self.d.put(self.ctrl,'HISTORY_'+date+'.json',raw,'application/json',overwrite=True)
+    self._journal_saved=(date,digest)
+  now=time.monotonic()
+  snapshot_digest=sha(json.dumps(self.state.get('receipts',{}),sort_keys=True).encode())
+  metadata_due=(force or snapshot_digest!=getattr(self,'_snapshot_saved',None) or date!=getattr(self,'_metadata_date',None)
+                or now-getattr(self,'_metadata_saved_at',float('-inf'))>=30)
+  if metadata_due:
+   cursor={k:v for k,v in self.state.items() if k!='history_receipts'}
+   self.d.put(self.ctrl,'CURSOR.json',json.dumps(cursor,ensure_ascii=False).encode(),'application/json',overwrite=True)
+   self.write_status()
+   self._metadata_date=date;self._metadata_saved_at=now;self._snapshot_saved=snapshot_digest
  def write_status(self):
   report=dict(direction=self.state.get('direction','DESC'),assigned_range={'min':'2000-01-01' if self.state.get('direction')=='ASC' else '2026-05-01','max':'2026-04-30' if self.state.get('direction')=='ASC' else 'LATEST_OFFICIAL'},repair_revision=REPAIR_REVISION,source_empty=sum(r.get('status')=='SKIPPED_SOURCE_EMPTY' for b in ('receipts','history_receipts') for r in self.state[b].values()),status=self.state.get('status','CATALOG_CAPTURE'),active_date=self.state.get('active_date'),active_code=self.state.get('active_code'),availability=self.state.get('availability'),source_requests_this_run=self.requests,saved_this_run=self.saved,skipped_this_run=self.skipped,snapshot_saved=sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['receipts'].values()),history_saved=sum(r.get('saved',0) for date,r in self.state.get('history_date_results',{}).items() if date!=self.state.get('history_receipt_date'))+sum(r.get('status')=='SAVED_BASIC_VERIFIED' for r in self.state['history_receipts'].values()),history_saved_scope='RECONCILED_DATE_RECEIPTS_ONLY',pending_history_dates=[d for d,r in self.state.get('history_date_results',{}).items() if r.get('unresolved',0)],unresolved=sum(r.get('status')=='UNRESOLVED' for b in ('receipts','history_receipts') for r in self.state[b].values()),scope='ALL_OFFICIAL_OPENAPI_DATASETS_PLUS_WEEKLY_CURRENT_DISTRIBUTION_SECURITY_CANDIDATES',historical_universe_complete=False,coverage_certified=False,numeric_verified=False,pit_verified=False,started_utc=self.started,updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
   date=self.state.get('history_receipt_date')
   report['active_date_progress']=history_summary(date,self.state.get('distribution_codes',[]),self.state.get('history_receipts',{})) if date else None
   report['unresolved_error_counts']={}
   report['transport_revision']=TRANSPORT_REVISION
+  report['progress_revision']=PROGRESS_REVISION
+  report['failed_units']=report['unresolved']
+  report['status_refresh_seconds']=30
+  report['checkpoint_policy']='EVERY_CHANGED_INTENT_AND_RESULT_REMOTE_READBACK_VERIFIED; DERIVED_STATUS_COALESCED'
   report['history_plan']=self.state.get('history_plan')
   for b in ('receipts','history_receipts'):
    for entry in self.state.get(b,{}).values():
@@ -266,7 +295,7 @@ class Worker:
   return True
  def run(self):
   if self.state.get('resume_after_epoch',0)>time.time():
-   self.state['status']='SOURCE_BACKOFF';self.save();return
+   self.state['status']='SOURCE_BACKOFF';self.save(force=True);return
   self.reclassify_retained_errors()
   # Probe catalogs once per day; endpoint receipts deduplicate successful snapshots.
   today=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date().isoformat()
@@ -331,7 +360,7 @@ class Worker:
     self.save();continue
    break
   else:self.state['status']='AVAILABLE_HISTORY_VISITED_WITH_UNRESOLVED_ITEMS'
-  self.save()
+  self.save(force=True)
 
 def main():
  p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');a=p.parse_args()
