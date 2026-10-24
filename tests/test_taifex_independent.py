@@ -124,3 +124,41 @@ class TAIFEXTests(unittest.TestCase):
         self.assertFalse(w.eligible({'key':'x','url':m.SITE+'/test'}))
         self.assertTrue(w.eligible({'key':'y','url':'https://openapi.taifex.com.tw/v1/DailyMarketReportFut'}))
 if __name__=='__main__':unittest.main()
+
+class NativeLayoutRepairTests(unittest.TestCase):
+    def job(self,start='2022-08-01',end='2022-08-31'):
+        return dict(kind='csv',start=start,end=end)
+    def test_large_trader_tail_notes_and_no_data_after_footer(self):
+        raw='日期,商品(契約),商品名稱(契約名稱),到期月份(週別),交易人類別,前五大交易人買方\n2022/08/01,TX,台指期貨,202208,0,1\n月份類別格式: 999999 為所有契約合計。\n交易人類別格式： 0 為前五大交易人\n-表當日收盤後無週到期期貨契約。\n'.encode()
+        self.assertEqual(m.validate(raw,self.job())['rows'],1)
+        with self.assertRaisesRegex(ValueError,'DATA_AFTER_FOOTNOTE'):
+            m.validate(raw+b'2022/08/02,TX,TX,202208,0,1\n',self.job())
+    def test_unknown_tail_and_ordinary_date_error_are_rejected(self):
+        raw='日期,商品(契約),商品名稱(契約名稱),到期月份(週別),交易人類別\n2022/08/01,TX,TX,202208,0\nunknown\n'.encode()
+        with self.assertRaisesRegex(ValueError,'CSV_ROW_DATE_MISSING'):m.validate(raw,self.job())
+    def block(self):
+        return '組合式序號,日期,契約數,交易時段\n組合式序號,子序號,契約,到期月份(週別),履約價格,買/賣權,成交價格,成交數量\nC1,2022/08/01,1,一般,\nC1,1,TX,202208,-,-,17225,380,\n'
+    def test_block_trade_group_date_is_inherited_by_matched_legs(self):
+        ev=m.validate(self.block().encode(),self.job());self.assertEqual(ev['rows'],1);self.assertEqual(ev['groups'],1)
+    def test_block_trade_missing_and_unmatched_legs_rejected(self):
+        for raw in [self.block().replace('C1,1,TX','C2,1,TX'),self.block().replace(',1,一般',',2,一般')]:
+            with self.assertRaises(ValueError):m.validate(raw.encode(),self.job())
+    def delta(self):
+        return ',,,公布日期時間,2026/10/22 04:35:03 PM\n商品, 買賣權, 到期月份(週別), 履約價格, Delta值, 契約到期日\nTXO,買權,202706,250,0.9,20270616\n'
+    def test_delta_publication_timestamp_not_future_expiry(self):
+        ev=m.validate(self.delta().encode(),self.job('2026-10-22','2026-10-22'))
+        self.assertEqual(ev['rows'],1);self.assertEqual(ev['content_period']['max'],'2026-10-22')
+        with self.assertRaisesRegex(ValueError,'PUBLICATION_DATE_OUTSIDE'):
+            m.validate(self.delta().encode(),self.job('2026-10-21','2026-10-21'))
+    def test_delta_invalid_row_not_silently_skipped(self):
+        with self.assertRaisesRegex(ValueError,'DELTA_ROW_INVALID'):
+            m.validate(self.delta().replace('20270616','invalid').encode(),self.job('2026-10-22','2026-10-22'))
+    def test_release_only_resets_fixed_parser_failures(self):
+        state=dict(repair_revision='TAIFEX_NATIVE_FORMAT_REPAIR_V2_20261024',receipts={
+          'fixed':dict(status='UNRESOLVED',attempts=3,error='ValueError:CSV_ROW_DATE_MISSING'),
+          'transport':dict(status='UNRESOLVED',attempts=3,error='HTTPError:HTTP Error 520'),
+          'saved':dict(status='SAVED_BASIC_VERIFIED',sha256='preserved')})
+        m.migrate_repairs(state)
+        self.assertEqual(state['receipts']['fixed']['attempts'],0)
+        self.assertEqual(state['receipts']['transport']['attempts'],3)
+        self.assertEqual(state['receipts']['saved'],dict(status='SAVED_BASIC_VERIFIED',sha256='preserved'))

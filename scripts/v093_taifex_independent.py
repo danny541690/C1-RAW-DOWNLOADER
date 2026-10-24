@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_NATIVE_FORMAT_REPAIR_V2_20261024'
+REPAIR_REVISION = 'TAIFEX_NATIVE_FORMAT_REPAIR_V3_20261024'
 TICK_PAGES = ['dlFutPrevious30DaysSalesData', 'dlOptPrevious30DaysSalesData',
               'dlFutPrevious30DaysSpreadSalesData', 'dlFutPrevious30DaysSpreadOrdersReport', 'dlOptDailyDelta']
 TERMINAL = {'SAVED_BASIC_VERIFIED', 'SKIPPED_SOURCE_EMPTY', 'SKIPPED_NOT_PUBLISHED'}
@@ -57,13 +57,56 @@ def csv_evidence(raw, start, end):
     # Strip it only at EOF; malformed records within the file still fail.
     text=text.rstrip('\x1a \t\r\n')
     reader = csv.reader(io.StringIO(text)); header = next(reader, [])
+    # Two official layouts do not repeat the publication/trade date on each row.
+    if [v.strip() for v in header[:4]] == ['', '', '', '公布日期時間']:
+        date=parse_date(header[4]) if len(header)==5 else None
+        if not date or not start<=date<=end:raise ValueError('DELTA_PUBLICATION_DATE_OUTSIDE_REQUEST')
+        schema=next(reader,[])
+        if [v.strip() for v in schema]!=['商品','買賣權','到期月份(週別)','履約價格','Delta值','契約到期日']:
+            raise ValueError('DELTA_SCHEMA_MISMATCH')
+        count=0
+        for row in reader:
+            if not any(v.strip() for v in row):continue
+            if len(row)!=6 or not row[0].strip() or row[1].strip() not in ('買權','賣權') or not parse_date(row[5]):
+                raise ValueError('DELTA_ROW_INVALID')
+            count+=1
+        if not count:raise OfficialEmpty('EMPTY_DELTA_ROWS')
+        return dict(rows=count,content_period={'min':date.isoformat(),'max':date.isoformat()},
+                    schema=schema,period_semantics='OFFICIAL_PUBLICATION_TIMESTAMP_NOT_CONTRACT_EXPIRY')
+    if header==['組合式序號','日期','契約數','交易時段']:
+        schema=next(reader,[])
+        if schema!=['組合式序號','子序號','契約','到期月份(週別)','履約價格','買/賣權','成交價格','成交數量']:
+            raise ValueError('BLOCK_TRADE_SCHEMA_MISMATCH')
+        groups=0;count=0;lo=None;hi=None;group=None;remaining=0;seen=set()
+        for row in reader:
+            if not any(v.strip() for v in row):continue
+            if row[-1]=='':row=row[:-1]
+            if len(row)==4:
+                if remaining:raise ValueError('BLOCK_TRADE_LEGS_MISSING')
+                date=parse_date(row[1])
+                if not date or not start<=date<=end:raise ValueError('RESPONSE_DATE_OUTSIDE_REQUEST')
+                if row[0] in seen or not re.fullmatch(r'C\d+',row[0]) or not row[2].isdigit() or int(row[2])<1:
+                    raise ValueError('BLOCK_TRADE_GROUP_INVALID')
+                group=row[0];seen.add(group);remaining=int(row[2]);groups+=1;leg=0
+                lo=min(lo,date) if lo else date;hi=max(hi,date) if hi else date
+            elif len(row)==8 and remaining and row[0]==group and row[1]==str(leg+1) and row[2].strip():
+                remaining-=1;leg+=1;count+=1
+            else:raise ValueError('BLOCK_TRADE_LEG_INVALID')
+        if remaining:raise ValueError('BLOCK_TRADE_LEGS_MISSING')
+        if not count:raise OfficialEmpty('EMPTY_BLOCK_TRADE_ROWS')
+        return dict(rows=count,groups=groups,content_period={'min':lo.isoformat(),'max':hi.isoformat()},
+                    schema=header,leg_schema=schema,period_semantics='TRADE_GROUP_DATE_INHERITED_BY_MATCHING_LEGS')
     indexes = [i for i, k in enumerate(header) if any(x in k for x in ('日期', '年月日', 'Date', 'date'))]
     if not indexes: raise ValueError('CSV_DATE_HEADER_MISSING')
-    count = 0; lo = None; hi = None; products = set(); sessions = set()
+    count = 0; lo = None; hi = None; products = set(); sessions = set(); footnotes=[]
+    large_trader=header[:5]==['日期','商品(契約)','商品名稱(契約名稱)','到期月份(週別)','交易人類別']
     contract = next((i for i, x in enumerate(header) if x.strip() in ('契約', '商品代號', '商品')), None)
     session = next((i for i, x in enumerate(header) if x.strip() == '交易時段'), None)
     for row in reader:
         if not any(x.strip() for x in row): continue
+        if large_trader and len(row)==1 and row[0].startswith(('月份類別格式:', '交易人類別格式：', '-表當日收盤後')):
+            footnotes.append(row[0]);continue
+        if footnotes:raise ValueError('CSV_DATA_AFTER_FOOTNOTE')
         # Expiry dates may lie outside the request. Use the first date column
         # (trade/publication date), not the contract's expiry date.
         date = parse_date(row[indexes[0]]) if indexes[0]<len(row) else None
@@ -74,7 +117,7 @@ def csv_evidence(raw, start, end):
         if session is not None and session < len(row): sessions.add(row[session].strip())
     if not count: raise OfficialEmpty('EMPTY_NOT_PROOF_OF_NO_DATA')
     return dict(rows=count, content_period={'min': lo.isoformat(), 'max': hi.isoformat()},
-                products=sorted(products), sessions=sorted(sessions), schema=header)
+                products=sorted(products), sessions=sorted(sessions), schema=header,footnotes=footnotes)
 
 def validate(raw, job):
     kind = job['kind']; start = dt.date.fromisoformat(job['start']); end = dt.date.fromisoformat(job['end'])
@@ -175,10 +218,13 @@ def migrate_repairs(state):
     if state.get('repair_revision')==REPAIR_REVISION:return
     for entry in state.get('receipts',{}).values():
         if entry.get('status') in TERMINAL:continue
+        # Only reset failures addressed by this parser release, not transport caps.
+        if state.get('repair_revision')=='TAIFEX_NATIVE_FORMAT_REPAIR_V2_20261024' and 'CSV_ROW_DATE_MISSING' not in entry.get('error',''):
+            continue
         entry['prior_attempts']=entry.get('attempts',0)
         entry['prior_error']=entry.get('error')
         entry.update(attempts=0, retry_after_epoch=0, repair_revision=REPAIR_REVISION)
-    state.update(repair_revision=REPAIR_REVISION, route_backoff={}, source_backoff={})
+    state.update(repair_revision=REPAIR_REVISION)
     state.pop('resume_after_epoch',None)
 
 def partition_jobs(jobs,direction):
@@ -308,8 +354,8 @@ class Worker:
                 entry.update(status='SKIPPED_NOT_PUBLISHED', http_status=exc.code, historical_absence_certified=False, skip_reason='OFFICIAL_DOWNLOAD_URL_NOT_AVAILABLE_CONTINUE_OLDER_UNITS')
             if 'API_ROUTE_RETURNS_SWAGGER_HTML' in str(exc):
                 self.state.setdefault('route_backoff',{})[job['url']]=time.time()+21600
-            if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):
-                self.state.setdefault('source_backoff',{})[urllib.parse.urlparse(job['url']).hostname]=time.time()+900
+            if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429,502,503,504,520):
+                self.state.setdefault('source_backoff',{})[urllib.parse.urlparse(job['url']).hostname]=time.time()+(900 if exc.code in (403,429) else 60)
             print(json.dumps({'key':key,'status':entry['status'],'error':entry['error']}),flush=True)
         self.state['receipts'][key]=entry; self.save(); return self.live()
     def page(self,name):
@@ -420,18 +466,18 @@ class Worker:
             self.discover()
             if self.direction=='ASC':
                 while self.live():
-                    before=self.requests
+                    before=(self.requests,self.saved)
                     history=self.history_jobs()
                     self.batch([j for j in history if j['kind']=='annual'],2)
                     self.batch(history,24)
-                    if self.requests==before:break
+                    if (self.requests,self.saved)==before:break
                 self.state['status']='ASC_CHECKPOINTED_WITH_OPEN_ITEMS'
                 return
             # Preserve data through reachable official APIs before slower website probes.
             priority=['/DailyMarketReportFut','/DailyMarketReportOpt','/PutCallRatio','/DailyOptionsDelta']
             self.batch([make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in priority if p in self.state['api_paths']],4)
             while self.live():
-                before=self.requests
+                before=(self.requests,self.saved)
                 ticks=sorted(self.state['tick_jobs'].values(),key=lambda j:(j['end'],j['key']),reverse=True)
                 self.batch(ticks,6)
                 api=[make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in self.state['api_paths']]
@@ -443,7 +489,7 @@ class Worker:
                 # Recover their retained rejected ZIPs first; newest years first.
                 self.batch([j for j in history if j['kind']=='annual'],2)
                 self.batch(history,24)
-                if self.requests==before:break
+                if (self.requests,self.saved)==before:break
             self.state['status']='CHECKPOINTED_CONTINUE_NEXT_WAKE' if self.live() else 'TIME_BUDGET_OR_BACKOFF_CHECKPOINT'
         except Exception as exc:
             self.state.update(status='BOOTSTRAP_OR_DISCOVERY_ERROR',last_error=type(exc).__name__+':'+str(exc)[:300])
