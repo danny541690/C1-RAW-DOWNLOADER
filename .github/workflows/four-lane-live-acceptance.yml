@@ -1,0 +1,99 @@
+name: Four-lane isolated Drive and restart acceptance
+on:
+  push:
+    branches: [review/four-source-repair-20261024]
+    paths:
+      - '.github/workflows/four-lane-live-acceptance.yml'
+      - 'scripts/v093_four_lane_live_acceptance.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: four-lane-isolated-live-acceptance
+  cancel-in-progress: false
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Run offline gates before any sandbox write
+        run: python -m unittest tests.test_repair_execution tests.test_repair_prelaunch.MeetingTests tests.test_official_repair tests.test_official_content_audit tests.test_repair_request_encoding tests.test_stage06_ledger tests.test_stage06_prelaunch_bridge tests.test_stage06_financial_repair -q
+      - name: Seed only the per-run GitHub test manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_prelaunch_live_recovery seed
+  crash:
+    needs: seed
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Write sandbox bytes then terminate the child process before commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_prelaunch_live_recovery crash
+  resume-and-reparse:
+    needs: crash
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Cross-job takeover and stale-writer rejection
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_prelaunch_live_recovery resume
+      - name: Reparse actual retained RAW into isolated Drive output and read back
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_four_lane_live_acceptance write
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: four-lane-initial-live-proof
+          path: reports/*live*.json
+          if-no-files-found: ignore
+  derived-restart:
+    needs: resume-and-reparse
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Resume derived RAW output without duplicate Drive files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_four_lane_live_acceptance restart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: four-lane-cross-job-derived-proof
+          path: reports/four-lane-live-restart.json
+          if-no-files-found: ignore
