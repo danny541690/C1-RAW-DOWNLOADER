@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_CATALOG_PARITY_AND_NATIVE_RECOVERY_V6_20261025'
+REPAIR_REVISION = 'TAIFEX_CATALOG_PARITY_AND_NATIVE_RECOVERY_V6_1_20261025'
 # These official aliases have 238 paired saved responses with identical SHA.
 ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('largeTraderFutDown','dlLargeTraderFutDown'),
@@ -409,7 +409,7 @@ class Worker:
         report['planned_history_unattempted_units']=sum(j['key'] not in receipts for j in plan)
         report['planned_history_saved_units']=sum(receipts.get(j['key'],{}).get('status')=='SAVED_BASIC_VERIFIED' for j in plan)
         report['planned_history_source_empty_units']=sum(receipts.get(j['key'],{}).get('status')=='SKIPPED_SOURCE_EMPTY' for j in plan)
-        report['missed_snapshot_units']=sum(v.get('status')=='UNRESOLVED' and v.get('interrupted_request') and v.get('request',{}).get('kind')=='snapshot' and v.get('request',{}).get('end','')<self.today.isoformat() for v in receipts.values())
+        report['missed_snapshot_units']=sum(bool(v.get('status')=='UNRESOLVED' and v.get('interrupted_request') and v.get('request',{}).get('kind')=='snapshot' and v.get('request',{}).get('end','')<self.today.isoformat()) for v in receipts.values())
         self.d.put(self.ctrl,'STATUS.json',encode(report),'application/json',overwrite=True)
         self._status_last=time.monotonic()
     def request(self,url,fields=None,timeout=45):

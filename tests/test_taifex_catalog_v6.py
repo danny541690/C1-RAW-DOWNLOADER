@@ -67,3 +67,13 @@ class CatalogTests(unittest.TestCase):
         s=dict(tick_page_attempted_dates={'ok':'2026-10-25','failed':'2026-10-25'},tick_page_success_dates={'ok':'2026-10-25','failed':'2026-10-24'})
         m.migrate_repairs(s);self.assertEqual(s['tick_page_attempted_dates'],{'ok':'2026-10-25'})
         s['tick_page_attempted_dates']['failed']='new';m.migrate_repairs(s);self.assertEqual(s['tick_page_attempted_dates']['failed'],'new')
+
+    def test_summary_handles_missing_or_null_interrupted_flag(self):
+        w=self.worker();w.direction='DESC';w.ctrl='control';w.started='start';w.saved=0;w.requests=0;w.history_jobs=lambda:[]
+        w.state=dict(receipts={
+            'ordinary':dict(status='UNRESOLVED',error='HTTPError:HTTP Error 520'),
+            'null':dict(status='UNRESOLVED',interrupted_request=None),
+            'old':dict(status='UNRESOLVED',interrupted_request=True,request=dict(kind='snapshot',end='2026-10-23'))},catalog={},tick_jobs={})
+        output={};w.d=type('D',(),{'put':lambda self,parent,name,raw,*a,**k:output.update({name:json.loads(raw)})})()
+        m.Worker.save(w,force_status=True);self.assertEqual(output['STATUS.json']['missed_snapshot_units'],1)
+        self.assertEqual(output['STATUS.json']['unresolved'],3)
