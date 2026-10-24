@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_CATALOG_PARITY_AND_NATIVE_RECOVERY_V6_1_20261025'
+REPAIR_REVISION = 'TAIFEX_VERIFIED_OFFICIAL_CSV_MIRRORS_V7_20261025'
 # These official aliases have 238 paired saved responses with identical SHA.
 ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('largeTraderFutDown','dlLargeTraderFutDown'),
@@ -130,6 +130,29 @@ def csv_evidence(raw, start, end):
 API_CSV_SCHEMAS = {'DailyForeignExchangeRates': ['日期', '美元_新台幣(匯率)', '人民幣_新台幣(匯率)', '歐元_美元(匯率)', '美元_日幣(匯率)', '英鎊_美元(匯率)', '澳幣_美元(匯率)', '美元_港幣(匯率)', '美元_人民幣(匯率)', '美元_南非幣(匯率)', '紐幣_美元(匯率)'], 'DailyMarketReportOpt': ['日期', '契約', '到期月份(週別)', '履約價', '買賣權', '開盤價', '最高價', '最低價', '最後成交價', '成交量', '結算價', '未沖銷契約量', '最後最佳買價', '最後最佳賣價', '歷史最高價', '歷史最低價', '是否因訊息面暫停交易', '交易時段'], 'MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheDate': ['日期', '商品名稱', '身份別', '多方交易口數', '多方交易契約金額(千元)', '空方交易口數', '空方交易契約金額(千元)', '多空交易口數淨額', '多空交易契約金額淨額(千元)', '多方未平倉口數', '多方未平倉契約金額(千元)', '空方未平倉口數', '空方未平倉契約金額(千元)', '多空未平倉口數淨額', '多空未平倉契約金額淨額(千元)']}
 
 API_CSV_SCHEMAS['DailyMarketReportFut'] = ['日期', '契約代號', '到期月份(週別)', '開盤價', '最高價', '最低價', '最後成交價', '漲跌價', '漲跌%', '合計成交量', '結算價', '未沖銷契約數', '最後最佳買價', '最後最佳賣價', '歷史最高價', '歷史最低價', '是否因訊息面暫停交易', '交易時段', '價差對單式委託成交量']
+
+# Official government catalogue resources, live-probed 2026-10-25.
+# Latest-only resources: never use them to reconstruct a missed capture day.
+OFFICIAL_CSV_MIRRORS = {
+    'AcceptableCollateralGovernmentBonds': 'https://data.gov.tw/dataset/11351',
+    'IndexFuturesAndOptionsMargining': 'https://data.gov.tw/dataset/11604',
+}
+API_CSV_SCHEMAS.update({
+    'AcceptableCollateralGovernmentBonds': ['日期','公債代號','公債名稱','交易幣別'],
+    'IndexFuturesAndOptionsMargining': ['商品別','結算保證金','維持保證金','原始保證金','日期'],
+})
+
+def official_csv_mirror(job,today):
+    parsed=urllib.parse.urlparse(job.get('url',''))
+    route=parsed.path.removeprefix('/v1/')
+    if (job.get('kind')!='snapshot' or job.get('start')!=today.isoformat()
+            or job.get('end')!=today.isoformat() or job.get('fields')
+            or parsed.scheme!='https' or parsed.netloc!='openapi.taifex.com.tw'
+            or parsed.path!='/v1/'+route or parsed.query or route not in OFFICIAL_CSV_MIRRORS):
+        return None
+    return dict(job,url=SITE+'/data_gov/taifex_open_data.asp?data_name='+route,
+                official_catalog_url=OFFICIAL_CSV_MIRRORS[route],
+                latest_only=True,historical_reconstruction=False)
 
 def api_csv_evidence(raw,job):
     parsed=urllib.parse.urlparse(job.get('url',''))
@@ -270,7 +293,9 @@ def migrate_repairs(state):
     for entry in state.get('receipts',{}).values():
         if entry.get('status') in TERMINAL:continue
         # Parser migrations must not repeatedly reset transport/unknown failures.
-        if 'CSV_ROW_DATE_MISSING' not in entry.get('error',''):continue
+        mirror=official_csv_mirror(entry.get('request',{}),dt.datetime.now(TZ).date())
+        if not mirror and 'CSV_ROW_DATE_MISSING' not in entry.get('error',''):continue
+        if mirror and 'API_ROUTE_RETURNS_SWAGGER_HTML' not in entry.get('error',''):continue
         entry['prior_attempts']=entry.get('attempts',0)
         entry['prior_error']=entry.get('error')
         entry.update(attempts=0, retry_after_epoch=0, repair_revision=REPAIR_REVISION)
@@ -369,7 +394,8 @@ class Worker:
     def live(self): return time.monotonic()<self.until-100
     def eligible(self,job):
         old=self.state['receipts'].get(job['key'],{})
-        route=job['url'];host=urllib.parse.urlparse(route).hostname
+        mirror=official_csv_mirror(job,getattr(self,'today',dt.datetime.now(TZ).date()))
+        route=(mirror or job)['url'];host=urllib.parse.urlparse(route).hostname
         return (not old.get('integrity_hold') and old.get('status') not in TERMINAL and old.get('status')!='EXCLUDED_FUTURE_PUBLISHED_LINK'
                 and old.get('attempts',0)<3 and time.time()>=old.get('retry_after_epoch',0)
                 and time.time()>=self.state.get('route_backoff',{}).get(route,0)
@@ -507,7 +533,8 @@ class Worker:
         raw=None
         try:
             # Recover rejected native RAW before spending another source request.
-            if old.get('response_sha256') and old.get('prior_error') and old.get('evidence_revalidated_revision')!=REPAIR_REVISION:
+            if (not official_csv_mirror(job,getattr(self,'today',dt.datetime.now(TZ).date())) and old.get('response_sha256') and old.get('prior_error')
+                    and old.get('evidence_revalidated_revision')!=REPAIR_REVISION):
                 cached=self.d.read(self.ctrl,'UNRESOLVED_'+old['response_sha256']+'.raw')
                 if cached is not None and digest(cached)==old['response_sha256']:
                     entry['evidence_revalidated_revision']=REPAIR_REVISION
@@ -522,7 +549,7 @@ class Worker:
                     else:raw=cached;entry['recovered_from_saved_evidence']=True
             if raw is None:
                 actual=alias_job(job) if transient_error(old.get('error','')) and entry['lifetime_attempts']%2==0 else None
-                actual=actual or job
+                actual=actual or official_csv_mirror(job,getattr(self,'today',dt.datetime.now(TZ).date())) or job
                 entry['source_request']=actual
                 raw=self.request(actual['url'], actual.get('fields'));ev=validate(raw,job)
             self.persist_raw(job,raw,entry,ev)
@@ -540,7 +567,7 @@ class Worker:
             if 'API_ROUTE_RETURNS_SWAGGER_HTML' in str(exc):
                 self.state.setdefault('route_backoff',{})[job['url']]=time.time()+86400
             if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429,502,503,504,520):
-                self.state.setdefault('source_backoff',{})[urllib.parse.urlparse(job['url']).hostname]=time.time()+(900 if exc.code in (403,429) else 60)
+                self.state.setdefault('source_backoff',{})[urllib.parse.urlparse(entry.get('source_request',job)['url']).hostname]=time.time()+(900 if exc.code in (403,429) else 60)
             print(json.dumps({'key':key,'status':entry['status'],'error':entry['error']}),flush=True)
         self.state['receipts'][key]=entry; self.save(); return self.live()
     def page(self,name):
