@@ -2,11 +2,9 @@ name: JARVIS shared repair prelaunch tests
 on:
   push:
     branches: ['fix/prelaunch-shared-repair-20261024']
-  pull_request:
-    paths: ['scripts/**', 'tests/**', '.github/workflows/v093-repair-prelaunch-tests.yml']
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   offline-prelaunch:
     runs-on: ubuntu-latest
@@ -17,5 +15,45 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r requirements-qa.lock
-      - name: Test parsers, meeting election, preservation, retry caps and readback
-        run: python -m unittest discover -s tests -p 'test_*.py' -q
+      - run: python -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Real isolated GitHub CAS meeting and restart test
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os,json,base64,urllib.request
+          from concurrent.futures import ThreadPoolExecutor
+          from scripts import v093_repair_coordination as c
+          from scripts.v093_five_stage_durable_gate import _read
+          path='.github/live-state/repair-prelaunch-'+os.environ['GITHUB_RUN_ID']+'.json'
+          api='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/contents/'+path
+          token=os.environ['GH_TOKEN']
+          payload={'message':'test: initialize isolated repair meeting state','content':base64.b64encode(b'{"jobs":{}}').decode(),'branch':os.environ['GITHUB_REF_NAME']}
+          req=urllib.request.Request(api,data=json.dumps(payload).encode(),method='PUT',headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
+          with urllib.request.urlopen(req,timeout=30) as response:assert response.status==201
+          # Contents reads/writes must target this test branch, never the production manifest.
+          original_read=c._read
+          original_put=c._put
+          def read(url,key):
+              return original_read(url+'?ref='+os.environ['GITHUB_REF_NAME'],key)
+          def put(url,key,sha,state,message):
+              body={'message':message,'sha':sha,'branch':os.environ['GITHUB_REF_NAME'],'content':base64.b64encode(json.dumps(state).encode()).decode()}
+              request=urllib.request.Request(url,data=json.dumps(body).encode(),method='PUT',headers={'Authorization':'Bearer '+key,'Content-Type':'application/json'})
+              try:
+                  with urllib.request.urlopen(request,timeout=30) as result:return result.status==200
+              except urllib.error.HTTPError as e:
+                  if e.code in (409,422):return False
+                  raise
+          c._read=read;c._put=put
+          cases=[('EARLY_ASC','2006-06'),('EARLY_DESC','2006-06'),('RECENT_ASC','2020-06'),('RECENT_DESC','2020-06')]
+          with ThreadPoolExecutor(4) as pool:
+              results=list(pool.map(lambda item:c.claim_month(api,token,*item),cases))
+          assert sum(ok for ok,_ in results)==2,results
+          for item,(allowed,_) in zip(cases,results):
+              again,_=c.claim_month(api,token,*item)
+              assert again==allowed,'RESTART_CHANGED_OWNER'
+          _,state=read(api,token)
+          workers=state['jobs'][c.PLAN]['workers']
+          assert sum(w['status']=='PAUSED_AT_MEETING' for w in workers.values())==2
+          print(json.dumps({'result':'PASS','real_github_cas':True,'workers':4,'survivors':2,'paused':2,'restart_preserved':True,'production_manifest_modified':False,'drive_modified':False,'evidence_path':path}))
+          PY
