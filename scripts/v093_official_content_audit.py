@@ -31,24 +31,32 @@ def audit_json(raw,job):
         if not fields:unverified.append('TABLE_WITHOUT_FIELD_NAMES');continue
         codeidx=next((i for i,f in enumerate(fields) if f in IDENTIFIERS),None)
         pcols={PRICE[f]:i for i,f in enumerate(fields) if f in PRICE}
-        ncols={i for i,f in enumerate(fields) if any(token in f for token in NONNEGATIVE) or (('持股比率' in f or '持股比例' in f) and '上限' not in f)}
+        ratios={i for i,f in enumerate(fields) if job['category']=='foreign_holdings' and ('持股比率' in f or '持股比例' in f) and '上限' not in f}
+        ncols={i for i,f in enumerate(fields) if any(token in f for token in NONNEGATIVE)}|ratios
         seen=set()
         for ri,row in enumerate(rows):
             if not isinstance(row,list) or len(row)!=len(fields):raise ValueError('ROW_WIDTH_MISMATCH')
             counts['rows_checked']+=1
             if codeidx is not None:
                 code=label(row[codeidx])
-                if not code:raise ValueError('EMPTY_SECURITY_IDENTIFIER')
+                summary=(not code and job.get('source')=='TWSE' and job['category']=='lending'
+                    and fields[:7]==['代號','名稱','前日餘額','賣出','買進','現券','今日餘額']
+                    and label(row[1])=='合計' and ri==len(rows)-1)
+                if not code and not summary:raise ValueError('EMPTY_SECURITY_IDENTIFIER')
                 # These native tables have one row per security; event/financial tables may have multiple events.
                 if job['category'] in ('prices','prices_indices','institutional','margin','valuation','foreign_holdings','marketcap'):
                     if code in seen:raise ValueError('DUPLICATE_SECURITY_IN_SAME_TABLE:'+code)
                     seen.add(code);counts['duplicate_keys_checked']+=1
             for ci in ncols:
-                val=number(row[ci]);counts['numeric_cells_checked']+=1
+                value=row[ci]
+                if ci in ratios:
+                    text=label(value)
+                    value=text[:-1] if text.endswith('%') else value
+                val=number(value);counts['numeric_cells_checked']+=1
                 if val is None:
                     unverified.append('MISSING_NUMERIC_CELL');continue
                 if val<0:raise ValueError('NEGATIVE_NONNEGATIVE_FIELD:'+fields[ci])
-                if ('持股比率' in fields[ci] or '持股比例' in fields[ci]) and val>100:raise ValueError('HOLDING_PERCENT_OUT_OF_RANGE')
+                if ci in ratios and val>100:raise ValueError('HOLDING_PERCENT_OUT_OF_RANGE')
             if len(pcols)==4 and codeidx is not None and re.fullmatch(r'[1-9]\d{3}',label(row[codeidx])):
                 vals={k:number(row[i]) for k,i in pcols.items()}
                 if any(v is None or v<=0 for v in vals.values()):

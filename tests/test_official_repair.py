@@ -98,7 +98,7 @@ class RepairTests(unittest.TestCase):
         with patch.dict(ns,reserve_source=Mock(return_value=False)):
             w.repair_one(self.job(),'units',[])
         row=w.journal['units']['key']
-        self.assertEqual(row['status'],'UNRESOLVED_SOURCE_BACKOFF')
+        self.assertEqual(row['status'],'WAIT_SHARED_SOURCE_WINDOW')
         self.assertEqual(row['attempts'],0)
         self.assertLess(row['next_retry_at'],time.time()+5)
         ns['native'].request.assert_not_called()
@@ -228,3 +228,59 @@ class RepairTests(unittest.TestCase):
         w.save_cursor.assert_not_called()
 
 if __name__=='__main__':unittest.main()
+
+class LegacyRouteAndProgressTests(unittest.TestCase):
+    def test_saved_raw_without_url_is_checked_before_route_resolution(self):
+        fixture=RepairTests();w=fixture.worker();job=fixture.job();job.pop('url')
+        w.state['units']['key']=dict(job,status='SAVED_BASIC_VERIFIED',sha256='same',evidence_file='saved/member')
+        w.journal['units']['key']=dict(status='UNRESOLVED_OFFICIAL_ROUTE',terminal=True,complete=False,quality_revision=ns['QUALITY_REVISION'],input_signature='a'*64)
+        ns['cached_payload']=Mock(return_value=(b'raw','archive'));ns['validate_content']=Mock(return_value={'rows':1,'codes':['2330'],'row_audit':{'unverified':[]}})
+        w.repair_one(job,'units',[])
+        self.assertEqual(w.journal['units']['key']['status'],'CONTENT_CHECK_PASS')
+        self.assertEqual(w.activity_summary()['unchanged_raw_checked_this_run'],1)
+        self.assertEqual(w.state['units']['key']['sha256'],'same');self.assertEqual(w.repaired,0)
+        ns['native'].request.assert_not_called()
+    def test_valid_local_raw_does_not_need_a_live_source_window(self):
+        fixture=RepairTests();w=fixture.worker();job=fixture.job();job.pop('url')
+        w.state['units']['key']=dict(job,status='SAVED_BASIC_VERIFIED',sha256='same',evidence_file='saved/member')
+        w.circuit['TWSE']=2
+        ns['cached_payload']=Mock(return_value=(b'raw','archive'));ns['validate_content']=Mock(return_value={'rows':1,'codes':['2330'],'row_audit':{'unverified':['PIT']}})
+        w.repair_one(job,'units',[])
+        self.assertEqual(w.journal['units']['key']['status'],'LOCAL_CONTENT_CHECKED_OPEN_QUALITY_ITEMS')
+        self.assertFalse(w.journal['units']['key']['complete']);ns['native'].request.assert_not_called()
+    def test_activity_is_deduplicated_by_unit_and_sha(self):
+        w=RepairTests().worker()
+        w.note_activity('unchanged_raw_checked_this_run','unit','sha');w.note_activity('unchanged_raw_checked_this_run','unit','sha')
+        self.assertEqual(w.activity_summary()['unchanged_raw_checked_this_run'],1)
+    def test_parser_fix_rechecks_retained_bytes_without_resetting_source_cap(self):
+        fixture=RepairTests();w=fixture.worker();job=fixture.job()
+        w.state['units']['key']=dict(job,status='SAVED_BASIC_VERIFIED',sha256='same',evidence_file='saved/member')
+        w.journal['units']['key']=dict(status='UNRESOLVED_ATTEMPT_LIMIT',attempts=3,terminal=True,quality_revision=ns['QUALITY_REVISION'],input_signature='a'*64,local_error='ValueError:NON_NUMERIC_CELL:97.24%',next_retry_at=time.time()+3600)
+        ns['cached_payload']=Mock(return_value=(b'raw','archive'));ns['validate_content']=Mock(return_value={'rows':1,'codes':['2330'],'row_audit':{'unverified':[]}})
+        w.repair_one(job,'units',[])
+        self.assertEqual(w.journal['units']['key']['status'],'CONTENT_CHECK_PASS')
+        self.assertEqual(w.journal['units']['key']['attempts'],3);ns['native'].request.assert_not_called()
+
+class FourLaneLeaseRecoveryTests(unittest.TestCase):
+    def test_completed_new_workflow_can_release_only_matching_raw_keys(self):
+        api='https://api.github.com/repos/o/r/contents/.github/live-state/five-stage-leases.json'
+        reply={'id':123,'status':'completed','path':'.github/workflows/v093-official-four-lane-repair.yml'}
+        with patch('scripts.v093_five_stage_durable_gate.open_json',return_value=(reply,{})):
+            self.assertTrue(terminal_owner(api,'token','POOL_RAW_OFFICIAL_REPAIR_RECENT_DESC_V1',{'owner':'123/RAW'}))
+            self.assertTrue(terminal_owner(api,'token','RAW_HISTORY_MONTH_2026_08',{'owner':'123/RAW'}))
+            self.assertFalse(terminal_owner(api,'token','POOL_RAW_OFFICIAL_ASC_V1',{'owner':'123/RAW'}))
+        reply['status']='in_progress'
+        with patch('scripts.v093_five_stage_durable_gate.open_json',return_value=(reply,{})):
+            self.assertFalse(terminal_owner(api,'token','POOL_RAW_OFFICIAL_REPAIR_RECENT_DESC_V1',{'owner':'123/RAW'}))
+
+class RecentLaneIncidentTests(unittest.TestCase):
+    def test_recent_desc_revisits_june_without_resetting_frontier(self):
+        w=RepairTests().priority_worker();w.lane='RECENT_DESC'
+        ns['engine'].getj.return_value={'units':{'k':dict(quality_revision=ns['QUALITY_REVISION'],status='UNRESOLVED_SOURCE_BACKOFF',terminal=False,next_retry_at=0)}}
+        with patch.dict(ns,capture_history_month=Mock(return_value=True)) as env:
+            w.revisit_parameter_incident();env['capture_history_month'].assert_called_once_with(w,'2026-06')
+        self.assertEqual(w.cursor['month_index'],300)
+    def test_early_desc_does_not_visit_other_lanes_month(self):
+        w=RepairTests().priority_worker();w.lane='EARLY_DESC'
+        with patch.dict(ns,capture_history_month=Mock()) as env:
+            w.revisit_parameter_incident();env['capture_history_month'].assert_not_called()

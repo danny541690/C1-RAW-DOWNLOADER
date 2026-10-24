@@ -27,6 +27,7 @@ MAX_POINT_ATTEMPTS=3
 MAX_POINT_SECONDS=90
 PARAMETER_INCIDENT_MONTH='2026-06'
 PRIORITY_RETRY_SECONDS=600
+EXECUTION_REVISION='LOCAL_RAW_BEFORE_ROUTE_AND_EXPLICIT_ACTIVITY_V5'
 
 def incident_retry_due(journal,now):
     return any(row.get('quality_revision')==QUALITY_REVISION
@@ -82,12 +83,23 @@ def validate_content(raw,job):
     if job['category'] in ('prices','prices_indices'):
         check=price_checks(raw,job['source'],job['period'])
         if check['ohlc_violations']:raise ValueError('OHLC_RELATIONSHIP_VIOLATION')
-        if check['null_cells']:raise ValueError('PRICE_MISSING_OR_NONTRADING_REVIEW_REQUIRED')
         stats['basic_price_check']=check
     stats['row_audit']=audit_rows(raw,job)
+    if stats.get('basic_price_check',{}).get('null_cells'):
+        stats['row_audit']['unverified']=sorted(set(stats['row_audit'].get('unverified',[]))|{'PRICE_MISSING_OR_NONTRADING_REVIEW_REQUIRED'})
     return stats
 
 class RepairWorker(OfficialWorker):
+    def note_activity(self,kind,key,digest):
+        if not hasattr(self,'activity'):self.activity={}
+        self.activity.setdefault(kind,set()).add((key,digest))
+
+    def activity_summary(self):
+        return dict(execution_revision=EXECUTION_REVISION,**{
+            name:len(getattr(self,'activity',{}).get(name,set())) for name in (
+                'unchanged_raw_checked_this_run','prior_verified_skipped_this_run',
+                'local_reparse_readback_this_run','local_quality_open_this_run')})
+
     def __init__(self,direction,minutes,lane=None):
         self.lane=lane
         if lane is not None:direction=LANES[lane][2]
@@ -143,7 +155,7 @@ class RepairWorker(OfficialWorker):
                 month_result_counts=dict(collections.Counter(row.get('status','UNKNOWN')
                     for row in self.journal.get('units',{}).values())),
                 quality_revision=QUALITY_REVISION,numeric_verified=False,pit_verified=False,
-                repair_success_definition='VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED')
+                repair_success_definition='VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED',**self.activity_summary())
             self.putj(self.stagectrl,'STATUS.json',report)
             print('OFFICIAL_REPAIR_PROGRESS '+json.dumps(report),flush=True)
             self._last_progress=time.monotonic()
@@ -154,7 +166,15 @@ class RepairWorker(OfficialWorker):
             sha=old.get('sha256'),flags=flags),sort_keys=True).encode())
         prior=self.journal['units'].get(key,{})
         if prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and prior.get('raw_sha256')==old.get('sha256') and not flags:
+            self.note_activity('prior_verified_skipped_this_run',key,old.get('sha256'))
             return  # Preserve previously checked unchanged RAW; no repeat source request.
+        # V4 incorrectly blocked valid retained RAW before trying its local audit.
+        if prior.get('status')=='UNRESOLVED_OFFICIAL_ROUTE' and (job.get('url') or old.get('evidence_file')):
+            prior={}
+        elif old.get('evidence_file') and prior.get('local_error') and prior.get('execution_revision')!=EXECUTION_REVISION:
+            # Re-audit retained bytes once after a local validator fix, without
+            # resetting exhausted source attempts or rewriting saved RAW.
+            prior=dict(prior,terminal=False,next_retry_at=0)
         if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature:
             known=source_failure(ValueError(prior.get('error','')),job)
             if known and known['status']=='OFFICIAL_PERIOD_NOT_PROVIDED':
@@ -170,13 +190,9 @@ class RepairWorker(OfficialWorker):
         if row.get('next_retry_at',0) and row['next_retry_at']<=time.time():
             row=dict(row,attempts=0,work_seconds=0,cycle_had_request=False,retry_cycle=row.get('retry_cycle',0)+int(row.get('cycle_had_request',False)))
             row.pop('next_retry_at',None)
-        row.update(category=job.get('category'),period=job.get('period'),report_period=job.get('report_period'))
+        row.update(category=job.get('category'),period=job.get('period'),report_period=job.get('report_period'),execution_revision=EXECUTION_REVISION)
         self.journal['units'][key]=row
-        if not job.get('url'):
-            row.update(status='UNRESOLVED_OFFICIAL_ROUTE',terminal=True,complete=False);self.save_journal();return
-        assert_official(job)
-        if is_before_source_start(job):
-            row.update(status='OFFICIAL_PERIOD_NOT_PROVIDED',terminal=True,complete=False);self.save_journal();return
+        if job['source'] not in SOURCES:raise ValueError('NON_OFFICIAL_SOURCE_FORBIDDEN')
         started=time.monotonic()
         requests_before=sum(self.source_requests.values())
         deadline=min(self.until,started+max(0,MAX_POINT_SECONDS-row.get('work_seconds',0)))
@@ -186,6 +202,8 @@ class RepairWorker(OfficialWorker):
                 try:
                     local_raw,_=cached_payload(self.d,old,self.cache)
                     local_stats=validate_content(local_raw,job)
+                    row.pop('error',None)
+                    if row.get('local_error'):row['previous_local_error']=row.pop('local_error')
                     row['local_check']=local_stats;self.checked+=1
                     if flags or local_stats.get('row_audit',{}).get('unverified',[]):
                         if job['category'] in engine.FIN_REPORTS and (row.get('reparse_receipt',{}).get('parser_revision')!=REPARSE_REVISION or row.get('reparse_receipt',{}).get('raw_sha256')!=old['sha256']):
@@ -194,6 +212,7 @@ class RepairWorker(OfficialWorker):
                                 row['reparse_receipt']=reparse_financial(local_raw,dict(job,unit_id=key),old['sha256'],self.owned,
                                     lambda name,data:self.d.put(target,name,data,'application/octet-stream',overwrite=False),
                                     lambda name:self.d.read(target,name))
+                                self.note_activity('local_reparse_readback_this_run',key,old['sha256'])
                             except Exception as exc:
                                 row.update(status='LOCAL_REPARSE_FAILED',terminal=True,complete=False,
                                     error=type(exc).__name__+':'+str(exc)[:300],next_action='FIX_PARSER_KEEP_RAW')
@@ -205,6 +224,7 @@ class RepairWorker(OfficialWorker):
                             open_checks=local_stats.get('row_audit',{}).get('unverified',[]),
                             next_action='VERIFY_ACCOUNTING_UNITS_AND_PIT' if row.get('reparse_receipt') else 'REPARSE_EXISTING_RAW',source_rechecked=False,
                             numeric_verified=False,pit_verified=False)
+                        self.note_activity('local_quality_open_this_run',key,old['sha256'])
                         return
                     if not flags and not local_stats.get('row_audit',{}).get('unverified',[]):
                         row.update(status='CONTENT_CHECK_PASS',terminal=True,complete=True,raw_sha256=old['sha256'],
@@ -212,8 +232,14 @@ class RepairWorker(OfficialWorker):
                         self.state[bucket][key]=dict(old,status='SAVED_BASIC_VERIFIED',quality_revision=QUALITY_REVISION,
                             validation_level='ROW_CONTENT_CHECKS_PASSED_SOURCE_RAW_PRESERVED',numeric_verified=False,pit_verified=False)
                         self.save_state()
+                        self.note_activity('unchanged_raw_checked_this_run',key,old['sha256'])
                         return
                 except Exception as exc:row['local_error']=type(exc).__name__+':'+str(exc)[:300]
+            if not job.get('url'):
+                row.update(status='UNRESOLVED_OFFICIAL_ROUTE',terminal=True,complete=False);return
+            assert_official(job)
+            if is_before_source_start(job):
+                row.update(status='OFFICIAL_PERIOD_NOT_PROVIDED',terminal=True,complete=False);return
             # Fresh official requests are restricted to unresolved/invalid content, never an unchanged previous pass.
             while row['attempts']<MAX_POINT_ATTEMPTS and time.monotonic()+20<deadline:
                 if self.circuit[job['source']]>=2:
@@ -227,7 +253,7 @@ class RepairWorker(OfficialWorker):
                         row.update(status='LOCAL_PARAM_ENCODING_ERROR',terminal=True,complete=False,error=str(exc))
                         break
                     if getattr(self,'lane',None) and not reserve_source(self.api,self.token,job['source']):
-                        row.update(status='UNRESOLVED_SOURCE_BACKOFF',terminal=False,complete=False,next_retry_at=time.time()+3)
+                        row.update(status='WAIT_SHARED_SOURCE_WINDOW',terminal=False,complete=False,next_retry_at=time.time()+3)
                         break
                     row['attempts']+=1
                     self.save_journal()  # Persist the send intent before the transport call.
@@ -281,7 +307,7 @@ class RepairWorker(OfficialWorker):
                     # Rate limits are retried after a durable cooldown, with a bounded cycle count.
                     if isinstance(exc,base.urllib.error.HTTPError) and exc.code in (403,429):
                         row.update(status='UNRESOLVED_SOURCE_LIMIT',terminal=False);break
-            if not row.get('terminal') and row.get('status') not in ('UNRESOLVED_SOURCE_BACKOFF','UNRESOLVED_SOURCE_LIMIT',
+            if not row.get('terminal') and row.get('status') not in ('WAIT_SHARED_SOURCE_WINDOW','UNRESOLVED_SOURCE_BACKOFF','UNRESOLVED_SOURCE_LIMIT',
                     'SOURCE_NO_DATA_UNCONFIRMED','SOURCE_CONTENT_INCOMPLETE'):
                 row.update(status='UNRESOLVED_ATTEMPT_LIMIT' if row['attempts']>=MAX_POINT_ATTEMPTS else 'UNRESOLVED_TIME_LIMIT',
                            terminal=False,complete=False)
@@ -305,21 +331,32 @@ class RepairWorker(OfficialWorker):
         self.restore(month,folder['id'])
         self.journal=engine.getj(self.d,self.monthctrl,'OFFICIAL_REPAIR_STATE.json') or dict(revision=REVISION,month=month,units={})
         flags=self.flags_for(month)
+        planned=native.Audit.jobs(object.__new__(native.Audit),month,set())
+        requests_by_key={engine.key(job):job for job in planned}
         candidates={}
         for bucket in ('units','financial_units'):
             for key,receipt in self.state[bucket].items():
                 matching=[f for f in flags.get(key,[]) if not f.get('raw_sha256') or f['raw_sha256']==receipt.get('sha256')]
-                if needs_review(receipt,{key:matching} if matching else {}) or (getattr(self,'lane',None) and receipt.get('source') in SOURCES):candidates[key]=(receipt,bucket,matching)
+                if needs_review(receipt,{key:matching} if matching else {}) or (getattr(self,'lane',None) and receipt.get('source') in SOURCES):
+                    job=dict(receipt)
+                    if not job.get('url') and key in requests_by_key:
+                        for field in ('url','params'):
+                            if field in requests_by_key[key]:job[field]=requests_by_key[key][field]
+                    candidates[key]=(job,bucket,matching)
         visited=engine.getj(self.d,self.monthctrl,'OFFICIAL_FIRSTPASS_RESULT.json') or {}
         if visited.get('queue_visited') or getattr(self,'lane',None):
-            planned=native.Audit.jobs(object.__new__(native.Audit),month,set())
             now=dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
             cutoff=self.today if now.hour>=18 else self.today-dt.timedelta(days=1)
             for job in planned:
                 key=engine.key(job)
                 if len(job['period'])==10 and job['period']>cutoff.isoformat():continue
                 if key not in self.state['units'] and not is_before_source_start(job):candidates[key]=(job,'units',[])
-        for job,bucket,marked in candidates.values():
+        # Retained financial RAW can be reparsed without a source request; do
+        # not bury that work behind hundreds of missing-route/network items.
+        ordered=sorted(candidates.values(),key=lambda item:(
+            not (item[0].get('category') in engine.FIN_REPORTS and item[0].get('evidence_file')),
+            not bool(item[0].get('evidence_file'))))
+        for job,bucket,marked in ordered:
             if time.monotonic()+25>=self.until:
                 self.save_journal();self.month_incomplete=True;return False
             self.repair_one(job,bucket,marked)
@@ -330,7 +367,7 @@ class RepairWorker(OfficialWorker):
         return True
 
     def revisit_parameter_incident(self):
-        if getattr(self,'lane',None) is not None or self.direction!='DESC':return
+        if getattr(self,'lane',None) not in (None,'RECENT_DESC') or self.direction!='DESC':return
         first_visit=self.cursor.get('parameter_incident_revisited')!=QUALITY_REVISION
         if not first_visit:
             folder=self.d.find(self.roots['RAW'],PARAMETER_INCIDENT_MONTH) if self.roots['RAW'] else None
@@ -393,7 +430,7 @@ class RepairWorker(OfficialWorker):
                 source_requests_this_run=dict(self.source_requests),download_responses_this_run=self.downloaded,
                 repair_success_definition='VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED',
                 sources=list(SOURCES),finmind_enabled=False,
-                numeric_verified=False,pit_verified=False,updated_utc=native.stamp(),run_id=self.owner)
+                numeric_verified=False,pit_verified=False,updated_utc=native.stamp(),run_id=self.owner,**self.activity_summary())
             self.save_cursor();self.putj(self.stagectrl,'STATUS.json',report)
             print('OFFICIAL_REPAIR_STATUS '+json.dumps(report),flush=True)
         finally:commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(b'OFFICIAL_REPAIR_BATCH_ENDED'))

@@ -63,6 +63,9 @@ def seed(d,run,url,token):
 
 class FlowWorker(repair.RepairWorker):
     """Actual run/capture_month/repair_one; override only sandbox routing and setup."""
+    def revisit_parameter_incident(self):
+        # This isolated fixture contains six synthetic months, no production June.
+        return
     def __init__(self,d,root,url,token,run,lane):
         self.d=d;self.control=root;self.api=url;self.token=token;self.lane=lane
         self.direction=coord.LANES[lane][2];self.stage='RAW';self.phase='SYNTHETIC_MONTH_ACCEPTANCE'
