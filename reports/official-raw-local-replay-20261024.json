@@ -1,0 +1,159 @@
+{
+  "production_data_writes": 0,
+  "source_requests": 0,
+  "remote_output_readback": false,
+  "actual_worker_without_url_replay": {
+    "units": 294,
+    "counts": {
+      "LOCAL_CONTENT_CHECKED_OPEN_QUALITY_ITEMS": 209,
+      "CONTENT_CHECK_PASS": 82,
+      "UNRESOLVED_OFFICIAL_ROUTE": 3
+    },
+    "activity": {
+      "execution_revision": "LOCAL_RAW_BEFORE_ROUTE_AND_EXPLICIT_ACTIVITY_V5",
+      "unchanged_raw_checked_this_run": 82,
+      "prior_verified_skipped_this_run": 0,
+      "local_reparse_readback_this_run": 0,
+      "local_quality_open_this_run": 209
+    },
+    "source_requests": 0,
+    "production_data_writes": 0,
+    "raw_replacements": 0,
+    "limitation": "Offline real RAW replay; no remote output certification or full-market/PIT approval"
+  },
+  "unit_count": 294,
+  "counts": {
+    "LOCAL_CHECKED_OPEN_QUALITY": 209,
+    "LOCAL_CONTENT_PASS": 82,
+    "UNRESOLVED": 3
+  },
+  "unresolved": [
+    {
+      "source": "TWSE",
+      "category": "ex_dividend",
+      "period": "2026-08",
+      "sha256": "53967d9675c747103208742427d1c67d5c6254072bcfaeb8a41b09dfc25b263f",
+      "member": "ex_dividend_2026-08_8aa2cc0a0927a9f9623d.raw",
+      "status": "UNRESOLVED",
+      "error": "ValueError:EVENT_PERIOD_UNPROVEN"
+    },
+    {
+      "source": "TPEx",
+      "category": "capital_reduction",
+      "period": "2026-08",
+      "sha256": "4a783df969ed9acf4aca0c8b8af6b0a9772604674d82fa9f0822e3aa44ec5fd4",
+      "member": "capital_reduction_2026-08_22405a05b3d3dae25f3c.raw",
+      "status": "UNRESOLVED",
+      "error": "ValueError:EVENT_PERIOD_UNPROVEN"
+    },
+    {
+      "source": "TPEx",
+      "category": "par_value_change",
+      "period": "2026-08",
+      "sha256": "38fca898499a3fe686b5135a9fbda609b74cf2fe20b2efa2c1aca205a398c4c7",
+      "member": "par_value_change_2026-08_4b3fe7723afb1919f541.raw",
+      "status": "UNRESOLVED",
+      "error": "ValueError:EVENT_PERIOD_UNPROVEN"
+    }
+  ],
+  "sample_units": [
+    {
+      "source": "TWSE",
+      "category": "margin",
+      "period": "2026-08-31",
+      "sha256": "40f770441d971cb4c34c33399d49e093aae540ed9d394cba1365d1820cc376e3",
+      "member": "margin_20260831_501b0e67d72d93009540.raw",
+      "status": "LOCAL_CHECKED_OPEN_QUALITY",
+      "rows": 1298,
+      "open_checks": [
+        "NUMERIC_FIELD_RULES_NOT_COVERED"
+      ]
+    },
+    {
+      "source": "TWSE",
+      "category": "institutional",
+      "period": "2026-08-11",
+      "sha256": "f24a1ab9ef5a388f059aa8b5e59647b33487fcc0da97a78ffbb954d15c7dfc3e",
+      "member": "institutional_20260811_219600bbae81d8562b31.raw",
+      "status": "LOCAL_CONTENT_PASS",
+      "rows": 1331,
+      "open_checks": []
+    },
+    {
+      "source": "TWSE",
+      "category": "foreign_holdings",
+      "period": "2026-08-18",
+      "sha256": "d02aa4921ef4cc52a24de2eb24759ac621c430e83227debbf022077c364c6738",
+      "member": "foreign_holdings_20260818_0e8b7c8af414ee4aefc5.raw",
+      "status": "LOCAL_CONTENT_PASS",
+      "rows": 1359,
+      "open_checks": []
+    },
+    {
+      "source": "TWSE",
+      "category": "foreign_holdings",
+      "period": "2026-08-10",
+      "sha256": "6cfc39c3afdef204c1495b453e3d88848305122ae68115575adc54e8a98322c2",
+      "member": "foreign_holdings_20260810_38ee355eabc36b4af270.raw",
+      "status": "LOCAL_CONTENT_PASS",
+      "rows": 1359,
+      "open_checks": []
+    },
+    {
+      "source": "TWSE",
+      "category": "margin",
+      "period": "2026-08-14",
+      "sha256": "6c43bd8fbebbbdb1b0843d418a74c8019135bbb773888d9bf8b155d84b36d8d3",
+      "member": "margin_20260814_c7f8db428c7970a13daa.raw",
+      "status": "LOCAL_CHECKED_OPEN_QUALITY",
+      "rows": 1297,
+      "open_checks": [
+        "NUMERIC_FIELD_RULES_NOT_COVERED"
+      ]
+    },
+    {
+      "source": "TWSE",
+      "category": "foreign_holdings",
+      "period": "2026-08-19",
+      "sha256": "9b51f7a6fc973933ec4ca72f0b8d19f7a30e847fe73a61b629c84ed6b4ad7204",
+      "member": "foreign_holdings_20260819_e72c80a7bae81288fd2d.raw",
+      "status": "LOCAL_CONTENT_PASS",
+      "rows": 1359,
+      "open_checks": []
+    },
+    {
+      "source": "TWSE",
+      "category": "lending",
+      "period": "2026-08-06",
+      "sha256": "6f9b889340bc92595b98d26711547995376bcc1153a7c6a4bdcfc586aa6f77bf",
+      "member": "lending_20260806_6922bed0c8c4a82228c4.raw",
+      "status": "LOCAL_CHECKED_OPEN_QUALITY",
+      "rows": 1296,
+      "open_checks": [
+        "NUMERIC_FIELD_RULES_NOT_COVERED"
+      ]
+    },
+    {
+      "source": "TWSE",
+      "category": "lending",
+      "period": "2026-08-26",
+      "sha256": "f229e59ec897406a5bd774901631d0262bebd65a7277f589c9298a687a8f49b7",
+      "member": "lending_20260826_75949efd7d2912767d69.raw",
+      "status": "LOCAL_CHECKED_OPEN_QUALITY",
+      "rows": 1300,
+      "open_checks": [
+        "NUMERIC_FIELD_RULES_NOT_COVERED"
+      ]
+    }
+  ],
+  "input_archives": [
+    {
+      "source": "TWSE",
+      "sha256": "757adbf4d17b83a66412aaa4a0dd1823562e2b56b00b5ec558315ff3d3267ab9"
+    },
+    {
+      "source": "TPEx",
+      "sha256": "8b0768251059ffa1e281899b440d555c1259b2c26bf8867e1c4714c68fbdd61a"
+    }
+  ]
+}

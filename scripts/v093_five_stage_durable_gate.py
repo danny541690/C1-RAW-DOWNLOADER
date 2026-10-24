@@ -75,6 +75,7 @@ def terminal_owner(api_url, token, key, lease):
     if monthly:allowed.add('.github/workflows/v093-v2-01-raw.yml')
     if monthly or official:allowed.add('.github/workflows/v093-official-only-two-ended.yml')
     if monthly or repair:allowed.add('.github/workflows/v093-official-only-repair.yml')
+    if monthly or repair:allowed.add('.github/workflows/v093-official-four-lane-repair.yml')
     if stage in primary and key==pools[stage]:allowed.add('.github/workflows/v093-v2-'+primary[stage]+'.yml')
     return result.get('id')==int(run) and result.get('status')=='completed' and result.get('path') in allowed
 

@@ -4,11 +4,14 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v093-official-four-lane-repair.yml'
+      - 'scripts/v093_official_repair.py'
+      - 'scripts/v093_official_content_audit.py'
   schedule:
     - cron: '7 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -22,6 +25,39 @@ jobs:
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
       - run: python -m unittest discover -s tests -q
+      - name: Hand off previous repair batches after validation
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PYCODE'
+          import os,json,time,urllib.request,urllib.error
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          current=int(os.environ['GITHUB_RUN_ID'])
+          own='.github/workflows/v093-official-four-lane-repair.yml'
+          def api(path,method='GET'):
+              req=urllib.request.Request(base+path,method=method,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(req,timeout=25) as r:
+                  b=r.read();return json.loads(b) if b else {}
+          rows=api('/actions/runs?per_page=100')['workflow_runs']
+          old=[r['id'] for r in rows if r['path']==own and r['id']<current and r['status']!='completed']
+          for rid in old:
+              try:api('/actions/runs/'+str(rid)+'/cancel','POST')
+              except urllib.error.HTTPError as e:
+                  if e.code not in (409,422):raise
+          deadline=time.monotonic()+180;force_at=time.monotonic()+45;forced=False
+          while old:
+              old=[rid for rid in old if api('/actions/runs/'+str(rid))['status']!='completed']
+              if old and not forced and time.monotonic()>force_at:
+                  for rid in old:
+                      try:api('/actions/runs/'+str(rid)+'/force-cancel','POST')
+                      except urllib.error.HTTPError as e:
+                          if e.code not in (409,422):raise
+                  forced=True
+              if old and time.monotonic()>deadline:raise RuntimeError('PRIOR_REPAIR_RUN_NOT_TERMINAL')
+              if old:time.sleep(5)
+          print('FOUR_LANE_VALIDATED_HANDOFF_RAW_AND_CURSORS_PRESERVED',flush=True)
+          PYCODE
   repair:
     needs: checks
     name: Schedule ${{ matrix.number }} ${{ matrix.lane }}
