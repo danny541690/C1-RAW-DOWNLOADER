@@ -1,0 +1,33 @@
+name: TDCC history repair source acceptance
+on:
+  push:
+    branches: ['fix/tdcc-history-restart-20261024']
+permissions:
+  contents: read
+jobs:
+  source-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest tests.test_tdcc_history_repair -v
+      - name: Test official newest and older historical dates without Drive writes
+        run: |
+          python - <<'PY'
+          import re,json,time,urllib.request,urllib.parse,http.cookiejar
+          from scripts.v093_tdcc_independent import QUERY,validate_history,sha
+          op=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+          results=[]
+          for date in ('20261022','20261016','20251031'):
+              page=op.open(QUERY,timeout=45).read().decode('utf-8-sig')
+              fields=dict(re.findall(r'<input[^>]*name="([^"]+)"[^>]*value="([^"]*)"',page))
+              fields.update(scaDate=date,sqlMethod='StockNo',stockNo='2330',stockName='')
+              req=urllib.request.Request(QUERY,data=urllib.parse.urlencode(fields).encode(),headers={'User-Agent':'Mozilla/5.0','Referer':QUERY})
+              raw=op.open(req,timeout=45).read()
+              results.append(dict(date=date,code='2330',rows=validate_history(raw,date,'2330'),sha256=sha(raw)))
+              time.sleep(2)
+          print('TDCC_OFFICIAL_HISTORY_ACCEPTANCE '+json.dumps(dict(result='PASS',samples=results,drive_modified=False)))
+          PY

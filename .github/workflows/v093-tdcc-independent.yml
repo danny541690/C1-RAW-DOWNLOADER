@@ -1,6 +1,7 @@
 name: JARVIS independent TDCC download 5
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/v093-tdcc-independent.yml'
   schedule:
@@ -24,6 +25,7 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
+      - run: python -m unittest tests.test_tdcc_history_repair -q
       - name: Download TDCC only; resume verified immutable receipts
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
