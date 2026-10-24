@@ -1,6 +1,7 @@
 name: Jarvis stage06 ledger and repair task tests
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/jarvis-stage06-ledger-task-test-20261022.yml'
       - 'scripts/v093_stage06_ledger.py'

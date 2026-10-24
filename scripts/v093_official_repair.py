@@ -16,9 +16,10 @@ from scripts.v093_folder_registry import FolderRegistry
 from scripts.v093_standard_r1 import C1
 from scripts.v093_five_stage_durable_gate import commit, LeaseBusy
 from scripts.v093_raw_month_coordination import capture_history_month
+from scripts.v093_repair_coordination import LANES, lane_months, claim_month, reserve_source
 
 REVISION='OFFICIAL_TARGETED_REPAIR_20261023_V1'
-QUALITY_REVISION='OFFICIAL_ROW_AND_SOURCE_CHECK_V3'
+QUALITY_REVISION='OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4'
 MAX_RETRY_CYCLES=5
 RETRY_COOLDOWN_SECONDS=3600
 MAX_POINT_ATTEMPTS=3
@@ -82,12 +83,15 @@ def validate_content(raw,job):
     return stats
 
 class RepairWorker(OfficialWorker):
-    def __init__(self,direction,minutes):
-        base.Worker.__init__(self,'RAW',minutes,lease_suffix='_OFFICIAL_REPAIR_'+direction+'_V1',lease_ttl=5400)
+    def __init__(self,direction,minutes,lane=None):
+        self.lane=lane
+        if lane is not None:direction=LANES[lane][2]
+        control_name=lane or direction
+        base.Worker.__init__(self,'RAW',minutes,lease_suffix='_OFFICIAL_REPAIR_'+control_name+'_V1',lease_ttl=5400)
         self.direction=direction;self.phase='OFFICIAL_TARGETED_REPAIR'
-        self.stagectrl=self.d.folder(self.control,'OFFICIAL_REPAIR_'+direction)
+        self.stagectrl=self.d.folder(self.control,'OFFICIAL_REPAIR_'+control_name)
         self.otherctrl=self.d.folder(self.control,'OFFICIAL_REPAIR_'+('ASC' if direction=='DESC' else 'DESC'))
-        self.registry=FolderRegistry(self.d,self.d.folder(C1,'05_CONTROL'),namespace='OFFICIAL_REPAIR_'+direction)
+        self.registry=FolderRegistry(self.d,self.d.folder(C1,'05_CONTROL'),namespace='OFFICIAL_REPAIR_'+control_name)
         self.cursor=engine.getj(self.d,self.stagectrl,'CURSOR.json') or dict(revision=REVISION,
             direction=direction,month_index=0,upper_month=min(self.today.strftime('%Y-%m'),'2026-12'),sweeps=0)
         if self.cursor.get('revision')!=REVISION:raise ValueError('REPAIR_PLAN_MISMATCH')
@@ -97,6 +101,7 @@ class RepairWorker(OfficialWorker):
             self.save_cursor()
         self.months=months_through(self.cursor['upper_month'])
         if direction=='DESC':self.months.reverse()
+        if lane is not None:self.months=lane_months(lane)
         self.cache=ArchiveCache();self.checked=0;self.repaired=0;self.downloaded=0;self.source_requests=collections.Counter()
         self.roots={}
         for stage in ('RAW','QA1','PRICE','FINANCIAL','CHIP'):
@@ -114,6 +119,8 @@ class RepairWorker(OfficialWorker):
                     if entry.get('source') in SOURCES and entry.get('unit_id'):
                         flags.setdefault(entry['unit_id'],[]).append(dict(stage=stage,
                             raw_sha256=entry.get('raw_sha256'),error=entry.get('error'),kind=entry.get('correction_kind')))
+        for key,items in flags.items():
+            flags[key]=list({json.dumps(item,sort_keys=True):item for item in items}.values())
         return flags
 
     def save_journal(self):
@@ -152,7 +159,7 @@ class RepairWorker(OfficialWorker):
             unit_id=key,source=job['source'],quality_revision=QUALITY_REVISION,input_signature=signature,
             attempts=0,work_seconds=0,prior_result=prior.get('status'))
         if row.get('next_retry_at',0) and row['next_retry_at']<=time.time():
-            row=dict(row,attempts=0,work_seconds=0,retry_cycle=row.get('retry_cycle',0)+1)
+            row=dict(row,attempts=0,work_seconds=0,cycle_had_request=False,retry_cycle=row.get('retry_cycle',0)+int(row.get('cycle_had_request',False)))
             row.pop('next_retry_at',None)
         row.update(category=job.get('category'),period=job.get('period'),report_period=job.get('report_period'))
         self.journal['units'][key]=row
@@ -162,6 +169,7 @@ class RepairWorker(OfficialWorker):
         if is_before_source_start(job):
             row.update(status='OFFICIAL_PERIOD_NOT_PROVIDED',terminal=True,complete=False);self.save_journal();return
         started=time.monotonic()
+        requests_before=sum(self.source_requests.values())
         deadline=min(self.until,started+max(0,MAX_POINT_SECONDS-row.get('work_seconds',0)))
         local_raw=None;local_stats=None
         try:
@@ -170,6 +178,15 @@ class RepairWorker(OfficialWorker):
                     local_raw,_=cached_payload(self.d,old,self.cache)
                     local_stats=validate_content(local_raw,job)
                     row['local_check']=local_stats;self.checked+=1
+                    if flags or local_stats.get('row_audit',{}).get('unverified',[]):
+                        # Derived/parser/PIT flags are not evidence that source bytes are bad.
+                        # Preserve RAW and route the unresolved quality finding to reparse.
+                        row.update(status='LOCAL_CONTENT_CHECKED_OPEN_QUALITY_ITEMS',terminal=True,
+                            complete=False,raw_sha256=old['sha256'],review_flags=flags,
+                            open_checks=local_stats.get('row_audit',{}).get('unverified',[]),
+                            next_action='REPARSE_EXISTING_RAW',source_rechecked=False,
+                            numeric_verified=False,pit_verified=False)
+                        return
                     if not flags and not local_stats.get('row_audit',{}).get('unverified',[]):
                         row.update(status='CONTENT_CHECK_PASS',terminal=True,complete=True,raw_sha256=old['sha256'],
                             checked_utc=native.stamp(),numeric_verified=False,pit_verified=False)
@@ -182,11 +199,19 @@ class RepairWorker(OfficialWorker):
             while row['attempts']<MAX_POINT_ATTEMPTS and time.monotonic()+20<deadline:
                 if self.circuit[job['source']]>=2:
                     row.update(status='UNRESOLVED_SOURCE_BACKOFF',terminal=False,complete=False);break
-                row.update(status='SOURCE_CHECK_REQUEST_INTENT',attempts=row['attempts']+1)
+                row.update(status='SOURCE_CHECK_REQUEST_INTENT')
                 self.save_journal()
                 raw=None
                 try:
-                    native.request_data(job.get('params'))  # Reject local encoding failures before counting sends.
+                    try:native.request_data(job.get('params'))
+                    except ValueError as exc:
+                        row.update(status='LOCAL_PARAM_ENCODING_ERROR',terminal=True,complete=False,error=str(exc))
+                        break
+                    if getattr(self,'lane',None) and not reserve_source(self.api,self.token,job['source']):
+                        row.update(status='UNRESOLVED_SOURCE_BACKOFF',terminal=False,complete=False,next_retry_at=time.time()+3)
+                        break
+                    row['attempts']+=1
+                    self.save_journal()  # Persist the send intent before the transport call.
                     self.source_requests[job['source']]+=1
                     raw=native.request(job['url'],job.get('params'))
                     self.downloaded+=1
@@ -212,6 +237,7 @@ class RepairWorker(OfficialWorker):
                         row['saved_evidence_file']=self.state[bucket][key]['evidence_file']
                         row['readback_verified']=True
                         self.repaired+=1
+                    row.pop('error',None)
                     row.update(status='OFFICIAL_VALUES_CONFIRMED' if equal else 'REPLACED_WITH_OFFICIAL_RESPONSE',
                         terminal=True,complete=not bool(open_checks or flags),
                         original_sha256=old.get('sha256'),official_sha256=native.sha(raw),
@@ -243,9 +269,10 @@ class RepairWorker(OfficialWorker):
         finally:
             if not row.get('terminal'):
                 row['retry_cycle']=row.get('retry_cycle',0)
-                if row['retry_cycle']+1>=MAX_RETRY_CYCLES:
+                if sum(self.source_requests.values())>requests_before and row['retry_cycle']+1>=MAX_RETRY_CYCLES:
                     row.update(status='UNRESOLVED_RETRY_CYCLES_EXHAUSTED',terminal=True,complete=False)
-                else:row['next_retry_at']=time.time()+RETRY_COOLDOWN_SECONDS
+                else:row.setdefault('next_retry_at',time.time()+RETRY_COOLDOWN_SECONDS)
+            row['cycle_had_request']=row.get('cycle_had_request',False) or sum(self.source_requests.values())>requests_before
             row['work_seconds']=row.get('work_seconds',0)+time.monotonic()-started
             row['maximum_attempts']=MAX_POINT_ATTEMPTS;row['maximum_seconds']=MAX_POINT_SECONDS
             self.save_journal()
@@ -284,7 +311,7 @@ class RepairWorker(OfficialWorker):
         return True
 
     def revisit_parameter_incident(self):
-        if self.direction!='DESC':return
+        if getattr(self,'lane',None) is not None or self.direction!='DESC':return
         first_visit=self.cursor.get('parameter_incident_revisited')!=QUALITY_REVISION
         if not first_visit:
             folder=self.d.find(self.roots['RAW'],PARAMETER_INCIDENT_MONTH) if self.roots['RAW'] else None
@@ -313,16 +340,22 @@ class RepairWorker(OfficialWorker):
             self.revisit_parameter_incident()
             while self.cursor['month_index']<len(self.months) and time.monotonic()<self.until:
                 month=self.months[self.cursor['month_index']]
+                if getattr(self,'lane',None):
+                    allowed,meeting=claim_month(self.api,self.token,self.lane,month)
+                    if not allowed:
+                        self.cursor.update(meeting);self.save_cursor();break
                 self.cursor.update(status='ACTIVE',active_month=month);self.save_cursor()
                 # A download owns its active month first; repair skips busy months and revisits next sweep.
                 self.month_incomplete=False
                 complete=capture_history_month(self,month)
-                if self.month_incomplete:break
+                if self.month_incomplete or (getattr(self,'lane',None) and not complete):break
                 self.cursor['month_index']+=1
                 self.cursor['last_visited_month']=month
                 self.cursor['last_month_busy']=not complete
                 self.save_cursor()
-            if self.cursor['month_index']>=len(self.months):
+            if getattr(self,'lane',None) and self.cursor['month_index']>=len(self.months):
+                self.cursor.update(status='RANGE_VISITED_NOT_QUALITY_CERTIFIED')
+            elif self.cursor['month_index']>=len(self.months):
                 self.cursor.update(month_index=0,sweeps=self.cursor['sweeps']+1,status='SWEEP_ENDED_REVISIT_CHANGED_OR_RETRY_ITEMS')
             report=dict(self.cursor,checked_this_run=self.checked,repaired_this_run=self.repaired,
                 source_requests_this_run=dict(self.source_requests),download_responses_this_run=self.downloaded,
@@ -334,11 +367,12 @@ class RepairWorker(OfficialWorker):
         finally:commit(self.api,self.token,self.lock,self.owner,self.fence,native.sha(b'OFFICIAL_REPAIR_BATCH_ENDED'))
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--direction',choices=('ASC','DESC'),required=True)
+    p=argparse.ArgumentParser();p.add_argument('--direction',choices=('ASC','DESC'),default='DESC')
+    p.add_argument('--lane',choices=tuple(LANES))
     p.add_argument('--minutes',type=float,default=40);a=p.parse_args()
     if not 1<=a.minutes<=50:raise ValueError('INVALID_BUDGET')
     base.load_policy()
-    try:RepairWorker(a.direction,a.minutes).run()
+    try:RepairWorker(a.direction,a.minutes,lane=a.lane).run()
     except LeaseBusy:print('OFFICIAL_REPAIR_WAIT_EXISTING_OWNER',flush=True)
 
 if __name__=='__main__':main()

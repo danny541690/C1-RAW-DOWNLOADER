@@ -72,13 +72,13 @@ class RawRepairTests(unittest.TestCase):
         done=self.call();self.assertEqual(done['status'],'DONE');self.assertEqual(self.transport.call_count,1)
         self.assertFalse(self.native.hold)
 
-    def test_fourth_attempt_is_last_without_reset(self):
-        self.prepare(prior=3);self.assertEqual(self.call()['status'],'DONE')
-        self.assertEqual(self.native.used,4)
-        self.assertEqual(next(iter(self.ledger.snapshot()['attempts'].values()))['used'],4)
+    def test_fifth_attempt_is_last_without_reset(self):
+        self.prepare(prior=4);self.assertEqual(self.call()['status'],'DONE')
+        self.assertEqual(self.native.used,5)
+        self.assertEqual(next(iter(self.ledger.snapshot()['attempts'].values()))['used'],5)
 
-    def test_newer_native_counter_blocks_fifth_attempt(self):
-        self.prepare(prior=3);self.native.used=4
+    def test_newer_native_counter_blocks_sixth_attempt(self):
+        self.prepare(prior=4);self.native.used=5
         self.assertEqual(self.call()['status'],'RETRY_EXHAUSTED');self.transport.assert_not_called()
 
     def test_already_saved_fourth_response_is_reused_without_request(self):

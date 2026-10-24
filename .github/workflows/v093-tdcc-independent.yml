@@ -1,6 +1,7 @@
 name: JARVIS independent TDCC download 5
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/v093-tdcc-independent.yml'
   schedule:

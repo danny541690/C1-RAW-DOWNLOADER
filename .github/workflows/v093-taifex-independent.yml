@@ -1,6 +1,7 @@
 name: JARVIS independent TAIFEX download 6
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/v093-taifex-independent.yml'
       - 'scripts/v093_taifex_independent.py'
