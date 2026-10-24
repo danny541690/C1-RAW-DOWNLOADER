@@ -76,9 +76,51 @@ class TAIFEXTests(unittest.TestCase):
         w=object.__new__(m.Worker)
         w.state={'receipts':{'empty':{'status':'SKIPPED_SOURCE_EMPTY'},'gone':{'status':'SKIPPED_NOT_PUBLISHED'}}}
         called=[];w.process=lambda job:called.append(job['key']) or True
-        w.batch([{'key':'empty'},{'key':'gone'},{'key':'older'}],1)
+        w.batch([{'key':k,'url':m.SITE+'/download'} for k in ('empty','gone','older')],1)
         self.assertEqual(called,['older'])
     def test_resume_skips_success_and_exhausted_failure(self):
         w=object.__new__(m.Worker);w.state={'receipts':{'ok':{'status':'SAVED_BASIC_VERIFIED'},'bad':{'attempts':3,'status':'UNRESOLVED'}}}
         self.assertTrue(w.process({'key':'ok'}));self.assertTrue(w.process({'key':'bad'}))
+    def test_official_dos_eof_is_not_a_data_row(self):
+        self.assertEqual(m.validate(self.csv()+b'\x1a',self.job())['rows'],1)
+        with self.assertRaisesRegex(ValueError,'CSV_ROW_DATE_MISSING'):
+            m.validate(self.csv()+b'\x1a\n2000/1/5,TX\n',self.job())
+    def test_trade_date_cannot_fall_back_to_expiry(self):
+        raw='交易日期,到期日期\ninvalid,2000/01/04\n'.encode('cp950')
+        with self.assertRaisesRegex(ValueError,'CSV_ROW_DATE_MISSING'):m.validate(raw,self.job())
+    def test_compact_roc_date_and_pre_2000_date(self):
+        self.assertEqual(m.parse_date('1151016'),dt.date(2026,10,16))
+        self.assertEqual(m.parse_date('19991231'),dt.date(1999,12,31))
+    def test_official_no_data_and_swagger_are_distinct(self):
+        raw='<html><script>alert("查無資料");</script></html>'.encode()
+        with self.assertRaises(m.OfficialEmpty):m.validate(raw,self.job())
+        with self.assertRaisesRegex(ValueError,'API_ROUTE_RETURNS_SWAGGER_HTML'):
+            m.validate(b'\xef\xbb\xbf<html><title>Swagger UI</title></html>',self.job('snapshot'))
+        with self.assertRaises(ValueError):m.validate(b'<html>Access denied</html>',self.job())
+    def test_revision_migration_preserves_success_and_is_once_only(self):
+        ok={'status':'SAVED_BASIC_VERIFIED','sha256':'keep','attempts':1}
+        state={'receipts':{'ok':ok.copy(),'bad':{'status':'UNRESOLVED','error':'CSV_ROW_DATE_MISSING','attempts':3}}}
+        m.migrate_repairs(state)
+        self.assertEqual(state['receipts']['ok'],ok)
+        self.assertEqual(state['receipts']['bad']['attempts'],0)
+        state['receipts']['bad']['attempts']=3;m.migrate_repairs(state)
+        self.assertEqual(state['receipts']['bad']['attempts'],3)
+    def test_cached_raw_recovery_requires_hash_and_no_source_redownload(self):
+        raw=self.csv()+b'\x1a'
+        job=dict(self.job(),key='annual-test',url=m.SITE+'/test')
+        w=object.__new__(m.Worker);w.state={'receipts':{job['key']:{'status':'UNRESOLVED','attempts':3,'error':'CSV_ROW_DATE_MISSING','response_sha256':m.digest(raw)}}}
+        m.migrate_repairs(w.state)
+        w.live=lambda:True;w.save=lambda:None;w.saved=0
+        w.d=type('Drive',(),{'read':lambda *args:raw})();w.ctrl='test'
+        w.request=lambda *args:(_ for _ in ()).throw(AssertionError('must not redownload'))
+        def persist(job,content,entry,ev):
+            self.assertEqual(content,raw);self.assertEqual(ev['rows'],1)
+            entry.update(status='SAVED_BASIC_VERIFIED',sha256=m.digest(content))
+        w.persist_raw=persist
+        self.assertTrue(w.process(job));self.assertTrue(w.state['receipts'][job['key']]['recovered_from_saved_evidence'])
+    def test_cooldowns_do_not_block_other_sources(self):
+        import time
+        w=object.__new__(m.Worker);w.state={'receipts':{},'source_backoff':{'www.taifex.com.tw':time.time()+60}}
+        self.assertFalse(w.eligible({'key':'x','url':m.SITE+'/test'}))
+        self.assertTrue(w.eligible({'key':'y','url':'https://openapi.taifex.com.tw/v1/DailyMarketReportFut'}))
 if __name__=='__main__':unittest.main()

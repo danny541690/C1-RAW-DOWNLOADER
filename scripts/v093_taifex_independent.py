@@ -14,6 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
+REPAIR_REVISION = 'TAIFEX_NATIVE_FORMAT_REPAIR_V2_20261024'
 TICK_PAGES = ['dlFutPrevious30DaysSalesData', 'dlOptPrevious30DaysSalesData',
               'dlFutPrevious30DaysSpreadSalesData', 'dlFutPrevious30DaysSpreadOrdersReport', 'dlOptDailyDelta']
 TERMINAL = {'SAVED_BASIC_VERIFIED', 'SKIPPED_SOURCE_EMPTY', 'SKIPPED_NOT_PUBLISHED'}
@@ -25,19 +26,35 @@ def digest(b): return hashlib.sha256(b).hexdigest()
 def encode(v): return json.dumps(v, ensure_ascii=False, sort_keys=True).encode()
 def parse_date(v):
     v=str(v).strip()
-    if re.fullmatch(r'20\d{6}',v):v=v[:4]+'/'+v[4:6]+'/'+v[6:]
+    if re.fullmatch(r'(?:19|20)\d{6}',v):v=v[:4]+'/'+v[4:6]+'/'+v[6:]
+    elif re.fullmatch(r'\d{7}',v):v=v[:3]+'/'+v[3:5]+'/'+v[5:]
     m = re.fullmatch(r'\s*(\d{3,4})[-/](\d{1,2})[-/](\d{1,2})(?:\s+.*)?', str(v))
     if not m: return None
     y, mo, day = map(int, m.groups())
     try: return dt.date(y + 1911 if y < 1911 else y, mo, day)
     except ValueError: return None
 
-def csv_evidence(raw, start, end):
-    if raw.lstrip().startswith((b'<', b'{', b'[')): raise ValueError('NOT_CSV_ERROR_OR_HTML')
+def native_text(raw):
     for encoding in ('utf-8-sig', 'cp950'):
-        try: text = raw.decode(encoding); break
+        try: return raw.decode(encoding)
         except UnicodeDecodeError: pass
-    else: raise ValueError('CSV_ENCODING')
+    raise ValueError('CSV_ENCODING')
+
+def reject_html(text):
+    if not text.lstrip().startswith('<'):return
+    # Exact official no-row alert, not a generic HTML/error page.
+    if re.search(r'alert\(\s*[\"\']查無資料[\"\']\s*\)',text):
+        raise OfficialEmpty('OFFICIAL_NO_DATA_ALERT_NOT_ABSENCE_CERTIFICATION')
+    if '<title>Swagger UI</title>' in text:raise ValueError('API_ROUTE_RETURNS_SWAGGER_HTML')
+    raise ValueError('NOT_CSV_ERROR_OR_HTML')
+
+def csv_evidence(raw, start, end):
+    text=native_text(raw)
+    reject_html(text)
+    if text.lstrip().startswith(('{','[')):raise ValueError('NOT_CSV_ERROR_OR_HTML')
+    # Official annual futures exports contain a final DOS EOF record (0x1A).
+    # Strip it only at EOF; malformed records within the file still fail.
+    text=text.rstrip('\x1a \t\r\n')
     reader = csv.reader(io.StringIO(text)); header = next(reader, [])
     indexes = [i for i, k in enumerate(header) if any(x in k for x in ('日期', '年月日', 'Date', 'date'))]
     if not indexes: raise ValueError('CSV_DATE_HEADER_MISSING')
@@ -46,11 +63,9 @@ def csv_evidence(raw, start, end):
     session = next((i for i, x in enumerate(header) if x.strip() == '交易時段'), None)
     for row in reader:
         if not any(x.strip() for x in row): continue
-        dates = [parse_date(row[i]) for i in indexes if i < len(row)]
-        dates = [x for x in dates if x]
         # Expiry dates may lie outside the request. Use the first date column
         # (trade/publication date), not the contract's expiry date.
-        date = dates[0] if dates else None
+        date = parse_date(row[indexes[0]]) if indexes[0]<len(row) else None
         if not date: raise ValueError('CSV_ROW_DATE_MISSING')
         if not start <= date <= end: raise ValueError('RESPONSE_DATE_OUTSIDE_REQUEST:' + date.isoformat())
         lo = min(lo, date) if lo else date; hi = max(hi, date) if hi else date; count += 1
@@ -63,7 +78,8 @@ def csv_evidence(raw, start, end):
 def validate(raw, job):
     kind = job['kind']; start = dt.date.fromisoformat(job['start']); end = dt.date.fromisoformat(job['end'])
     if kind == 'snapshot':
-        rows = json.loads(raw.decode('utf-8-sig'))
+        text=native_text(raw);reject_html(text)
+        rows = json.loads(text)
         if rows == []: raise OfficialEmpty('EMPTY_NATIVE_JSON_ARRAY_NOT_HISTORICAL_ABSENCE_PROOF')
         if not isinstance(rows, (list, dict)) or not rows: raise ValueError('EMPTY_OR_INVALID_API_RESPONSE')
         if isinstance(rows, dict) and any(k.lower() in ('error', 'errors') for k in rows): raise ValueError('API_ERROR')
@@ -154,6 +170,16 @@ def months_desc(latest, first):
 def make_job(key, url, kind, start, end, fields=None):
     return dict(key=key, url=url, kind=kind, start=start.isoformat(), end=end.isoformat(), fields=fields)
 
+def migrate_repairs(state):
+    if state.get('repair_revision')==REPAIR_REVISION:return
+    for entry in state.get('receipts',{}).values():
+        if entry.get('status') in TERMINAL:continue
+        entry['prior_attempts']=entry.get('attempts',0)
+        entry['prior_error']=entry.get('error')
+        entry.update(attempts=0, retry_after_epoch=0, repair_revision=REPAIR_REVISION)
+    state.update(repair_revision=REPAIR_REVISION, route_backoff={}, source_backoff={})
+    state.pop('resume_after_epoch',None)
+
 class Worker:
     def __init__(self, minutes):
         from scripts.annual_actual_firstpass import Drive,service
@@ -161,13 +187,21 @@ class Worker:
         self.ctrl=self.d.folder(REPORT, 'TAIFEX_INDEPENDENT_STAGE06')
         raw=self.d.read(self.ctrl,'CURSOR.json')
         self.state=json.loads(raw) if raw else {'revision':'TAIFEX_INDEPENDENT_V1','receipts':{},'catalog':{},'tick_jobs':{}}
+        migrate_repairs(self.state)
         self.until=time.monotonic()+minutes*60; self.today=dt.datetime.now(TZ).date()
         self.started=stamp(); self.saved=0; self.requests=0; self.folders={}
         self.state['status']='RUNNING_INDEPENDENT_CAPTURE'
         self.state['missing_data_policy']='DOWNLOAD_AVAILABLE; SKIP_NATIVE_EMPTY_OR_404_410; MAX_3_TRANSIENT_ATTEMPTS; CONTINUE_DESCENDING'
         self.state.pop('last_error',None)
         self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
-    def live(self): return time.monotonic()<self.until-100 and time.time()>=self.state.get('resume_after_epoch',0)
+    def live(self): return time.monotonic()<self.until-100
+    def eligible(self,job):
+        old=self.state['receipts'].get(job['key'],{})
+        route=job['url'];host=urllib.parse.urlparse(route).hostname
+        return (old.get('status') not in TERMINAL and old.get('status')!='EXCLUDED_FUTURE_PUBLISHED_LINK'
+                and old.get('attempts',0)<3 and time.time()>=old.get('retry_after_epoch',0)
+                and time.time()>=self.state.get('route_backoff',{}).get(route,0)
+                and time.time()>=self.state.get('source_backoff',{}).get(host,0))
     def save(self):
         self.state.update(updated_utc=stamp(), run_id=os.environ.get('GITHUB_RUN_ID'), source='TAIFEX',
             finmind_enabled=False, coverage_certified=False, numeric_verified=False, pit_verified=False)
@@ -181,12 +215,20 @@ class Worker:
             actual_saved_range={'min':min(v['min'] for v in periods) if periods else None,'max':max(v['max'] for v in periods) if periods else None},
             requested_range={'min':'2000-01-01','max':self.today.isoformat()},
             historical_forms=len(self.state['catalog']), tick_files_discovered=len(self.state['tick_jobs']))
+        report['unresolved_error_counts']={}
+        for entry in receipts.values():
+            if entry.get('status')=='UNRESOLVED':
+                error=entry.get('error','UNKNOWN').split(':',2)[:2];label=':'.join(error)
+                report['unresolved_error_counts'][label]=report['unresolved_error_counts'].get(label,0)+1
+        report['exhausted_units']=sum(v.get('status')=='UNRESOLVED' and v.get('attempts',0)>=3 for v in receipts.values())
         self.d.put(self.ctrl,'STATUS.json',encode(report),'application/json',overwrite=True)
     def request(self,url,fields=None,timeout=45):
         if urllib.parse.urlparse(url).hostname not in ('www.taifex.com.tw','openapi.taifex.com.tw'): raise ValueError('NON_OFFICIAL_HOST')
+        if time.time()<self.state.get('source_backoff',{}).get(urllib.parse.urlparse(url).hostname,0):
+            raise TimeoutError('SOURCE_COOLDOWN_ACTIVE')
         time.sleep(0.5); self.requests+=1
         data=urllib.parse.urlencode(fields).encode() if fields is not None else None
-        req=urllib.request.Request(url,data=data,headers={'User-Agent':'Mozilla/5.0 JARVIS-TAIFEX/1.0', 'Referer':SITE+'/cht/3/futDailyMarketView'})
+        req=urllib.request.Request(url,data=data,headers={'User-Agent':'Mozilla/5.0 JARVIS-TAIFEX/2.0', 'Accept':'application/json' if 'openapi.taifex.com.tw' in url else '*/*', 'Referer':SITE+'/cht/3/futDailyMarketView'})
         with self.opener.open(req, timeout=timeout) as r:
             if urllib.parse.urlparse(r.geturl()).hostname not in ('www.taifex.com.tw','openapi.taifex.com.tw'): raise ValueError('NON_OFFICIAL_REDIRECT')
             raw=r.read(MAX_BYTES+1)
@@ -194,39 +236,61 @@ class Worker:
         return raw
     def evidence(self,name,raw):
         self.d.put(self.ctrl,name+'_'+digest(raw)+'.raw',raw,overwrite=False)
+    def persist_raw(self,job,raw,entry,ev):
+        year=job['start'][:4];period='_ANNUAL' if job['kind']=='annual' else job['start'][:7]
+        cache_key=year+'/'+period
+        if cache_key not in self.folders:
+            self.folders[cache_key]=self.d.folder(self.d.folder(self.d.folder(ROOT,year),'TAIFEX'),period)
+        parent=self.folders[cache_key];extension='zip' if job['kind'] in ('tick','annual') else ('json' if job['kind']=='snapshot' else 'csv')
+        name=re.sub('[^a-zA-Z0-9_-]','_',job['key'])+'_'+digest(raw)+'.'+extension
+        self.d.put(parent,name,raw,overwrite=False);file=self.d.find(parent,name)
+        entry.update(ev,status='SAVED_BASIC_VERIFIED',file_id=file['id'],sha256=digest(raw),bytes=len(raw),
+            remote_readback_hash_verified=True,captured_utc=stamp(),numeric_verified=False,pit_verified=False,
+            repair_revision=REPAIR_REVISION)
+        entry.pop('error',None);entry.pop('retry_after_epoch',None)
+        self.saved+=1
     def process(self,job):
         key=job['key']; old=self.state['receipts'].get(key,{})
         if old.get('status') in TERMINAL: return True
         if old.get('attempts',0)>=3: return True
+        if not self.eligible(job):return True
         if not self.live(): return False
         self.state['active_unit']={k:v for k,v in job.items() if k!='fields'}
         entry=dict(old,status='REQUEST_INTENT', attempts=old.get('attempts',0)+1, request=job, updated_utc=stamp())
         self.state['receipts'][key]=entry; self.save()
         raw=None
         try:
-            raw=self.request(job['url'], job.get('fields')); ev=validate(raw,job)
-            year=job['start'][:4]; period='_ANNUAL' if job['kind']=='annual' else job['start'][:7]
-            cache_key=year+'/'+period
-            if cache_key not in self.folders:
-                self.folders[cache_key]=self.d.folder(self.d.folder(self.d.folder(ROOT,year),'TAIFEX'),period)
-            parent=self.folders[cache_key]; extension='zip' if job['kind'] in ('tick','annual') else ('json' if job['kind']=='snapshot' else 'csv')
-            name=re.sub('[^a-zA-Z0-9_-]','_',key)+'_'+digest(raw)+'.'+extension
-            self.d.put(parent,name,raw,overwrite=False); file=self.d.find(parent,name)
-            entry.update(ev,status='SAVED_BASIC_VERIFIED',file_id=file['id'],sha256=digest(raw),bytes=len(raw),
-                         remote_readback_hash_verified=True,captured_utc=stamp(),numeric_verified=False,pit_verified=False)
-            self.saved+=1
+            # Recover rejected native RAW before spending another source request.
+            if old.get('response_sha256') and old.get('prior_error') and old.get('evidence_revalidated_revision')!=REPAIR_REVISION:
+                cached=self.d.read(self.ctrl,'UNRESOLVED_'+old['response_sha256']+'.raw')
+                if cached is not None and digest(cached)==old['response_sha256']:
+                    entry['evidence_revalidated_revision']=REPAIR_REVISION
+                    try:ev=validate(cached,job)
+                    except OfficialEmpty:
+                        raw=cached;entry['recovered_from_saved_evidence']=True
+                        raise
+                    except ValueError as exc:
+                        if 'API_ROUTE_RETURNS_SWAGGER_HTML' in str(exc):
+                            raw=cached;raise
+                    except zipfile.BadZipFile:pass
+                    else:raw=cached;entry['recovered_from_saved_evidence']=True
+            if raw is None:raw=self.request(job['url'], job.get('fields'));ev=validate(raw,job)
+            self.persist_raw(job,raw,entry,ev)
             if job['url'].endswith('/DailyMarketReportFut') and ev.get('content_period'):
                 self.state['latest_trading_date']=ev['content_period']['max']
             print(json.dumps({'key':key,'status':entry['status'],'bytes':len(raw),'range':ev.get('content_period')}),flush=True)
         except Exception as exc:
-            entry.update(status='UNRESOLVED',error=type(exc).__name__+':'+str(exc)[:220])
+            entry.update(status='UNRESOLVED',error=type(exc).__name__+':'+str(exc)[:220],retry_after_epoch=time.time()+900)
             if raw is not None:
                 self.evidence('UNRESOLVED',raw); entry['response_sha256']=digest(raw)
             if isinstance(exc,OfficialEmpty):
                 entry.update(status='SKIPPED_SOURCE_EMPTY', historical_absence_certified=False, skip_reason='VALID_NATIVE_RESPONSE_HAS_NO_ROWS_CONTINUE_OLDER_UNITS')
             elif isinstance(exc,urllib.error.HTTPError) and exc.code in (404,410):
                 entry.update(status='SKIPPED_NOT_PUBLISHED', http_status=exc.code, historical_absence_certified=False, skip_reason='OFFICIAL_DOWNLOAD_URL_NOT_AVAILABLE_CONTINUE_OLDER_UNITS')
-            if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429): self.state['resume_after_epoch']=time.time()+900
+            if 'API_ROUTE_RETURNS_SWAGGER_HTML' in str(exc):
+                self.state.setdefault('route_backoff',{})[job['url']]=time.time()+21600
+            if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):
+                self.state.setdefault('source_backoff',{})[urllib.parse.urlparse(job['url']).hostname]=time.time()+900
             print(json.dumps({'key':key,'status':entry['status'],'error':entry['error']}),flush=True)
         self.state['receipts'][key]=entry; self.save(); return self.live()
     def page(self,name):
@@ -309,9 +373,6 @@ class Worker:
                 jobs.append(make_job('ANNUAL|'+label+'|'+str(y),SITE+'/cht/3/'+action,'annual',dt.date(y,1,1),dt.date(y,12,31),{'down_type':'2','his_year':str(y)}))
         for action,form in self.state['catalog'].items():
             first=max(FLOOR,dt.date.fromisoformat(form['first'])); last=min(latest,dt.date.fromisoformat(form['last']))
-            if form['boundary_confirmed']:
-                rolling=dt.date(latest.year-3,latest.month,min(latest.day,calendar.monthrange(latest.year-3,latest.month)[1]))
-                first=max(first,rolling);last=latest
             for start,end in months_desc(last,first):
                 fields=dict(form['fields'],queryStartDate=start.strftime('%Y/%m/%d'),queryEndDate=end.strftime('%Y/%m/%d'))
                 key='HISTORY|'+action+'|'+start.strftime('%Y-%m')
@@ -348,7 +409,11 @@ class Worker:
                 self.batch(api,12)
                 self.refresh_tick_catalog()
                 self.discover_more(4)
-                self.batch(self.history_jobs(),24)
+                history=self.history_jobs()
+                # Annual archives cover every native product with fewer requests.
+                # Recover their retained rejected ZIPs first; newest years first.
+                self.batch([j for j in history if j['kind']=='annual'],2)
+                self.batch(history,24)
                 if self.requests==before:break
             self.state['status']='CHECKPOINTED_CONTINUE_NEXT_WAKE' if self.live() else 'TIME_BUDGET_OR_BACKOFF_CHECKPOINT'
         except Exception as exc:
@@ -359,8 +424,7 @@ class Worker:
     def batch(self,jobs,limit):
         count=0
         for j in jobs:
-            old=self.state['receipts'].get(j['key'],{})
-            if old.get('status') in TERMINAL or old.get('attempts',0)>=3:continue
+            if not self.eligible(j):continue
             if not self.process(j):break
             count+=1
             if count>=limit:break

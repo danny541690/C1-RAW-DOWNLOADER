@@ -1,6 +1,7 @@
 name: JARVIS independent TAIFEX download 6
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/v093-taifex-independent.yml'
       - 'scripts/v093_taifex_independent.py'
@@ -26,7 +27,7 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
-      - name: Validate TAIFEX date and archive safety
+      - name: Validate TAIFEX native format repairs, preservation and retry safety
         run: python -m unittest tests.test_taifex_independent -q
       - name: Download TAIFEX only; resume verified immutable receipts
         env:
