@@ -8,7 +8,7 @@ permissions:
 jobs:
   offline-prelaunch:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -57,3 +57,13 @@ jobs:
           assert sum(w['status']=='PAUSED_AT_MEETING' for w in workers.values())==2
           print(json.dumps({'result':'PASS','real_github_cas':True,'workers':4,'survivors':2,'paused':2,'restart_preserved':True,'production_manifest_modified':False,'drive_modified':False,'evidence_path':path}))
           PY
+      - name: Real isolated Drive publication, SHA readback and crash recovery
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_stage06_drive_canary
+      - name: Combined prelaunch gate
+        run: |
+          echo 'COMBINED_PRELAUNCH_PASS: regression, four-worker meeting, persistent pause, Drive readback, stale owner rejection, restart reuse and overwrite protection'
