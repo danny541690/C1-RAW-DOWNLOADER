@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_API_NATIVE_JSON_CSV_V5_20261025'
+REPAIR_REVISION = 'TAIFEX_API_NATIVE_JSON_CSV_V5_1_20261025'
 # These official aliases have 238 paired saved responses with identical SHA.
 ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('largeTraderFutDown','dlLargeTraderFutDown'),
@@ -126,18 +126,16 @@ def csv_evidence(raw, start, end):
 
 API_CSV_SCHEMAS = {'DailyForeignExchangeRates': ['日期', '美元_新台幣(匯率)', '人民幣_新台幣(匯率)', '歐元_美元(匯率)', '美元_日幣(匯率)', '英鎊_美元(匯率)', '澳幣_美元(匯率)', '美元_港幣(匯率)', '美元_人民幣(匯率)', '美元_南非幣(匯率)', '紐幣_美元(匯率)'], 'DailyMarketReportOpt': ['日期', '契約', '到期月份(週別)', '履約價', '買賣權', '開盤價', '最高價', '最低價', '最後成交價', '成交量', '結算價', '未沖銷契約量', '最後最佳買價', '最後最佳賣價', '歷史最高價', '歷史最低價', '是否因訊息面暫停交易', '交易時段'], 'MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheDate': ['日期', '商品名稱', '身份別', '多方交易口數', '多方交易契約金額(千元)', '空方交易口數', '空方交易契約金額(千元)', '多空交易口數淨額', '多空交易契約金額淨額(千元)', '多方未平倉口數', '多方未平倉契約金額(千元)', '空方未平倉口數', '空方未平倉契約金額(千元)', '多空未平倉口數淨額', '多空未平倉契約金額淨額(千元)']}
 
+API_CSV_SCHEMAS['DailyMarketReportFut'] = ['日期', '契約代號', '到期月份(週別)', '開盤價', '最高價', '最低價', '最後成交價', '漲跌價', '漲跌%', '合計成交量', '結算價', '未沖銷契約數', '最後最佳買價', '最後最佳賣價', '歷史最高價', '歷史最低價', '是否因訊息面暫停交易', '交易時段', '價差對單式委託成交量']
+
 def api_csv_evidence(raw,job):
     parsed=urllib.parse.urlparse(job.get('url',''))
     route=parsed.path.removeprefix('/v1/')
     if parsed.scheme!='https' or parsed.hostname!='openapi.taifex.com.tw' or parsed.path!='/v1/'+route:
         raise ValueError('UNRECOGNIZED_API_CSV_ROUTE')
     rows=list(csv.reader(io.StringIO(native_text(raw))))
-    if route=='DailyMarketReportFut':
-        required={'日期','契約','到期月份(週別)','開盤價','最高價','最低價','最後成交價','成交量','結算價','未沖銷契約量','交易時段'}
-        if not rows or rows[0][:3]!=['日期','契約','到期月份(週別)'] or not required.issubset(rows[0]) or len(set(rows[0]))!=len(rows[0]):
-            raise ValueError('API_CSV_SCHEMA_MISMATCH')
-    elif route not in API_CSV_SCHEMAS:raise ValueError('UNRECOGNIZED_API_CSV_ROUTE')
-    elif not rows or rows[0]!=API_CSV_SCHEMAS[route]:raise ValueError('API_CSV_SCHEMA_MISMATCH')
+    if route not in API_CSV_SCHEMAS:raise ValueError('UNRECOGNIZED_API_CSV_ROUTE')
+    if not rows or rows[0]!=API_CSV_SCHEMAS[route]:raise ValueError('API_CSV_SCHEMA_MISMATCH')
     for row in rows[1:]:
         if not any(v.strip() for v in row):continue
         if len(row)!=len(rows[0]):raise ValueError('API_CSV_ROW_WIDTH')
