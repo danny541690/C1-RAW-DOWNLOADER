@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_ROUTE_HEALTH_AND_DUE_TRANSPORT_RECOVERY_V8_20261025'
+REPAIR_REVISION = 'TAIFEX_ROUTE_HEALTH_AND_DUE_TRANSPORT_RECOVERY_V8_1_20261025'
 # These official aliases have 238 paired saved responses with identical SHA.
 ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('largeTraderFutDown','dlLargeTraderFutDown'),
@@ -137,6 +137,7 @@ OFFICIAL_CSV_MIRRORS = {
     'AcceptableCollateralGovernmentBonds': 'https://data.gov.tw/dataset/11351',
     'IndexFuturesAndOptionsMargining': 'https://data.gov.tw/dataset/11604',
     'DailyOptionsDelta': 'https://data.gov.tw/dataset/11321',
+    'CCP_CMLists': 'https://data.gov.tw/dataset/170552',
     'SSFRefferedOpeningPrice': 'https://data.gov.tw/dataset/136666',
     'SSFRefferedOpeningPriceAh': 'https://data.gov.tw/dataset/157963',
     'productsExemptedAH': 'https://data.gov.tw/dataset/170553',
@@ -144,6 +145,7 @@ OFFICIAL_CSV_MIRRORS = {
 API_CSV_SCHEMAS.update({
     'AcceptableCollateralGovernmentBonds': ['日期','公債代號','公債名稱','交易幣別'],
     'IndexFuturesAndOptionsMargining': ['商品別','結算保證金','維持保證金','原始保證金','日期'],
+    'CCP_CMLists': ['結算會員中文名稱','結算會員類別','日期'],
     'DailyOptionsDelta': ['契約','買賣權','到期月份(週別)','履約價格','Delta值','契約到期日'],
     'SSFRefferedOpeningPrice': ['日期','股票代號','商品名稱','商品契約代號','月份','開盤參考價'],
     'SSFRefferedOpeningPriceAh': ['日期','股票代號','商品名稱','商品代號','月份','開盤參考價'],
@@ -775,7 +777,7 @@ class Worker:
                 self.state['status']='ASC_CHECKPOINTED_WITH_OPEN_ITEMS'
                 return
             # Preserve data through reachable official APIs before slower website probes.
-            priority=['/DailyOptionsDelta','/SSFRefferedOpeningPrice','/SSFRefferedOpeningPriceAh','/productsExemptedAH','/DailyMarketReportFut','/DailyMarketReportOpt','/PutCallRatio']
+            priority=['/CCP_CMLists','/DailyOptionsDelta','/SSFRefferedOpeningPrice','/SSFRefferedOpeningPriceAh','/productsExemptedAH','/DailyMarketReportFut','/DailyMarketReportOpt','/PutCallRatio']
             self.batch([make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in priority if p in self.state['api_paths']],8)
             while self.live():
                 before=(self.requests,self.saved)

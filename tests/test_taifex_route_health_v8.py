@@ -38,3 +38,10 @@ class RouteHealthTests(unittest.TestCase):
         w.request=Mock(side_effect=TimeoutError('network read timeout'));before=time.time();w.process(j)
         e=w.state['receipts'][j['key']];self.assertLess(e['retry_after_epoch']-before,65)
         e['retry_after_epoch']=0;w.process(j);self.assertTrue(w.request.call_args.args[0].endswith('/dlBargainOrderDown'))
+
+    def test_ccp_exact_header_date_and_official_mapping(self):
+        raw='結算會員中文名稱,結算會員類別,日期\n甲銀行,一般,20261023\n'.encode()
+        job=self.job('CCP_CMLists');ev=m.validate(raw,job)
+        self.assertEqual(ev['rows'],1);self.assertEqual(ev['content_period']['max'],'2026-10-23')
+        self.assertIn('data_name=CCP_CMLists',m.official_csv_mirror(job,dt.date(2026,10,25))['url'])
+        with self.assertRaises(ValueError):m.validate(raw.replace(b'20261023',b'20261026'),job)
