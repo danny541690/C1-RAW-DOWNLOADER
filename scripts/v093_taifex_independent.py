@@ -14,7 +14,12 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_NATIVE_FORMAT_REPAIR_V3_1_20261024'
+REPAIR_REVISION = 'TAIFEX_PEER_RECOVERY_AND_BOUNDED_TRANSPORT_V4_20261024'
+# These official aliases have 238 paired saved responses with identical SHA.
+ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
+               ('largeTraderFutDown','dlLargeTraderFutDown'),
+               ('largeTraderOptDown','dlLargeTraderOptDown'))
+MAX_RETRY_CYCLES = 3
 TICK_PAGES = ['dlFutPrevious30DaysSalesData', 'dlOptPrevious30DaysSalesData',
               'dlFutPrevious30DaysSpreadSalesData', 'dlFutPrevious30DaysSpreadOrdersReport', 'dlOptDailyDelta']
 TERMINAL = {'SAVED_BASIC_VERIFIED', 'SKIPPED_SOURCE_EMPTY', 'SKIPPED_NOT_PUBLISHED'}
@@ -214,18 +219,56 @@ def months_desc(latest, first):
 def make_job(key, url, kind, start, end, fields=None):
     return dict(key=key, url=url, kind=kind, start=start.isoformat(), end=end.isoformat(), fields=fields)
 
+def transient_error(error):
+    return bool(re.search(r'HTTP Error (?:502|503|504|520)\b',error) or
+                error.startswith(('TimeoutError:', 'URLError:', 'ConnectionError:')))
+
+def alias_job(job):
+    parts=job.get('key','').split('|')
+    if len(parts)<3 or parts[0]!='HISTORY' or job.get('kind')!='csv':return None
+    for pair in ROUTE_PAIRS:
+        if parts[1] not in pair:continue
+        action=pair[1] if parts[1]==pair[0] else pair[0]
+        if job.get('url')!=SITE+'/cht/3/'+parts[1]:return None
+        parts[1]=action
+        return dict(job,key='|'.join(parts),url=SITE+'/cht/3/'+action)
+    return None
+
+def same_query(a,b):
+    # UI-only blank fields do not change the all-products request.
+    clean=lambda fields:{k:v for k,v in (fields or {}).items() if v!=''}
+    return (a.get('kind'),a.get('start'),a.get('end'),clean(a.get('fields'))) == \
+           (b.get('kind'),b.get('start'),b.get('end'),clean(b.get('fields')))
+
 def migrate_repairs(state):
     if state.get('repair_revision')==REPAIR_REVISION:return
     for entry in state.get('receipts',{}).values():
         if entry.get('status') in TERMINAL:continue
-        # Only reset failures addressed by this parser release, not transport caps.
-        if state.get('repair_revision') in ('TAIFEX_NATIVE_FORMAT_REPAIR_V2_20261024','TAIFEX_NATIVE_FORMAT_REPAIR_V3_20261024') and 'CSV_ROW_DATE_MISSING' not in entry.get('error',''):
-            continue
+        # Parser migrations must not repeatedly reset transport/unknown failures.
+        if 'CSV_ROW_DATE_MISSING' not in entry.get('error',''):continue
         entry['prior_attempts']=entry.get('attempts',0)
         entry['prior_error']=entry.get('error')
         entry.update(attempts=0, retry_after_epoch=0, repair_revision=REPAIR_REVISION)
     state.update(repair_revision=REPAIR_REVISION)
     state.pop('resume_after_epoch',None)
+
+def reconcile_interrupted_intents(state):
+    # Called only after this workflow concurrency group has obtained its writer slot.
+    for entry in state.get('receipts',{}).values():
+        if entry.get('status')!='REQUEST_INTENT':continue
+        entry.update(status='UNRESOLVED',error='TimeoutError:PREVIOUS_REQUEST_INTENT_UNCONFIRMED',
+                     interrupted_request=True)
+
+def prepare_transport_retries(state,now=None):
+    now=time.time() if now is None else now
+    for entry in state.get('receipts',{}).values():
+        if entry.get('status')!='UNRESOLVED' or not transient_error(entry.get('error','')):continue
+        if entry.get('attempts',0)<3 or now<entry.get('retry_after_epoch',0):continue
+        cycle=entry.get('transport_retry_cycle',1)
+        if cycle>=MAX_RETRY_CYCLES:continue
+        entry.setdefault('retry_history',[]).append(dict(cycle=cycle,attempts=entry['attempts'],error=entry.get('error'),at=stamp()))
+        entry['lifetime_attempts']=max(entry.get('lifetime_attempts',0),sum(v['attempts'] for v in entry['retry_history']))
+        entry.update(attempts=0,transport_retry_cycle=cycle+1)
 
 def partition_jobs(jobs,direction):
     boundary='2013-01-01'
@@ -252,18 +295,20 @@ class Worker:
                         self.state['receipts'].setdefault(key,entry)
         self.state['direction']=direction
         self.state['partition_policy']='ASC:2000-01-01..2012-12-31; DESC:2013-01-01..LATEST; NO_OVERLAP'
+        reconcile_interrupted_intents(self.state)
         migrate_repairs(self.state)
         self.until=time.monotonic()+minutes*60; self.today=dt.datetime.now(TZ).date()
         self.started=stamp(); self.saved=0; self.requests=0; self.folders={}
+        self.peer_recovered=0; self.evidence_recovered=0
         self.state['status']='RUNNING_INDEPENDENT_CAPTURE'
-        self.state['missing_data_policy']='DOWNLOAD_AVAILABLE; SKIP_NATIVE_EMPTY_OR_404_410; MAX_3_TRANSIENT_ATTEMPTS; CONTINUE_DESCENDING'
+        self.state['missing_data_policy']='DOWNLOAD_AVAILABLE; EMPTY_NOT_ABSENCE; MAX_3_ATTEMPTS_PER_CYCLE_MAX_3_TRANSIENT_CYCLES; CONTINUE_ASSIGNED_DIRECTION'
         self.state.pop('last_error',None)
         self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     def live(self): return time.monotonic()<self.until-100
     def eligible(self,job):
         old=self.state['receipts'].get(job['key'],{})
         route=job['url'];host=urllib.parse.urlparse(route).hostname
-        return (old.get('status') not in TERMINAL and old.get('status')!='EXCLUDED_FUTURE_PUBLISHED_LINK'
+        return (not old.get('integrity_hold') and old.get('status') not in TERMINAL and old.get('status')!='EXCLUDED_FUTURE_PUBLISHED_LINK'
                 and old.get('attempts',0)<3 and time.time()>=old.get('retry_after_epoch',0)
                 and time.time()>=self.state.get('route_backoff',{}).get(route,0)
                 and time.time()>=self.state.get('source_backoff',{}).get(host,0))
@@ -285,6 +330,13 @@ class Worker:
             if entry.get('status')=='UNRESOLVED':
                 error=entry.get('error','UNKNOWN').split(':',2)[:2];label=':'.join(error)
                 report['unresolved_error_counts'][label]=report['unresolved_error_counts'].get(label,0)+1
+        report['peer_receipts_recovered_this_run']=getattr(self,'peer_recovered',0)
+        report['retained_evidence_recovered_this_run']=getattr(self,'evidence_recovered',0)
+        report['unique_saved_files']=len({v.get('file_id') for v in receipts.values() if v.get('status')=='SAVED_BASIC_VERIFIED' and v.get('file_id')})
+        assigned=[v for v in receipts.values() if v.get('request') and ((v['request'].get('end','')<'2013-01-01')==(self.direction=='ASC'))]
+        report['assigned_saved_units']=sum(v.get('status')=='SAVED_BASIC_VERIFIED' for v in assigned)
+        report['imported_or_outside_partition_saved_units']=report['saved_total']-report['assigned_saved_units']
+        report['retry_cycles_exhausted_units']=sum(v.get('status')=='UNRESOLVED' and v.get('attempts',0)>=3 and v.get('transport_retry_cycle',1)>=MAX_RETRY_CYCLES for v in assigned)
         report['exhausted_units']=sum(v.get('status')=='UNRESOLVED' and v.get('attempts',0)>=3 for v in receipts.values())
         self.d.put(self.ctrl,'STATUS.json',encode(report),'application/json',overwrite=True)
     def request(self,url,fields=None,timeout=45):
@@ -314,6 +366,60 @@ class Worker:
             repair_revision=REPAIR_REVISION)
         entry.pop('error',None);entry.pop('retry_after_epoch',None)
         self.saved+=1
+    def read_receipt_raw(self,entry):
+        return self.d.call(lambda:self.d.api.files().get_media(fileId=entry['file_id']))
+    def recover_existing(self):
+        for key,old in list(self.state['receipts'].items()):
+            if not self.live():return
+            if old.get('status')!='UNRESOLVED':continue
+            job=old.get('request',{})
+            if not job:continue
+            # ASC imports DESC successes; repair only the lane's assigned history.
+            if job.get('kind')!='snapshot' and ((job['end']<'2013-01-01')!=(self.direction=='ASC')):continue
+            if job.get('kind')=='snapshot' and self.direction=='ASC':continue
+            if old.get('offline_recovery_revision')==REPAIR_REVISION:continue
+            peer_job=alias_job(job)
+            peer=self.state['receipts'].get(peer_job['key'],{}) if peer_job else {}
+            has_peer=(peer.get('status')=='SAVED_BASIC_VERIFIED' and peer.get('remote_readback_hash_verified')
+                      and peer.get('file_id') and same_query(job,peer.get('request',{})))
+            # The unchanged Swagger validator cannot turn known HTML into data.
+            if not has_peer and (not old.get('response_sha256') or 'API_ROUTE_RETURNS_SWAGGER_HTML' in old.get('error','')):continue
+            entry=dict(old);entry['offline_recovery_revision']=REPAIR_REVISION
+            try:
+                if has_peer:
+                    raw=self.read_receipt_raw(peer)
+                    if digest(raw)!=peer['sha256']:raise ValueError('PEER_REMOTE_READBACK_SHA_MISMATCH')
+                    ev=validate(raw,job)
+                    entry.update(ev,status='SAVED_BASIC_VERIFIED',file_id=peer['file_id'],sha256=digest(raw),bytes=len(raw),
+                        remote_readback_hash_verified=True,captured_utc=peer.get('captured_utc'),checked_utc=stamp(),
+                        numeric_verified=False,pit_verified=False,repair_revision=REPAIR_REVISION,
+                        recovered_from_verified_peer_receipt=peer_job['key'],
+                        source_request=peer.get('source_request',peer['request']),prior_error=old.get('error'))
+                    entry.pop('error',None);entry.pop('retry_after_epoch',None)
+                    self.peer_recovered+=1
+                elif old.get('response_sha256'):
+                    raw=self.d.read(self.ctrl,'UNRESOLVED_'+old['response_sha256']+'.raw')
+                    if raw is None:
+                        entry.pop('offline_recovery_revision',None)
+                        continue
+                    if digest(raw)!=old['response_sha256']:raise ValueError('RETAINED_EVIDENCE_SHA_MISMATCH')
+                    try:ev=validate(raw,job)
+                    except OfficialEmpty as exc:
+                        entry.update(status='SKIPPED_SOURCE_EMPTY',historical_absence_certified=False,
+                            error='OfficialEmpty:'+str(exc),prior_error=old.get('error'))
+                    except (ValueError,zipfile.BadZipFile) as exc:
+                        entry.update(error=type(exc).__name__+':'+str(exc)[:220],prior_error=old.get('error'))
+                        if 'API_ROUTE_RETURNS_SWAGGER_HTML' in str(exc):
+                            self.state.setdefault('route_backoff',{})[job['url']]=max(time.time()+86400,self.state.get('route_backoff',{}).get(job['url'],0))
+                    else:
+                        self.persist_raw(job,raw,entry,ev);entry['recovered_from_saved_evidence']=True
+                        self.evidence_recovered+=1
+            except Exception as exc:
+                entry['offline_recovery_error']=type(exc).__name__+':'+str(exc)[:220]
+                # Integrity failures remain unresolved and must never trigger a new source overwrite.
+                if 'SHA_MISMATCH' in str(exc):entry['integrity_hold']=True
+                else:entry.pop('offline_recovery_revision',None)
+            self.state['receipts'][key]=entry;self.save()
     def process(self,job):
         key=job['key']; old=self.state['receipts'].get(key,{})
         if old.get('status') in TERMINAL: return True
@@ -321,7 +427,9 @@ class Worker:
         if not self.eligible(job):return True
         if not self.live(): return False
         self.state['active_unit']={k:v for k,v in job.items() if k!='fields'}
-        entry=dict(old,status='REQUEST_INTENT', attempts=old.get('attempts',0)+1, request=job, updated_utc=stamp())
+        entry=dict(old,status='REQUEST_INTENT', attempts=old.get('attempts',0)+1,
+            lifetime_attempts=max(old.get('lifetime_attempts',0),old.get('attempts',0))+1,
+            request=job, updated_utc=stamp())
         self.state['receipts'][key]=entry; self.save()
         raw=None
         try:
@@ -339,7 +447,11 @@ class Worker:
                             raw=cached;raise
                     except zipfile.BadZipFile:pass
                     else:raw=cached;entry['recovered_from_saved_evidence']=True
-            if raw is None:raw=self.request(job['url'], job.get('fields'));ev=validate(raw,job)
+            if raw is None:
+                actual=alias_job(job) if transient_error(old.get('error','')) and entry['lifetime_attempts']%2==0 else None
+                actual=actual or job
+                entry['source_request']=actual
+                raw=self.request(actual['url'], actual.get('fields'));ev=validate(raw,job)
             self.persist_raw(job,raw,entry,ev)
             if job['url'].endswith('/DailyMarketReportFut') and ev.get('content_period'):
                 self.state['latest_trading_date']=ev['content_period']['max']
@@ -353,7 +465,7 @@ class Worker:
             elif isinstance(exc,urllib.error.HTTPError) and exc.code in (404,410):
                 entry.update(status='SKIPPED_NOT_PUBLISHED', http_status=exc.code, historical_absence_certified=False, skip_reason='OFFICIAL_DOWNLOAD_URL_NOT_AVAILABLE_CONTINUE_OLDER_UNITS')
             if 'API_ROUTE_RETURNS_SWAGGER_HTML' in str(exc):
-                self.state.setdefault('route_backoff',{})[job['url']]=time.time()+21600
+                self.state.setdefault('route_backoff',{})[job['url']]=time.time()+86400
             if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429,502,503,504,520):
                 self.state.setdefault('source_backoff',{})[urllib.parse.urlparse(job['url']).hostname]=time.time()+(900 if exc.code in (403,429) else 60)
             print(json.dumps({'key':key,'status':entry['status'],'error':entry['error']}),flush=True)
@@ -464,6 +576,9 @@ class Worker:
         if not self.live():return
         try:
             self.discover()
+            self.recover_existing()
+            prepare_transport_retries(self.state)
+            self.save()
             if self.direction=='ASC':
                 while self.live():
                     before=(self.requests,self.saved)
@@ -495,7 +610,28 @@ class Worker:
             self.state.update(status='BOOTSTRAP_OR_DISCOVERY_ERROR',last_error=type(exc).__name__+':'+str(exc)[:300])
             if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):self.state['resume_after_epoch']=time.time()+900
             raise
-        finally:self.save()
+        finally:
+            self.save()
+            self.publish_open_items()
+    def publish_open_items(self):
+        items=[]
+        for key,entry in self.state['receipts'].items():
+            if entry.get('status')=='SAVED_BASIC_VERIFIED':continue
+            error=entry.get('error','')
+            category=('INTEGRITY_HOLD' if entry.get('integrity_hold') else
+                      'FUTURE_PUBLISHED_LINK_NOT_REQUESTED' if entry.get('status')=='EXCLUDED_FUTURE_PUBLISHED_LINK' else
+                      'SOURCE_EMPTY_UNCONFIRMED' if entry.get('status')=='SKIPPED_SOURCE_EMPTY' else
+                      'OFFICIAL_URL_UNAVAILABLE_NOT_ABSENCE' if entry.get('status')=='SKIPPED_NOT_PUBLISHED' else
+                      'API_ROUTE_HTML' if 'SWAGGER_HTML' in error else
+                      'TRANSIENT_TRANSPORT' if transient_error(error) else 'PARSER_OR_RESPONSE_REVIEW')
+            items.append(dict(unit_id=key,category=category,status=entry.get('status'),error=error,
+                attempts=entry.get('attempts',0),lifetime_attempts=entry.get('lifetime_attempts',entry.get('attempts',0)),
+                retry_cycle=entry.get('transport_retry_cycle',1),retry_after_epoch=entry.get('retry_after_epoch'),
+                request=entry.get('request'),sha256=entry.get('response_sha256'),
+                historical_absence_certified=False))
+        self.d.put(self.ctrl,'OPEN_ITEMS.json',encode(dict(updated_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'),
+            repair_revision=REPAIR_REVISION,items=items,coverage_certified=False,numeric_verified=False,pit_verified=False)),
+            'application/json',overwrite=True)
     def batch(self,jobs,limit):
         count=0
         for j in jobs:
