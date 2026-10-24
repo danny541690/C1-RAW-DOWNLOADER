@@ -14,7 +14,7 @@ SPEC = 'https://openapi.taifex.com.tw/swagger.json'
 FLOOR = dt.date(2000, 1, 1)
 TZ = dt.timezone(dt.timedelta(hours=8))
 MAX_BYTES = 300_000_000
-REPAIR_REVISION = 'TAIFEX_NATIVE_FORMAT_REPAIR_V3_20261024'
+REPAIR_REVISION = 'TAIFEX_NATIVE_FORMAT_REPAIR_V3_1_20261024'
 TICK_PAGES = ['dlFutPrevious30DaysSalesData', 'dlOptPrevious30DaysSalesData',
               'dlFutPrevious30DaysSpreadSalesData', 'dlFutPrevious30DaysSpreadOrdersReport', 'dlOptDailyDelta']
 TERMINAL = {'SAVED_BASIC_VERIFIED', 'SKIPPED_SOURCE_EMPTY', 'SKIPPED_NOT_PUBLISHED'}
@@ -99,12 +99,12 @@ def csv_evidence(raw, start, end):
     indexes = [i for i, k in enumerate(header) if any(x in k for x in ('日期', '年月日', 'Date', 'date'))]
     if not indexes: raise ValueError('CSV_DATE_HEADER_MISSING')
     count = 0; lo = None; hi = None; products = set(); sessions = set(); footnotes=[]
-    large_trader=header[:5]==['日期','商品(契約)','商品名稱(契約名稱)','到期月份(週別)','交易人類別']
+    large_trader=(header[:5]==['日期','商品(契約)','商品名稱(契約名稱)','到期月份(週別)','交易人類別'] or header[:6]==['日期','商品(契約)','商品名稱(契約名稱)','買賣權','到期月份(週別)','交易人類別'])
     contract = next((i for i, x in enumerate(header) if x.strip() in ('契約', '商品代號', '商品')), None)
     session = next((i for i, x in enumerate(header) if x.strip() == '交易時段'), None)
     for row in reader:
         if not any(x.strip() for x in row): continue
-        if large_trader and len(row)==1 and row[0].startswith(('月份類別格式:', '交易人類別格式：', '-表當日收盤後')):
+        if large_trader and len(row)==1 and row[0].startswith(('月份類別格式:', '交易人類別格式：', '-表當日收盤後', '備註一：666666為所有週到期契約合計', '備註二：交易人類別格式：', '備註三："-"表當日收盤後')):
             footnotes.append(row[0]);continue
         if footnotes:raise ValueError('CSV_DATA_AFTER_FOOTNOTE')
         # Expiry dates may lie outside the request. Use the first date column
@@ -219,7 +219,7 @@ def migrate_repairs(state):
     for entry in state.get('receipts',{}).values():
         if entry.get('status') in TERMINAL:continue
         # Only reset failures addressed by this parser release, not transport caps.
-        if state.get('repair_revision')=='TAIFEX_NATIVE_FORMAT_REPAIR_V2_20261024' and 'CSV_ROW_DATE_MISSING' not in entry.get('error',''):
+        if state.get('repair_revision') in ('TAIFEX_NATIVE_FORMAT_REPAIR_V2_20261024','TAIFEX_NATIVE_FORMAT_REPAIR_V3_20261024') and 'CSV_ROW_DATE_MISSING' not in entry.get('error',''):
             continue
         entry['prior_attempts']=entry.get('attempts',0)
         entry['prior_error']=entry.get('error')

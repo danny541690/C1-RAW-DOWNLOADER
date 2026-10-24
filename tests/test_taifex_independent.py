@@ -162,3 +162,7 @@ class NativeLayoutRepairTests(unittest.TestCase):
         self.assertEqual(state['receipts']['fixed']['attempts'],0)
         self.assertEqual(state['receipts']['transport']['attempts'],3)
         self.assertEqual(state['receipts']['saved'],dict(status='SAVED_BASIC_VERIFIED',sha256='preserved'))
+
+    def test_options_large_trader_notes_use_distinct_header(self):
+        raw='日期,商品(契約),商品名稱(契約名稱),買賣權,到期月份(週別),交易人類別\n2022/08/01,TXO,台指選擇權,買權,202208,0\n備註一：666666為所有週到期契約合計；yyyymm為近月契約。\n備註二：交易人類別格式：0 為部位排序前五大交易人\n備註三："-"表當日收盤後無週到期選擇權契約。\n'.encode()
+        self.assertEqual(m.validate(raw,self.job())['rows'],1)
