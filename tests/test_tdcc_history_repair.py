@@ -1,5 +1,5 @@
 import unittest
-from scripts.v093_tdcc_independent import migrate_history,history_summary,REPAIR_REVISION,validate_history
+from scripts.v093_tdcc_independent import migrate_history,history_summary,REPAIR_REVISION,validate_history,restore_history
 class TDCCHistoryRepairTests(unittest.TestCase):
  def test_restart_preserves_receipts_and_backup(self):
   s={'completed_dates':['20261016'],'receipts':{'ok':{'status':'SAVED_BASIC_VERIFIED'}},'history_receipts':{'x':{'status':'SAVED_BASIC_VERIFIED'}}}
@@ -14,3 +14,10 @@ class TDCCHistoryRepairTests(unittest.TestCase):
   self.assertTrue(r['candidate_set_complete']);self.assertFalse(r['historical_universe_complete'])
  def test_no_data_html_is_rejected(self):
   with self.assertRaises(ValueError):validate_history(b'<html>No data</html>','20261016','2330')
+ def test_restart_restores_successful_per_date_receipts(self):
+  s={'history_receipt_date':'20261016'}
+  saved='{"20261016|2330":{"status":"SAVED_BASIC_VERIFIED"}}'
+  calls=[]
+  restore_history(s,lambda name:calls.append(name) or saved)
+  self.assertEqual(calls,['HISTORY_20261016.json'])
+  self.assertEqual(s['history_receipts']['20261016|2330']['status'],'SAVED_BASIC_VERIFIED')
