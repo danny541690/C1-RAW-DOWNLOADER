@@ -29,7 +29,10 @@ MAX_POINT_ATTEMPTS=3
 MAX_POINT_SECONDS=90
 PARAMETER_INCIDENT_MONTH='2026-06'
 PRIORITY_RETRY_SECONDS=600
-EXECUTION_REVISION='OFFLINE_RECOVERY_AND_SHARED_SOURCE_COOLDOWN_V6'
+EXECUTION_REVISION='DURABLE_RESULTS_COALESCED_INDEX_AND_TARGETED_RETRY_V7'
+AUX_CHECKPOINT_SECONDS=30
+CONTROL_GAP_PLAN='RAW_CONTROL_GAPS_20261024_V1'
+CONTROL_GAP_MONTHS=('2014-05','2014-06','2014-07','2014-08')
 SOURCE_LIMIT_COOLDOWN_SECONDS=3600
 TRANSIENT_COOLDOWN_SECONDS=120
 SOURCE_EMPTY_COOLDOWN_SECONDS=86400
@@ -146,13 +149,34 @@ class RepairWorker(OfficialWorker):
             flags[key]=list({json.dumps(item,sort_keys=True):item for item in items}.values())
         return flags
 
-    def save_journal(self):
-        self.journal['updated_utc']=native.stamp()
-        self.journal['problem_summary']=problem_summary(self.journal)
-        self.putj(self.monthctrl,'OFFICIAL_REPAIR_STATE.json',self.journal)
+    def flush_auxiliary(self,force=False):
+        """Keep results durable per unit; coalesce only derived ledgers/indexes."""
+        now=time.monotonic()
+        month=self.journal.get('month')
+        due=(force or month!=getattr(self,'_aux_month',None)
+             or now-getattr(self,'_aux_saved_at',float('-inf'))>=AUX_CHECKPOINT_SECONDS)
+        if not due:return
+        if getattr(self,'_local_state_dirty',False):
+            self.save_state()
+            self._local_state_dirty=False
         if hasattr(self,'pending_index'):
-            self.pending_index[self.journal['month']]=pending_month(self.journal)
             self.putj(self.stagectrl,'RETRY_MONTHS.json',self.pending_index)
+        self._aux_month=month;self._aux_saved_at=now
+
+    def save_journal(self):
+        self.journal['problem_summary']=problem_summary(self.journal)
+        snapshot={k:v for k,v in self.journal.items() if k!='updated_utc'}
+        fingerprint=(self.monthctrl,native.sha(json.dumps(snapshot,sort_keys=True).encode()))
+        if fingerprint!=getattr(self,'_journal_saved',None):
+            self.journal['updated_utc']=native.stamp()
+            # Every changed send intent/result is readback-verified immediately.
+            self.putj(self.monthctrl,'OFFICIAL_REPAIR_STATE.json',self.journal)
+            self._journal_saved=fingerprint
+        if hasattr(self,'pending_index'):
+            month=self.journal['month'];prior=self.pending_index.get(month,{})
+            self.pending_index[month]=pending_month(self.journal)
+            if prior.get('inventory_required'):self.pending_index[month].update(inventory_required=True,next_retry_at=0)
+        self.flush_auxiliary()
         if time.monotonic()-getattr(self,'_last_progress',0)>=60:
             report=dict(self.cursor,run_id=self.owner,updated_utc=native.stamp(),
                 current_work_month=self.journal.get('month'),batch_complete=False,
@@ -243,7 +267,7 @@ class RepairWorker(OfficialWorker):
                             checked_utc=native.stamp(),numeric_verified=False,pit_verified=False)
                         self.state[bucket][key]=dict(old,status='SAVED_BASIC_VERIFIED',quality_revision=QUALITY_REVISION,
                             validation_level='ROW_CONTENT_CHECKS_PASSED_SOURCE_RAW_PRESERVED',numeric_verified=False,pit_verified=False)
-                        self.save_state()
+                        self._local_state_dirty=True
                         self.note_activity('unchanged_raw_checked_this_run',key,old['sha256'])
                         return
                 except Exception as exc:row['local_error']=type(exc).__name__+':'+str(exc)[:300]
@@ -358,6 +382,13 @@ class RepairWorker(OfficialWorker):
         self.putj(self.monthctrl,'OFFICIAL_UNRESOLVED_ITEMS.json',report)
 
     def capture_month(self,month,quota=None):
+        try:return self.capture_month_units(month,quota)
+        finally:
+            if getattr(self,'journal',{}).get('month')==month:
+                self.flush_auxiliary(force=True)
+                self.publish_unresolved()
+
+    def capture_month_units(self,month,quota=None):
         folder=self.d.find(self.roots['RAW'],month) if self.roots['RAW'] else None
         if not folder:
             if not self.indexed_month(month) and not getattr(self,'lane',None):return True
@@ -365,6 +396,9 @@ class RepairWorker(OfficialWorker):
         # Shared month ownership was acquired before loading mutable RAW receipts.
         self.restore(month,folder['id'])
         self.journal=engine.getj(self.d,self.monthctrl,'OFFICIAL_REPAIR_STATE.json') or dict(revision=REVISION,month=month,units={})
+        if getattr(self,'_control_gap_inventory',False):
+            if not self.inventory_existing(SOURCES):
+                self.month_incomplete=True;return False
         flags=self.flags_for(month)
         planned=native.Audit.jobs(object.__new__(native.Audit),month,set())
         requests_by_key={engine.key(job):job for job in planned}
@@ -392,11 +426,13 @@ class RepairWorker(OfficialWorker):
             not (item[0].get('category') in engine.FIN_REPORTS and item[0].get('evidence_file')),
             not bool(item[0].get('evidence_file'))))
         for job,bucket,marked in ordered:
+            if getattr(self,'_due_only',False):
+                row=self.journal['units'].get(engine.key(job),{})
+                if not row or row.get('terminal') or row.get('complete') or row.get('next_retry_at',0)>time.time():continue
             if time.monotonic()+25>=self.until:
-                self.save_journal();self.publish_unresolved();self.month_incomplete=True;return False
+                self.save_journal();self.month_incomplete=True;return False
             self.repair_one(job,bucket,marked)
         self.save_journal()
-        self.publish_unresolved()
         self.cursor.update(last_month=month,flagged_candidates=len(candidates))
         print('OFFICIAL_REPAIR_MONTH '+json.dumps(dict(month=month,candidates=len(candidates),
             checked=self.checked,repaired=self.repaired,source_requests=dict(self.source_requests))),flush=True)
@@ -427,21 +463,48 @@ class RepairWorker(OfficialWorker):
             month=PARAMETER_INCIDENT_MONTH,acquired=bool(revisited),
             month_incomplete=self.month_incomplete,budget_seconds=budget)),flush=True)
 
+    def seed_control_gaps(self):
+        # Metadata proved four absent controls, not absent RAW. Route these
+        # months through normal restore/import before any missing-unit request.
+        if getattr(self,'lane',None)!='RECENT_ASC':return
+        if self.cursor.get('control_gap_plan')==CONTROL_GAP_PLAN:return
+        for month in CONTROL_GAP_MONTHS:
+            entry=self.pending_index.setdefault(month,{})
+            entry.update(inventory_required=True,next_retry_at=0,
+                         reason='MISSING_CONTROL_DIRECTORY_RAW_EXISTENCE_NOT_YET_PROVEN')
+        self.putj(self.stagectrl,'RETRY_MONTHS.json',self.pending_index)
+        self.cursor['control_gap_plan']=CONTROL_GAP_PLAN
+        self.save_cursor()
+
     def run_due_work(self):
-        # Due work runs even after a frontier is paused at its meeting point.
-        original=self.until;budget=min(480,max(0,(original-time.monotonic())/4))
+        # A bounded fair queue protects forward progress from stale old retries.
+        original=self.until;budget=min(180,max(0,(original-time.monotonic())/6))
         if budget<30:return
+        months=due_months(getattr(self,'pending_index',{}))
+        last=self.cursor.get('last_due_month')
+        if last in months:
+            i=months.index(last)+1;months=months[i:]+months[:i]
+        months.sort(key=lambda m:not self.pending_index[m].get('inventory_required',False))
         self.until=min(original,time.monotonic()+budget)
         try:
-            for month in due_months(getattr(self,'pending_index',{})):
+            for month in months:
                 if time.monotonic()+30>=self.until:break
-                self.month_incomplete=False
-                capture_history_month(self,month)
-        finally:self.until=original
+                self.cursor['last_due_month']=month;self.save_cursor()
+                full_inventory=self.pending_index[month].get('inventory_required',False)
+                self._due_only=not full_inventory;self._control_gap_inventory=full_inventory;self.month_incomplete=False
+                acquired=capture_history_month(self,month)
+                if acquired and not self.month_incomplete:
+                    if full_inventory and getattr(self,'journal',{}).get('month')==month:
+                        self.pending_index[month]=pending_month(self.journal)
+                    else:self.pending_index.get(month,{}).pop('inventory_required',None)
+                    self.putj(self.stagectrl,'RETRY_MONTHS.json',self.pending_index)
+        finally:self.until=original;self._due_only=False;self._control_gap_inventory=False
 
     def run(self):
         try:
-            if getattr(self,'lane',None):self.run_due_work()
+            if getattr(self,'lane',None):
+                self.seed_control_gaps()
+                self.run_due_work()
             self.revisit_parameter_incident()
             while self.cursor['month_index']<len(self.months) and time.monotonic()<self.until:
                 month=self.months[self.cursor['month_index']]
