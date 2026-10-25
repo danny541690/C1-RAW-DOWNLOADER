@@ -534,6 +534,43 @@ class Worker:
         self.saved+=1
     def read_receipt_raw(self,entry):
         return self.d.call(lambda:self.d.api.files().get_media(fileId=entry['file_id']))
+    def audit_saved(self, limit=24):
+        """Resume immutable remote RAW checks; never treat a read outage as corruption."""
+        checked=0
+        items=sorted(self.state['receipts'].items(),key=lambda kv:(kv[1].get('request',{}).get('start',''),kv[0]),reverse=self.direction=='DESC')
+        for key,entry in items:
+            job=entry.get('request',{})
+            if not self.live() or checked>=limit:break
+            if entry.get('status')!='SAVED_BASIC_VERIFIED' or not job or entry.get('integrity_hold'):continue
+            if job.get('kind')=='snapshot':
+                if self.direction=='ASC':continue
+            elif (job.get('end','')<'2013-01-01')!=(self.direction=='ASC'):continue
+            signature=entry.get('sha256')
+            prior=entry.get('raw_audit',{})
+            if prior.get('revision')=='REMOTE_RAW_AUDIT_V9' and prior.get('sha256')==signature and prior.get('status')=='PASS_BASIC':continue
+            if time.time()<prior.get('retry_after_epoch',0):continue
+            checked+=1
+            audit=dict(revision='REMOTE_RAW_AUDIT_V9',sha256=signature,checked_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
+            try:
+                raw=self.read_receipt_raw(entry)
+                if not signature or digest(raw)!=signature:raise ValueError('REMOTE_RAW_SHA_MISMATCH')
+                ev=validate(raw,job)
+                audit.update(status='PASS_BASIC',evidence=ev,numeric_verified=False,pit_verified=False)
+            except Exception as exc:
+                audit.update(status='READ_OR_CONTENT_CHECK_FAILED',error=type(exc).__name__+':'+str(exc)[:220],retry_after_epoch=time.time()+900)
+                # A missing file may be recaptured by its original historical request.
+                missing=(getattr(exc,'code',None) or getattr(getattr(exc,'resp',None),'status',None)) in (404,410)
+                if missing:
+                    entry['previous_saved_receipt']={k:v for k,v in entry.items() if k not in ('previous_saved_receipt','raw_audit')}
+                    entry.update(status='UNRESOLVED',attempts=0,retry_after_epoch=0,error='AUDIT_REMOTE_FILE_MISSING')
+                elif isinstance(exc,(ValueError,zipfile.BadZipFile,OfficialEmpty)):
+                    entry['integrity_hold']=True
+                    audit['status']='CONTENT_OR_SHA_HOLD_REQUIRES_REVIEW'
+            entry['raw_audit']=audit
+            self.state['raw_audit_last_unit']=key
+            self.save()
+        self.state['raw_audit_summary']={name:sum(e.get('raw_audit',{}).get('status')==name for e in self.state['receipts'].values()) for name in ('PASS_BASIC','READ_OR_CONTENT_CHECK_FAILED','CONTENT_OR_SHA_HOLD_REQUIRES_REVIEW')}
+
     def recover_existing(self):
         for key,old in list(self.state['receipts'].items()):
             if not self.live():return
@@ -771,6 +808,7 @@ class Worker:
         if not self.live():return
         try:
             self.discover()
+            self.audit_saved()
             self.recover_existing()
             prepare_transport_retries(self.state)
             self.save()
@@ -818,8 +856,8 @@ class Worker:
         items=[]
         health=snapshot_route_health(self.state['receipts'])
         for key,entry in self.state['receipts'].items():
-            if entry.get('status')=='SAVED_BASIC_VERIFIED':continue
-            error=entry.get('error','')
+            if entry.get('status')=='SAVED_BASIC_VERIFIED' and not entry.get('integrity_hold') and entry.get('raw_audit',{}).get('status')!='READ_OR_CONTENT_CHECK_FAILED':continue
+            error=entry.get('raw_audit',{}).get('error') or entry.get('error','')
             category=('MISSED_SNAPSHOT_CAPTURE_NOT_RECREATABLE' if entry.get('interrupted_request') and entry.get('request',{}).get('kind')=='snapshot' and entry.get('request',{}).get('end','')<self.today.isoformat() else
                       'INTEGRITY_HOLD' if entry.get('integrity_hold') else
                       'FUTURE_PUBLISHED_LINK_NOT_REQUESTED' if entry.get('status')=='EXCLUDED_FUTURE_PUBLISHED_LINK' else

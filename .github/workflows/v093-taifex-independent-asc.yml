@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   download:
-    name: Independent TAIFEX oldest to midpoint
+    name: TAIFEX audit 6-1: latest to 2013
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -34,9 +34,9 @@ jobs:
       - run: pip install -r requirements-qa.lock
       - name: Validate TAIFEX native format repairs, preservation and retry safety
         run: python -m unittest discover -s tests -q
-      - name: Download TAIFEX only; resume verified immutable receipts
+      - name: Audit saved TAIFEX RAW and repair missing files
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_taifex_independent --minutes 45 --direction ASC
+        run: python -m scripts.v093_taifex_independent --minutes 45 --direction DESC
