@@ -66,6 +66,9 @@ class FlowWorker(repair.RepairWorker):
     def seed_control_gaps(self):
         return  # This sandbox has six synthetic months only.
 
+    def financial_jobs(self):
+        return []  # This synthetic price-only fixture has no financial payloads.
+
     def revisit_parameter_incident(self):
         # This isolated fixture contains six synthetic months, no production June.
         return

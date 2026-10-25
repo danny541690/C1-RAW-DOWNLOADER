@@ -157,10 +157,41 @@ class RepairTests(unittest.TestCase):
         self.assertEqual(w.repaired,0);self.assertEqual(w.state['units']['key'],old)
         self.assertFalse(w.journal['units']['key']['complete'])
     def test_previous_content_pass_preserved_across_upgrade(self):
-        w=self.worker();w.state['units']['key']={'sha256':'same'}
+        w=self.worker();w.state['units']['key']={'sha256':'same','evidence_file':'archive/member','status':'SAVED_BASIC_VERIFIED'}
         w.journal['units']['key']={'status':'CONTENT_CHECK_PASS','raw_sha256':'same','quality_revision':'V2'}
         w.repair_one(self.job(),'units',[])
         ns['native'].request.assert_not_called()
+    def test_missing_receipt_reopens_previous_pass_and_really_downloads(self):
+        w=self.worker()
+        w.journal['units']['key']=dict(status='CONTENT_CHECK_PASS',raw_sha256=None,
+            quality_revision=ns['QUALITY_REVISION'],input_signature='a'*64,terminal=True,complete=True)
+        ns['validate_content']=Mock(return_value={'rows':1,'codes':['2330'],'row_audit':{'unverified':[]}})
+        def save(worker,job,raw,receipt,bucket):worker.state[bucket]['key']=dict(receipt,evidence_file='new/a')
+        ns['base'].Worker.record_payload=save;ns['cached_payload']=Mock(return_value=(b'raw','archive'))
+        w.repair_one(self.job(),'units',[])
+        self.assertEqual(w.repaired,1)
+        self.assertTrue(w.journal['units']['key']['readback_verified'])
+        ns['native'].request.assert_called_once()
+    def test_fresh_financial_raw_is_reparsed_in_same_call(self):
+        w=self.worker();job=dict(self.job(),source='MOPS',category='IncomeStatement',url='https://mopsfin.twse.com.tw/compare/report')
+        ns['validate_content']=Mock(return_value={'rows':1,'codes':['2330'],'row_audit':{'unverified':['PIT']}})
+        def save(worker,job,raw,receipt,bucket):worker.state[bucket]['key']=dict(receipt,evidence_file='new/a')
+        ns['base'].Worker.record_payload=save;ns['cached_payload']=Mock(return_value=(b'raw','archive'))
+        receipt={'remote_readback_hash_verified':True,'output_sha256':'derived'}
+        with patch.dict(ns,reparse_financial=Mock(return_value=receipt)):
+            w.repair_one(job,'units',[])
+        self.assertEqual(w.repaired,1);self.assertEqual(w.journal['units']['key']['reparse_receipt'],receipt)
+        self.assertFalse(w.journal['units']['key']['complete'])
+    def test_new_financial_parser_failure_keeps_verified_raw_without_retry(self):
+        w=self.worker();job=dict(self.job(),source='MOPS',category='IncomeStatement',url='https://mopsfin.twse.com.tw/compare/report')
+        ns['validate_content']=Mock(return_value={'rows':1,'codes':['2330'],'row_audit':{'unverified':['PIT']}})
+        def save(worker,job,raw,receipt,bucket):worker.state[bucket]['key']=dict(receipt,evidence_file='new/a')
+        ns['base'].Worker.record_payload=save;ns['cached_payload']=Mock(return_value=(b'raw','archive'))
+        with patch.dict(ns,reparse_financial=Mock(side_effect=ValueError('PARSER_FAILURE'))):
+            w.repair_one(job,'units',[])
+        self.assertEqual(w.repaired,1);self.assertEqual(w.state['units']['key']['evidence_file'],'new/a')
+        self.assertEqual(w.journal['units']['key']['status'],'LOCAL_REPARSE_FAILED')
+        ns['native'].request.assert_called_once()
     def test_circuit_wait_does_not_exhaust_download_cycles(self):
         w=self.worker();w.circuit['TWSE']=2
         w.journal['units']['key']={'quality_revision':ns['QUALITY_REVISION'],'input_signature':'a'*64,
