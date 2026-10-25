@@ -1,0 +1,54 @@
+name: Pause all JARVIS workflows pending Google authorization
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/pause-all-google-auth-20261026.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  pause:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Disable workflows and cancel outstanding runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os,json,time,urllib.request,urllib.error
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          def api(path,method='GET'):
+              req=urllib.request.Request(base+path,method=method,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(req,timeout=30) as r:
+                  b=r.read();return json.loads(b) if b else {}
+          workflows=[]
+          for page in range(1,20):
+              rows=api('/actions/workflows?per_page=100&page='+str(page))['workflows']
+              workflows.extend(rows)
+              if len(rows)<100:break
+          for w in workflows:
+              if w['state']=='active':
+                  api('/actions/workflows/'+str(w['id'])+'/disable','PUT')
+                  print('DISABLED',w['id'],w['name'],flush=True)
+          self_id=int(os.environ['GITHUB_RUN_ID'])
+          active=[]
+          for status in ['queued','in_progress','waiting','pending','requested']:
+              rows=api('/actions/runs?per_page=100&status='+status)['workflow_runs']
+              active.extend(r['id'] for r in rows if r['id']!=self_id and r['status']!='completed')
+          active=sorted(set(active))
+          for rid in active:
+              try:api('/actions/runs/'+str(rid)+'/cancel','POST')
+              except urllib.error.HTTPError as e:
+                  if e.code not in (409,422):raise
+          deadline=time.monotonic()+180
+          while active:
+              active=[rid for rid in active if api('/actions/runs/'+str(rid))['status']!='completed']
+              if not active:break
+              if time.monotonic()>deadline:raise RuntimeError('ACTIVE_RUNS_REMAIN:'+str(active))
+              time.sleep(5)
+          remaining=api('/actions/workflows?per_page=100')['workflows']
+          assert not [w for w in remaining if w['state']=='active']
+          print('ALL_WORKFLOWS_DISABLED; NO_OTHER_ACTIVE_RUNS; RAW_AND_CHECKPOINTS_PRESERVED',flush=True)
+                    PY
