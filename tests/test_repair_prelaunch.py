@@ -34,7 +34,7 @@ class MeetingTests(unittest.TestCase):
         w.until=time.monotonic()+10;w.api='api';w.token='token';w.owner='run/RAW'
         w.lock='lock';w.fence=1;w.stagectrl='control'
         w.checked=w.repaired=w.downloaded=0;w.source_requests=collections.Counter()
-        w.save_cursor=Mock();w.putj=Mock()
+        w.save_cursor=Mock();w.putj=Mock();w.pending_index={}
         return w
 
     def test_worker_resumes_same_month_after_time_budget(self):

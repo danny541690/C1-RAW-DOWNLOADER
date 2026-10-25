@@ -29,13 +29,44 @@ MAX_POINT_ATTEMPTS=3
 MAX_POINT_SECONDS=90
 PARAMETER_INCIDENT_MONTH='2026-06'
 PRIORITY_RETRY_SECONDS=600
-EXECUTION_REVISION='DURABLE_RESULTS_COALESCED_INDEX_AND_TARGETED_RETRY_V7'
+EXECUTION_REVISION='MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8'
+PLAN_REVISION='OFFICIAL_MISSING_UNIT_RECONCILIATION_V1'
 AUX_CHECKPOINT_SECONDS=30
 CONTROL_GAP_PLAN='RAW_CONTROL_GAPS_20261024_V1'
 CONTROL_GAP_MONTHS=('2014-05','2014-06','2014-07','2014-08')
 SOURCE_LIMIT_COOLDOWN_SECONDS=3600
 TRANSIENT_COOLDOWN_SECONDS=120
 SOURCE_EMPTY_COOLDOWN_SECONDS=86400
+
+def missing_financial_jobs(state,planned):
+    """Fill never-planned company/report pairs without resetting existing retries.
+
+    Existing requested pairs retain their own identity and retry history. A saved
+    file covers only companies actually found; partial missing companies are
+    still an explicit quality finding on that original unit, not a fresh cap.
+    """
+    claimed={}
+    for bucket in ('units','financial_units'):
+        for receipt in state.get(bucket,{}).values():
+            if receipt.get('source')!='MOPS' or receipt.get('category') not in engine.FIN_REPORTS:continue
+            pair=(receipt['category'],receipt.get('report_period'),receipt.get('period'))
+            codes=set(receipt.get('codes',[]))
+            if receipt.get('evidence_file') and receipt.get('sha256') and receipt.get('status') in SAVED:
+                codes.update(receipt.get('codes_found',[]))
+            claimed.setdefault(pair,set()).update(codes)
+    jobs=[];groups={}
+    for job in planned:
+        pair=(job['category'],job.get('report_period'),job.get('period'))
+        codes=[c for c in job.get('codes',[]) if c not in claimed.get(pair,set())]
+        if not codes:continue
+        template,remaining=groups.setdefault(pair,(job,[]));remaining.extend(codes)
+        claimed.setdefault(pair,set()).update(codes)
+    for template,codes in groups.values():
+        for start in range(0,len(codes),20):
+            chunk=codes[start:start+20]
+            params=[(k,v) for k,v in template['params'] if k!='companyId']+ [('companyId',c) for c in chunk]
+            jobs.append(dict(template,codes=chunk,params=params))
+    return jobs
 
 def incident_retry_due(journal,now):
     return any(row.get('quality_revision')==QUALITY_REVISION
@@ -175,7 +206,8 @@ class RepairWorker(OfficialWorker):
         if hasattr(self,'pending_index'):
             month=self.journal['month'];prior=self.pending_index.get(month,{})
             self.pending_index[month]=pending_month(self.journal)
-            if prior.get('inventory_required'):self.pending_index[month].update(inventory_required=True,next_retry_at=0)
+            for marker in ('inventory_required','plan_reconciliation_required'):
+                if prior.get(marker):self.pending_index[month].update({marker:True,'next_retry_at':0})
         self.flush_auxiliary()
         if time.monotonic()-getattr(self,'_last_progress',0)>=60:
             report=dict(self.cursor,run_id=self.owner,updated_utc=native.stamp(),
@@ -197,7 +229,11 @@ class RepairWorker(OfficialWorker):
             sha=old.get('sha256'),flags=flags),sort_keys=True).encode())
         prior=self.journal['units'].get(key,{})
         recovery_status=None
-        if prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and prior.get('raw_sha256')==old.get('sha256') and not flags:
+        retained=bool(old.get('evidence_file') and old.get('sha256') and old.get('status') in SAVED)
+        if prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and not retained:
+            prior=dict(prior,terminal=False,complete=False,next_retry_at=0,attempts=0,work_seconds=0,
+                prior_pass_reopened_reason='RAW_RECEIPT_MISSING_OR_INVALID')
+        if retained and prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and prior.get('raw_sha256')==old.get('sha256') and not flags:
             self.note_activity('prior_verified_skipped_this_run',key,old.get('sha256'))
             return  # Preserve previously checked unchanged RAW; no repeat source request.
         # Revisit retained failures once offline. Do not reset source caps,
@@ -334,6 +370,21 @@ class RepairWorker(OfficialWorker):
                         checked_utc=native.stamp())
                     # A source check never silently closes unresolved derived/PIT findings.
                     if open_checks or flags:row['status']='SOURCE_CHECKED_OPEN_QUALITY_ITEMS'
+                    if job.get('category') in engine.FIN_REPORTS:
+                        # New RAW must reach the parser now; a terminal source result
+                        # must not strand it until a future full scan.
+                        try:
+                            target=self.d.folder(self.monthctrl,'REPARSE_STAGING')
+                            row['reparse_receipt']=reparse_financial(raw,dict(job,unit_id=key),native.sha(raw),self.owned,
+                                lambda name,data:self.d.put(target,name,data,'application/octet-stream',overwrite=False),
+                                lambda name:self.d.read(target,name))
+                            self.note_activity('local_reparse_readback_this_run',key,native.sha(raw))
+                            row['next_action']='VERIFY_ACCOUNTING_UNITS_AND_PIT'
+                        except Exception as exc:
+                            # Valid saved RAW stays retained; parser errors are not
+                            # a reason to redownload identical official bytes.
+                            row.update(status='LOCAL_REPARSE_FAILED',complete=False,
+                                error=type(exc).__name__+':'+str(exc)[:300],next_action='FIX_PARSER_KEEP_RAW')
                     self.circuit[job['source']]=0
                     break
                 except Exception as exc:
@@ -401,6 +452,16 @@ class RepairWorker(OfficialWorker):
                 self.month_incomplete=True;return False
         flags=self.flags_for(month)
         planned=native.Audit.jobs(object.__new__(native.Audit),month,set())
+        financial=[];added=[]
+        if month.endswith(('-03','-06','-09','-12')):
+            recorded=self.journal.setdefault('financial_plan_jobs',{})
+            reserved=dict(self.state,financial_units=dict(recorded,**self.state['financial_units']))
+            added=missing_financial_jobs(reserved,self.financial_jobs())
+            for job in added:recorded[engine.key(job)]=job
+            financial=list(recorded.values())
+        self.journal['missing_financial_plan']=dict(revision=PLAN_REVISION,new_units=len(added),planned_units=len(financial),
+            official_universe_count=getattr(self,'official_financial_universe_count',0),
+            historical_universe_verified=False)
         requests_by_key={engine.key(job):job for job in planned}
         candidates={}
         for bucket in ('units','financial_units'):
@@ -416,10 +477,11 @@ class RepairWorker(OfficialWorker):
         if visited.get('queue_visited') or getattr(self,'lane',None):
             now=dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
             cutoff=self.today if now.hour>=18 else self.today-dt.timedelta(days=1)
-            for job in planned:
+            for job in planned+financial:
                 key=engine.key(job)
+                bucket='financial_units' if job.get('category') in engine.FIN_REPORTS else 'units'
                 if len(job['period'])==10 and job['period']>cutoff.isoformat():continue
-                if key not in self.state['units'] and not is_before_source_start(job):candidates[key]=(job,'units',[])
+                if key not in self.state[bucket] and not is_before_source_start(job):candidates[key]=(job,bucket,[])
         # Retained financial RAW can be reparsed without a source request; do
         # not bury that work behind hundreds of missing-route/network items.
         ordered=sorted(candidates.values(),key=lambda item:(
@@ -476,6 +538,16 @@ class RepairWorker(OfficialWorker):
         self.cursor['control_gap_plan']=CONTROL_GAP_PLAN
         self.save_cursor()
 
+    def seed_plan_reconciliation(self):
+        if self.cursor.get('missing_unit_plan')==PLAN_REVISION:return
+        # Revisit only this lane's already visited months; retain the frontier.
+        for month in self.months[:self.cursor.get('month_index',0)]:
+            entry=self.pending_index.setdefault(month,{})
+            entry.update(plan_reconciliation_required=True,next_retry_at=0)
+        self.putj(self.stagectrl,'RETRY_MONTHS.json',self.pending_index)
+        self.cursor['missing_unit_plan']=PLAN_REVISION
+        self.save_cursor()
+
     def run_due_work(self):
         # A bounded fair queue protects forward progress from stale old retries.
         original=self.until;budget=min(180,max(0,(original-time.monotonic())/6))
@@ -491,12 +563,15 @@ class RepairWorker(OfficialWorker):
                 if time.monotonic()+30>=self.until:break
                 self.cursor['last_due_month']=month;self.save_cursor()
                 full_inventory=self.pending_index[month].get('inventory_required',False)
-                self._due_only=not full_inventory;self._control_gap_inventory=full_inventory;self.month_incomplete=False
+                reconcile=self.pending_index[month].get('plan_reconciliation_required',False)
+                self._due_only=not (full_inventory or reconcile);self._control_gap_inventory=full_inventory;self.month_incomplete=False
                 acquired=capture_history_month(self,month)
                 if acquired and not self.month_incomplete:
-                    if full_inventory and getattr(self,'journal',{}).get('month')==month:
+                    if (full_inventory or reconcile) and getattr(self,'journal',{}).get('month')==month:
                         self.pending_index[month]=pending_month(self.journal)
-                    else:self.pending_index.get(month,{}).pop('inventory_required',None)
+                    else:
+                        for marker in ('inventory_required','plan_reconciliation_required'):
+                            self.pending_index.get(month,{}).pop(marker,None)
                     self.putj(self.stagectrl,'RETRY_MONTHS.json',self.pending_index)
         finally:self.until=original;self._due_only=False;self._control_gap_inventory=False
 
@@ -504,6 +579,7 @@ class RepairWorker(OfficialWorker):
         try:
             if getattr(self,'lane',None):
                 self.seed_control_gaps()
+                self.seed_plan_reconciliation()
                 self.run_due_work()
             self.revisit_parameter_incident()
             while self.cursor['month_index']<len(self.months) and time.monotonic()<self.until:
