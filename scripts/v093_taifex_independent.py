@@ -446,6 +446,8 @@ class Worker:
                 for key,entry in peer.get('receipts',{}).items():
                     if entry.get('status')=='SAVED_BASIC_VERIFIED':
                         self.state['receipts'].setdefault(key,entry)
+        self.recorded_repair_keys=frozenset(self.state.get('receipts',{}))
+        self.state['repair_scope']='RECORDED_RECEIPTS_ONLY; SAVED_RAW_IMMUTABLE'
         self.state['direction']=direction
         self.state['partition_policy']='ASC:2000-01-01..2012-12-31; DESC:2013-01-01..LATEST; NO_OVERLAP'
         reconcile_interrupted_intents(self.state)
@@ -624,7 +626,9 @@ class Worker:
                 else:entry.pop('offline_recovery_revision',None)
             self.state['receipts'][key]=entry;self.save()
     def process(self,job):
-        key=job['key']; old=self.state['receipts'].get(key,{})
+        key=job['key']
+        if hasattr(self,'recorded_repair_keys') and key not in self.recorded_repair_keys:return True
+        old=self.state['receipts'].get(key,{})
         if old.get('status') in TERMINAL: return True
         if old.get('attempts',0)>=3: return True
         if not self.eligible(job):return True
