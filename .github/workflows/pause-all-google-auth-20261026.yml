@@ -51,4 +51,4 @@ jobs:
           remaining=api('/actions/workflows?per_page=100')['workflows']
           assert not [w for w in remaining if w['state']=='active']
           print('ALL_WORKFLOWS_DISABLED; NO_OTHER_ACTIVE_RUNS; RAW_AND_CHECKPOINTS_PRESERVED',flush=True)
-                    PY
+          PY
