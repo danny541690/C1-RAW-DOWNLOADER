@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   download:
-    name: TAIFEX audit 6: 2000 to 2012
+    name: TAIFEX audit 6 — 2000 to 2012
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
