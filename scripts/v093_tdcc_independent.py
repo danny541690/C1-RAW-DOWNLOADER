@@ -1,4 +1,5 @@
 """Independent TDCC capture: official catalog snapshots and published weekly history."""
+import http.client
 import argparse,datetime as dt,hashlib,http.cookiejar,json,os,re,time,urllib.request,urllib.parse,urllib.error
 from html.parser import HTMLParser
 ROOT='1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn'
@@ -9,6 +10,15 @@ REPAIR_REVISION='TDCC_EMPTY_RETRY_AND_PROGRESS_V4'
 TRANSPORT_REVISION='TDCC_TIMEOUT_PRIORITY_RESUME_V5'
 PROGRESS_REVISION='TDCC_DURABLE_JOURNAL_AND_PENDING_SPLIT_V6'
 class SourceEmpty(ValueError):pass
+def classify_error(exc,phase):
+ text=type(exc).__name__+':'+str(exc)
+ if 'SHA_MISMATCH' in text or 'readback hash' in text or 'remote file SHA mismatch' in text:return 'READBACK_MISMATCH'
+ if phase=='PERSIST_AND_REMOTE_READBACK':return 'STORAGE_OR_READBACK_ERROR'
+ if isinstance(exc,SourceEmpty):return 'SOURCE_EMPTY_UNCONFIRMED'
+ if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):return 'SOURCE_BACKOFF'
+ if isinstance(exc,(ValueError,UnicodeError)):return 'FORMAT_OR_VALIDATION_ERROR'
+ return 'TRANSPORT_ERROR'
+
 class QueryForm(HTMLParser):
  def __init__(self):super().__init__();self.fields={}
  def handle_starttag(self,tag,attrs):
@@ -280,16 +290,19 @@ class Worker:
     e.update(evidence,status='SAVED_BASIC_VERIFIED',rows=count,content_period=period,captured_utc=stamp(),period_semantics='SOURCE_RESPONSE_RANGE_NOT_REQUESTED_MONTH',numeric_verified=False,pit_verified=False)
     bucket[key]=e;self.save();print(json.dumps({'key':key,'status':e['status'],'rows':count,'range':period}),flush=True);return True
    except Exception as exc:
-    if isinstance(exc,(TimeoutError,ConnectionError,urllib.error.URLError)):
+    if isinstance(exc,(TimeoutError,ConnectionError,urllib.error.URLError,http.client.IncompleteRead)):
      # A later bounded retry starts a fresh official session/form handshake.
      self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     
     if raw is not None:
      qname='UNRESOLVED_'+sha(raw)+'.raw'
-     self.d.put(self.ctrl,qname,raw,'application/octet-stream',overwrite=False)
-     e['quarantine_file']=qname;e['response_sha256']=sha(raw)
-    e.update(error_class='SOURCE_EMPTY_UNCONFIRMED' if isinstance(exc,SourceEmpty) else ('SOURCE_BACKOFF' if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429) else ('READBACK_MISMATCH' if 'SHA_MISMATCH' in str(exc) or 'readback hash' in str(exc) else ('FORMAT_OR_VALIDATION_ERROR' if isinstance(exc,ValueError) else 'TRANSPORT_ERROR'))),status='SKIPPED_SOURCE_EMPTY' if isinstance(exc,SourceEmpty) else 'UNRESOLVED',retry_after_epoch=time.time()+900,historical_absence_certified=False,error=type(exc).__name__+':'+str(exc)[:220]);bucket[key]=e;self.save()
-    if isinstance(exc,urllib.error.HTTPError) and exc.code in (403,429):
+     try:
+      self.d.put(self.ctrl,qname,raw,'application/octet-stream',overwrite=False)
+      e['quarantine_file']=qname;e['response_sha256']=sha(raw)
+     except Exception as evidence_exc:
+      e['evidence_save_error']=type(evidence_exc).__name__+':'+str(evidence_exc)[:220]
+    e.update(error_class=classify_error(exc,e.get('request_phase')),status='SKIPPED_SOURCE_EMPTY' if isinstance(exc,SourceEmpty) else 'UNRESOLVED',retry_after_epoch=time.time()+900,historical_absence_certified=False,error=type(exc).__name__+':'+str(exc)[:220]);bucket[key]=e;self.save()
+    if e['error_class']=='SOURCE_BACKOFF':
      self.state['resume_after_epoch']=time.time()+900;self.save();return False
     if isinstance(exc,SourceEmpty):return True
   return True
