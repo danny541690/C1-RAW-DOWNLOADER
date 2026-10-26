@@ -1,29 +1,29 @@
 {
   "window": "2026-10-17 00:00 UTC through 2026-10-26 22:45 UTC retrieval checkpoint; expanded tracing window for last ten local dates",
   "all_repo_runs": 1864,
-  "selected_lineage_runs": 185,
+  "selected_lineage_runs": 269,
   "selected_failed_runs": 29,
   "failed_jobs_read": 35,
   "daily_counts": {
     "2026-10-20": {
-      "total": 10,
-      "success": 9,
+      "total": 31,
+      "success": 27,
       "failure": 1,
-      "cancelled": 0,
+      "cancelled": 3,
       "other": 0
     },
     "2026-10-19": {
-      "total": 5,
-      "success": 4,
+      "total": 20,
+      "success": 17,
       "failure": 1,
-      "cancelled": 0,
+      "cancelled": 2,
       "other": 0
     },
     "2026-10-23": {
-      "total": 62,
-      "success": 34,
+      "total": 100,
+      "success": 61,
       "failure": 4,
-      "cancelled": 24,
+      "cancelled": 35,
       "other": 0
     },
     "2026-10-21": {
@@ -55,10 +55,10 @@
       "other": 0
     },
     "2026-10-24": {
-      "total": 31,
-      "success": 26,
+      "total": 41,
+      "success": 33,
       "failure": 2,
-      "cancelled": 3,
+      "cancelled": 6,
       "other": 0
     }
   },
@@ -15250,5 +15250,15 @@
     "Read all 35 failed job logs in the stated selected 8 lineage workflows; not all successful job logs.",
     "Missing historical runtime messages cannot be reconstructed.",
     "Some failed jobs are test-gate failures and must not be counted as provider data failures."
+  ],
+  "selected_workflows": [
+    "v093-official-four-lane-repair",
+    "v093-official-only-two-ended",
+    "v093-official-only-repair",
+    "v093-v2-01-raw",
+    "v093-v2-07-raw-ascending",
+    "v093-l1-secondpass-qa-repair",
+    "v093-history-2023-to-2014-descending",
+    "v093-finmind-free-2026-backfill"
   ]
 }
