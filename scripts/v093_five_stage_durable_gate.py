@@ -10,6 +10,7 @@ import re
 import time
 import urllib.error
 import urllib.request
+import http.client
 from scripts.v093_github_budget import open_json
 
 class LeaseBusy(RuntimeError):
@@ -43,7 +44,16 @@ def _put(api_url,token,sha,payload,message):
     except urllib.error.HTTPError as exc:
         if exc.code in (409,422):
             return False
-        raise
+        if exc.code not in (500,502,503,504):raise
+    except (TimeoutError, ConnectionError, urllib.error.URLError, http.client.IncompleteRead):
+        pass
+    # A timed-out PUT may already have committed. Never blindly replay its SHA.
+    # Confirm exact content, otherwise let the bounded caller reload and CAS.
+    try:
+        _, observed = _read(api_url, token)
+    except (OSError, http.client.IncompleteRead):
+        return False
+    return observed == payload
 
 
 def terminal_owner(api_url, token, key, lease):
@@ -142,3 +152,4 @@ def decide_adapter(stage,raw_receipt,qa_receipt,adapter):
     if not adapter.get('approved_version'):
         return 'BLOCKED_UNAPPROVED_ADAPTER'
     return 'ELIGIBLE_FOR_STAGING_NOT_CERTIFIED'
+
