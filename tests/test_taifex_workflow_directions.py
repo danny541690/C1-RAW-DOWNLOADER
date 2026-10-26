@@ -9,3 +9,5 @@ class TaifexWorkflowDirections(unittest.TestCase):
 
 
    self.assertIn('--audit-round 2',command[0])
+
+   self.assertIn('--backfill',command[0])
