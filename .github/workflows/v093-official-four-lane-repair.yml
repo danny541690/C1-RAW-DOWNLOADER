@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/v093-official-four-lane-repair.yml'
       - 'scripts/v093_official_repair.py'
+      - 'scripts/v093_official_finmind_gapfill.py'
       - 'scripts/v093_official_content_audit.py'
       - 'scripts/v093_repair_coordination.py'
       - 'scripts/v093_official_problem_catalog.py'
@@ -111,6 +112,9 @@ jobs:
         run: python -m scripts.v093_github_budget --minimum 250 --max-wait 300
       - name: Audit saved RAW and repair missing or invalid official units
         env:
+          FINMIND_GAPFILL_ENABLED: '1'
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+          FINMIND_API_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
           OFFICIAL_BACKFILL_PASS: OFFICIAL_DATABASE_BACKFILL_20261027_V2
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
