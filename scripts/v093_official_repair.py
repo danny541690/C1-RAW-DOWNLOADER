@@ -31,7 +31,7 @@ MAX_POINT_SECONDS=90
 PARAMETER_INCIDENT_MONTH='2026-06'
 PRIORITY_RETRY_SECONDS=600
 EXECUTION_REVISION='MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8'
-PLAN_REVISION='OFFICIAL_DATABASE_BACKFILL_20261027_V2'
+PLAN_REVISION='OFFICIAL_FINMIND_RECONCILIATION_20261027_V3'
 BACKFILL_PASS='OFFICIAL_DATABASE_BACKFILL_20261027_V2'
 AUX_CHECKPOINT_SECONDS=30
 CONTROL_GAP_PLAN='RAW_CONTROL_GAPS_20261024_V1'
@@ -154,6 +154,7 @@ class RepairWorker(OfficialWorker):
                 'local_reparse_readback_this_run','local_quality_open_this_run')})
 
     def __init__(self,direction,minutes,lane=None):
+        self.finmind_enabled=os.environ.get("FINMIND_GAPFILL_ENABLED")=="1"
         self.backfill_enabled=os.environ.get("OFFICIAL_BACKFILL_PASS")==BACKFILL_PASS
         self.lane=lane
         if lane is not None:direction=LANES[lane][2]
@@ -221,12 +222,15 @@ class RepairWorker(OfficialWorker):
         if hasattr(self,'pending_index'):
             month=self.journal['month'];prior=self.pending_index.get(month,{})
             self.pending_index[month]=pending_month(self.journal)
+            if self.journal.get('finmind_pending',0):
+                self.pending_index[month].update(finmind_gapfill_required=True,next_retry_at=time.time()+60)
             for marker in ('inventory_required','plan_reconciliation_required'):
                 if prior.get(marker):self.pending_index[month].update({marker:True,'next_retry_at':0})
         self.flush_auxiliary()
         if time.monotonic()-getattr(self,'_last_progress',0)>=60:
             report=dict(self.cursor,run_id=self.owner,updated_utc=native.stamp(),
                 current_work_month=self.journal.get('month'),batch_complete=False,
+                finmind_enabled=getattr(self,'finmind_enabled',False),finmind_metrics=getattr(self,'finmind_metrics',{}),
                 checked_this_run=self.checked,repaired_this_run=self.repaired,
                 source_requests_this_run=dict(self.source_requests),download_responses_this_run=self.downloaded,
                 month_result_counts=dict(collections.Counter(row.get('status','UNKNOWN')
@@ -501,6 +505,9 @@ class RepairWorker(OfficialWorker):
                 bucket='financial_units' if job.get('category') in engine.FIN_REPORTS else 'units'
                 if len(job['period'])==10 and job['period']>cutoff.isoformat():continue
                 if key not in self.state[bucket] and not is_before_source_start(job):candidates[key]=(job,bucket,[])
+        if getattr(self,'finmind_enabled',False):
+            from scripts.v093_official_finmind_gapfill import supplement
+            supplement(self,[item[0] for item in candidates.values()]+planned+financial)
         # Retained financial RAW can be reparsed without a source request; do
         # not bury that work behind hundreds of missing-route/network items.
         ordered=sorted(candidates.values(),key=lambda item:(
@@ -582,12 +589,13 @@ class RepairWorker(OfficialWorker):
                 if time.monotonic()+30>=self.until:break
                 self.cursor['last_due_month']=month;self.save_cursor()
                 full_inventory=self.pending_index[month].get('inventory_required',False)
-                reconcile=self.pending_index[month].get('plan_reconciliation_required',False)
+                reconcile=self.pending_index[month].get('plan_reconciliation_required',False) or self.pending_index[month].get('finmind_gapfill_required',False)
                 self._due_only=not (full_inventory or reconcile);self._control_gap_inventory=full_inventory;self.month_incomplete=False
                 acquired=capture_history_month(self,month)
                 if acquired and not self.month_incomplete:
                     if (full_inventory or reconcile) and getattr(self,'journal',{}).get('month')==month:
                         self.pending_index[month]=pending_month(self.journal)
+                        if self.journal.get('finmind_pending',0):self.pending_index[month].update(finmind_gapfill_required=True,next_retry_at=time.time()+60)
                     else:
                         for marker in ('inventory_required','plan_reconciliation_required'):
                             self.pending_index.get(month,{}).pop(marker,None)
@@ -623,7 +631,7 @@ class RepairWorker(OfficialWorker):
             report=dict(self.cursor,checked_this_run=self.checked,repaired_this_run=self.repaired,
                 source_requests_this_run=dict(self.source_requests),download_responses_this_run=self.downloaded,
                 repair_success_definition='VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED',
-                sources=list(SOURCES),finmind_enabled=False,
+                sources=list(SOURCES),finmind_enabled=getattr(self,'finmind_enabled',False),finmind_metrics=getattr(self,'finmind_metrics',{}),
                 numeric_verified=False,pit_verified=False,updated_utc=native.stamp(),run_id=self.owner,**self.activity_summary())
             self.save_cursor();self.putj(self.stagectrl,'STATUS.json',report)
             print('OFFICIAL_REPAIR_STATUS '+json.dumps(report),flush=True)
