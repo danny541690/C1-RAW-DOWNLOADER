@@ -1,0 +1,250 @@
+{
+  "scope": "35 failed jobs in the selected 29 failed download lineage runs; fixture outputs excluded from primary failure",
+  "jobs": [
+    {
+      "id": 118748582322,
+      "run": 39457643971,
+      "path": ".github/workflows/v093-l1-secondpass-qa-repair.yml",
+      "primary_failure": "2026-10-20T16:28:06.3210911Z ValueError: MONTH_PLAN_CONFLICT",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39457643971/job/118748582322"
+    },
+    {
+      "id": 117992653860,
+      "run": 39232220305,
+      "path": ".github/workflows/v093-finmind-free-2026-backfill.yml",
+      "primary_failure": "2026-10-19T09:43:50.4201851Z NameError: name 'start' is not defined. Did you mean: 'state'?",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39232220305/job/117992653860"
+    },
+    {
+      "id": 120218198136,
+      "run": 39893419658,
+      "path": ".github/workflows/v093-official-only-two-ended.yml",
+      "primary_failure": "2026-10-23T03:08:53.9519672Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39893419658/job/120218198136"
+    },
+    {
+      "id": 120175450698,
+      "run": 39880182189,
+      "path": ".github/workflows/v093-v2-07-raw-ascending.yml",
+      "primary_failure": "2026-10-23T01:12:36.8960003Z RuntimeError: GITHUB_BUDGET_WAIT_LIMIT_REACHED_NO_LOCK_ACQUIRED",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39880182189/job/120175450698"
+    },
+    {
+      "id": 120174266692,
+      "run": 39879679298,
+      "path": ".github/workflows/v093-v2-07-raw-ascending.yml",
+      "primary_failure": "2026-10-23T01:12:23.8539711Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39879679298/job/120174266692"
+    },
+    {
+      "id": 120168750969,
+      "run": 39878140217,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-23T01:11:27.1189146Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39878140217/job/120168750969"
+    },
+    {
+      "id": 119916163747,
+      "run": 39805118837,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T15:53:26.0880396Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39805118837/job/119916163747"
+    },
+    {
+      "id": 119858145196,
+      "run": 39788565207,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "See failed job log",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39788565207/job/119858145196"
+    },
+    {
+      "id": 119825480882,
+      "run": 39778816404,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T13:08:11.0011704Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39778816404/job/119825480882"
+    },
+    {
+      "id": 119656081708,
+      "run": 39727860911,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T05:58:18.1994744Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39727860911/job/119656081708"
+    },
+    {
+      "id": 120150218131,
+      "run": 39872549474,
+      "path": ".github/workflows/v093-v2-07-raw-ascending.yml",
+      "primary_failure": "2026-10-23T00:07:08.7903745Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39872549474/job/120150218131"
+    },
+    {
+      "id": 120146142470,
+      "run": 39871296549,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-23T00:08:11.7308595Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39871296549/job/120146142470"
+    },
+    {
+      "id": 120123107969,
+      "run": 39864465853,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T23:04:43.9630876Z RuntimeError: GITHUB_BUDGET_WAIT_LIMIT_REACHED_NO_LOCK_ACQUIRED",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39864465853/job/120123107969"
+    },
+    {
+      "id": 120119388133,
+      "run": 39863374243,
+      "path": ".github/workflows/v093-v2-07-raw-ascending.yml",
+      "primary_failure": "2026-10-22T23:04:12.7573353Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39863374243/job/120119388133"
+    },
+    {
+      "id": 120119285280,
+      "run": 39863325711,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T23:04:23.7802783Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39863325711/job/120119285280"
+    },
+    {
+      "id": 120114309336,
+      "run": 39861793940,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T22:05:34.3148800Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39861793940/job/120114309336"
+    },
+    {
+      "id": 120097553927,
+      "run": 39856967673,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T21:25:15.9083542Z ValueError: existing remote file SHA mismatch",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39856967673/job/120097553927"
+    },
+    {
+      "id": 120067237842,
+      "run": 39848259193,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T20:23:42.8571338Z ValueError: existing remote file SHA mismatch",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39848259193/job/120067237842"
+    },
+    {
+      "id": 120038730030,
+      "run": 39840151896,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T19:33:12.7596932Z ValueError: existing remote file SHA mismatch",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39840151896/job/120038730030"
+    },
+    {
+      "id": 120007739134,
+      "run": 39831005612,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "primary_failure": "2026-10-22T19:03:50.8884221Z urllib.error.HTTPError: HTTP Error 403: Forbidden",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39831005612/job/120007739134"
+    },
+    {
+      "id": 121888763809,
+      "run": 40413174928,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-26T22:32:26.7439526Z NameError: name 'os' is not defined",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40413174928/job/121888763809"
+    },
+    {
+      "id": 121888751715,
+      "run": 40413171608,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-26T22:32:27.7867621Z NameError: name 'os' is not defined",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40413171608/job/121888751715"
+    },
+    {
+      "id": 121670540211,
+      "run": 40350890117,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-26T16:01:46.2356234Z urllib.error.HTTPError: HTTP Error 404: Not Found",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40350890117/job/121670540211"
+    },
+    {
+      "id": 121642735153,
+      "run": 40340814860,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-26T14:48:58.5073138Z urllib.error.HTTPError: HTTP Error 504: Gateway Timeout",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40340814860/job/121642735153"
+    },
+    {
+      "id": 121195581617,
+      "run": 40202190813,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T14:26:22.3910154Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40202190813/job/121195581617"
+    },
+    {
+      "id": 121195581661,
+      "run": 40202190813,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T14:26:23.6490818Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40202190813/job/121195581661"
+    },
+    {
+      "id": 121195581674,
+      "run": 40202190813,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T14:26:19.7222875Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40202190813/job/121195581674"
+    },
+    {
+      "id": 121195581828,
+      "run": 40202190813,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T14:26:20.5822607Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40202190813/job/121195581828"
+    },
+    {
+      "id": 121182833284,
+      "run": 40197934581,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T13:44:30.7766862Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40197934581/job/121182833284"
+    },
+    {
+      "id": 121182833330,
+      "run": 40197934581,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T13:44:26.5083543Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40197934581/job/121182833330"
+    },
+    {
+      "id": 121182833333,
+      "run": 40197934581,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T13:44:23.8281614Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40197934581/job/121182833333"
+    },
+    {
+      "id": 121182833357,
+      "run": 40197934581,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T13:44:20.6654105Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40197934581/job/121182833357"
+    },
+    {
+      "id": 121118897476,
+      "run": 40176699067,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-25T08:42:14.2549879Z urllib.error.URLError: <urlopen error timed out>",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40176699067/job/121118897476"
+    },
+    {
+      "id": 120978385650,
+      "run": 40129604648,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-24T20:37:53.8032213Z googleapiclient.errors.HttpError: <HttpError 403 when requesting [URL] returned \"User rate limit exceeded.\". Details: \"[{'message': 'User rate limit exceeded.', 'domain': 'usageLimits', 'reason': 'userRateLimitExceeded'}]\">",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40129604648/job/120978385650"
+    },
+    {
+      "id": 120937386142,
+      "run": 40116000096,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "primary_failure": "2026-10-24T17:43:28.0457820Z ValueError: invalid literal for int() with base 16: b''",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40116000096/job/120937386142"
+    }
+  ]
+}
