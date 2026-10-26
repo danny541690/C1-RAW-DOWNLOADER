@@ -121,7 +121,7 @@ def csv_evidence(raw, start, end):
         if not math.isfinite(result):raise ValueError('NONFINITE_NATIVE_NUMERIC_CELL')
         return result
     large_trader=(header[:5]==['日期','商品(契約)','商品名稱(契約名稱)','到期月份(週別)','交易人類別'] or header[:6]==['日期','商品(契約)','商品名稱(契約名稱)','買賣權','到期月份(週別)','交易人類別'])
-    contract = next((i for i, x in enumerate(header) if x.strip() in ('契約', '商品代號', '商品')), None)
+    contract = next((i for i, x in enumerate(header) if x.strip() in ('契約', '契約代號', '商品代號', '商品', '商品(契約)')), None)
     session = next((i for i, x in enumerate(header) if x.strip() == '交易時段'), None)
     for row in reader:
         if not any(x.strip() for x in row): continue
