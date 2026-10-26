@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   download:
-    name: TAIFEX audit 6-1 — latest to 2013
+    name: TAIFEX second-pass audit 6-1 — 2000-01 to 2012-12
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -39,4 +39,4 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_taifex_independent --minutes 45 --direction DESC
+        run: python -m scripts.v093_taifex_independent --minutes 45 --direction ASC --audit-round 2
