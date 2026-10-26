@@ -75,3 +75,11 @@ scripts/v093_official_finmind_gapfill.py；scripts/v093_official_repair.py；tes
 追加：長月份每45秒檢查一次FinMind待補工作（共享預算仍至少18秒一筆、總上限200/小時、每批每條最多40次），避免整批僅在進月時請求一次。這是輪詢間隔，不是承諾每45秒必有有效來源回應。
 本機757項回歸通過；更新來源commit a7e53e1aef846bda91788d6bc2bc9f096d72ef89。
 最新正式執行：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40416094064 ；雲端測試步驟已通過，後續以這個run核對實際請求與存檔成果。
+
+## 最新正式批次實績（2026-10-27 06:57～06:58台灣時間）
+run40416094064的checks已完成：757 tests OK，四條job都在RAW查核補正步驟。Drive STATUS四條均為新run且finmind_enabled=true：
+- 排程1回查2014-06；排程2回查2025-10；排程3回查2002-02；排程4回查2012-11。這是重訪月份，不是整段全數已補齊。
+- 排程4已實際FinMind請求1次、RAW存檔並雲端讀回成功1單元。資料集TaiwanStockInstitutionalInvestorsBuySell，股票1256，查詢2012-11-01至2012-11-30。
+- 收據covered_dates為2012-11-14、19、20、21；仍有14個期望缺失日期未被該次回應覆蓋。單元狀態只代表來源封包已保存與基本驗證，不代表全月補齊。其餘資料仍待官方／替代來源或歷史市場身份核實。
+- SHA256：710afbbb86c205602acbd25dfe8e13eadb3f35c531a88d2b9a1df27b01e8e37d；remote_readback_hash_verified=true；official_gap_closed=false。
+- 該月FinMind計畫1260個查詢單元，已存1、查詢待處理1259，另16個缺口因未映射／交易日或名單證據不足列blocked。這不是全市場完整率，已存部分回應的unfilled_dates仍是資料缺口。
