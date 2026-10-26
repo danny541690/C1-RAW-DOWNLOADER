@@ -21,7 +21,9 @@ def task_key(task):
     return engine.key(task)
 
 def plan(state,journal,jobs,month,today):
-    tasks={};blocked=[]
+    tasks={};blocked={}
+    confirmed_dates={r.get('period') for r in state.get('units',{}).values()
+                     if r.get('status')=='SAVED_BASIC_VERIFIED' and r.get('category') in ('prices','prices_indices')}
     for job in jobs:
         key=engine.key(job);row=journal.get('units',{}).get(key,{})
         if row.get('complete') or row.get('status') not in GAPS:continue
@@ -46,7 +48,9 @@ def plan(state,journal,jobs,month,today):
                 if receipt.get('source')==market and receipt.get('status')=='SAVED_BASIC_VERIFIED':
                     codes.update(receipt.get('codes_found',[]))
         if not dataset or not codes or start>end:
-            blocked.append(dict(official_gap=key,reason='UNMAPPED_DATASET_OR_HISTORICAL_UNIVERSE_NOT_PROVEN'));continue
+            blocked[key]=dict(official_gap=key,reason='UNMAPPED_DATASET_OR_HISTORICAL_UNIVERSE_NOT_PROVEN');continue
+        if kind=='daily' and period not in confirmed_dates:
+            blocked[key]=dict(official_gap=key,reason='OFFICIAL_TRADING_DATE_NOT_PROVEN_NO_BLIND_STOCK_REQUESTS');continue
         for code in sorted(codes):
             if not re.fullmatch(r'[1-9]\d{3}',str(code)):continue
             t=dict(source='FinMind',category=cat,dataset=dataset,stock_id=str(code),period=month,
@@ -58,7 +62,7 @@ def plan(state,journal,jobs,month,today):
                 tasks[k]['official_gaps']=sorted(set(tasks[k]['official_gaps']+[key]))
                 tasks[k]['expected_dates']=sorted(set(tasks[k]['expected_dates']+t['expected_dates']))
             else:tasks[k]=t
-    return list(tasks.values()),blocked
+    return list(tasks.values()),list(blocked.values())
 
 def validate(raw,task):
     obj=json.loads(raw);rows=obj.get('data')
@@ -97,7 +101,9 @@ def hold(api,token):
 
 def supplement(w,jobs):
     if not getattr(w,'finmind_enabled',False):return
-    tasks,blocked=plan(w.state,w.journal,jobs,w.active,w.today.isoformat())
+    w._finmind_poll_at=time.monotonic()
+    today=w.today if dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).hour>=18 else w.today-dt.timedelta(days=1)
+    tasks,blocked=plan(w.state,w.journal,jobs,w.active,today.isoformat())
     receipts=w.state.setdefault('finmind_units',{})
     metrics=getattr(w,'finmind_metrics',dict(requests=0,saved=0,failed=0))
     w.finmind_metrics=metrics
