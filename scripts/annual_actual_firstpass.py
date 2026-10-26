@@ -2,6 +2,7 @@
 All successful raw source responses saved immediately to Drive; failures deferred.
 """
 import csv, hashlib, io, json, os, time, urllib.request, urllib.parse, urllib.error, socket, random
+import http.client
 from datetime import date
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -12,6 +13,15 @@ from googleapiclient.errors import HttpError
 YEAR=2024
 SOURCES=("TWSE","TPEx","MOPS","FinMind")
 SCOPES=["https://www.googleapis.com/auth/drive"]
+def retryable_drive_error(exc):
+    if not isinstance(exc,HttpError):return True
+    status=getattr(exc.resp,'status',None)
+    if status in (429,500,502,503,504):return True
+    if status!=403:return False
+    try:
+        reasons={x.get('reason') for x in json.loads(exc.content).get('error',{}).get('errors',[])}
+    except (ValueError,TypeError,AttributeError):return False
+    return bool(reasons & {'userRateLimitExceeded','rateLimitExceeded'})
 def service():
     c=Credentials(token=None,refresh_token=os.environ["GOOGLE_REFRESH_TOKEN"],
         token_uri="https://oauth2.googleapis.com/token",client_id=os.environ["GOOGLE_CLIENT_ID"],
@@ -24,9 +34,9 @@ class Drive:
         for n in range(4):
             try:
                 return make_request().execute(num_retries=0)
-            except (TimeoutError, socket.timeout, ConnectionError, OSError, HttpError) as exc:
+            except (TimeoutError, socket.timeout, ConnectionError, OSError, HttpError, http.client.IncompleteRead) as exc:
                 status=getattr(getattr(exc,"resp",None),"status",None)
-                if isinstance(exc,HttpError) and status not in (429,500,502,503,504):
+                if not retryable_drive_error(exc):
                     raise
                 if n==3:raise
                 time.sleep(min(2**n,6)+random.random())
@@ -67,9 +77,9 @@ class Drive:
                     created=self.api.files().create(body={"name":name,"parents":[parent]},media_body=media,fields="id").execute(num_retries=0)
                     saved_id=created['id']
                 break
-            except (TimeoutError, socket.timeout, ConnectionError, OSError, HttpError) as exc:
+            except (TimeoutError, socket.timeout, ConnectionError, OSError, HttpError, http.client.IncompleteRead) as exc:
                 status=getattr(getattr(exc,"resp",None),"status",None)
-                if isinstance(exc,HttpError) and status not in (429,500,502,503,504):raise
+                if not retryable_drive_error(exc):raise
                 # A create may have reached Drive even when its response timed out.
                 found=self.find(parent,name)
                 if found:
@@ -178,3 +188,4 @@ def run():
     print("2024 FIRST-PASS SOURCE SAMPLES FINISHED; FULL-MARKET DATA NOT VERIFIED",flush=True)
 if __name__=="__main__":
     raise SystemExit("LEGACY_WORKER_POLICY_NOT_INTEGRATED: annual_actual_firstpass.py; required=V093_FIVE_STAGE_DOWNLOAD_RULES_V1_20261021; no download started")
+
