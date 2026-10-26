@@ -520,6 +520,10 @@ class RepairWorker(OfficialWorker):
             if time.monotonic()+25>=self.until:
                 self.save_journal();self.month_incomplete=True;return False
             self.repair_one(job,bucket,marked)
+            if (getattr(self,'finmind_enabled',False) and time.monotonic()-getattr(self,'_finmind_poll_at',0)>=45
+                    and getattr(self,'finmind_metrics',{}).get('requests',0)<40):
+                from scripts.v093_official_finmind_gapfill import supplement
+                supplement(self,[item[0] for item in candidates.values()]+planned+financial)
         self.save_journal()
         self.cursor.update(last_month=month,flagged_candidates=len(candidates))
         print('OFFICIAL_REPAIR_MONTH '+json.dumps(dict(month=month,candidates=len(candidates),
