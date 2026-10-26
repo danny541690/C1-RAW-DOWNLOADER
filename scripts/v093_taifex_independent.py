@@ -430,10 +430,13 @@ def snapshot_route_health(receipts):
                 historical_capture_gaps_preserved=True)
 
 class Worker:
-    def __init__(self, minutes, direction='DESC'):
+    def __init__(self, minutes, direction='DESC', audit_round=1):
         from scripts.annual_actual_firstpass import Drive,service
         self.d=Drive(service()); self.d.direct_readback=True
         self.direction=direction
+        self.audit_round=audit_round
+        self.audit_revision=('REMOTE_RAW_SECOND_PASS_20261026' if audit_round==2 else 'REMOTE_RAW_AUDIT_V9')
+        self.audited_this_run=0
         self.ctrl=self.d.folder(REPORT, 'TAIFEX_INDEPENDENT_STAGE06_ASC' if direction=='ASC' else 'TAIFEX_INDEPENDENT_STAGE06')
         raw=self.d.read(self.ctrl,'CURSOR.json')
         self.state=json.loads(raw) if raw else {'revision':'TAIFEX_INDEPENDENT_V1','receipts':{},'catalog':{},'tick_jobs':{}}
@@ -482,6 +485,9 @@ class Worker:
             actual_saved_range={'min':min(v['min'] for v in periods) if periods else None,'max':max(v['max'] for v in periods) if periods else None},
             requested_range={'min':'2000-01-01','max':self.today.isoformat()},
             historical_forms=len(self.state['catalog']), tick_files_discovered=len(self.state['tick_jobs']))
+        report['audit_round']=getattr(self,'audit_round',1)
+        report['audited_this_run']=getattr(self,'audited_this_run',0)
+        report['schedule_number']='6' if self.direction=='DESC' else '6-1'
         report['unresolved_error_counts']={}
         for entry in receipts.values():
             if entry.get('status')=='UNRESOLVED':
@@ -507,6 +513,7 @@ class Worker:
         report['missed_snapshot_units']=sum(bool(v.get('status')=='UNRESOLVED' and v.get('interrupted_request') and v.get('request',{}).get('kind')=='snapshot' and v.get('request',{}).get('end','')<self.today.isoformat()) for v in receipts.values())
         self.d.put(self.ctrl,'STATUS.json',encode(report),'application/json',overwrite=True)
         self._status_last=time.monotonic()
+        print('TAIFEX_LIVE_STATUS '+json.dumps({k:report.get(k) for k in ('run_id','direction','schedule_number','audit_round','status','saved_this_run','source_requests_this_run','audited_this_run','assigned_saved_units','unresolved','retry_cycles_exhausted_units','planned_history_units','planned_history_unattempted_units','raw_audit_summary','updated_utc')},ensure_ascii=False),flush=True)
     def request(self,url,fields=None,timeout=45):
         if urllib.parse.urlparse(url).hostname not in ('www.taifex.com.tw','openapi.taifex.com.tw'): raise ValueError('NON_OFFICIAL_HOST')
         if time.time()<self.state.get('source_backoff',{}).get(urllib.parse.urlparse(url).hostname,0):
@@ -549,10 +556,11 @@ class Worker:
             elif (job.get('end','')<'2013-01-01')!=(self.direction=='ASC'):continue
             signature=entry.get('sha256')
             prior=entry.get('raw_audit',{})
-            if prior.get('revision')=='REMOTE_RAW_AUDIT_V9' and prior.get('sha256')==signature and prior.get('status')=='PASS_BASIC':continue
+            if prior.get('revision')==getattr(self,'audit_revision','REMOTE_RAW_AUDIT_V9') and prior.get('sha256')==signature and prior.get('status')=='PASS_BASIC':continue
             if time.time()<prior.get('retry_after_epoch',0):continue
             checked+=1
-            audit=dict(revision='REMOTE_RAW_AUDIT_V9',sha256=signature,checked_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
+            self.audited_this_run=getattr(self,'audited_this_run',0)+1
+            audit=dict(revision=getattr(self,'audit_revision','REMOTE_RAW_AUDIT_V9'),sha256=signature,checked_utc=stamp(),run_id=os.environ.get('GITHUB_RUN_ID'))
             try:
                 raw=self.read_receipt_raw(entry)
                 if not signature or digest(raw)!=signature:raise ValueError('REMOTE_RAW_SHA_MISMATCH')
@@ -568,6 +576,8 @@ class Worker:
                 elif isinstance(exc,(ValueError,zipfile.BadZipFile,OfficialEmpty)):
                     entry['integrity_hold']=True
                     audit['status']='CONTENT_OR_SHA_HOLD_REQUIRES_REVIEW'
+            if prior and prior.get('revision')!=audit['revision']:
+                entry.setdefault('raw_audit_history',[]).append(dict(prior))
             entry['raw_audit']=audit
             self.state['raw_audit_last_unit']=key
             self.save()
@@ -811,6 +821,7 @@ class Worker:
     def run(self):
         if not self.live():return
         try:
+            self.state['audit_round']=getattr(self,'audit_round',1)
             self.discover()
             self.audit_saved()
             self.recover_existing()
@@ -887,7 +898,8 @@ class Worker:
             if count>=limit:break
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');p.add_argument('--audit-round',type=int,choices=[1,2],default=1);a=p.parse_args()
     if not 1<=a.minutes<=50:raise ValueError('INVALID_RUNTIME')
-    Worker(a.minutes,a.direction).run()
+    Worker(a.minutes,a.direction,a.audit_round).run()
 if __name__=='__main__':main()
+
