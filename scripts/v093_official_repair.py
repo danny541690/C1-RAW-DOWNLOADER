@@ -1,5 +1,6 @@
 """Independent targeted official-only repair; original source archives remain immutable."""
 import argparse
+import os
 import collections
 import datetime as dt
 import json
@@ -153,6 +154,7 @@ class RepairWorker(OfficialWorker):
                 'local_reparse_readback_this_run','local_quality_open_this_run')})
 
     def __init__(self,direction,minutes,lane=None):
+        self.backfill_enabled=os.environ.get("OFFICIAL_BACKFILL_PASS")==BACKFILL_PASS
         self.lane=lane
         if lane is not None:direction=LANES[lane][2]
         control_name=lane or direction
@@ -241,7 +243,7 @@ class RepairWorker(OfficialWorker):
         signature=native.sha(json.dumps(dict(quality_revision=QUALITY_REVISION,
             sha=old.get('sha256'),flags=flags),sort_keys=True).encode())
         prior=self.journal['units'].get(key,{})
-        if os.environ.get('OFFICIAL_BACKFILL_PASS')==BACKFILL_PASS:
+        if getattr(self,'backfill_enabled',False):
             known=source_failure(ValueError(prior.get('error','')),job)
             if not known or known.get('status')!='OFFICIAL_PERIOD_NOT_PROVIDED':
                 prior=reopen_backfill(prior)
