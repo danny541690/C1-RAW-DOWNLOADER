@@ -5,7 +5,7 @@ OpenAPI snapshots have no invented historical date arguments. Published CSV form
 and annual archives supply history; every receipt records the actual response range.
 """
 import argparse, calendar, csv, datetime as dt, hashlib, html, http.cookiejar
-import io, json, os, pathlib, re, time, urllib.error, urllib.parse, urllib.request, zipfile
+import io, json, math, os, pathlib, re, time, urllib.error, urllib.parse, urllib.request, zipfile
 from html.parser import HTMLParser
 ROOT = '1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn'
 REPORT = '1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit'
@@ -23,7 +23,7 @@ ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('singleOrderDown','dlSingleOrderDown'),
                ('combinationOrderDown','dlCombinationOrderDown'))
 MAX_RETRY_CYCLES = 3
-BACKFILL_PASS = 'TAIFEX_RAW_BACKFILL_20261027_V1'
+BACKFILL_PASS = 'TAIFEX_RAW_BACKFILL_20261027_V2'
 TICK_PAGES = ['dlFutPrevious30DaysSalesData', 'dlOptPrevious30DaysSalesData',
               'dlFutPrevious30DaysSpreadSalesData', 'dlFutPrevious30DaysSpreadOrdersReport', 'dlOptDailyDelta']
 TERMINAL = {'SAVED_BASIC_VERIFIED', 'SKIPPED_SOURCE_EMPTY', 'SKIPPED_NOT_PUBLISHED'}
@@ -108,6 +108,18 @@ def csv_evidence(raw, start, end):
     indexes = [i for i, k in enumerate(header) if any(x in k for x in ('日期', '年月日', 'Date', 'date'))]
     if not indexes: raise ValueError('CSV_DATE_HEADER_MISSING')
     count = 0; lo = None; hi = None; products = set(); sessions = set(); footnotes=[]
+    cleaned=[v.strip() for v in header]
+    price_names=('開盤價','最高價','最低價','最後成交價')
+    price_indexes=[cleaned.index(n) for n in price_names] if all(n in cleaned for n in price_names) else []
+    volume_indexes=[i for i,n in enumerate(cleaned) if n in ('成交量','合計成交量','未沖銷契約量','未沖銷契約數')]
+    numeric_checks=0;price_missing_rows=0
+    width=len(header)-int(bool(header) and not header[-1].strip())
+    def value(text):
+        text=text.strip().replace(',','')
+        if text in ('','-','--'):return None
+        result=float(text)
+        if not math.isfinite(result):raise ValueError('NONFINITE_NATIVE_NUMERIC_CELL')
+        return result
     large_trader=(header[:5]==['日期','商品(契約)','商品名稱(契約名稱)','到期月份(週別)','交易人類別'] or header[:6]==['日期','商品(契約)','商品名稱(契約名稱)','買賣權','到期月份(週別)','交易人類別'])
     contract = next((i for i, x in enumerate(header) if x.strip() in ('契約', '商品代號', '商品')), None)
     session = next((i for i, x in enumerate(header) if x.strip() == '交易時段'), None)
@@ -120,13 +132,27 @@ def csv_evidence(raw, start, end):
         # (trade/publication date), not the contract's expiry date.
         date = parse_date(row[indexes[0]]) if indexes[0]<len(row) else None
         if not date: raise ValueError('CSV_ROW_DATE_MISSING')
+        if len(row)<width:raise ValueError('CSV_TRUNCATED_ROW')
         if not start <= date <= end: raise ValueError('RESPONSE_DATE_OUTSIDE_REQUEST:' + date.isoformat())
+        if price_indexes:
+            prices=[value(row[i]) for i in price_indexes]
+            if any(v is None for v in prices):price_missing_rows+=1
+            else:
+                op,hi_price,lo_price,close=prices
+                if not lo_price<=op<=hi_price or not lo_price<=close<=hi_price:raise ValueError('NATIVE_OHLC_RELATIONSHIP_VIOLATION')
+                numeric_checks+=1
+        for i in volume_indexes:
+            number=value(row[i])
+            if number is not None and (number<0 or not number.is_integer()):raise ValueError('NATIVE_VOLUME_OR_OPEN_INTEREST_INVALID')
+            numeric_checks+=int(number is not None)
         lo = min(lo, date) if lo else date; hi = max(hi, date) if hi else date; count += 1
         if contract is not None and contract < len(row): products.add(row[contract].strip())
         if session is not None and session < len(row): sessions.add(row[session].strip())
     if not count: raise OfficialEmpty('EMPTY_NOT_PROOF_OF_NO_DATA')
     return dict(rows=count, content_period={'min': lo.isoformat(), 'max': hi.isoformat()},
-                products=sorted(products), sessions=sorted(sessions), schema=header,footnotes=footnotes)
+                products=sorted(products), sessions=sorted(sessions), schema=header,footnotes=footnotes,
+                recognized_numeric_checks=numeric_checks,unverified_price_rows=price_missing_rows,
+                full_numeric_certification=False)
 
 API_CSV_SCHEMAS = {'DailyForeignExchangeRates': ['日期', '美元_新台幣(匯率)', '人民幣_新台幣(匯率)', '歐元_美元(匯率)', '美元_日幣(匯率)', '英鎊_美元(匯率)', '澳幣_美元(匯率)', '美元_港幣(匯率)', '美元_人民幣(匯率)', '美元_南非幣(匯率)', '紐幣_美元(匯率)'], 'DailyMarketReportOpt': ['日期', '契約', '到期月份(週別)', '履約價', '買賣權', '開盤價', '最高價', '最低價', '最後成交價', '成交量', '結算價', '未沖銷契約量', '最後最佳買價', '最後最佳賣價', '歷史最高價', '歷史最低價', '是否因訊息面暫停交易', '交易時段'], 'MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheDate': ['日期', '商品名稱', '身份別', '多方交易口數', '多方交易契約金額(千元)', '空方交易口數', '空方交易契約金額(千元)', '多空交易口數淨額', '多空交易契約金額淨額(千元)', '多方未平倉口數', '多方未平倉契約金額(千元)', '空方未平倉口數', '空方未平倉契約金額(千元)', '多空未平倉口數淨額', '多空未平倉契約金額淨額(千元)']}
 
@@ -355,7 +381,8 @@ def prepare_transport_retries(state,now=None):
         entry['lifetime_attempts']=max(entry.get('lifetime_attempts',0),sum(v['attempts'] for v in entry['retry_history']))
         entry.update(attempts=0,transport_retry_cycle=cycle+1)
 
-def partition_jobs(jobs,direction):
+def partition_jobs(jobs,direction,full_range=False):
+    if full_range:return [j for j in jobs if j['start']>=FLOOR.isoformat()]
     boundary='2013-01-01'
     result=[]
     for job in jobs:
@@ -363,6 +390,10 @@ def partition_jobs(jobs,direction):
             raise ValueError('PARTITION_CROSSING_JOB')
         if (job['end']<boundary)==(direction=='ASC'):result.append(job)
     return result
+
+def assigned_job(job,direction,full_range=False):
+    if full_range:return job.get('start','')>=FLOOR.isoformat()
+    return (job.get('end','')<'2013-01-01')==(direction=='ASC')
 
 def import_history_catalog(state,peer):
     added=[]
@@ -431,30 +462,41 @@ def snapshot_route_health(receipts):
                 historical_capture_gaps_preserved=True)
 
 class Worker:
-    def __init__(self, minutes, direction='DESC', audit_round=1, backfill=False):
+    def __init__(self, minutes, direction='DESC', audit_round=1, backfill=False, full_range=False):
         from scripts.annual_actual_firstpass import Drive,service
         self.d=Drive(service()); self.d.direct_readback=True
         self.direction=direction
+        self.full_range=full_range
+        self._claim_cache={};self._peer_owned_keys=set();self._peer_sync_at=0
+        if full_range:
+            self.token=os.environ['GH_TOKEN']
+            self.api='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/contents/.github/live-state/five-stage-leases.json'
         self.backfill=backfill
         self.audit_round=audit_round
-        self.audit_revision=('REMOTE_RAW_SECOND_PASS_20261026' if audit_round==2 else 'REMOTE_RAW_AUDIT_V9')
+        self.audit_revision=('REMOTE_RAW_FULL_RANGE_NATIVE_CHECK_20261027' if full_range else ('REMOTE_RAW_SECOND_PASS_20261026' if audit_round==2 else 'REMOTE_RAW_AUDIT_V9'))
         self.audited_this_run=0
         self.ctrl=self.d.folder(REPORT, 'TAIFEX_INDEPENDENT_STAGE06_ASC' if direction=='ASC' else 'TAIFEX_INDEPENDENT_STAGE06')
         raw=self.d.read(self.ctrl,'CURSOR.json')
         self.state=json.loads(raw) if raw else {'revision':'TAIFEX_INDEPENDENT_V1','receipts':{},'catalog':{},'tick_jobs':{}}
-        if direction=='ASC':
-            previous=self.d.read(self.d.folder(REPORT,'TAIFEX_INDEPENDENT_STAGE06'),'CURSOR.json')
+        if direction=='ASC' or full_range:
+            peer_name='TAIFEX_INDEPENDENT_STAGE06' if direction=='ASC' else 'TAIFEX_INDEPENDENT_STAGE06_ASC'
+            previous=self.d.read(self.d.folder(REPORT,peer_name),'CURSOR.json')
             if previous:
                 peer=json.loads(previous)
                 added=import_history_catalog(self.state,peer)
                 self.state['catalog_sync']=dict(from_run=peer.get('run_id'),added=added,total_forms=len(self.state['catalog']),checked_utc=stamp())
-                for key,entry in peer.get('receipts',{}).items():
-                    if entry.get('status')=='SAVED_BASIC_VERIFIED':
-                        self.state['receipts'].setdefault(key,entry)
+                if full_range:
+                    from scripts.v093_taifex_full_range import merge_verified
+                    self.state['peer_verified_imports']=merge_verified(self.state,peer)
+                else:
+                    for key,entry in peer.get('receipts',{}).items():
+                        if entry.get('status')=='SAVED_BASIC_VERIFIED':
+                            self.state['receipts'].setdefault(key,entry)
         self.recorded_repair_keys=frozenset(self.state.get('receipts',{}))
-        self.state['repair_scope']='RECORDED_RECEIPTS_ONLY; SAVED_RAW_IMMUTABLE'
+        self.state['repair_scope']=('FULL_EXPECTED_HISTORY_AND_RECORDED_FAILURES; SAVED_RAW_IMMUTABLE' if full_range else 'RECORDED_RECEIPTS_ONLY; SAVED_RAW_IMMUTABLE')
         self.state['direction']=direction
-        self.state['partition_policy']='ASC:2000-01-01..2012-12-31; DESC:2013-01-01..LATEST; NO_OVERLAP'
+        self.state['partition_policy']=('BOTH:2000-01-01..LATEST; ASC_OLDEST_FIRST; DESC_NEWEST_FIRST; SHARED_MONTH_YEAR_OWNER' if full_range else 'ASC:2000-01-01..2012-12-31; DESC:2013-01-01..LATEST; NO_OVERLAP')
+        self.state['full_range_enabled']=full_range
         reconcile_interrupted_intents(self.state)
         migrate_repairs(self.state)
         self.until=time.monotonic()+minutes*60; self.today=dt.datetime.now(TZ).date()
@@ -465,11 +507,23 @@ class Worker:
         self.state.pop('last_error',None)
         self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     def live(self): return time.monotonic()<self.until-100
+    def sync_peer(self):
+        if not getattr(self,'full_range',False) or time.monotonic()-getattr(self,'_peer_sync_at',0)<300:return
+        self._peer_sync_at=time.monotonic()
+        name='TAIFEX_INDEPENDENT_STAGE06' if self.direction=='ASC' else 'TAIFEX_INDEPENDENT_STAGE06_ASC'
+        raw=self.d.read(self.d.folder(REPORT,name),'CURSOR.json')
+        if raw:
+            from scripts.v093_taifex_full_range import merge_verified
+            peer=json.loads(raw)
+            imported=merge_verified(self.state,peer)
+            import_history_catalog(self.state,peer)
+            self.state['peer_sync']=dict(imported=imported,from_run=peer.get('run_id'),at=stamp())
+            self.save()
     def eligible(self,job):
         old=self.state['receipts'].get(job['key'],{})
         mirror=official_csv_mirror(job,getattr(self,'today',dt.datetime.now(TZ).date()))
         route=(mirror or job)['url'];host=urllib.parse.urlparse(route).hostname
-        return (not old.get('integrity_hold') and old.get('status') not in TERMINAL and old.get('status')!='EXCLUDED_FUTURE_PUBLISHED_LINK'
+        return (job['key'] not in getattr(self,'_peer_owned_keys',set()) and not old.get('integrity_hold') and old.get('status') not in TERMINAL and old.get('status')!='EXCLUDED_FUTURE_PUBLISHED_LINK'
                 and old.get('attempts',0)<3 and time.time()>=old.get('retry_after_epoch',0)
                 and time.time()>=self.state.get('route_backoff',{}).get(route,0)
                 and time.time()>=self.state.get('source_backoff',{}).get(host,0))
@@ -500,7 +554,7 @@ class Worker:
         report['peer_receipts_recovered_this_run']=getattr(self,'peer_recovered',0)
         report['retained_evidence_recovered_this_run']=getattr(self,'evidence_recovered',0)
         report['unique_saved_files']=len({v.get('file_id') for v in receipts.values() if v.get('status')=='SAVED_BASIC_VERIFIED' and v.get('file_id')})
-        assigned=[v for v in receipts.values() if v.get('request') and ((v['request'].get('end','')<'2013-01-01')==(self.direction=='ASC'))]
+        assigned=[v for v in receipts.values() if v.get('request') and assigned_job(v['request'],self.direction,getattr(self,'full_range',False))]
         report['assigned_saved_units']=sum(v.get('status')=='SAVED_BASIC_VERIFIED' for v in assigned)
         report['imported_or_outside_partition_saved_units']=report['saved_total']-report['assigned_saved_units']
         report['retry_cycles_exhausted_units']=sum(v.get('status')=='UNRESOLVED' and v.get('attempts',0)>=3 and v.get('transport_retry_cycle',1)>=MAX_RETRY_CYCLES for v in assigned)
@@ -516,7 +570,7 @@ class Worker:
         report['planned_history_source_empty_units']=sum(receipts.get(j['key'],{}).get('status')=='SKIPPED_SOURCE_EMPTY' for j in plan)
         report['planned_history_failed_or_pending_units']=sum(receipts.get(j['key'],{}).get('status') not in ('SAVED_BASIC_VERIFIED','SKIPPED_SOURCE_EMPTY','SKIPPED_NOT_PUBLISHED',None) for j in plan)
         report['planned_history_unavailable_units']=sum(receipts.get(j['key'],{}).get('status')=='SKIPPED_NOT_PUBLISHED' for j in plan)
-        report['all_planned_history_saved']=bool(plan) and report['planned_history_saved_units']==len(plan)
+        report['all_planned_history_saved']=bool(plan) and all(receipts.get(j['key'],{}).get('status')=='SAVED_BASIC_VERIFIED' and receipts.get(j['key'],{}).get('remote_readback_hash_verified') and not receipts.get(j['key'],{}).get('integrity_hold') for j in plan)
         report['full_source_universe_certified']=False
         report['missed_snapshot_units']=sum(bool(v.get('status')=='UNRESOLVED' and v.get('interrupted_request') and v.get('request',{}).get('kind')=='snapshot' and v.get('request',{}).get('end','')<self.today.isoformat()) for v in receipts.values())
         self.d.put(self.ctrl,'STATUS.json',encode(report),'application/json',overwrite=True)
@@ -561,7 +615,7 @@ class Worker:
             if entry.get('status')!='SAVED_BASIC_VERIFIED' or not job or entry.get('integrity_hold'):continue
             if job.get('kind')=='snapshot':
                 if self.direction=='ASC':continue
-            elif (job.get('end','')<'2013-01-01')!=(self.direction=='ASC'):continue
+            elif not assigned_job(job,self.direction,getattr(self,'full_range',False)):continue
             signature=entry.get('sha256')
             prior=entry.get('raw_audit',{})
             if prior.get('revision')==getattr(self,'audit_revision','REMOTE_RAW_AUDIT_V9') and prior.get('sha256')==signature and prior.get('status')=='PASS_BASIC':continue
@@ -598,7 +652,7 @@ class Worker:
             job=old.get('request',{})
             if not job:continue
             # ASC imports DESC successes; repair only the lane's assigned history.
-            if job.get('kind')!='snapshot' and ((job['end']<'2013-01-01')!=(self.direction=='ASC')):continue
+            if job.get('kind')!='snapshot' and not assigned_job(job,self.direction,getattr(self,'full_range',False)):continue
             if job.get('kind')=='snapshot' and self.direction=='ASC':continue
             if old.get('offline_recovery_revision')==REPAIR_REVISION:continue
             peer_job=alias_job(job)
@@ -651,6 +705,12 @@ class Worker:
         if old.get('attempts',0)>=3: return True
         if not self.eligible(job):return True
         if not self.live(): return False
+        if getattr(self,'full_range',False):
+            from scripts.v093_taifex_full_range import claim
+            if not claim(self.api,self.token,self.direction,job,self._claim_cache):
+                self._peer_owned_keys.add(key)
+                self.state['peer_owned_waiting_units']=len(self._peer_owned_keys)
+                return True
         self.state['active_unit']={k:v for k,v in job.items() if k!='fields'}
         entry=dict(old,status='REQUEST_INTENT', attempts=old.get('attempts',0)+1,
             lifetime_attempts=max(old.get('lifetime_attempts',0),old.get('attempts',0))+1,
@@ -791,7 +851,7 @@ class Worker:
                 key='HISTORY|'+action+'|'+start.strftime('%Y-%m')
                 if end==last:key+='|'+end.isoformat()
                 jobs.append(make_job(key,SITE+'/cht/3/'+action,'csv',start,end,fields))
-        jobs=canonical_history_jobs(partition_jobs(jobs,self.direction),self.state.get('receipts',{}))
+        jobs=canonical_history_jobs(partition_jobs(jobs,self.direction,getattr(self,'full_range',False)),self.state.get('receipts',{}))
         return sorted(jobs,key=lambda j:(j['end'],j['key'].startswith('MARKET'),j['key']),reverse=self.direction=='DESC')
     def discover_more(self,limit=4):
         completed=self.state.setdefault('discovery_done',[])
@@ -823,10 +883,10 @@ class Worker:
             job=entry.get('request',{})
             if (entry.get('status')=='UNRESOLVED' and transient_error(entry.get('error',''))
                     and job.get('kind') in ('csv','annual','tick') and job.get('end')
-                    and ((job['end']<'2013-01-01')==(self.direction=='ASC'))
+                    and assigned_job(job,self.direction,getattr(self,'full_range',False))
                     and self.eligible(job)):
                 jobs.append(job)
-        return sorted(jobs,key=lambda j:j['key'])
+        return sorted(jobs,key=lambda j:(j['end'],j['key']),reverse=self.direction=='DESC')
     def prepare_backfill(self):
         """One explicitly authorized new repair pass; never reset successes or every wake."""
         if not getattr(self,'backfill',False):return
@@ -837,7 +897,7 @@ class Worker:
             j=entry.get('request',{})
             if (j.get('kind') in ('csv','annual','tick') and j.get('key') and j.get('start')
                     and j.get('end') and j['end']<=self.today.isoformat()
-                    and ((j['end']<'2013-01-01')==(self.direction=='ASC'))):jobs.setdefault(j['key'],j)
+                    and assigned_job(j,self.direction,getattr(self,'full_range',False))):jobs.setdefault(j['key'],j)
         reopened=0;created=0
         for key,job in sorted(jobs.items(),key=lambda kv:(kv[1]['end'],kv[0]),reverse=self.direction=='DESC'):
             old=self.state['receipts'].get(key,{})
@@ -867,6 +927,7 @@ class Worker:
         try:
             self.state['audit_round']=getattr(self,'audit_round',1)
             self.discover()
+            self.sync_peer()
             self.prepare_backfill()
             self.audit_saved()
             self.recover_existing()
@@ -874,6 +935,7 @@ class Worker:
             self.save()
             if self.direction=='ASC':
                 while self.live():
+                    self.sync_peer()
                     before=(self.requests,self.saved)
                     self.batch(self.retry_due_history(),4)
                     history=self.history_jobs()
@@ -888,6 +950,7 @@ class Worker:
             priority=['/CCP_CMLists','/DailyOptionsDelta','/SSFRefferedOpeningPrice','/SSFRefferedOpeningPriceAh','/productsExemptedAH','/DailyMarketReportFut','/DailyMarketReportOpt','/PutCallRatio']
             self.batch([make_job('API|'+self.today.isoformat()+'|'+p,'https://openapi.taifex.com.tw/v1'+p,'snapshot',self.today,self.today) for p in priority if p in self.state['api_paths']],8)
             while self.live():
+                self.sync_peer()
                 before=(self.requests,self.saved)
                 self.batch(self.retry_due_history(),4)
                 ticks=sorted(self.state['tick_jobs'].values(),key=lambda j:(j['end'],j['key']),reverse=True)
@@ -939,12 +1002,12 @@ class Worker:
         for j in jobs:
             if not self.eligible(j):continue
             if not self.process(j):break
-            count+=1
+            count+=int(j['key'] not in getattr(self,'_peer_owned_keys',set()))
             if count>=limit:break
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');p.add_argument('--audit-round',type=int,choices=[1,2],default=1);p.add_argument('--backfill',action='store_true');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');p.add_argument('--audit-round',type=int,choices=[1,2],default=1);p.add_argument('--backfill',action='store_true');p.add_argument('--full-range',action='store_true');a=p.parse_args()
     if not 1<=a.minutes<=50:raise ValueError('INVALID_RUNTIME')
-    Worker(a.minutes,a.direction,a.audit_round,a.backfill).run()
+    Worker(a.minutes,a.direction,a.audit_round,a.backfill,a.full_range).run()
 if __name__=='__main__':main()
 
