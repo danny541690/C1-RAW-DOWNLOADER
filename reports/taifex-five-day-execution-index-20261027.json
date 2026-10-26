@@ -1,0 +1,2384 @@
+{
+  "window": "2026-10-22 00:00 UTC through pre-relaunch inventory 2026-10-26 23:00 UTC; Taiwan approx10/22 08:00 through10/27 07:00",
+  "total_runs": 251,
+  "status_counts": {
+    "success": 188,
+    "cancelled": 41,
+    "failure": 18,
+    "pending": 2,
+    "in_progress": 2
+  },
+  "failed_jobs_read": 14,
+  "no_job_failure_runs": [
+    40185544445,
+    40185543873,
+    40185535004,
+    40185534387
+  ],
+  "failures": [
+    {
+      "id": 120511414420,
+      "run": 39982006903,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "primary_failure": "2026-10-23T15:53:45.9432608Z TimeoutError: The read operation timed out",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/39982006903/job/120511414420"
+    },
+    {
+      "id": 121218398729,
+      "run": 40209800280,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "primary_failure": "2026-10-25T16:03:12.6642340Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40209800280/job/121218398729"
+    },
+    {
+      "id": 121216963357,
+      "run": 40209319650,
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "primary_failure": "2026-10-25T15:57:03.2101000Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40209319650/job/121216963357"
+    },
+    {
+      "id": 121211252014,
+      "run": 40207427159,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "primary_failure": "2026-10-25T15:32:53.9635672Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40207427159/job/121211252014"
+    },
+    {
+      "id": 121209132434,
+      "run": 40206725169,
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "primary_failure": "2026-10-25T15:24:08.6661606Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40206725169/job/121209132434"
+    },
+    {
+      "id": 121204507721,
+      "run": 40205192320,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "primary_failure": "2026-10-25T15:04:39.0287439Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40205192320/job/121204507721"
+    },
+    {
+      "id": 121202628611,
+      "run": 40204562200,
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "primary_failure": "2026-10-25T14:56:42.4497547Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40204562200/job/121202628611"
+    },
+    {
+      "id": 121198364300,
+      "run": 40203137655,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "primary_failure": "2026-10-25T14:38:22.9069931Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40203137655/job/121198364300"
+    },
+    {
+      "id": 121195269303,
+      "run": 40202110407,
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "primary_failure": "2026-10-25T14:25:09.8610027Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40202110407/job/121195269303"
+    },
+    {
+      "id": 121191771216,
+      "run": 40200934575,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "primary_failure": "2026-10-25T14:10:06.6174715Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40200934575/job/121191771216"
+    },
+    {
+      "id": 121188805029,
+      "run": 40199946834,
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "primary_failure": "2026-10-25T13:57:21.1155152Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40199946834/job/121188805029"
+    },
+    {
+      "id": 121186373319,
+      "run": 40199145533,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "primary_failure": "2026-10-25T13:46:50.3522198Z google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40199145533/job/121186373319"
+    },
+    {
+      "id": 120996186332,
+      "run": 40135548495,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "primary_failure": "2026-10-24T21:45:07.4678232Z TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40135548495/job/120996186332"
+    },
+    {
+      "id": 120996186440,
+      "run": 40135548565,
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "primary_failure": "2026-10-24T21:46:43.2981150Z TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40135548565/job/120996186440"
+    }
+  ],
+  "executions": [
+    {
+      "id": 40042564365,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T23:58:17Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "33a3f009fd21dd7d059aede7cbdcd3e8b079a77a"
+    },
+    {
+      "id": 40040424548,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T23:34:20Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "5b73fc72bd24e0127c39b5dfc4109c3edcb2f582"
+    },
+    {
+      "id": 40037990461,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T23:09:04Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "7d2f9feb7d53f508975dda93648361c97bac1e9c"
+    },
+    {
+      "id": 40035443762,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T22:43:34Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "360b731cfffa986de3b3a4f69ef33f21501121c3"
+    },
+    {
+      "id": 40032091668,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T22:12:27Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "200e8295cd737d6430c61eddf96b5e95fbe17e43"
+    },
+    {
+      "id": 40028975441,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T21:44:41Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "01f2b5473ee3ba2052d166fa5e1a7167b323b726"
+    },
+    {
+      "id": 40025316377,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T21:14:37Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "3789b24cdd132f8d80436cad7ac1c4ea71cb791e"
+    },
+    {
+      "id": 40021893447,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T20:47:12Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "4a5a6a58daf076accfc99c5b869efb7552801c9f"
+    },
+    {
+      "id": 40017703033,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T20:14:41Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "dc3cdd1a51c54ebc64ea8b536223161aa3503770"
+    },
+    {
+      "id": 40014979750,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T19:53:40Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "7c74efb7e7ad333ae91f4157bc5644727caeb537"
+    },
+    {
+      "id": 40011350925,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T19:25:53Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "1c8acfc04f6303674d35e63dc5c7dd28cd3904e6"
+    },
+    {
+      "id": 40007474097,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T18:56:53Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "1c185c3566ab48405ab7e49e7c9c1986ccc6562a"
+    },
+    {
+      "id": 40001976177,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T18:16:41Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "df00f335dc4f897af4ace16d1f2752ebc4186faa"
+    },
+    {
+      "id": 39998831530,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T17:53:48Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "2f6a0ec59096d497821fac3f5b7c1501d747c4d0"
+    },
+    {
+      "id": 39994858046,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T17:24:55Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e353e5468f3e092146dab7d4aa24d3f2896c6e72"
+    },
+    {
+      "id": 39991299308,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T16:59:08Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "1cd9517a1c27f5ae748793793bbce23f551cb7f1"
+    },
+    {
+      "id": 39986498908,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T16:24:26Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "345b981f742a2db3334353cb47b35df0ee5eec24"
+    },
+    {
+      "id": 39984057683,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T16:06:59Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "6535925907d7e689da4f204ee7c63da495824ae3"
+    },
+    {
+      "id": 39983441035,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T16:02:39Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "fd4761dc89e1159d19556ab06e0691f2eeee6bec"
+    },
+    {
+      "id": 39983120632,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T16:00:28Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "e26c73b086f6ff3aae322b567e17e6decb0a1924"
+    },
+    {
+      "id": 39983098307,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T16:00:19Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "3bc7e535d2c358800de953ea88f0bbb12419164d"
+    },
+    {
+      "id": 39982869064,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T15:58:41Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "f9363e7c142b434846846b5da2ec1467de11684f"
+    },
+    {
+      "id": 39982721330,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T15:57:37Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "b9ccbf65b1da9093845cd2c23d5df3a17c21fe91"
+    },
+    {
+      "id": 39982006903,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-23T15:52:32Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "a4e2c38c6a5e1948ad954a166f0eb595a4e69b4f"
+    },
+    {
+      "id": 40412713523,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T22:28:35Z",
+      "status": "pending",
+      "conclusion": null,
+      "head": "b2ad952fca1b6c1cee8c563456cdba048a00e913"
+    },
+    {
+      "id": 40412322565,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T22:25:32Z",
+      "status": "in_progress",
+      "conclusion": null,
+      "head": "ba21530ac74738a927d5a7adb67b40a5f92c961f"
+    },
+    {
+      "id": 40412322437,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T22:25:31Z",
+      "status": "in_progress",
+      "conclusion": null,
+      "head": "ba21530ac74738a927d5a7adb67b40a5f92c961f"
+    },
+    {
+      "id": 40412314143,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T22:25:28Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "3b64ffbb4140c9f9bcbdfb6fd1ac42ced59203de"
+    },
+    {
+      "id": 40412308208,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T22:25:25Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "dcee6a33d8f59d8f2a7cf96af6538cad6b8786b3"
+    },
+    {
+      "id": 40411366234,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T22:18:05Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "c32a346602d20ecb3feba00d9574ff6be157c8ed"
+    },
+    {
+      "id": 40408293339,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T21:54:51Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f29612345e8f892308752c9e131b12b578b83413"
+    },
+    {
+      "id": 40408031345,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T21:52:54Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "3fa4158c27a00e9b26cb7b0e9a48ff7b11caaae9"
+    },
+    {
+      "id": 40403792462,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T21:22:24Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "ebd91839794a7d4710d019383ae79c12f7da82da"
+    },
+    {
+      "id": 40402207971,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T21:11:15Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "40d205a73cc2cb11947a9bdb6f3874a905231a71"
+    },
+    {
+      "id": 40400285947,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T20:57:58Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "34809a8b66c39aa98e2a459f1f8b4f40b4669990"
+    },
+    {
+      "id": 40396660632,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T20:33:12Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "2cf7a992b2e1831593a208ef796948a70e55cbc8"
+    },
+    {
+      "id": 40394988756,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T20:22:04Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "2cf7a992b2e1831593a208ef796948a70e55cbc8"
+    },
+    {
+      "id": 40391514039,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T19:58:36Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "19ab8338a51b1ce0177f047da98db8cc2581368f"
+    },
+    {
+      "id": 40391425911,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T19:58:00Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d96eaa7837a4e6ef0c90ea7ab07a9a98ad2513bc"
+    },
+    {
+      "id": 40386670939,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T19:25:53Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "c4368f366a00b10e2dda61974264366d302bbbff"
+    },
+    {
+      "id": 40385473910,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T19:17:56Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f500b6c51490af5101b5bed2c9205b97e4991c8c"
+    },
+    {
+      "id": 40380670440,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T18:46:06Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "3e72b471e728170e9967eb28d7978bf40d073178"
+    },
+    {
+      "id": 40377195880,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T18:22:44Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "c36656146dd3b00ae3ae5ffb6a697f95c8053927"
+    },
+    {
+      "id": 40374027276,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T18:01:26Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "7b1b7eb42acd067c7cecb82eec1c16f418e08453"
+    },
+    {
+      "id": 40371259802,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T17:43:19Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "444462867dc5e91cceed099df9d14b5081063388"
+    },
+    {
+      "id": 40368796769,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T17:27:31Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "dba65a62fa4a81fad5501c9ec4a30f0c80012e31"
+    },
+    {
+      "id": 40365212734,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T17:04:41Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "959695311688d9249bd0d5b1c3a20fd2b019c4d6"
+    },
+    {
+      "id": 40363658585,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T16:54:53Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f0ca34808d5b944be42e3dbda44c0f0beb5e8794"
+    },
+    {
+      "id": 40357514207,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T16:16:27Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "3833b50ef4c33cc3540643b8e8a51a730b36bb5e"
+    },
+    {
+      "id": 40356820214,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T16:12:15Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8dc06a40f18d424679344292a7033d3d21b666e9"
+    },
+    {
+      "id": 40349222152,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T15:25:50Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "ecbd2130819fcc0a31abc1c1690c3c832040f6e6"
+    },
+    {
+      "id": 40349222143,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T15:25:50Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "ecbd2130819fcc0a31abc1c1690c3c832040f6e6"
+    },
+    {
+      "id": 40349206877,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T15:25:44Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "12bfd17c37d330811ce9ec423ae9c50eba60feaa"
+    },
+    {
+      "id": 40349165605,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T15:25:29Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "437f8bd3cb45ba31c7d3f22fe44a124d67bacca2"
+    },
+    {
+      "id": 40347516054,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-26T15:15:23Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "ea8b816ae621f158ba774dac45db936b919aba60"
+    },
+    {
+      "id": 40347506553,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T15:15:20Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "ea8b816ae621f158ba774dac45db936b919aba60"
+    },
+    {
+      "id": 40209800280,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T16:02:49Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40209319650,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T15:56:43Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40207427159,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T15:32:29Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40206725169,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T15:23:45Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40205192320,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T15:04:18Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40204562200,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T14:56:16Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40203137655,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T14:37:53Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40202110407,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T14:24:48Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40200934575,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T14:09:46Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40199946834,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T13:56:59Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40072161008,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T06:56:16Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "f860a784226ce773cc75eaae9cddd06a31818554"
+    },
+    {
+      "id": 40071248212,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T06:42:13Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "f860a784226ce773cc75eaae9cddd06a31818554"
+    },
+    {
+      "id": 40069154827,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T06:10:36Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8d22f0ec5bd43086a48d0e3ffa3885407a51d2a2"
+    },
+    {
+      "id": 40069072678,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T06:09:23Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "8d22f0ec5bd43086a48d0e3ffa3885407a51d2a2"
+    },
+    {
+      "id": 40067521241,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T05:45:46Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "e825e7ae70583d5eeec9dcbf8cc23dd5554acaf4"
+    },
+    {
+      "id": 40067465734,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T05:45:00Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e825e7ae70583d5eeec9dcbf8cc23dd5554acaf4"
+    },
+    {
+      "id": 40065436694,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T05:13:52Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "3fe9eea36c7fc4f875ecf565fd69fb784f714edc"
+    },
+    {
+      "id": 40065436657,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T05:13:52Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "3fe9eea36c7fc4f875ecf565fd69fb784f714edc"
+    },
+    {
+      "id": 40065259246,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T05:11:04Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "a56d8930842d57779a7cdfb47a29b427763e17f1"
+    },
+    {
+      "id": 40064896749,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T05:05:27Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "00a9eec54e0b8d3f033b4f08750c2f0278e43323"
+    },
+    {
+      "id": 40063538259,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T04:44:33Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "4b3ef63567bfb68561f227126267596fc73fa537"
+    },
+    {
+      "id": 40061520171,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T04:13:53Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "797701cf7f6f71e5890550001cb81937f011ac8f"
+    },
+    {
+      "id": 40059653620,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T03:46:10Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d16f7eb135467ee058cb732d639108612a837aff"
+    },
+    {
+      "id": 40057458004,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T03:14:01Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "16d9d3dd36a8380a4f758d1b6fffe0a1775be43a"
+    },
+    {
+      "id": 40055781255,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T02:49:36Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "dbd0535e4b9042575af49e7221632d8d46659a5a"
+    },
+    {
+      "id": 40053557941,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T02:17:32Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "03023aa2a8675756b412dd8c0b5832eb05d2e348"
+    },
+    {
+      "id": 40051855485,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T01:53:59Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "cdf4fe5f47eacb5e4f7cda9e890b253a8d76449f"
+    },
+    {
+      "id": 40049151678,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T01:18:00Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f961f83e1976d0bd2b88515497095d2ca0ab2455"
+    },
+    {
+      "id": 40045133853,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T00:28:21Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "cb43aaf6b68b7a533f37c743ea877fb8a04658af"
+    },
+    {
+      "id": 40165340433,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T05:23:06Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "2c3f4c7e46b734454f599a9789731951ccdbd59c"
+    },
+    {
+      "id": 40164825678,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T05:14:50Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "2c3f4c7e46b734454f599a9789731951ccdbd59c"
+    },
+    {
+      "id": 40163812961,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T04:58:16Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "759a3dd5d6beb9796f8b5ebdcb660ecdd98208c2"
+    },
+    {
+      "id": 40163220176,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T04:48:24Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8689fe5bde37ea1f7bc36746795ee271cf4d300d"
+    },
+    {
+      "id": 40161811465,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T04:25:13Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "695d5b2e194c70219f6e40cd8fe9cd7f7e1671f2"
+    },
+    {
+      "id": 40161287087,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T04:16:31Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "695d5b2e194c70219f6e40cd8fe9cd7f7e1671f2"
+    },
+    {
+      "id": 40160183695,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T03:58:42Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "a1d45f98b6276cb5068f2fe1432806e64c1540a6"
+    },
+    {
+      "id": 40159458899,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T03:46:40Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "dff724b65fc5cea06d4f0e359de02e199aaffa4f"
+    },
+    {
+      "id": 40157878416,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T03:21:00Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "05184d9a9913cb7f0c2b0b8ad971050b15f601dd"
+    },
+    {
+      "id": 40157347857,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T03:12:20Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "05184d9a9913cb7f0c2b0b8ad971050b15f601dd"
+    },
+    {
+      "id": 40156383858,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T02:57:03Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "7dbfab0068ea029b897eb60c62f787533063d027"
+    },
+    {
+      "id": 40155657917,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T02:45:19Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "6c3760b1e2fcb506aeef733d4de519f07440cceb"
+    },
+    {
+      "id": 40154097184,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T02:20:50Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d25708f2cf72cc92664634c9a7532ed216ad95ea"
+    },
+    {
+      "id": 40153493270,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T02:11:19Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8d44e048413d4f630beb37e8789bc081d55f8d62"
+    },
+    {
+      "id": 40152524854,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T01:56:05Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "4fe417d626a9c591564465eb57c7d3271f626226"
+    },
+    {
+      "id": 40151702173,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T01:42:42Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "c1fce3169287c4410a2667047cf578168a41b0eb"
+    },
+    {
+      "id": 40150608252,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T01:26:05Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "b7b9ce4e29e74e2b1d29a8336ad49e3a86829d65"
+    },
+    {
+      "id": 40149858054,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T01:14:33Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "0d0459fd31db4dda41ec3a87dce68872aa7b2085"
+    },
+    {
+      "id": 40148686910,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T00:57:05Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "b30270496a8995915b5f5b1debad0db6cce568a2"
+    },
+    {
+      "id": 40147479687,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T00:38:27Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "757008863d51e42bc74f34af7ca99b76e2e3c5d8"
+    },
+    {
+      "id": 40146033262,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T00:16:11Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "6f78b48860d0b6f21664369e34ca14610bb8ec26"
+    },
+    {
+      "id": 40144981243,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T00:00:24Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "9d3305a158745e6051884ceb6ea621c58d5af374"
+    },
+    {
+      "id": 40144740856,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T23:56:35Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "8b8e7b44fd6ec6736e4ce84a71984198544016a6"
+    },
+    {
+      "id": 40143968425,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T23:44:42Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "9b113b11879a5c2b70915f2dce8c4e14e41df51c"
+    },
+    {
+      "id": 40143588507,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T23:38:54Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "18e22c983eff5d1683b3afa2c426577cb049460c"
+    },
+    {
+      "id": 40142700004,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T23:25:48Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "bc1d1bae1812420ae6731ef0ee0cf9a284ffdd40"
+    },
+    {
+      "id": 40141962249,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T23:15:11Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "128339fadcfcd76a3b1e6bf49b9ba38ec54fdd0a"
+    },
+    {
+      "id": 40141270485,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T23:05:14Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "128339fadcfcd76a3b1e6bf49b9ba38ec54fdd0a"
+    },
+    {
+      "id": 40140732329,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T22:57:35Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "1eb4d931e283f60452da26f3a9f311575486485a"
+    },
+    {
+      "id": 40139630097,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T22:41:23Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "872c3042d7e199d5dbb45cdfc0236b76d712c778"
+    },
+    {
+      "id": 40138880140,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T22:30:47Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "322af3bf884ddc5865680d726a553f28b97dda11"
+    },
+    {
+      "id": 40138235261,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T22:21:54Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "b2fa60895575a488d9f0e4f7a4fd5bd5ca9145bb"
+    },
+    {
+      "id": 40138235242,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T22:21:54Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "b2fa60895575a488d9f0e4f7a4fd5bd5ca9145bb"
+    },
+    {
+      "id": 40138100276,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T22:20:04Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d27ccd9b5cd59df13b6c34bcc9cea4436802b167"
+    },
+    {
+      "id": 40138100281,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T22:20:04Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "d27ccd9b5cd59df13b6c34bcc9cea4436802b167"
+    },
+    {
+      "id": 40137877201,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T22:16:57Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f41e458e15881f42491984a8884e57ba226a8090"
+    },
+    {
+      "id": 40137877128,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T22:16:57Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f41e458e15881f42491984a8884e57ba226a8090"
+    },
+    {
+      "id": 40137545416,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T22:12:22Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d77ad57f02a23df5bd91eb2d7014c5a75735fd23"
+    },
+    {
+      "id": 40137163960,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T22:07:02Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d77ad57f02a23df5bd91eb2d7014c5a75735fd23"
+    },
+    {
+      "id": 40137159802,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T22:06:59Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d77ad57f02a23df5bd91eb2d7014c5a75735fd23"
+    },
+    {
+      "id": 40137159803,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T22:06:59Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d77ad57f02a23df5bd91eb2d7014c5a75735fd23"
+    },
+    {
+      "id": 40136284389,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T21:54:45Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "005c9bf63e7f9494095d4cab7757ec552b6be020"
+    },
+    {
+      "id": 40135717610,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T21:46:49Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e2ec4aecad23be4526f545fe1182e1fbafedfe3f"
+    },
+    {
+      "id": 40135717666,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T21:46:49Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e2ec4aecad23be4526f545fe1182e1fbafedfe3f"
+    },
+    {
+      "id": 40199145533,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T13:46:22Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "6e67fb8b5be4bb695b3d0fefa57a92e8db14a1d3"
+    },
+    {
+      "id": 40197168879,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T13:20:36Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "949fa2afb71433188d5ad1ecf465ec249b8b99b1"
+    },
+    {
+      "id": 40196784746,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T13:15:31Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "949fa2afb71433188d5ad1ecf465ec249b8b99b1"
+    },
+    {
+      "id": 40194252008,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T12:41:46Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "1051fec6f0e7fb14481bbe3a87ff8c3b5d4926c0"
+    },
+    {
+      "id": 40193994089,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T12:38:22Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "669656d86034c203dfcc2d81c736f522b8bc89a0"
+    },
+    {
+      "id": 40191603152,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T12:05:27Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "1a456b427bc8fb1f045be36149ac05f061576527"
+    },
+    {
+      "id": 40191281090,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T12:01:00Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "3e9bd0d6069c65678ce82234e2efe877fab68e3a"
+    },
+    {
+      "id": 40189681523,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T11:38:03Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "caa6112780f66e334d4e5ae6feb388c7bcf7ab98"
+    },
+    {
+      "id": 40189293385,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T11:32:24Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "209d781d21d5e2cb1d633b12fe6000c25b638476"
+    },
+    {
+      "id": 40187543381,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T11:07:20Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8cdc4fcc789d2a81a4a3e4aea7e437a7fd90e4b0"
+    },
+    {
+      "id": 40187411621,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T11:05:23Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "10265a0f24782fc422b1bc1f9ae63c20097ffe45"
+    },
+    {
+      "id": 40187015706,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T10:59:44Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "dd5973f0e05f946447704940d93f4f1d525ce85c"
+    },
+    {
+      "id": 40187015702,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T10:59:44Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "dd5973f0e05f946447704940d93f4f1d525ce85c"
+    },
+    {
+      "id": 40186752301,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T10:55:35Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "18b10e4b2face181677d143f8c58e56a128a5549"
+    },
+    {
+      "id": 40185580398,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T10:38:06Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "71cf55697c8c5d540b14790be46e24c5c46083b2"
+    },
+    {
+      "id": 40185580523,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T10:38:06Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "71cf55697c8c5d540b14790be46e24c5c46083b2"
+    },
+    {
+      "id": 40185544445,
+      "name": ".github/workflows/v093-taifex-independent.yml",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T10:37:33Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "5e0306bf64d2ce9a61a1f86f788aa80987d6bf99"
+    },
+    {
+      "id": 40185543873,
+      "name": ".github/workflows/v093-taifex-independent-asc.yml",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T10:37:32Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "5e0306bf64d2ce9a61a1f86f788aa80987d6bf99"
+    },
+    {
+      "id": 40185535004,
+      "name": ".github/workflows/v093-taifex-independent.yml",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T10:37:25Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "a824ed910ed228ff39fd0ada830c4f62214c177e"
+    },
+    {
+      "id": 40185534387,
+      "name": ".github/workflows/v093-taifex-independent-asc.yml",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T10:37:24Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "a824ed910ed228ff39fd0ada830c4f62214c177e"
+    },
+    {
+      "id": 40185358410,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T10:34:50Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "5226e6ddb0fcea2a69bf235d13713bc44023e21c"
+    },
+    {
+      "id": 40185063524,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T10:30:34Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "889b7713110e6d9fc4ef4d329ed452c04d489b26"
+    },
+    {
+      "id": 40183584959,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T10:09:10Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "087ddc0c9b3c3f73c0c92294a21904181a250046"
+    },
+    {
+      "id": 40183113958,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T10:02:22Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "26013f70b991479b3342a26925039fd352ce6494"
+    },
+    {
+      "id": 40181994255,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T09:45:55Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "00572932dcf7da8711948f6257a99829ea889971"
+    },
+    {
+      "id": 40181035525,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T09:32:01Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d4cbb520af3b00be8248b2cac918318eaf6dce8d"
+    },
+    {
+      "id": 40179915494,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T09:15:48Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "5b1e025580c5832c045b63b48b615bea73bcd22b"
+    },
+    {
+      "id": 40179073760,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T09:03:23Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "85cb9c9cbab3d335a689f5f268df87bd1fafff21"
+    },
+    {
+      "id": 40178490248,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T08:54:36Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "746c31b5a015db458d8016ed1f9112ae5f7affa0"
+    },
+    {
+      "id": 40177043930,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T08:32:44Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "61cfa15617be9f80f132ac0ca802d742a9cf7947"
+    },
+    {
+      "id": 40176210368,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T08:20:17Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "14ae2910b1a50198deff0f3e48abbc64ba084b58"
+    },
+    {
+      "id": 40175255689,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T08:05:22Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "57ac0893c8cb5b89fb1a9e97479e491c63269faa"
+    },
+    {
+      "id": 40174823999,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T07:58:49Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "b9dffe8d5c86e61da039ef93d817bf1b1740c145"
+    },
+    {
+      "id": 40173536412,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T07:38:31Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "89e79e0ed61be88b989abee1e2b2ffaa456a4808"
+    },
+    {
+      "id": 40172866763,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T07:28:02Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "4441e2c27ef384e48668e036b24b153ea223651c"
+    },
+    {
+      "id": 40171459460,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T07:05:13Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "1129ae9dcda617769c44840265d988b51d5b92d2"
+    },
+    {
+      "id": 40170870039,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T06:55:51Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "634343fa027de9f40c4e3dc736b40b91c621893a"
+    },
+    {
+      "id": 40168617874,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T06:18:17Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "5efe03f9214f2c10401a53e38cee0448385f10ad"
+    },
+    {
+      "id": 40168160349,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T06:10:25Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "5efe03f9214f2c10401a53e38cee0448385f10ad"
+    },
+    {
+      "id": 40167208361,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-25T05:54:20Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "162f1e65eb8fde3f761c130f40170066c92679af"
+    },
+    {
+      "id": 40166561728,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-25T05:43:26Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8876c99b7682b3107b18a3ef50c620e0cfdd5738"
+    },
+    {
+      "id": 40135548495,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T21:44:32Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "634d48a9a811ff71b5892b4e42e017e806c7f19e"
+    },
+    {
+      "id": 40135548565,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T21:44:32Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "634d48a9a811ff71b5892b4e42e017e806c7f19e"
+    },
+    {
+      "id": 40135477342,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T21:43:32Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "72dc8c0f11d90992944779058adcf5f3206db8bf"
+    },
+    {
+      "id": 40134468038,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T21:29:52Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "3baa55d0e00e78d74c3330872a6acb8fb7145021"
+    },
+    {
+      "id": 40133263189,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T21:13:27Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "b0b624c84f61b0a47963753df3557c3cf1cfdaa9"
+    },
+    {
+      "id": 40132691414,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T21:05:40Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "b0b624c84f61b0a47963753df3557c3cf1cfdaa9"
+    },
+    {
+      "id": 40131815011,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T20:53:37Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "7e2f000171a6a18949bc7f17dd0a9e79e3c77fa0"
+    },
+    {
+      "id": 40130860052,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T20:40:43Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "74dc7ac2e72d3696f4def42b4d3729816e81a4fe"
+    },
+    {
+      "id": 40129962914,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T20:28:53Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "4d3aaf4a85cd92896fac34f50a73661d7bb7fa0a"
+    },
+    {
+      "id": 40128726703,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T20:12:12Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "c416da3d520fa47332ebea3cc489556665195188"
+    },
+    {
+      "id": 40128010998,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T20:02:35Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "a2e879cb29cc27a4271280530001760329f7b135"
+    },
+    {
+      "id": 40127604890,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T19:57:11Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "a7b9224553a2156bf0ff4ff9a3327fcb444ef6ed"
+    },
+    {
+      "id": 40126470972,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T19:41:49Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "513ef71a4a3f0b15af85458dd66558188f133f66"
+    },
+    {
+      "id": 40126233196,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T19:38:38Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "009fe94e16efc954220d0e8719f030746a669ce2"
+    },
+    {
+      "id": 40124545040,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T19:16:30Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "01f22ad2e04874e8c313a99f2a68cd5c24ccfe96"
+    },
+    {
+      "id": 40124297975,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T19:13:20Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "01f22ad2e04874e8c313a99f2a68cd5c24ccfe96"
+    },
+    {
+      "id": 40122706352,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T18:52:30Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "5037fa62224f22e91a68c24ed88ff3b4cadd4d8b"
+    },
+    {
+      "id": 40122507323,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T18:49:58Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "59edc596e6e9438676b4bf36d3ea24930560f39b"
+    },
+    {
+      "id": 40120089002,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T18:18:25Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "369f187694340b1cbeb650b4a9abf73bfd74e48b"
+    },
+    {
+      "id": 40119976712,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T18:16:53Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "369f187694340b1cbeb650b4a9abf73bfd74e48b"
+    },
+    {
+      "id": 40118506782,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T17:57:51Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "7492c2f73106e406e599dc26562a7106038c5e6f"
+    },
+    {
+      "id": 40118491639,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T17:57:40Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "ec528c3f5d006cbc697b33bb9ecb54cfbf30db92"
+    },
+    {
+      "id": 40116754283,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T17:34:42Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "9debbd81de03f5b43516f2ac66b5ba215ed2ccda"
+    },
+    {
+      "id": 40116613549,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T17:32:48Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "032ea92bd2a16292ce8c85718a1ab17401b0e2c6"
+    },
+    {
+      "id": 40114859946,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T17:09:50Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "4d16a64f82d9d3c18e2d135c83523c789d489d1c"
+    },
+    {
+      "id": 40114794616,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T17:08:56Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "4d16a64f82d9d3c18e2d135c83523c789d489d1c"
+    },
+    {
+      "id": 40113008468,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T16:45:10Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "0f706d9a620d4ff8b6183d4cc454712a6e6111a0"
+    },
+    {
+      "id": 40112956406,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T16:44:29Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "792b6e96776cc62e76d4b827eb132d4648f88082"
+    },
+    {
+      "id": 40111097096,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T16:20:24Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "bed0d42ecb5e6bd6a5cfa5121e80b004b80543bc"
+    },
+    {
+      "id": 40111096660,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T16:20:24Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "bed0d42ecb5e6bd6a5cfa5121e80b004b80543bc"
+    },
+    {
+      "id": 40110868183,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T16:17:26Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "17e7392bb84ab1a0904fb44bc0836e926b428768"
+    },
+    {
+      "id": 40110868266,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T16:17:26Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "17e7392bb84ab1a0904fb44bc0836e926b428768"
+    },
+    {
+      "id": 40110659517,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T16:14:48Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "20b3dc60e5b449a4ecb3f23eda5173d632874148"
+    },
+    {
+      "id": 40110619463,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T16:14:17Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "33277d83937d2692404f96030b83877327e41637"
+    },
+    {
+      "id": 40109795017,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T16:03:34Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "aa043a5d385ea4d3107e8a544efa7e5af6057463"
+    },
+    {
+      "id": 40109795093,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T16:03:34Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "aa043a5d385ea4d3107e8a544efa7e5af6057463"
+    },
+    {
+      "id": 40108942108,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T15:52:18Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f40575e9a15510ff9caa48712facfd9884f560e6"
+    },
+    {
+      "id": 40108937545,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T15:52:14Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "5efaa60345bfd10d458d369acc9cd04bf267567c"
+    },
+    {
+      "id": 40106713537,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T15:22:57Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "cf6faf48c1298fc3dc7648c81cdb079c7d024fae"
+    },
+    {
+      "id": 40106655755,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T15:22:12Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "90e59bc8a1267159cc3adb9b46cadead8b51c134"
+    },
+    {
+      "id": 40104963265,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T15:00:00Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "4dc589bdff33e17069f1bfbbd6021ca960060686"
+    },
+    {
+      "id": 40104958590,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T14:59:56Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "4dc589bdff33e17069f1bfbbd6021ca960060686"
+    },
+    {
+      "id": 40102986244,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T14:32:52Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "69936e834d4fd4c4de936fc5d0c2b304afbcccc7"
+    },
+    {
+      "id": 40102907960,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T14:31:51Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "3ff37d2f0f232c33ca9d267bed63abc59ac3051a"
+    },
+    {
+      "id": 40101085036,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T14:07:18Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "628763996a1f2ce14671eadadf918e9f6d03b5b9"
+    },
+    {
+      "id": 40101063573,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T14:07:02Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "b36067d89cd2a947ab3388057e105e3c2f1bbb8e"
+    },
+    {
+      "id": 40099358341,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T13:43:17Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "955fd06dace5ff762542959f1df74848f43132c4"
+    },
+    {
+      "id": 40099282858,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T13:42:13Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "61ea94f3d41916d45c4820a44fdefd3fa8cc009b"
+    },
+    {
+      "id": 40097175116,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T13:12:57Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "0af170beb7be927731dfc244b7faef733cac66c6"
+    },
+    {
+      "id": 40097110199,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T13:12:04Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "a4bece43d85ac53ee58f5dec841077aca7685f57"
+    },
+    {
+      "id": 40094649579,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T12:36:48Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "9a8e8b3c6a098e98953a595b18ed11837af3190d"
+    },
+    {
+      "id": 40094614930,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T12:36:16Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "ca7abe2d6120e389718b8a61b4eb257e2cc0794a"
+    },
+    {
+      "id": 40092213571,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T12:01:15Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "58a6d25633f17833247d5d3b8087f86c543888e3"
+    },
+    {
+      "id": 40092190936,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T12:00:57Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e9bb61edcb0f2a6998fe3c1dd43420a8f36e89ca"
+    },
+    {
+      "id": 40090451155,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T11:34:32Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "ab0a5b5840df36801f1eb8c8c06d83d6e0cba0ca"
+    },
+    {
+      "id": 40090178161,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T11:30:29Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "c3c7ecf16ab2661eaeaa24d891a9cf68f6bf4ded"
+    },
+    {
+      "id": 40088688795,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T11:08:24Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "d72ad4f345cd8ceef3de7d95f81ab934d9493273"
+    },
+    {
+      "id": 40088115863,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T11:00:05Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "f7e333b7d617cc87b89f430135f9031a0adfd0e3"
+    },
+    {
+      "id": 40087145931,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T10:45:04Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e856ccc03f84faa9a5e432ee9bd21e10511f837d"
+    },
+    {
+      "id": 40086461504,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T10:34:36Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "26c5368fdfdf9327f80575e069e94ecf9f91e864"
+    },
+    {
+      "id": 40084917403,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T10:11:22Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "c65d309bfe518cc128d1a2bf0d43642becf29481"
+    },
+    {
+      "id": 40084800615,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T10:09:39Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "020a2c3179c8bf0df7035364613f7bca25447dcf"
+    },
+    {
+      "id": 40084800556,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T10:09:39Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "020a2c3179c8bf0df7035364613f7bca25447dcf"
+    },
+    {
+      "id": 40084760966,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T10:09:01Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "75e525c99d5d8f63e946511814bb8fc0976fd03d"
+    },
+    {
+      "id": 40084471956,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T10:04:38Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "0651f4b266d16b59f2e7ca9f4f6a6bbaf1c1a5c9"
+    },
+    {
+      "id": 40084471941,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T10:04:38Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "0651f4b266d16b59f2e7ca9f4f6a6bbaf1c1a5c9"
+    },
+    {
+      "id": 40083428658,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T09:48:43Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "1922d198511f15b44ddb34b2dbee529b6f6a5e45"
+    },
+    {
+      "id": 40083147956,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T09:44:30Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "f5f1c1b694fed35e4d79cded7818776d49600f86"
+    },
+    {
+      "id": 40081356900,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T09:17:20Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e416e56fb5bfd2eb6c0d4cbd2e96e1bed21b1616"
+    },
+    {
+      "id": 40080964653,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T09:11:21Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "e416e56fb5bfd2eb6c0d4cbd2e96e1bed21b1616"
+    },
+    {
+      "id": 40079948359,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T08:55:52Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "8ab22cab5ffc99fdf7fddd8f3aafcaef75300323"
+    },
+    {
+      "id": 40079375690,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T08:46:54Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "3de7aa57072438dca0434472a2852e4317a625b2"
+    },
+    {
+      "id": 40077720015,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T08:21:31Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "861e5b22cf713540a6e45e3031b76726d8ec57fa"
+    },
+    {
+      "id": 40077327139,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T08:15:28Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "861e5b22cf713540a6e45e3031b76726d8ec57fa"
+    },
+    {
+      "id": 40076199239,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T07:58:11Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "861e5b22cf713540a6e45e3031b76726d8ec57fa"
+    },
+    {
+      "id": 40075999776,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T07:54:56Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "6124ddc5719b07c915baff44a9a47fecca9edf7d"
+    },
+    {
+      "id": 40074250219,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T07:28:12Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "a12e2a1196a98d1a860ee8a358636b57e9f74058"
+    },
+    {
+      "id": 40073887476,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T07:22:39Z",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head": "5099b5111077abbe84a43e46db4a34e03fbeec80"
+    },
+    {
+      "id": 40073494634,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-24T07:16:37Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "87998bab8301c41969a444e0fb1ec3a4a9ae1c5f"
+    },
+    {
+      "id": 40073494590,
+      "name": "JARVIS independent TAIFEX download 6-1 ASC",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "created": "2026-10-24T07:16:37Z",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "87998bab8301c41969a444e0fb1ec3a4a9ae1c5f"
+    },
+    {
+      "id": 40415549633,
+      "name": "JARVIS independent TAIFEX download 6",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "created": "2026-10-26T22:50:58Z",
+      "status": "pending",
+      "conclusion": null,
+      "head": "8410d7b27b190066307646c3e9a697209bb54a98"
+    }
+  ],
+  "limitations": [
+    "Current receipt ledgers retain all current gap units and some histories, not every discarded runtime message.",
+    "All 14 available failed jobs were read. Four failed runs have no job logs; they are not provider download attempts.",
+    "Success means workflow exited normally, not complete source coverage."
+  ]
+}
