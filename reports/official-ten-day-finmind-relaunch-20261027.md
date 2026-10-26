@@ -68,3 +68,10 @@ scripts/v093_official_finmind_gapfill.py；scripts/v093_official_repair.py；tes
 - https://finmind.github.io/tutor/TaiwanMarket/DataList/
 - https://finmind.github.io/tutor/TaiwanMarket/Fundamental/
 原廠資料集可用性及額度仍以實際回應為準；不把第三方補件誤標官方原件。
+
+## 線上首筆請求查核與追加修正（10/27 06:58前後）
+新版FinMind初次已真正發出請求：2014-06、1101、TaiwanStockPrice；FinMind回傳封包未包含該單元期望的2014-06-02，因此標記FINMIND_NO_REQUESTED_GAP_DATE，沒有冒充補齊。既有官方價格收據證實的日期從06-03等交易日開始；對06-02並無官方交易日證明。
+追加：日資料只對已存在官方價格交易日證據的明確缺口發起逐檔請求；未知交易日保留blocked，不把空白直接改為不存在。blocked去重，避免大量重複訊息。
+追加：長月份每45秒檢查一次FinMind待補工作（共享預算仍至少18秒一筆、總上限200/小時、每批每條最多40次），避免整批僅在進月時請求一次。這是輪詢間隔，不是承諾每45秒必有有效來源回應。
+本機757項回歸通過；更新來源commit a7e53e1aef846bda91788d6bc2bc9f096d72ef89。
+最新正式執行：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40416094064 ；雲端測試步驟已通過，後續以這個run核對實際請求與存檔成果。
