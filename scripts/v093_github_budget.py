@@ -5,6 +5,7 @@ import os
 import time
 import urllib.error
 import urllib.request
+import http.client
 
 
 def rate_fields(headers):
@@ -17,16 +18,23 @@ def rate_fields(headers):
 
 
 def open_json(request,timeout=35):
-    try:
-        with urllib.request.urlopen(request,timeout=timeout) as response:
-            return json.load(response),rate_fields(response.headers)
-    except urllib.error.HTTPError as exc:
-        if exc.code in (403,429):
-            info=rate_fields(exc.headers)
-            try:message=str(json.loads(exc.read(4096)).get('message',''))[:200]
-            except (ValueError,UnicodeDecodeError):message=str(exc.reason)[:100]
-            print('GITHUB_API_BACKOFF '+json.dumps(dict(http_status=exc.code,message=message,**info)),flush=True)
-        raise
+    # Only read-only requests can be replayed after an ambiguous transport error.
+    attempts=4 if request.get_method()=='GET' else 1
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(request,timeout=timeout) as response:
+                return json.load(response),rate_fields(response.headers)
+        except urllib.error.HTTPError as exc:
+            if exc.code in (403,429):
+                info=rate_fields(exc.headers)
+                try:message=str(json.loads(exc.read(4096)).get('message',''))[:200]
+                except (ValueError,UnicodeDecodeError):message=str(exc.reason)[:100]
+                print('GITHUB_API_BACKOFF '+json.dumps(dict(http_status=exc.code,message=message,**info)),flush=True)
+            if exc.code not in (500,502,503,504) or attempt+1>=attempts:raise
+        except (urllib.error.URLError,TimeoutError,ConnectionError,http.client.IncompleteRead):
+            if attempt+1>=attempts:raise
+        print('GITHUB_READ_TRANSIENT_RETRY '+str(attempt+1),flush=True)
+        time.sleep(min(2**attempt,8))
 
 
 def wait_for_budget(minimum=400,max_wait=1200):
@@ -52,3 +60,4 @@ def main():
 
 
 if __name__=='__main__':main()
+
