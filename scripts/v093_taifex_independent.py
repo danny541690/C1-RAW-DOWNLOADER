@@ -23,6 +23,7 @@ ROUTE_PAIRS = (('bargainOrderDown','dlBargainOrderDown'),
                ('singleOrderDown','dlSingleOrderDown'),
                ('combinationOrderDown','dlCombinationOrderDown'))
 MAX_RETRY_CYCLES = 3
+BACKFILL_PASS = 'TAIFEX_RAW_BACKFILL_20261027_V1'
 TICK_PAGES = ['dlFutPrevious30DaysSalesData', 'dlOptPrevious30DaysSalesData',
               'dlFutPrevious30DaysSpreadSalesData', 'dlFutPrevious30DaysSpreadOrdersReport', 'dlOptDailyDelta']
 TERMINAL = {'SAVED_BASIC_VERIFIED', 'SKIPPED_SOURCE_EMPTY', 'SKIPPED_NOT_PUBLISHED'}
@@ -430,10 +431,11 @@ def snapshot_route_health(receipts):
                 historical_capture_gaps_preserved=True)
 
 class Worker:
-    def __init__(self, minutes, direction='DESC', audit_round=1):
+    def __init__(self, minutes, direction='DESC', audit_round=1, backfill=False):
         from scripts.annual_actual_firstpass import Drive,service
         self.d=Drive(service()); self.d.direct_readback=True
         self.direction=direction
+        self.backfill=backfill
         self.audit_round=audit_round
         self.audit_revision=('REMOTE_RAW_SECOND_PASS_20261026' if audit_round==2 else 'REMOTE_RAW_AUDIT_V9')
         self.audited_this_run=0
@@ -485,6 +487,8 @@ class Worker:
             actual_saved_range={'min':min(v['min'] for v in periods) if periods else None,'max':max(v['max'] for v in periods) if periods else None},
             requested_range={'min':'2000-01-01','max':self.today.isoformat()},
             historical_forms=len(self.state['catalog']), tick_files_discovered=len(self.state['tick_jobs']))
+        report['backfill_enabled']=getattr(self,'backfill',False)
+        report['backfill_pass']=self.state.get('backfill_pass')
         report['audit_round']=getattr(self,'audit_round',1)
         report['audited_this_run']=getattr(self,'audited_this_run',0)
         report['schedule_number']='6' if self.direction=='DESC' else '6-1'
@@ -510,10 +514,14 @@ class Worker:
         report['planned_history_unattempted_units']=sum(j['key'] not in receipts for j in plan)
         report['planned_history_saved_units']=sum(receipts.get(j['key'],{}).get('status')=='SAVED_BASIC_VERIFIED' for j in plan)
         report['planned_history_source_empty_units']=sum(receipts.get(j['key'],{}).get('status')=='SKIPPED_SOURCE_EMPTY' for j in plan)
+        report['planned_history_failed_or_pending_units']=sum(receipts.get(j['key'],{}).get('status') not in ('SAVED_BASIC_VERIFIED','SKIPPED_SOURCE_EMPTY','SKIPPED_NOT_PUBLISHED',None) for j in plan)
+        report['planned_history_unavailable_units']=sum(receipts.get(j['key'],{}).get('status')=='SKIPPED_NOT_PUBLISHED' for j in plan)
+        report['all_planned_history_saved']=bool(plan) and report['planned_history_saved_units']==len(plan)
+        report['full_source_universe_certified']=False
         report['missed_snapshot_units']=sum(bool(v.get('status')=='UNRESOLVED' and v.get('interrupted_request') and v.get('request',{}).get('kind')=='snapshot' and v.get('request',{}).get('end','')<self.today.isoformat()) for v in receipts.values())
         self.d.put(self.ctrl,'STATUS.json',encode(report),'application/json',overwrite=True)
         self._status_last=time.monotonic()
-        print('TAIFEX_LIVE_STATUS '+json.dumps({k:report.get(k) for k in ('run_id','direction','schedule_number','audit_round','status','saved_this_run','source_requests_this_run','audited_this_run','assigned_saved_units','unresolved','retry_cycles_exhausted_units','planned_history_units','planned_history_unattempted_units','raw_audit_summary','updated_utc')},ensure_ascii=False),flush=True)
+        print('TAIFEX_LIVE_STATUS '+json.dumps({k:report.get(k) for k in ('run_id','direction','schedule_number','audit_round','status','saved_this_run','source_requests_this_run','audited_this_run','assigned_saved_units','unresolved','retry_cycles_exhausted_units','planned_history_units','planned_history_unattempted_units','planned_history_saved_units','planned_history_source_empty_units','planned_history_failed_or_pending_units','planned_history_unavailable_units','all_planned_history_saved','backfill_pass','backfill_inventory','raw_audit_summary','updated_utc')},ensure_ascii=False),flush=True)
     def request(self,url,fields=None,timeout=45):
         if urllib.parse.urlparse(url).hostname not in ('www.taifex.com.tw','openapi.taifex.com.tw'): raise ValueError('NON_OFFICIAL_HOST')
         if time.time()<self.state.get('source_backoff',{}).get(urllib.parse.urlparse(url).hostname,0):
@@ -637,7 +645,7 @@ class Worker:
             self.state['receipts'][key]=entry;self.save()
     def process(self,job):
         key=job['key']
-        if hasattr(self,'recorded_repair_keys') and key not in self.recorded_repair_keys:return True
+        if not getattr(self,'backfill',False) and hasattr(self,'recorded_repair_keys') and key not in self.recorded_repair_keys:return True
         old=self.state['receipts'].get(key,{})
         if old.get('status') in TERMINAL: return True
         if old.get('attempts',0)>=3: return True
@@ -647,6 +655,7 @@ class Worker:
         entry=dict(old,status='REQUEST_INTENT', attempts=old.get('attempts',0)+1,
             lifetime_attempts=max(old.get('lifetime_attempts',0),old.get('attempts',0))+1,
             request=job, updated_utc=stamp())
+        if getattr(self,'backfill',False):entry['backfill_pass']=BACKFILL_PASS
         self.state['receipts'][key]=entry; self.save()
         raw=None
         try:
@@ -818,11 +827,47 @@ class Worker:
                     and self.eligible(job)):
                 jobs.append(job)
         return sorted(jobs,key=lambda j:j['key'])
+    def prepare_backfill(self):
+        """One explicitly authorized new repair pass; never reset successes or every wake."""
+        if not getattr(self,'backfill',False):return
+        jobs={j['key']:j for j in self.history_jobs()}
+        for j in self.state.get('tick_jobs',{}).values():
+            if self.direction=='DESC' and j.get('end','')<=self.today.isoformat():jobs.setdefault(j['key'],j)
+        for entry in self.state['receipts'].values():
+            j=entry.get('request',{})
+            if (j.get('kind') in ('csv','annual','tick') and j.get('key') and j.get('start')
+                    and j.get('end') and j['end']<=self.today.isoformat()
+                    and ((j['end']<'2013-01-01')==(self.direction=='ASC'))):jobs.setdefault(j['key'],j)
+        reopened=0;created=0
+        for key,job in sorted(jobs.items(),key=lambda kv:(kv[1]['end'],kv[0]),reverse=self.direction=='DESC'):
+            old=self.state['receipts'].get(key,{})
+            if old.get('status')=='SAVED_BASIC_VERIFIED' or old.get('integrity_hold'):continue
+            if old.get('backfill_pass')==BACKFILL_PASS:continue
+            entry=dict(old)
+            entry.setdefault('backfill_history',[]).append(dict(pass_id=BACKFILL_PASS,
+                prior_status=old.get('status','NOT_ATTEMPTED'),attempts=old.get('attempts',0),
+                retry_cycle=old.get('transport_retry_cycle',1),error=old.get('error'),at=stamp()))
+            entry.update(backfill_pass=BACKFILL_PASS,status='UNRESOLVED',request=job,
+                prior_error=old.get('error'),attempts=0,transport_retry_cycle=1,
+                lifetime_attempts=max(old.get('lifetime_attempts',0),old.get('attempts',0)),
+                retry_after_epoch=0,evidence_revalidated_revision=REPAIR_REVISION,
+                offline_recovery_revision=REPAIR_REVISION,
+                historical_absence_certified=False)
+            self.state['receipts'][key]=entry
+            reopened+=bool(old);created+=not bool(old)
+        self.state['backfill_pass']=BACKFILL_PASS
+        self.state['backfill_inventory']=dict(planned_history_units=len(self.history_jobs()),
+            reopened_this_wake=reopened,created_this_wake=created,
+            success_preserved=True,source_empty_is_complete=False,
+            old_latest_only_snapshots_recreated=False,full_source_universe_certified=False)
+        self.save(force_status=True)
+
     def run(self):
         if not self.live():return
         try:
             self.state['audit_round']=getattr(self,'audit_round',1)
             self.discover()
+            self.prepare_backfill()
             self.audit_saved()
             self.recover_existing()
             prepare_transport_retries(self.state)
@@ -898,8 +943,8 @@ class Worker:
             if count>=limit:break
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');p.add_argument('--audit-round',type=int,choices=[1,2],default=1);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--minutes',type=float,default=45);p.add_argument('--direction',choices=['ASC','DESC'],default='DESC');p.add_argument('--audit-round',type=int,choices=[1,2],default=1);p.add_argument('--backfill',action='store_true');a=p.parse_args()
     if not 1<=a.minutes<=50:raise ValueError('INVALID_RUNTIME')
-    Worker(a.minutes,a.direction,a.audit_round).run()
+    Worker(a.minutes,a.direction,a.audit_round,a.backfill).run()
 if __name__=='__main__':main()
 
