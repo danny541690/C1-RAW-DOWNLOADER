@@ -47,3 +47,8 @@
 ## 本次部署
 
 新增GitHub唯讀GET暫時故障有限重試及四路起訖範圍啟動紀錄；沿用已部署的Drive限流/回讀容錯、V8缺漏規劃、本地重解析、共享冷卻與相遇保護。保持現行每小時第7分鐘喚醒、每批40分鐘；使用者本次未要求變更頻率。發版先跑全庫檢查，再只交接同工作流舊批次，5/5-1/6/6-1不取消。737項本地測試通過，新增分區起訖與非重疊、GET504重試、POST不重播測試。雲端上線狀態須以新批次job為準。
+
+
+## 上線驗收
+
+新run https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40350890117 的checks已成功；Schedule1 EARLY_ASC、2 EARLY_DESC、3 RECENT_ASC、4 RECENT_DESC均已啟動。部署SHA c29a24eee6eb0f0dc943cb12c80f1885598334d8。這是執行啟動確認，尚非本批缺失補正或全庫品質完成驗收。
