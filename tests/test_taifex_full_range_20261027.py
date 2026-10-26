@@ -57,3 +57,12 @@ class FullRangeTests(unittest.TestCase):
   raw='日期,契約代號,開盤價,最高價,最低價,最後成交價,合計成交量\n2020/01/02,TX,10,12,9,11,5\n'
   ev=m.csv_evidence(raw.encode(),dt.date(2020,1,1),dt.date(2020,1,31))
   self.assertEqual(ev['products'],['TX'])
+ def test_peer_catalog_can_advance_but_not_regress_published_bound(self):
+  form=dict(action='testDown',source_page=m.SITE+'/cht/3/testView',fields={'queryStartDate':'','queryEndDate':''},first='2000-01-01',last='2026-10-22')
+  state={'catalog':{'testDown':dict(form)}};peer={'catalog':{'testDown':dict(form,last='2026-10-26')}}
+  self.assertEqual(m.import_history_catalog(state,peer,refresh=True),['testDown']);self.assertEqual(state['catalog']['testDown']['last'],'2026-10-26')
+  self.assertFalse(m.import_history_catalog(state,{'catalog':{'testDown':form}},refresh=True));self.assertEqual(state['catalog']['testDown']['last'],'2026-10-26')
+ def test_catalog_refresh_is_once_per_verified_latest_date(self):
+  w=object.__new__(m.Worker);w.full_range=True;w.state={'latest_trading_date':'2026-10-26','discovery_done':['oldView'],'discovery_attempts':{'oldView':3},'discovery_pages':[]}
+  w.discover_more();self.assertEqual(w.state['discovery_done'],[])
+  w.state['discovery_done']=['retained'];w.discover_more();self.assertEqual(w.state['discovery_done'],['retained'])
