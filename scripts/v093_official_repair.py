@@ -30,13 +30,26 @@ MAX_POINT_SECONDS=90
 PARAMETER_INCIDENT_MONTH='2026-06'
 PRIORITY_RETRY_SECONDS=600
 EXECUTION_REVISION='MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8'
-PLAN_REVISION='OFFICIAL_MISSING_UNIT_RECONCILIATION_V1'
+PLAN_REVISION='OFFICIAL_DATABASE_BACKFILL_20261027_V2'
+BACKFILL_PASS='OFFICIAL_DATABASE_BACKFILL_20261027_V2'
 AUX_CHECKPOINT_SECONDS=30
 CONTROL_GAP_PLAN='RAW_CONTROL_GAPS_20261024_V1'
 CONTROL_GAP_MONTHS=('2014-05','2014-06','2014-07','2014-08')
 SOURCE_LIMIT_COOLDOWN_SECONDS=3600
 TRANSIENT_COOLDOWN_SECONDS=120
 SOURCE_EMPTY_COOLDOWN_SECONDS=86400
+
+def reopen_backfill(prior):
+    """One authorized retry pass; preserve evidence and successful units."""
+    retryable={'UNRESOLVED_RETRY_CYCLES_EXHAUSTED','UNRESOLVED_ATTEMPT_LIMIT',
+               'UNRESOLVED_TIME_LIMIT','SOURCE_NO_DATA_UNCONFIRMED','SOURCE_CONTENT_INCOMPLETE'}
+    if prior.get('complete') or prior.get('status') not in retryable or prior.get('backfill_pass')==BACKFILL_PASS:
+        return prior
+    history=list(prior.get('backfill_history',[]))
+    history.append({k:prior.get(k) for k in ('status','attempts','retry_cycle','error','next_retry_at')})
+    return dict(prior,terminal=False,complete=False,attempts=0,work_seconds=0,retry_cycle=0,
+                cycle_had_request=False,next_retry_at=0,backfill_pass=BACKFILL_PASS,
+                backfill_history=history,execution_revision=EXECUTION_REVISION)
 
 def missing_financial_jobs(state,planned):
     """Fill never-planned company/report pairs without resetting existing retries.
@@ -228,6 +241,10 @@ class RepairWorker(OfficialWorker):
         signature=native.sha(json.dumps(dict(quality_revision=QUALITY_REVISION,
             sha=old.get('sha256'),flags=flags),sort_keys=True).encode())
         prior=self.journal['units'].get(key,{})
+        if os.environ.get('OFFICIAL_BACKFILL_PASS')==BACKFILL_PASS:
+            known=source_failure(ValueError(prior.get('error','')),job)
+            if not known or known.get('status')!='OFFICIAL_PERIOD_NOT_PROVIDED':
+                prior=reopen_backfill(prior)
         recovery_status=None
         retained=bool(old.get('evidence_file') and old.get('sha256') and old.get('status') in SAVED)
         if prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and not retained:
@@ -620,3 +637,4 @@ def main():
     except LeaseBusy:print('OFFICIAL_REPAIR_WAIT_EXISTING_OWNER',flush=True)
 
 if __name__=='__main__':main()
+
