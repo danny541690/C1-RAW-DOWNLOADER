@@ -1,0 +1,76 @@
+name: JARVIS audited recovery 20261026
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/resume-audited-downloads-20261026.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-audited-recovery-20261026
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Full regression before resume
+        run: python -m unittest discover -s tests -q
+      - name: Verify OAuth and original storage before enabling workers
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python - <<'PY'
+          from scripts.annual_actual_firstpass import service
+          from scripts.v093_taifex_independent import ROOT, REPORT
+          api=service()
+          for fid in (ROOT, REPORT):
+              f=api.files().get(fileId=fid,fields='id,mimeType,trashed').execute()
+              assert f['mimeType']=='application/vnd.google-apps.folder' and not f.get('trashed')
+          print('OAUTH_AND_ORIGINAL_STORAGE_READ_OK')
+          PY
+      - name: Resume only audited download workflows; retain active runs and checkpoints
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,os,time,urllib.request,urllib.error
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          targets=['v093-official-four-lane-repair.yml','v093-tdcc-independent.yml','v093-tdcc-independent-asc.yml','v093-taifex-independent.yml','v093-taifex-independent-asc.yml']
+          def api(path,method='GET',body=None):
+              for n in range(4):
+                  req=urllib.request.Request(base+path,method=method,data=json.dumps(body).encode() if body is not None else None,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
+                  try:
+                      with urllib.request.urlopen(req,timeout=30) as r:
+                          b=r.read();return json.loads(b) if b else {}
+                  except urllib.error.HTTPError as e:
+                      if method not in ('GET','PUT') or e.code not in (500,502,503,504) or n==3:raise
+                  time.sleep(2**n)
+          # Obsolete pending attempt blocks the same per-lane concurrency groups.
+          old=api('/actions/runs/40206907842')
+          if old['status'] in ('queued','pending','waiting','requested'):
+              try:api('/actions/runs/40206907842/force-cancel','POST')
+              except urllib.error.HTTPError as e:
+                  if e.code not in (409,422):raise
+          for name in targets:
+              api('/actions/workflows/'+name+'/enable','PUT')
+              w=api('/actions/workflows/'+name)
+              assert w['state']=='active',name
+              runs=api('/actions/workflows/'+name+'/runs?per_page=20')['workflow_runs']
+              active=[r for r in runs if r['status']!='completed']
+              if not active:
+                  api('/actions/workflows/'+name+'/dispatches','POST',{'ref':'main'})
+                  print('ENABLED_AND_DISPATCHED',name,flush=True)
+              else:print('ENABLED_ACTIVE_RUN_RETAINED',name,[r['id'] for r in active],flush=True)
+          print('EIGHT_LANES_ENABLED_RAW_AND_CURSORS_PRESERVED',flush=True)
+          PY
