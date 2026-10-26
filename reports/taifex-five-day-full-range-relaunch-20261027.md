@@ -81,3 +81,8 @@
 - 官方交易歷史申請：https://www.taifex.com.tw/cht/3/hisAppForm
 - 交易制度沿革（TXO上市日）：https://www.taifex.com.tw/cht/4/historyOfTrading
 - 選擇權行情簡表註記：https://www.taifex.com.tw/cht/3/optDailyMarketSummary
+
+## 最終上線驗證（2026-10-27 07:19台灣時間）
+兩個最終run均已通過雲端完整測試步驟（同版本地769項回歸通過）並進入Audit saved TAIFEX RAW and repair missing files，Drive STATUS均為對應新run，full_range_enabled=true。
+六run40418728572：本批重驗9筆、來源請求0、新增存檔0；六之一run40418728713：此檢查點仍在啟動／重驗階段，來源請求0、新增存檔0。active_unit沿用上次檢查點時，不能冒充本run正在下載的日期。兩份報告同一歷史計畫3265單元、已存1887；未存1378中有些再次回傳空白，仍未補齊。
+這些是查核時的進行中數字，不是批次最終結果。排程持續喚醒，原始數據零缺失尚未證明。
