@@ -11,6 +11,7 @@ on:
       - 'tests/test_official_repair_v6.py'
       - 'tests/test_official_repair_v7.py'
       - 'tests/test_official_repair_v8.py'
+  # Revalidated inward frontiers; preserve RAW and checkpoints.
   schedule:
     - cron: '7 * * * *'
   workflow_dispatch:
@@ -37,11 +38,13 @@ jobs:
         run: |
           python - <<'PYCODE'
           import os,json,time,urllib.request,urllib.error
+          from scripts.v093_github_budget import open_json
           base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
           current=int(os.environ['GITHUB_RUN_ID'])
           own='.github/workflows/v093-official-four-lane-repair.yml'
           def api(path,method='GET'):
               req=urllib.request.Request(base+path,method=method,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              if method=='GET':return open_json(req,25)[0]
               with urllib.request.urlopen(req,timeout=25) as r:
                   b=r.read();return json.loads(b) if b else {}
           rows=api('/actions/runs?per_page=100')['workflow_runs']
@@ -92,6 +95,16 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-qa.lock
       - run: pip install -r requirements-qa.lock
+      - name: Confirm assigned inward range
+        env:
+          REPAIR_LANE: ${{ matrix.lane }}
+        run: |
+          python - <<'PY'
+          import os,json
+          from scripts.v093_repair_coordination import lane_months
+          months=lane_months(os.environ['REPAIR_LANE'])
+          print('ASSIGNED_INWARD_RANGE '+json.dumps(dict(lane=os.environ['REPAIR_LANE'],start=months[0],end=months[-1],months=len(months),resume='EXISTING_CURSOR',valid_raw='PRESERVE_SKIP',coverage_certified=False)),flush=True)
+          PY
       - name: Reserve shared GitHub control budget
         env:
           GH_TOKEN: ${{ github.token }}
