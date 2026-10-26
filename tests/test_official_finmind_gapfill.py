@@ -5,7 +5,7 @@ from scripts import v093_history_reverse as engine
 
 class GapfillTests(unittest.TestCase):
  def job(self,**kw):return dict(source='TWSE',category='prices_indices',period='2020-01-02',**kw)
- def state(self):return dict(units={},financial_units={},market_codes={'TWSE':['2330','0050','TSE']})
+ def state(self):return dict(units={'calendar':dict(source='TPEx',category='prices',period='2020-01-02',status='SAVED_BASIC_VERIFIED'),'calendar2':dict(source='TPEx',category='prices',period='2020-01-03',status='SAVED_BASIC_VERIFIED')},financial_units={},market_codes={'TWSE':['2330','0050','TSE']})
  def tasks(self,status='SOURCE_NO_DATA_UNCONFIRMED',**row):
   j=self.job();journal={'units':{engine.key(j):dict(status=status,**row)}}
   return fm.plan(self.state(),journal,[j],'2020-01','2026-10-27')
@@ -74,3 +74,11 @@ class GapfillTests(unittest.TestCase):
   with patch.object(fm,'reserve',return_value=True),patch.object(fm.urllib.request,'urlopen',return_value=response),patch.object(fm.base.Worker,'record_payload',side_effect=save),patch.object(fm,'cached_payload',return_value=(b'wrong',{})):
    fm.supplement(w,[j])
   self.assertEqual(w.finmind_metrics['saved'],0);self.assertIn('SHA_MISMATCH',next(iter(state['finmind_units'].values()))['error'])
+
+class CalendarGapTests(unittest.TestCase):
+ def test_unconfirmed_holiday_never_requests_every_stock(self):
+  j=dict(source='TWSE',category='prices_indices',period='2014-06-02')
+  state=dict(units={},market_codes={'TWSE':['1101','2330']})
+  journal={'units':{engine.key(j):{'status':'SOURCE_NO_DATA_UNCONFIRMED'}}}
+  tasks,blocked=fm.plan(state,journal,[j,j],'2014-06','2026-10-27')
+  self.assertFalse(tasks);self.assertEqual(len(blocked),1);self.assertIn('TRADING_DATE_NOT_PROVEN',blocked[0]['reason'])
