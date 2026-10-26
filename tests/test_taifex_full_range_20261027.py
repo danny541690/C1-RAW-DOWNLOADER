@@ -53,3 +53,7 @@ class FullRangeTests(unittest.TestCase):
    with self.assertRaises(ValueError):m.csv_evidence((header+row).encode(),start,end)
   missing=m.csv_evidence((header+'2020/01/02,TX,-,-,-,-,0\n').encode(),start,end)
   self.assertEqual(missing['unverified_price_rows'],1)
+ def test_futures_contract_code_header_is_inventoried(self):
+  raw='日期,契約代號,開盤價,最高價,最低價,最後成交價,合計成交量\n2020/01/02,TX,10,12,9,11,5\n'
+  ev=m.csv_evidence(raw.encode(),dt.date(2020,1,1),dt.date(2020,1,31))
+  self.assertEqual(ev['products'],['TX'])
