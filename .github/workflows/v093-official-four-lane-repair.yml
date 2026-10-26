@@ -77,13 +77,13 @@ jobs:
       matrix:
         include:
           - number: 1
-            lane: EARLY_ASC
-          - number: 2
-            lane: EARLY_DESC
-          - number: 3
             lane: RECENT_ASC
-          - number: 4
+          - number: 2
             lane: RECENT_DESC
+          - number: 3
+            lane: EARLY_ASC
+          - number: 4
+            lane: EARLY_DESC
     concurrency:
       group: jarvis-official-four-lane-${{ matrix.lane }}
       cancel-in-progress: false
@@ -111,6 +111,7 @@ jobs:
         run: python -m scripts.v093_github_budget --minimum 250 --max-wait 300
       - name: Audit saved RAW and repair missing or invalid official units
         env:
+          OFFICIAL_BACKFILL_PASS: OFFICIAL_DATABASE_BACKFILL_20261027_V2
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
