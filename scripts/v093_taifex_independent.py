@@ -395,10 +395,10 @@ def assigned_job(job,direction,full_range=False):
     if full_range:return job.get('start','')>=FLOOR.isoformat()
     return (job.get('end','')<'2013-01-01')==(direction=='ASC')
 
-def import_history_catalog(state,peer):
+def import_history_catalog(state,peer,refresh=False):
     added=[]
     for action,form in peer.get('catalog',{}).items():
-        if action in state.setdefault('catalog',{}):continue
+        if action in state.setdefault('catalog',{}) and not refresh:continue
         if not re.fullmatch(r'[A-Za-z0-9]+Down',action) or form.get('action')!=action:continue
         page=form.get('source_page','')
         if not re.fullmatch(re.escape(SITE)+r'/cht/3/[A-Za-z0-9]+',page):continue
@@ -408,6 +408,7 @@ def import_history_catalog(state,peer):
         try:first=dt.date.fromisoformat(form['first']);last=dt.date.fromisoformat(form['last'])
         except (KeyError,TypeError,ValueError):continue
         if first>last:continue
+        if action in state['catalog'] and last.isoformat()<=state['catalog'][action].get('last',''):continue
         state['catalog'][action]=dict(form,fields=dict(fields),catalog_imported_from_run=peer.get('run_id'))
         added.append(action)
     return added
@@ -483,7 +484,7 @@ class Worker:
             previous=self.d.read(self.d.folder(REPORT,peer_name),'CURSOR.json')
             if previous:
                 peer=json.loads(previous)
-                added=import_history_catalog(self.state,peer)
+                added=import_history_catalog(self.state,peer,refresh=full_range)
                 self.state['catalog_sync']=dict(from_run=peer.get('run_id'),added=added,total_forms=len(self.state['catalog']),checked_utc=stamp())
                 if full_range:
                     from scripts.v093_taifex_full_range import merge_verified
@@ -516,7 +517,7 @@ class Worker:
             from scripts.v093_taifex_full_range import merge_verified
             peer=json.loads(raw)
             imported=merge_verified(self.state,peer)
-            import_history_catalog(self.state,peer)
+            import_history_catalog(self.state,peer,refresh=True)
             self.state['peer_sync']=dict(imported=imported,from_run=peer.get('run_id'),at=stamp())
             self.save()
     def eligible(self,job):
@@ -854,6 +855,10 @@ class Worker:
         jobs=canonical_history_jobs(partition_jobs(jobs,self.direction,getattr(self,'full_range',False)),self.state.get('receipts',{}))
         return sorted(jobs,key=lambda j:(j['end'],j['key'].startswith('MARKET'),j['key']),reverse=self.direction=='DESC')
     def discover_more(self,limit=4):
+        # The first bootstrap's lastDate must not freeze every future historical query.
+        marker=self.state.get('latest_trading_date')
+        if getattr(self,'full_range',False) and self.state.get('catalog_refresh_for')!=marker:
+            self.state.update(catalog_refresh_for=marker,discovery_done=[],discovery_attempts={})
         completed=self.state.setdefault('discovery_done',[])
         for name in [n for n in self.state.get('discovery_pages',[]) if n not in completed][:limit]:
             if not self.live():return
