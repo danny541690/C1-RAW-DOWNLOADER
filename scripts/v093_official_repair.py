@@ -31,7 +31,7 @@ MAX_POINT_SECONDS=90
 PARAMETER_INCIDENT_MONTH='2026-06'
 PRIORITY_RETRY_SECONDS=600
 EXECUTION_REVISION='MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8'
-PLAN_REVISION='OFFICIAL_FINMIND_RECONCILIATION_20261027_V3'
+PLAN_REVISION='OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4'
 BACKFILL_PASS='OFFICIAL_DATABASE_BACKFILL_20261027_V2'
 AUX_CHECKPOINT_SECONDS=30
 CONTROL_GAP_PLAN='RAW_CONTROL_GAPS_20261024_V1'
@@ -252,11 +252,12 @@ class RepairWorker(OfficialWorker):
             if not known or known.get('status')!='OFFICIAL_PERIOD_NOT_PROVIDED':
                 prior=reopen_backfill(prior)
         recovery_status=None
+        prior_content_pass=prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS')
         retained=bool(old.get('evidence_file') and old.get('sha256') and old.get('status') in SAVED)
         if prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and not retained:
             prior=dict(prior,terminal=False,complete=False,next_retry_at=0,attempts=0,work_seconds=0,
                 prior_pass_reopened_reason='RAW_RECEIPT_MISSING_OR_INVALID')
-        if retained and prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and prior.get('raw_sha256')==old.get('sha256') and not flags:
+        if retained and prior.get('content_audit_revision')=='ROW_AUDIT_V5' and prior.get('status') in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') and prior.get('raw_sha256')==old.get('sha256') and not flags:
             self.note_activity('prior_verified_skipped_this_run',key,old.get('sha256'))
             return  # Preserve previously checked unchanged RAW; no repeat source request.
         # Revisit retained failures once offline. Do not reset source caps,
@@ -276,13 +277,16 @@ class RepairWorker(OfficialWorker):
                 prior.update(known,complete=False)
                 self.save_journal()
                 return
-        if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature and prior.get('terminal'):
+        if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature and prior.get('terminal') and (prior.get('status') not in ('BASIC_CONTENT_PASS','CONTENT_CHECK_PASS') or prior.get('content_audit_revision')=='ROW_AUDIT_V5'):
             return
         if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature and prior.get('next_retry_at',0)>time.time():return
         row=prior if prior.get('quality_revision')==QUALITY_REVISION and prior.get('input_signature')==signature else dict(
             unit_id=key,source=job['source'],quality_revision=QUALITY_REVISION,input_signature=signature,
             attempts=0,work_seconds=0,prior_result=prior.get('status'))
-        if row.get('next_retry_at',0) and row['next_retry_at']<=time.time():
+        if retained and prior_content_pass:
+            for counter in ('attempts','retry_cycle','work_seconds'):
+                if counter in prior:row[counter]=prior[counter]
+        if row.get('next_retry_at',0) and row['next_retry_at']<=time.time() and not (retained and prior_content_pass):
             row=dict(row,attempts=0,work_seconds=0,cycle_had_request=False,retry_cycle=row.get('retry_cycle',0)+int(row.get('cycle_had_request',False)))
             row.pop('next_retry_at',None)
         row.update(category=job.get('category'),period=job.get('period'),report_period=job.get('report_period'),execution_revision=EXECUTION_REVISION)
@@ -299,7 +303,7 @@ class RepairWorker(OfficialWorker):
                     local_stats=validate_content(local_raw,job)
                     row.pop('error',None)
                     if row.get('local_error'):row['previous_local_error']=row.pop('local_error')
-                    row['local_check']=local_stats;self.checked+=1
+                    row['local_check']=local_stats;row['content_audit_revision']='ROW_AUDIT_V5';self.checked+=1
                     if flags or local_stats.get('row_audit',{}).get('unverified',[]):
                         if job['category'] in engine.FIN_REPORTS and (row.get('reparse_receipt',{}).get('parser_revision')!=REPARSE_REVISION or row.get('reparse_receipt',{}).get('raw_sha256')!=old['sha256']):
                             try:
@@ -330,12 +334,27 @@ class RepairWorker(OfficialWorker):
                         self.note_activity('unchanged_raw_checked_this_run',key,old['sha256'])
                         return
                 except Exception as exc:row['local_error']=type(exc).__name__+':'+str(exc)[:300]
+                if prior_content_pass:
+                    row.update(status='LOCAL_REVALIDATION_FAILED_KEEP_RAW',terminal=True,complete=False,
+                        next_action='REVIEW_LOCAL_AUDIT_KEEP_PRIOR_RAW_NO_REDOWNLOAD',numeric_verified=False,pit_verified=False)
+                    return
             if recovery_status:
                 row.update(status=recovery_status,terminal=True,complete=False,
                     next_action='REVIEW_RETAINED_RAW_AND_SOURCE_SCOPE_NO_CAP_RESET')
                 return
             if not job.get('url'):
                 row.update(status='UNRESOLVED_OFFICIAL_ROUTE',terminal=True,complete=False);return
+            # Do not repeatedly send pre-2013 financial statements to the post-IFRS
+            # comparison route. This is a routing hold, never evidence of no data.
+            # Retained RAW was checked above and remains available for local QA.
+            if (job.get('source')=='MOPS' and job.get('category') in engine.FIN_REPORTS
+                    and job.get('url')=='https://mopsfin.twse.com.tw/compare/report'
+                    and re.fullmatch(r'20(?:0[0-9]|1[0-2])-.*',job.get('period',''))):
+                row.update(status='UNRESOLVED_HISTORICAL_COMPARE_SCOPE',terminal=True,complete=False,
+                    route_reference='https://mopsfin.twse.com.tw/terms',
+                    next_action='VERIFY_LEGACY_ENDPOINT_OR_DOCUMENTED_ADOPTION',
+                    numeric_verified=False,pit_verified=False)
+                return
             assert_official(job)
             if is_before_source_start(job):
                 row.update(status='OFFICIAL_PERIOD_NOT_PROVIDED',terminal=True,complete=False);return

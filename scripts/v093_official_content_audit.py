@@ -32,7 +32,15 @@ def audit_json(raw,job):
         codeidx=next((i for i,f in enumerate(fields) if f in IDENTIFIERS),None)
         pcols={PRICE[f]:i for i,f in enumerate(fields) if f in PRICE}
         ratios={i for i,f in enumerate(fields) if job['category']=='foreign_holdings' and ('持股比率' in f or '持股比例' in f) and '上限' not in f}
-        ncols={i for i,f in enumerate(fields) if any(token in f for token in NONNEGATIVE)}|ratios
+        margin_fields={'買進','賣出','現金(券)償還','現金償還','現券償還','前日餘額','今日餘額','次一營業日限額','資券互抵','前資餘額(張)','資買','資賣','現償','資餘額','資屬證金','資限額','前券餘額(張)','券賣','券買','券償','券餘額','券屬證金','券限額','資券相抵(張)'}
+        margin_ratios={i for i,f in enumerate(fields) if f in {'資使用率(%)','券使用率(%)'}} if job['category']=='margin' else set()
+        percent_cols=ratios|margin_ratios
+        ncols={i for i,f in enumerate(fields) if any(token in f for token in NONNEGATIVE)}|percent_cols
+        if job['category']=='margin':
+            ncols|={i for i,f in enumerate(fields) if f in margin_fields}
+            # Finite/nonnegative values do not prove accounting identities,
+            # historical unit mappings or complete field/population coverage.
+            unverified.append('MARGIN_ACCOUNTING_AND_FULL_SCOPE_NOT_PROVEN')
         seen=set()
         for ri,row in enumerate(rows):
             if not isinstance(row,list) or len(row)!=len(fields):raise ValueError('ROW_WIDTH_MISMATCH')
@@ -49,7 +57,7 @@ def audit_json(raw,job):
                     seen.add(code);counts['duplicate_keys_checked']+=1
             for ci in ncols:
                 value=row[ci]
-                if ci in ratios:
+                if ci in percent_cols:
                     text=label(value)
                     value=text[:-1] if text.endswith('%') else value
                 val=number(value);counts['numeric_cells_checked']+=1
@@ -57,7 +65,19 @@ def audit_json(raw,job):
                     unverified.append('MISSING_NUMERIC_CELL');continue
                 if val<0:raise ValueError('NEGATIVE_NONNEGATIVE_FIELD:'+fields[ci])
                 if ci in ratios and val>100:raise ValueError('HOLDING_PERCENT_OUT_OF_RANGE')
-            if len(pcols)==4 and codeidx is not None and re.fullmatch(r'[1-9]\d{3}',label(row[codeidx])):
+            # Do not silently certify mixed instrument tables. An explicit scope
+            # may come from a reviewed historical universe; the default remains
+            # the legacy common-stock subset and flags every uncovered row.
+            ohlc_applicable = False
+            if len(pcols)==4 and codeidx is not None:
+                code=label(row[codeidx])
+                scope=job.get('applicable_security_codes')
+                if scope is not None and (not isinstance(scope,list) or any(not isinstance(c,str) or not c for c in scope)):
+                    raise ValueError('INVALID_SECURITY_SCOPE')
+                ohlc_applicable = code in scope if scope is not None else bool(re.fullmatch(r'[1-9]\d{3}',code))
+                if not ohlc_applicable:
+                    unverified.append('OHLC_SECURITY_OUTSIDE_VALIDATED_SCOPE')
+            if ohlc_applicable:
                 vals={k:number(row[i]) for k,i in pcols.items()}
                 if any(v is None or v<=0 for v in vals.values()):
                     unverified.append('NO_VALID_TRADE_PRICE_REQUIRES_REVIEW');continue
@@ -70,7 +90,10 @@ def audit_json(raw,job):
         unverified.append('OHLC_FIELDS_NOT_RECOGNIZED')
     if not counts['numeric_cells_checked'] and not counts['ohlc_rows_checked']:
         unverified.append('NUMERIC_FIELD_RULES_NOT_COVERED')
-    return dict(**counts,checks=checked+['SECURITY_DUPLICATES','RECOGNIZED_NUMERIC_DOMAINS','OHLC_RELATIONSHIPS'],
+    performed=checked+(['SECURITY_DUPLICATES'] if counts['duplicate_keys_checked'] else [])
+    performed+=['RECOGNIZED_NUMERIC_DOMAINS'] if counts['numeric_cells_checked'] else []
+    performed+=['OHLC_RELATIONSHIPS'] if counts['ohlc_rows_checked'] else []
+    return dict(**counts,checks=performed,
                 unverified=sorted(set(unverified)),units_policy='NATIVE_UNITS_PRESERVED_NO_UNPROVEN_CONVERSION',
                 cross_source_verified=False,pit_verified=False)
 
