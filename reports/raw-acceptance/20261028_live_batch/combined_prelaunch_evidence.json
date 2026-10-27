@@ -1,0 +1,244 @@
+{
+  "as_of_taipei": "2026-10-28T07:34:26.541997+08:00",
+  "scope": "SEVEN_REAL_RECEIPT_READBACK_PLUS_FROZEN_REGISTER_CONSISTENCY",
+  "sample_policy": "first downloaded row per source; selection does not cover all datasets or periods",
+  "sources": {
+    "TWSE": {
+      "register": {
+        "total": 46331,
+        "未下載": 14617,
+        "已下載": 31714,
+        "已保存待內容驗證": 9600,
+        "明列品質問題": 10906,
+        "基本格式存檔通過": 22114
+      },
+      "duplicate_unit_ids": 0,
+      "sample": {
+        "month": "2001-01",
+        "dataset": "margin",
+        "unit_id": "04262580e61ea7e3b7256515",
+        "reference": "1MoutNCiCtnBa9oWhyt15U9BR3XxAcbNe/04262580e61ea7e3b7256515.raw",
+        "expected_sha256": "09eabeef2e117627ce5a1ae91e7d4a3bee471fb352e654afefecbccb868bdd57",
+        "actual_sha256": "09eabeef2e117627ce5a1ae91e7d4a3bee471fb352e654afefecbccb868bdd57",
+        "sha_match": true,
+        "content_bytes": 55563,
+        "archive": {
+          "bytes": 20749,
+          "sha256": "8261a27816aba3fdb88ea4b30485a23d71b1a31f7b59223e87498578cea36e83",
+          "member_count": 2,
+          "crc_all_members_ok": true
+        },
+        "errors": [],
+        "result": "PASS_RAW_READBACK_ONLY"
+      },
+      "data_acceptance": "UNKNOWN",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "approved_universe": false
+    },
+    "TDCC": {
+      "register": {
+        "total": 205670,
+        "已下載": 24067,
+        "基本格式存檔通過": 24067,
+        "未下載": 181603
+      },
+      "duplicate_unit_ids": 0,
+      "sample": {
+        "month": "2025-10",
+        "dataset": "distribution_20251031_000218",
+        "unit_id": "20251031|000218",
+        "reference": "1ZwFktwC8rdZ7OL-Vs-OjYSuvuasYBgvl",
+        "expected_sha256": "2e3cfe37aa0aa5414f2389bcf47fc45ac2c669bfe280b381300ab9c532b4eaf8",
+        "actual_sha256": "2e3cfe37aa0aa5414f2389bcf47fc45ac2c669bfe280b381300ab9c532b4eaf8",
+        "sha_match": true,
+        "content_bytes": 76896,
+        "archive": {
+          "bytes": 76896,
+          "sha256": "2e3cfe37aa0aa5414f2389bcf47fc45ac2c669bfe280b381300ab9c532b4eaf8",
+          "member_count": null,
+          "crc_all_members_ok": null
+        },
+        "errors": [],
+        "result": "PASS_RAW_READBACK_ONLY"
+      },
+      "data_acceptance": "UNKNOWN",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "approved_universe": false
+    },
+    "TAIFEX": {
+      "register": {
+        "total": 4762,
+        "已下載": 2921,
+        "基本格式存檔通過": 2921,
+        "未下載": 1841
+      },
+      "duplicate_unit_ids": 0,
+      "sample": {
+        "month": "2000-01",
+        "dataset": "futDataDown",
+        "unit_id": "ANNUAL|futures|2000",
+        "reference": "1dJPNzvPghsetZQvRA_7OX1VtifXKb61K",
+        "expected_sha256": "e4c84114e7e8f6ee302fcc045dbc4e4a0657835055497830b17271eaf2b99f7e",
+        "actual_sha256": "e4c84114e7e8f6ee302fcc045dbc4e4a0657835055497830b17271eaf2b99f7e",
+        "sha_match": true,
+        "content_bytes": 80028,
+        "archive": {
+          "bytes": 80028,
+          "sha256": "e4c84114e7e8f6ee302fcc045dbc4e4a0657835055497830b17271eaf2b99f7e",
+          "member_count": 1,
+          "crc_all_members_ok": true
+        },
+        "errors": [],
+        "result": "PASS_RAW_READBACK_ONLY"
+      },
+      "data_acceptance": "UNKNOWN",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "approved_universe": false
+    },
+    "MOPS": {
+      "register": {
+        "total": 18298,
+        "未下載": 10248,
+        "已下載": 8050,
+        "已保存待內容驗證": 3719,
+        "明列品質問題": 3180,
+        "基本格式存檔通過": 4331
+      },
+      "duplicate_unit_ids": 0,
+      "sample": {
+        "month": "2001-03",
+        "dataset": "BalanceSheet",
+        "unit_id": "065fc77ea82347c33e7502e8",
+        "reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/065fc77ea82347c33e7502e8.raw",
+        "expected_sha256": "a8a5eccf12c8ab10d118dbf535f006754ad814d22c3a612f4e73023b10066309",
+        "actual_sha256": "a8a5eccf12c8ab10d118dbf535f006754ad814d22c3a612f4e73023b10066309",
+        "sha_match": true,
+        "content_bytes": 8505,
+        "archive": {
+          "bytes": 8087,
+          "sha256": "0533e5f0c8d084af4ceb61a95fe461c63ff785825a787c958876dbdc67be790e",
+          "member_count": 7,
+          "crc_all_members_ok": true
+        },
+        "errors": [],
+        "result": "PASS_RAW_READBACK_ONLY"
+      },
+      "data_acceptance": "UNKNOWN",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "approved_universe": false
+    },
+    "TPEx": {
+      "register": {
+        "total": 60833,
+        "未下載": 28750,
+        "已下載": 32083,
+        "已保存待內容驗證": 5893,
+        "明列品質問題": 14346,
+        "基本格式存檔通過": 26190
+      },
+      "duplicate_unit_ids": 0,
+      "sample": {
+        "month": "2007-01",
+        "dataset": "margin",
+        "unit_id": "0813f548d8f0bec7d342216b",
+        "reference": "1YxyAYn1_FnxFFr0CMBHk581fzHPA0ThF/0813f548d8f0bec7d342216b.raw",
+        "expected_sha256": "a71c411112a63a215fba11d4847792c47dc6f68cab28bcf4154a61dd442e0c89",
+        "actual_sha256": "a71c411112a63a215fba11d4847792c47dc6f68cab28bcf4154a61dd442e0c89",
+        "sha_match": true,
+        "content_bytes": 50879,
+        "archive": {
+          "bytes": 44367,
+          "sha256": "442cb4342204cb22e1ed2fca14adcb99456b25ff1a8546e17694d784efc5ef21",
+          "member_count": 4,
+          "crc_all_members_ok": true
+        },
+        "errors": [],
+        "result": "PASS_RAW_READBACK_ONLY"
+      },
+      "data_acceptance": "UNKNOWN",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "approved_universe": false
+    },
+    "NDC": {
+      "register": {
+        "total": 322,
+        "已下載": 320,
+        "基本格式存檔通過": 320,
+        "明列品質問題": 109,
+        "未下載": 2
+      },
+      "duplicate_unit_ids": 0,
+      "sample": {
+        "month": "2000-01",
+        "dataset": "2000-01",
+        "unit_id": "2000-01",
+        "reference": "1Ty74zKGSivXNHmA3WDG4VjeOKmWpA3n4",
+        "expected_sha256": "8f822fd462a92d81fc5f55df8873c0915c5940d91246fdb07bdff26f5253dc8e",
+        "actual_sha256": "8f822fd462a92d81fc5f55df8873c0915c5940d91246fdb07bdff26f5253dc8e",
+        "sha_match": true,
+        "content_bytes": 5385,
+        "archive": {
+          "bytes": 5385,
+          "sha256": "8f822fd462a92d81fc5f55df8873c0915c5940d91246fdb07bdff26f5253dc8e",
+          "member_count": null,
+          "crc_all_members_ok": null
+        },
+        "errors": [],
+        "result": "PASS_RAW_READBACK_ONLY"
+      },
+      "data_acceptance": "UNKNOWN",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "approved_universe": false
+    },
+    "FinMind": {
+      "register": {
+        "total": 807,
+        "未下載": 262,
+        "已下載": 545,
+        "基本格式存檔通過": 545,
+        "明列品質問題": 5
+      },
+      "duplicate_unit_ids": 0,
+      "sample": {
+        "month": "2000-01",
+        "dataset": "TaiwanStockPrice",
+        "unit_id": "0162d988c3097252e4919428",
+        "reference": "1bsfDq70BZSPabpbbEMb5Yzu8ZSTYpdvl/0162d988c3097252e4919428.raw",
+        "expected_sha256": "d3eab10cd3cedc6f7950f815175df9beff2c9006421ee98e2c1c447f41fa919b",
+        "actual_sha256": "d3eab10cd3cedc6f7950f815175df9beff2c9006421ee98e2c1c447f41fa919b",
+        "sha_match": true,
+        "content_bytes": 3879,
+        "archive": {
+          "bytes": 1478,
+          "sha256": "260dc5af3a33d7e904527b8747797b45116651e67c0467309583e19c31255e7c",
+          "member_count": 2,
+          "crc_all_members_ok": true
+        },
+        "errors": [],
+        "result": "PASS_RAW_READBACK_ONLY"
+      },
+      "data_acceptance": "UNKNOWN",
+      "numeric_verified": false,
+      "pit_verified": false,
+      "approved_universe": false
+    }
+  },
+  "total": {
+    "total": 337023,
+    "未下載": 237323,
+    "已下載": 99700,
+    "已保存待內容驗證": 19212,
+    "明列品質問題": 28546,
+    "基本格式存檔通過": 80488
+  },
+  "formal_release": "BLOCKED",
+  "reason": "Approved universe, numeric semantics and historical PIT are not established by this batch.",
+  "all_7_sample_sha_match": true,
+  "all_7_sample_archive_checks_ok": true
+}
