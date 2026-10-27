@@ -1,6 +1,7 @@
 """Bounded supplement for explicit official gaps; never closes official evidence."""
 import calendar, datetime as dt, hashlib, json, math, os, re, time
 import urllib.request, urllib.parse, urllib.error
+from collections import Counter
 from scripts import v093_history_reverse as engine
 from scripts import v093_live_five_stage as base
 from scripts.v093_replanned_five_stage import ArchiveCache, cached_payload
@@ -15,7 +16,8 @@ DAILY={'prices_indices':'TaiwanStockPrice','prices':'TaiwanStockPrice',
        'foreign_holdings':'TaiwanStockShareholding'}
 GAPS={'SOURCE_NO_DATA_UNCONFIRMED','SOURCE_CONTENT_INCOMPLETE','UNRESOLVED_RETRY_CYCLES_EXHAUSTED',
       'UNRESOLVED_ATTEMPT_LIMIT','UNRESOLVED_TIME_LIMIT','UNRESOLVED_OFFICIAL_ROUTE',
-      'OFFICIAL_ROUTE_NOT_FOUND','OFFICIAL_PERIOD_NOT_PROVIDED','UNRESOLVED_COMPANY_OR_ENDPOINT_SCOPE'}
+      'OFFICIAL_ROUTE_NOT_FOUND','OFFICIAL_PERIOD_NOT_PROVIDED','UNRESOLVED_COMPANY_OR_ENDPOINT_SCOPE',
+      'UNRESOLVED_HISTORICAL_COMPARE_SCOPE'}
 
 def task_key(task):
     return engine.key(task)
@@ -153,4 +155,8 @@ def supplement(w,jobs):
                 saved_tasks=sum(receipts.get(task_key(t),{}).get('remote_readback_hash_verified',False) for t in tasks),
                 run_metrics=metrics,official_gap_closed=False,coverage_certified=False,numeric_verified=False,pit_verified=False)
     w.putj(w.monthctrl,'FINMIND_GAPFILL_STATUS.json',report)
-    print('FINMIND_GAPFILL_STATUS '+json.dumps(report),flush=True)
+    # Keep full per-task evidence in Drive; repeated console heartbeats need only totals.
+    console={k:v for k,v in report.items() if k!='blocked'}
+    console['blocked_tasks']=len(blocked)
+    console['blocked_reason_counts']=dict(Counter(x['reason'] for x in blocked))
+    print('FINMIND_GAPFILL_STATUS '+json.dumps(console),flush=True)

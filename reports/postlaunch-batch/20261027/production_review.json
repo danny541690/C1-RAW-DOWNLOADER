@@ -1,0 +1,251 @@
+{
+  "run_id": 40502833143,
+  "source": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40502833143",
+  "jobs": [
+    {
+      "job": 122184767092,
+      "final": {
+        "tag": "OFFICIAL_REPAIR_STATUS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "ASC",
+        "month_index": 65,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "ASC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T12:59:50.851679+00:00",
+        "active_month": "2018-06",
+        "last_month": "2018-05",
+        "flagged_candidates": 331,
+        "last_visited_month": "2018-05",
+        "last_month_busy": false,
+        "control_gap_plan": "RAW_CONTROL_GAPS_20261024_V1",
+        "last_due_month": "2014-06",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "checked_this_run": 454,
+        "repaired_this_run": 32,
+        "source_requests_this_run": {
+          "TWSE": 10,
+          "TPEx": 40
+        },
+        "download_responses_this_run": 48,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "sources": [
+          "TWSE",
+          "TPEx",
+          "MOPS"
+        ],
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 3,
+          "saved": 3,
+          "failed": 0
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "run_id": "40502833143/RAW",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 160,
+        "prior_verified_skipped_this_run": 0,
+        "local_reparse_readback_this_run": 72,
+        "local_quality_open_this_run": 294
+      },
+      "finmind_blocked_reasons": {},
+      "tracebacks": 0
+    },
+    {
+      "job": 122184767260,
+      "final": {
+        "tag": "OFFICIAL_REPAIR_STATUS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "DESC",
+        "month_index": 45,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "DESC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T12:59:48.583451+00:00",
+        "active_month": "2023-01",
+        "last_month": "2026-06",
+        "flagged_candidates": 673,
+        "last_visited_month": "2023-02",
+        "last_month_busy": false,
+        "parameter_incident_revisited": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "last_due_month": "2023-12",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "checked_this_run": 174,
+        "repaired_this_run": 4,
+        "source_requests_this_run": {
+          "MOPS": 1,
+          "TWSE": 34,
+          "TPEx": 36
+        },
+        "download_responses_this_run": 70,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "sources": [
+          "TWSE",
+          "TPEx",
+          "MOPS"
+        ],
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 1,
+          "saved": 1,
+          "failed": 0
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "run_id": "40502833143/RAW",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 159,
+        "prior_verified_skipped_this_run": 0,
+        "local_reparse_readback_this_run": 0,
+        "local_quality_open_this_run": 15
+      },
+      "finmind_blocked_reasons": {
+        "OFFICIAL_TRADING_DATE_NOT_PROVEN_NO_BLIND_STOCK_REQUESTS": 55,
+        "UNMAPPED_DATASET_OR_HISTORICAL_UNIVERSE_NOT_PROVEN": 18
+      },
+      "tracebacks": 0
+    },
+    {
+      "job": 122184767122,
+      "final": {
+        "tag": "OFFICIAL_REPAIR_STATUS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "ASC",
+        "month_index": 36,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "ASC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T12:59:47.494025+00:00",
+        "active_month": "2003-01",
+        "last_month": "2002-12",
+        "flagged_candidates": 463,
+        "last_visited_month": "2002-12",
+        "last_month_busy": false,
+        "last_due_month": "2000-05",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "checked_this_run": 0,
+        "repaired_this_run": 0,
+        "source_requests_this_run": {
+          "TPEx": 100,
+          "TWSE": 2
+        },
+        "download_responses_this_run": 101,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "sources": [
+          "TWSE",
+          "TPEx",
+          "MOPS"
+        ],
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 40,
+          "saved": 38,
+          "failed": 2
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "run_id": "40502833143/RAW",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 0,
+        "prior_verified_skipped_this_run": 0,
+        "local_reparse_readback_this_run": 0,
+        "local_quality_open_this_run": 0
+      },
+      "finmind_blocked_reasons": {
+        "UNMAPPED_DATASET_OR_HISTORICAL_UNIVERSE_NOT_PROVEN": 193,
+        "OFFICIAL_TRADING_DATE_NOT_PROVEN_NO_BLIND_STOCK_REQUESTS": 98
+      },
+      "tracebacks": 0
+    },
+    {
+      "job": 122184767229,
+      "final": {
+        "tag": "OFFICIAL_REPAIR_STATUS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "DESC",
+        "month_index": 33,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "DESC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T12:59:43.679659+00:00",
+        "active_month": "2010-03",
+        "last_month": "2010-04",
+        "flagged_candidates": 373,
+        "last_visited_month": "2010-04",
+        "last_month_busy": false,
+        "last_due_month": "2011-07",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "checked_this_run": 51,
+        "repaired_this_run": 1,
+        "source_requests_this_run": {
+          "TWSE": 10,
+          "TPEx": 55,
+          "MOPS": 12
+        },
+        "download_responses_this_run": 76,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "sources": [
+          "TWSE",
+          "TPEx",
+          "MOPS"
+        ],
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 25,
+          "saved": 25,
+          "failed": 0
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "run_id": "40502833143/RAW",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 51,
+        "prior_verified_skipped_this_run": 0,
+        "local_reparse_readback_this_run": 0,
+        "local_quality_open_this_run": 0
+      },
+      "finmind_blocked_reasons": {
+        "OFFICIAL_TRADING_DATE_NOT_PROVEN_NO_BLIND_STOCK_REQUESTS": 69,
+        "UNMAPPED_DATASET_OR_HISTORICAL_UNIVERSE_NOT_PROVEN": 39
+      },
+      "last_month_route_holds": 20,
+      "tracebacks": 0
+    }
+  ],
+  "counts_are_operations_not_unique_repaired_units": true,
+  "job_conclusions": "all_success",
+  "official_gap_closure_not_proven": true
+}
