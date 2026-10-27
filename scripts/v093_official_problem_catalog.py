@@ -6,6 +6,8 @@ def problem(row):
     if row.get('complete') or s in ('CONTENT_CHECK_PASS','BASIC_CONTENT_PASS'):
         return 'CHECKED_CONTENT','PRESERVE_VALIDATED_RAW'
     states={
+        'UNRESOLVED_HISTORICAL_COMPARE_SCOPE':('HISTORICAL_FINANCIAL_ROUTE_REVIEW','VERIFY_LEGACY_ENDPOINT_OR_DOCUMENTED_ADOPTION'),
+        'LOCAL_REVALIDATION_FAILED_KEEP_RAW':('LOCAL_REVALIDATION_FAILURE','REVIEW_LOCAL_AUDIT_KEEP_PRIOR_RAW_NO_REDOWNLOAD'),
         'WAIT_SHARED_SOURCE_WINDOW':('SHARED_PACING_WAIT','WAIT_WITHOUT_SOURCE_ATTEMPT'),
         'SOURCE_CHECK_REQUEST_INTENT':('REQUEST_IN_FLIGHT_OR_INTERRUPTED','RESUME_DURABLE_INTENT_WITH_CAP'),
         'OFFICIAL_PERIOD_NOT_PROVIDED':('HISTORY_NOT_OFFERED','KEEP_EXPLICIT_BOUND_SEEK_OTHER_OFFICIAL_ARCHIVE'),
@@ -42,7 +44,7 @@ def unresolved_items(journal):
     fields=('unit_id','source','category','period','report_period','status','error','local_error',
         'raw_sha256','original_sha256','official_sha256','last_response_sha256',
         'last_response_evidence_file','saved_evidence_file','readback_verified','reparse_receipt',
-        'open_checks','review_flags','attempts','retry_cycle','next_retry_at','source_start','local_recovery_revision')
+        'open_checks','review_flags','route_reference','content_audit_revision','attempts','retry_cycle','next_retry_at','source_start','local_recovery_revision')
     for key,row in journal.get('units',{}).items():
         family,action=problem(row)
         if family=='CHECKED_CONTENT':continue
