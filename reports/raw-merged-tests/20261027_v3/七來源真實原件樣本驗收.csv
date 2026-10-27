@@ -1,0 +1,8 @@
+﻿來源,任務ID,單元ID,資料集,帳本期間,原件SHA一致,內容結果,PIT,檢查範圍與待確認
+FinMind,846160722a70127d4bcf,0162d988c3097252e4919428,TaiwanStockPrice,2000-01,True,LIMITED_CHECK_PASS,UNKNOWN,full trading-day universe；numeric fields beyond OHLC；native units and PIT
+MOPS,dae9f837e447f27a6f23,065fc77ea82347c33e7502e8,BalanceSheet,2001-03-31,True,CONTENT_INCOMPLETE,UNKNOWN,original report period proof；full expected company/account universe；financial identities and announcement PIT
+NDC,9ba981e0e4f16f482f8e,2000-01,2000-01,2000-01,True,SOURCE_PERIOD_LIMITATION,UNKNOWN,series applicability evidence；numeric economic interpretation；historical vintage PIT
+TAIFEX,c8576ca2d89f0ebc87c5,ANNUAL|futures|2000,futDataDown,2000-01-01,True,LIMITED_CHECK_PASS,UNKNOWN,all required products/sessions/dates；all numeric rules；PIT
+TDCC,6768011214e6e323b0f4,20251031|000218,distribution_20251031_000218,2025-10-31,True,LIMITED_CHECK_PASS,UNKNOWN,historical instrument applicability；complete bin totals/rounding contract；PIT
+TPEx,c89aa334d26aba4fbe2a,0813f548d8f0bec7d342216b,margin,2007-01-08,True,PARTIAL_CHECK_ONLY,UNKNOWN,MARGIN_ACCOUNTING_AND_FULL_SCOPE_NOT_PROVEN；historical full population and PIT
+TWSE,bda95c0fc3e7893a3037,04262580e61ea7e3b7256515,margin,2001-01-11,True,PARTIAL_CHECK_ONLY,UNKNOWN,MARGIN_ACCOUNTING_AND_FULL_SCOPE_NOT_PROVEN；historical full population and PIT

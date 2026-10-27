@@ -1,0 +1,40 @@
+--- a/scripts/v093_official_content_audit.py
++++ b/scripts/v093_official_content_audit.py
+@@ -32,7 +32,15 @@
+         codeidx=next((i for i,f in enumerate(fields) if f in IDENTIFIERS),None)
+         pcols={PRICE[f]:i for i,f in enumerate(fields) if f in PRICE}
+         ratios={i for i,f in enumerate(fields) if job['category']=='foreign_holdings' and ('持股比率' in f or '持股比例' in f) and '上限' not in f}
+-        ncols={i for i,f in enumerate(fields) if any(token in f for token in NONNEGATIVE)}|ratios
++        margin_fields={'買進','賣出','現金(券)償還','現金償還','現券償還','前日餘額','今日餘額','次一營業日限額','資券互抵','前資餘額(張)','資買','資賣','現償','資餘額','資屬證金','資限額','前券餘額(張)','券賣','券買','券償','券餘額','券屬證金','券限額','資券相抵(張)'}
++        margin_ratios={i for i,f in enumerate(fields) if f in {'資使用率(%)','券使用率(%)'}} if job['category']=='margin' else set()
++        percent_cols=ratios|margin_ratios
++        ncols={i for i,f in enumerate(fields) if any(token in f for token in NONNEGATIVE)}|percent_cols
++        if job['category']=='margin':
++            ncols|={i for i,f in enumerate(fields) if f in margin_fields}
++            # Finite/nonnegative values do not prove accounting identities,
++            # historical unit mappings or complete field/population coverage.
++            unverified.append('MARGIN_ACCOUNTING_AND_FULL_SCOPE_NOT_PROVEN')
+         seen=set()
+         for ri,row in enumerate(rows):
+             if not isinstance(row,list) or len(row)!=len(fields):raise ValueError('ROW_WIDTH_MISMATCH')
+@@ -49,7 +57,7 @@
+                     seen.add(code);counts['duplicate_keys_checked']+=1
+             for ci in ncols:
+                 value=row[ci]
+-                if ci in ratios:
++                if ci in percent_cols:
+                     text=label(value)
+                     value=text[:-1] if text.endswith('%') else value
+                 val=number(value);counts['numeric_cells_checked']+=1
+@@ -82,7 +90,10 @@
+         unverified.append('OHLC_FIELDS_NOT_RECOGNIZED')
+     if not counts['numeric_cells_checked'] and not counts['ohlc_rows_checked']:
+         unverified.append('NUMERIC_FIELD_RULES_NOT_COVERED')
+-    return dict(**counts,checks=checked+['SECURITY_DUPLICATES','RECOGNIZED_NUMERIC_DOMAINS','OHLC_RELATIONSHIPS'],
++    performed=checked+(['SECURITY_DUPLICATES'] if counts['duplicate_keys_checked'] else [])
++    performed+=['RECOGNIZED_NUMERIC_DOMAINS'] if counts['numeric_cells_checked'] else []
++    performed+=['OHLC_RELATIONSHIPS'] if counts['ohlc_rows_checked'] else []
++    return dict(**counts,checks=performed,
+                 unverified=sorted(set(unverified)),units_policy='NATIVE_UNITS_PRESERVED_NO_UNPROVEN_CONVERSION',
+                 cross_source_verified=False,pit_verified=False)
+ 
