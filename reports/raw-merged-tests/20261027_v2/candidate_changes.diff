@@ -1,0 +1,115 @@
+--- a/scripts/v093_official_content_audit.py
++++ b/scripts/v093_official_content_audit.py
+@@ -57,7 +57,19 @@
+                     unverified.append('MISSING_NUMERIC_CELL');continue
+                 if val<0:raise ValueError('NEGATIVE_NONNEGATIVE_FIELD:'+fields[ci])
+                 if ci in ratios and val>100:raise ValueError('HOLDING_PERCENT_OUT_OF_RANGE')
+-            if len(pcols)==4 and codeidx is not None and re.fullmatch(r'[1-9]\d{3}',label(row[codeidx])):
++            # Do not silently certify mixed instrument tables. An explicit scope
++            # may come from a reviewed historical universe; the default remains
++            # the legacy common-stock subset and flags every uncovered row.
++            ohlc_applicable = False
++            if len(pcols)==4 and codeidx is not None:
++                code=label(row[codeidx])
++                scope=job.get('applicable_security_codes')
++                if scope is not None and (not isinstance(scope,list) or any(not isinstance(c,str) or not c for c in scope)):
++                    raise ValueError('INVALID_SECURITY_SCOPE')
++                ohlc_applicable = code in scope if scope is not None else bool(re.fullmatch(r'[1-9]\d{3}',code))
++                if not ohlc_applicable:
++                    unverified.append('OHLC_SECURITY_OUTSIDE_VALIDATED_SCOPE')
++            if ohlc_applicable:
+                 vals={k:number(row[i]) for k,i in pcols.items()}
+                 if any(v is None or v<=0 for v in vals.values()):
+                     unverified.append('NO_VALID_TRADE_PRICE_REQUIRES_REVIEW');continue
+--- a/candidate/raw_register.py
++++ b/candidate/raw_register.py
+@@ -1,7 +1,7 @@
+ """Append-only JARVIS repair events. Never downloads or overwrites market RAW."""
+ import pathlib,csv,gzip,json,hashlib,datetime,fcntl,os,argparse,collections
+ ROOT=pathlib.Path(__file__).resolve().parent
+-HEAD=['event_id','task_id','source','month','unit_id','event_type','event_time','reason','reviewer','previous_sha256','new_sha256','new_file_ref','run_url','remote_hash_verified','period_verified','security_verified','numeric_verified','pit_verified','unit_scope_verified','unfilled_count']
++HEAD=['event_id','task_id','source','month','unit_id','event_type','event_time','reason','reviewer','previous_sha256','new_sha256','new_file_ref','run_url','remote_hash_verified','period_verified','security_verified','numeric_verified','pit_verified','unit_scope_verified','unfilled_count','validation_receipt_id','validation_artifact_sha256']
+ def units(source=None):
+  for p in sorted((ROOT/'units').glob('*_units.csv.gz')):
+   if source and p.name!=source+'_units.csv.gz':continue
+@@ -13,6 +13,54 @@
+  d=datetime.datetime.fromisoformat(x.replace('Z','+00:00'))
+  if d.tzinfo is None:raise ValueError('timezone required')
+  return d
++
++def verify_evidence(p):
++ """Consume pinned, independently approved local evidence; never approve it here.
++
++ The registry is provisioned by the validator/reviewer, not this CLI. It is a
++ trust input, not protection against an owner editing the registry itself.
++ Remote fetch/semantic validators must run before approval. Missing approval
++ fails closed. Local proof verifies integrity and identity, not market truth.
++ """
++ try:
++  registry=json.loads((ROOT/'approved_validation_receipts.json').read_text())
++  if not isinstance(registry,dict):raise ValueError('Invalid approval registry')
++  rid=p['validation_receipt_id'];approval=registry[rid]
++  if not isinstance(approval,dict):raise ValueError('Invalid approval record')
++  if approval.get('approved') is not True or not approval.get('approved_by') or not approval.get('validator_version'):
++   raise ValueError('Unapproved validator receipt')
++  stamp(approval['approved_at'])
++  if stamp(approval['approved_at'])>stamp(p['event_time']):raise ValueError('Approval after event time')
++  def confined(path):
++   root=ROOT.resolve();f=(root/path).resolve()
++   if not f.is_relative_to(root) or not f.is_file():raise ValueError('Evidence path outside register or missing')
++   return f
++  raw_artifact=confined(approval['artifact_path']).read_bytes()
++  digest=hashlib.sha256(raw_artifact).hexdigest()
++  if digest!=approval['artifact_sha256']:raise ValueError('Validator artifact hash mismatch')
++  evidence=json.loads(raw_artifact)
++  if not isinstance(evidence,dict):raise ValueError('Invalid validator artifact')
++  for key in ['task_id','unit_id','source','month','new_file_ref','new_sha256','run_url']:
++   if evidence.get(key)!=p.get(key):raise ValueError('Validator identity mismatch: '+key)
++  raw=confined(approval['raw_local_path']).read_bytes()
++  if hashlib.sha256(raw).hexdigest()!=p['new_sha256']:raise ValueError('RAW hash mismatch')
++  if type(evidence.get('bytes')) is not int or evidence['bytes']!=len(raw):raise ValueError('RAW byte count mismatch')
++  if evidence.get('remote_readback_sha256')!=p['new_sha256']:raise ValueError('Readback proof mismatch')
++  if evidence.get('validator_version')!=approval['validator_version'] or not evidence.get('universe_version'):
++   raise ValueError('Validator/universe version missing')
++  required=approval.get('required_rules')
++  if not isinstance(required,list) or not required or any(not isinstance(k,str) or not k for k in required):
++   raise ValueError('Required rule contract missing')
++  if not {'PERIOD','SECURITY','NUMERIC','PIT','UNIT_SCOPE'}.issubset(required):raise ValueError('Required acceptance dimensions missing')
++  if evidence.get('status')!='PASS' or evidence.get('coverage_complete') is not True:
++   raise ValueError('Validator did not fully pass')
++  for key in ['missing_count','unknown_count','conflict_count']:
++   if type(evidence.get(key)) is not int or evidence[key]!=0:raise ValueError('Open validator findings: '+key)
++  for key in required:
++   if evidence.get('rule_results',{}).get(key)!='PASS':raise ValueError('Required rule not passed: '+key)
++  return rid,digest
++ except (KeyError,TypeError,OSError,json.JSONDecodeError) as exc:
++  raise ValueError('Approved validation evidence missing or invalid') from exc
+ 
+ def record(p):
+  for k in ['task_id','source','month','unit_id','event_type','event_time','reason','reviewer']:
+@@ -27,16 +75,23 @@
+   if not p.get('new_file_ref') or not p.get('run_url') or not true(p.get('remote_hash_verified')):raise ValueError('Need file, execution and remote hash evidence')
+  if kind in ['VERIFIED','CLOSED']:
+   if not all(true(p.get(k)) for k in ['period_verified','security_verified','numeric_verified','pit_verified','unit_scope_verified']) or int(p.get('unfilled_count',-1))!=0:raise ValueError('Acceptance incomplete')
++  receipt_id,artifact_sha=verify_evidence(p)
+  eid=hashlib.sha256(json.dumps(p,sort_keys=True,ensure_ascii=False).encode()).hexdigest()[:24]
+  with open(ROOT/'repair_events.csv','r+',encoding='utf-8-sig',newline='') as f:
+-  fcntl.flock(f.fileno(),fcntl.LOCK_EX);rows=list(csv.DictReader(f))
++  fcntl.flock(f.fileno(),fcntl.LOCK_EX);reader=csv.DictReader(f)
++  if reader.fieldnames!=HEAD:raise ValueError('Journal schema upgrade required; never append mismatched columns')
++  rows=list(reader)
+   if any(r['event_id']==eid for r in rows):return {'status':'already_recorded','event_id':eid}
+   prior=[r for r in rows if r['task_id']==p['task_id']];last=prior[-1] if prior else None
+   if last and d<stamp(last['event_time']):raise ValueError('Timestamp precedes latest event')
+   if last and last['event_type']=='CLOSED' and kind!='REOPENED':raise ValueError('Must reopen closed task')
+   if kind=='CLOSED' and (not last or last['event_type']!='VERIFIED' or last['new_sha256']!=p['new_sha256']):raise ValueError('CLOSED requires VERIFIED with same SHA')
++  if kind=='CLOSED' and (last.get('validation_receipt_id')!=receipt_id or last.get('validation_artifact_sha256')!=artifact_sha):
++   raise ValueError('CLOSED evidence differs from VERIFIED')
+   if kind=='REOPENED' and (not last or last['event_type']!='CLOSED'):raise ValueError('REOPENED requires CLOSED')
+-  row={k:p.get(k,'') for k in HEAD};row['event_id']=eid;row['previous_sha256']=p.get('previous_sha256') or (last['new_sha256'] if last else u['RAW_SHA256']);f.seek(0,2);csv.DictWriter(f,fieldnames=HEAD).writerow(row);f.flush();os.fsync(f.fileno())
++  row={k:p.get(k,'') for k in HEAD}
++  if kind in ['VERIFIED','CLOSED']:row.update(validation_receipt_id=receipt_id,validation_artifact_sha256=artifact_sha)
++  row['event_id']=eid;row['previous_sha256']=p.get('previous_sha256') or (last['new_sha256'] if last else u['RAW_SHA256']);f.seek(0,2);csv.DictWriter(f,fieldnames=HEAD).writerow(row);f.flush();os.fsync(f.fileno())
+  return {'status':'recorded','event_id':eid}
+ def rebuild():
+  ev=events();latest={e['task_id']:e for e in ev};saved={e['task_id'] for e in ev if e['event_type'] in ['DOWNLOADED','VERIFIED','CLOSED']};a=collections.defaultdict(collections.Counter)
