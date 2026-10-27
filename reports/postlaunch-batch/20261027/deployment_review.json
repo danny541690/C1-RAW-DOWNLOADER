@@ -1,0 +1,424 @@
+{
+  "merge_commit": "2236d893e5362d51f51211bce5867e5ca366f249",
+  "production_run": 40509562994,
+  "main_ci_run": 40509563051,
+  "main_ci_conclusion": "success",
+  "main_ci_log_summary": [
+    "2026-10-27T13:09:43.3678820Z {\"run\": 801, \"pass\": 801, \"fail\": 0, \"error\": 0, \"skip\": 0}",
+    "2026-10-27T13:09:43.3679329Z elapsed 7.824"
+  ],
+  "jobs": [
+    {
+      "job": 122208289182,
+      "name": "Schedule 4 EARLY_DESC",
+      "conclusion": "success",
+      "final": {
+        "tag": "OFFICIAL_REPAIR_STATUS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "DESC",
+        "month_index": 34,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "DESC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T13:50:46.165607+00:00",
+        "active_month": "2010-02",
+        "last_month": "2010-03",
+        "flagged_candidates": 582,
+        "last_visited_month": "2010-03",
+        "last_month_busy": false,
+        "last_due_month": "2011-09",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "checked_this_run": 5,
+        "repaired_this_run": 0,
+        "source_requests_this_run": {
+          "TPEx": 46,
+          "TWSE": 5
+        },
+        "download_responses_this_run": 50,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "sources": [
+          "TWSE",
+          "TPEx",
+          "MOPS"
+        ],
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 34,
+          "saved": 33,
+          "failed": 1
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "run_id": "40509562994/RAW",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 0,
+        "prior_verified_skipped_this_run": 46,
+        "local_reparse_readback_this_run": 0,
+        "local_quality_open_this_run": 5
+      },
+      "finmind_last": {
+        "tag": "FINMIND_GAPFILL_STATUS",
+        "revision": "OFFICIAL_FINMIND_GAPS_20261027_V1",
+        "month": "2010-02",
+        "run_id": "40509562994/RAW",
+        "planned_tasks": 0,
+        "pending_tasks": 0,
+        "saved_tasks": 0,
+        "run_metrics": {
+          "requests": 34,
+          "saved": 33,
+          "failed": 1
+        },
+        "official_gap_closed": false,
+        "coverage_certified": false,
+        "numeric_verified": false,
+        "pit_verified": false,
+        "blocked_tasks": 3,
+        "blocked_reason_counts": {
+          "UNMAPPED_DATASET_OR_HISTORICAL_UNIVERSE_NOT_PROVEN": 3
+        }
+      },
+      "route_progress": {
+        "tag": "OFFICIAL_REPAIR_PROGRESS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "DESC",
+        "month_index": 33,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "DESC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T13:48:06.023755+00:00",
+        "active_month": "2010-03",
+        "last_month": "2010-04",
+        "flagged_candidates": 373,
+        "last_visited_month": "2010-04",
+        "last_month_busy": false,
+        "last_due_month": "2011-09",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "run_id": "40509562994/RAW",
+        "current_work_month": "2010-03",
+        "batch_complete": false,
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 33,
+          "saved": 32,
+          "failed": 1
+        },
+        "checked_this_run": 1,
+        "repaired_this_run": 0,
+        "source_requests_this_run": {
+          "TPEx": 46
+        },
+        "download_responses_this_run": 45,
+        "month_result_counts": {
+          "LOCAL_CONTENT_CHECKED_OPEN_QUALITY_ITEMS": 183,
+          "CONTENT_CHECK_PASS": 46,
+          "SOURCE_NO_DATA_UNCONFIRMED": 111,
+          "UNRESOLVED_ATTEMPT_LIMIT": 5,
+          "OFFICIAL_PERIOD_NOT_PROVIDED": 28,
+          "WAIT_SHARED_SOURCE_WINDOW": 11,
+          "UNRESOLVED_SOURCE_BACKOFF": 3,
+          "UNRESOLVED_HISTORICAL_COMPARE_SCOPE": 189
+        },
+        "problem_summary": {
+          "total_units": 576,
+          "current_problem_counts": {
+            "QUALITY_VALIDATION_OPEN": 183,
+            "CHECKED_CONTENT": 46,
+            "SOURCE_EMPTY_UNCONFIRMED": 111,
+            "PARSER_OR_SEMANTIC_FAILURE": 1,
+            "HISTORY_NOT_OFFERED": 28,
+            "SHARED_PACING_WAIT": 11,
+            "SOURCE_BACKOFF": 3,
+            "UNRESOLVED_REQUIRES_REVIEW": 4,
+            "HISTORICAL_FINANCIAL_ROUTE_REVIEW": 189
+          },
+          "open_quality_checks": {
+            "NUMERIC_FIELD_RULES_NOT_COVERED": 138,
+            "NO_VALID_TRADE_PRICE_REQUIRES_REVIEW": 45,
+            "PRICE_MISSING_OR_NONTRADING_REVIEW_REQUIRED": 45
+          },
+          "unresolved_units": 530,
+          "scope": "THIS_MONTH_JOURNAL_ONLY_NOT_GLOBAL_COVERAGE",
+          "numeric_verified": false,
+          "pit_verified": false
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 0,
+        "prior_verified_skipped_this_run": 46,
+        "local_reparse_readback_this_run": 0,
+        "local_quality_open_this_run": 1
+      },
+      "tracebacks": 0,
+      "compact_logging_confirmed": true
+    },
+    {
+      "job": 122208289183,
+      "name": "Schedule 2 RECENT_DESC",
+      "conclusion": "success",
+      "final": {
+        "tag": "OFFICIAL_REPAIR_STATUS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "DESC",
+        "month_index": 46,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "DESC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T13:50:47.853200+00:00",
+        "active_month": "2022-12",
+        "last_month": "2023-01",
+        "flagged_candidates": 317,
+        "last_visited_month": "2023-01",
+        "last_month_busy": false,
+        "parameter_incident_revisited": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "last_due_month": "2024-02",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "checked_this_run": 206,
+        "repaired_this_run": 4,
+        "source_requests_this_run": {
+          "MOPS": 2,
+          "TPEx": 33,
+          "TWSE": 22
+        },
+        "download_responses_this_run": 54,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "sources": [
+          "TWSE",
+          "TPEx",
+          "MOPS"
+        ],
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 3,
+          "saved": 3,
+          "failed": 0
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "run_id": "40509562994/RAW",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 60,
+        "prior_verified_skipped_this_run": 135,
+        "local_reparse_readback_this_run": 73,
+        "local_quality_open_this_run": 146
+      },
+      "finmind_last": {
+        "tag": "FINMIND_GAPFILL_STATUS",
+        "revision": "OFFICIAL_FINMIND_GAPS_20261027_V1",
+        "month": "2022-12",
+        "run_id": "40509562994/RAW",
+        "planned_tasks": 0,
+        "pending_tasks": 0,
+        "saved_tasks": 0,
+        "run_metrics": {
+          "requests": 3,
+          "saved": 3,
+          "failed": 0
+        },
+        "official_gap_closed": false,
+        "coverage_certified": false,
+        "numeric_verified": false,
+        "pit_verified": false,
+        "blocked_tasks": 1,
+        "blocked_reason_counts": {
+          "UNMAPPED_DATASET_OR_HISTORICAL_UNIVERSE_NOT_PROVEN": 1
+        }
+      },
+      "tracebacks": 0,
+      "compact_logging_confirmed": true
+    },
+    {
+      "job": 122208289392,
+      "name": "Schedule 1 RECENT_ASC",
+      "conclusion": "success",
+      "final": {
+        "tag": "OFFICIAL_REPAIR_STATUS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "ASC",
+        "month_index": 66,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "ASC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T13:50:54.502274+00:00",
+        "active_month": "2018-07",
+        "last_month": "2018-06",
+        "flagged_candidates": 576,
+        "last_visited_month": "2018-06",
+        "last_month_busy": false,
+        "control_gap_plan": "RAW_CONTROL_GAPS_20261024_V1",
+        "last_due_month": "2014-06",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "checked_this_run": 315,
+        "repaired_this_run": 20,
+        "source_requests_this_run": {
+          "MOPS": 2,
+          "TPEx": 29,
+          "TWSE": 9
+        },
+        "download_responses_this_run": 37,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "sources": [
+          "TWSE",
+          "TPEx",
+          "MOPS"
+        ],
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 3,
+          "saved": 3,
+          "failed": 0
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "run_id": "40509562994/RAW",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 107,
+        "prior_verified_skipped_this_run": 106,
+        "local_reparse_readback_this_run": 0,
+        "local_quality_open_this_run": 208
+      },
+      "finmind_last": {
+        "tag": "FINMIND_GAPFILL_STATUS",
+        "revision": "OFFICIAL_FINMIND_GAPS_20261027_V1",
+        "month": "2018-07",
+        "run_id": "40509562994/RAW",
+        "planned_tasks": 0,
+        "pending_tasks": 0,
+        "saved_tasks": 0,
+        "run_metrics": {
+          "requests": 3,
+          "saved": 3,
+          "failed": 0
+        },
+        "official_gap_closed": false,
+        "coverage_certified": false,
+        "numeric_verified": false,
+        "pit_verified": false,
+        "blocked_tasks": 0,
+        "blocked_reason_counts": {}
+      },
+      "tracebacks": 0,
+      "compact_logging_confirmed": true
+    },
+    {
+      "job": 122208289395,
+      "name": "Schedule 3 EARLY_ASC",
+      "conclusion": "success",
+      "final": {
+        "tag": "OFFICIAL_REPAIR_STATUS",
+        "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+        "direction": "ASC",
+        "month_index": 37,
+        "upper_month": "2026-10",
+        "sweeps": 0,
+        "prior_quality_checkpoint": {
+          "revision": "OFFICIAL_TARGETED_REPAIR_20261023_V1",
+          "direction": "ASC",
+          "month_index": 0,
+          "upper_month": "2026-10",
+          "sweeps": 0
+        },
+        "quality_revision": "OFFICIAL_LOCAL_REPARSE_AND_SOURCE_CHECK_V4",
+        "status": "ACTIVE",
+        "updated_utc": "2026-10-27T13:50:45.046965+00:00",
+        "active_month": "2003-02",
+        "last_month": "2003-01",
+        "flagged_candidates": 387,
+        "last_visited_month": "2003-01",
+        "last_month_busy": false,
+        "last_due_month": "2000-07",
+        "missing_unit_plan": "OFFICIAL_CONTENT_ROUTE_RECONCILIATION_20261027_V4",
+        "checked_this_run": 16,
+        "repaired_this_run": 0,
+        "source_requests_this_run": {
+          "TPEx": 142,
+          "MOPS": 4,
+          "TWSE": 7
+        },
+        "download_responses_this_run": 149,
+        "repair_success_definition": "VALIDATED_SAVED_AND_REMOTE_READBACK_HASH_CONFIRMED",
+        "sources": [
+          "TWSE",
+          "TPEx",
+          "MOPS"
+        ],
+        "finmind_enabled": true,
+        "finmind_metrics": {
+          "requests": 13,
+          "saved": 13,
+          "failed": 0
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "run_id": "40509562994/RAW",
+        "execution_revision": "MISSING_FINANCIAL_PLAN_AND_RAW_REPAIR_V8",
+        "unchanged_raw_checked_this_run": 0,
+        "prior_verified_skipped_this_run": 0,
+        "local_reparse_readback_this_run": 0,
+        "local_quality_open_this_run": 16
+      },
+      "finmind_last": {
+        "tag": "FINMIND_GAPFILL_STATUS",
+        "revision": "OFFICIAL_FINMIND_GAPS_20261027_V1",
+        "month": "2003-02",
+        "run_id": "40509562994/RAW",
+        "planned_tasks": 0,
+        "pending_tasks": 0,
+        "saved_tasks": 0,
+        "run_metrics": {
+          "requests": 13,
+          "saved": 13,
+          "failed": 0
+        },
+        "official_gap_closed": false,
+        "coverage_certified": false,
+        "numeric_verified": false,
+        "pit_verified": false,
+        "blocked_tasks": 203,
+        "blocked_reason_counts": {
+          "UNMAPPED_DATASET_OR_HISTORICAL_UNIVERSE_NOT_PROVEN": 203
+        }
+      },
+      "tracebacks": 0,
+      "compact_logging_confirmed": true
+    }
+  ],
+  "operation_counts_not_unique_gaps": true,
+  "database_completeness": "UNKNOWN",
+  "failed_finmind_receipt_reason": "NOT_YET_READ",
+  "checked_at_taipei": "2026-10-27T22:57:56.507548+08:00"
+}
