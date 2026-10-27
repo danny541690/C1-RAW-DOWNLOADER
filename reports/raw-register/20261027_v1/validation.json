@@ -1,0 +1,20 @@
+{
+  "snapshot_id": "JARVIS_RAW_REGISTER_20261027_V1",
+  "units": 337023,
+  "unique_task_ids": 337023,
+  "counts": {
+    "已下載": 99700,
+    "未下載": 237323,
+    "明列品質問題": 28546
+  },
+  "source_month_rows": 2254,
+  "all_monthly_metric_differences": 0,
+  "workflow_checks": [
+    "premature close rejected",
+    "idempotent replay",
+    "verified then closed",
+    "reopened preserves downloaded proof"
+  ],
+  "actual_events": 0,
+  "all_market_completeness": "UNKNOWN"
+}

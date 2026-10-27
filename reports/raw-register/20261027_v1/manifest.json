@@ -1,0 +1,102 @@
+{
+  "JARVIS_來源年月下載缺失補正對帳總表_20261027.xlsx": {
+    "size": 215370,
+    "sha256": "d9b75c994a01d21aba62e5b1c86251935b73839a75a3e03b180b15062570c915"
+  },
+  "schema.json": {
+    "size": 951,
+    "sha256": "45438c29bccc57ccee26aed7b073494e7658810377f4ed8651c37de0374d86ba"
+  },
+  "來源總覽.csv": {
+    "size": 867,
+    "sha256": "ab263f2dd618041f95eb6cbe99d5aa39393446df9eb2acfcc79ebfeec1cf9142"
+  },
+  "current_monthly.csv": {
+    "size": 47230,
+    "sha256": "9ead8dac2b5add542a47f6077851a0ff8db3a4494cf913b721d59a2aecfd557a"
+  },
+  "validation.json": {
+    "size": 487,
+    "sha256": "aca03d74602fa1242bab0e767e40dd56ea09a33e33c7be8478aeeb2f63e56cd0"
+  },
+  "rebuild_from_baseline.py": {
+    "size": 5813,
+    "sha256": "732443efd088c58bf4d4afc514f78526c8a8ef48248d2618f49acc8d3bc512d0"
+  },
+  "問題分類字典.csv": {
+    "size": 1497,
+    "sha256": "536cd177a3199600dc05e39bf2081a18a7814a006cc3ef3db50e31b5419a723b"
+  },
+  "README.md": {
+    "size": 6196,
+    "sha256": "a6ccf6f6abf964766a0a78da961a176eee9c4d6c4b8ce6c2fcc11f02187fcfed"
+  },
+  "來源年份月份對帳.csv": {
+    "size": 392167,
+    "sha256": "6876e93b73abc7bfc8e30d9b5dc29b34063e62f51b085ce01372a68e1d7d5b80"
+  },
+  "repair_events.csv": {
+    "size": 248,
+    "sha256": "dd55ba3bdedf015ca17ca054d03f966d48c67b428a985e8245e029d800c1c217"
+  },
+  "recomputed.json": {
+    "size": 868,
+    "sha256": "ecceef99b1daa38beeb9705f489b47d6038a96d655901bf0b60496974e376ff7"
+  },
+  "單元主清單.csv": {
+    "size": 547876852,
+    "sha256": "094fddaadcb2f75498076ae93c4da1175f0e5d1e97157152b4a4a968daa3c84f"
+  },
+  "11_GitHub兩週執行索引.csv": {
+    "size": 739279,
+    "sha256": "e9e1fc3f054d29ca452684601e3ac2faf93b9ba40a338933564555ba4829b929"
+  },
+  "register.py": {
+    "size": 5356,
+    "sha256": "1b997a70f25c39ca13fa70f9cedff00ee091215378dd5fe891baaa7793c874b0"
+  },
+  "22_補正帳本缺少月份追蹤.csv": {
+    "size": 16207,
+    "sha256": "989bde2a4627db340f01ba73b0f8fa5dfbb109701c147769162a69fe4de0f797"
+  },
+  "來源年份對帳.csv": {
+    "size": 12033,
+    "sha256": "be4f9e281522c3af889c905d02acd41abd70425ec5832ae10b695e5c4bc3bdef"
+  },
+  "14_應有範圍與驗收.csv": {
+    "size": 3140,
+    "sha256": "b5d936565276989be2367cbecc824b812bcd0f432cf9defb2ff75261cf90e7d5"
+  },
+  "21_來源重查與品質狀態核對.csv": {
+    "size": 995671,
+    "sha256": "54c2540610ffb82dd6469bfaaa4def1ac7e85760f4296b7c149d48876e494f25"
+  },
+  "units/NDC_units.csv.gz": {
+    "size": 30662,
+    "sha256": "163bfa20d3730338d67d4b593a9278152f095f8d283407d76a6ccfd4454e47f5"
+  },
+  "units/TPEx_units.csv.gz": {
+    "size": 9731129,
+    "sha256": "f153d3cc383cd61e287ac73cd6fc4e7afbedea830218b2f14c43a51b12dd557a"
+  },
+  "units/TAIFEX_units.csv.gz": {
+    "size": 317659,
+    "sha256": "abcdd88c92aa6ce955e0537c8aa1e15b8c82493fe69ca9e3c8bedb97f0862016"
+  },
+  "units/MOPS_units.csv.gz": {
+    "size": 1979753,
+    "sha256": "8f58b83cfd65a42cc7e72ccf7bb889ea11cb89a6ed64183869da0d92949afccd"
+  },
+  "units/FinMind_units.csv.gz": {
+    "size": 76251,
+    "sha256": "bdad6d53c2af28ee8bcde9956233cce29a75204a03e274cd2c3769db0cd2b132"
+  },
+  "units/TDCC_units.csv.gz": {
+    "size": 6233800,
+    "sha256": "3df032876c0e04a278858e570e17e227241ffcb14a4713a8608f57a4c6b5403f"
+  },
+  "units/TWSE_units.csv.gz": {
+    "size": 7620426,
+    "sha256": "3c5a597b79b03f23e6f08f206e2f5d29759d51f34ea9a5cdb7067f5e69b61d86"
+  }
+}

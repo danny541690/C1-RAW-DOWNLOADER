@@ -1,0 +1,40 @@
+{
+  "version": "JARVIS_RAW_REGISTER_20261027_V1",
+  "unit_key": [
+    "來源",
+    "月份",
+    "單元ID"
+  ],
+  "task_id": "sha256(source|month|unit_id)[:20]",
+  "primary_issue": "one of Q1..Q5,O1..O9,P0..P2; secondary findings retained",
+  "event_columns": [
+    "event_id",
+    "task_id",
+    "source",
+    "month",
+    "unit_id",
+    "event_type",
+    "event_time",
+    "reason",
+    "reviewer",
+    "previous_sha256",
+    "new_sha256",
+    "new_file_ref",
+    "run_url",
+    "remote_hash_verified",
+    "period_verified",
+    "security_verified",
+    "numeric_verified",
+    "pit_verified",
+    "unit_scope_verified",
+    "unfilled_count"
+  ],
+  "closure_requires": [
+    "preceding VERIFIED with same SHA",
+    "period/security/numeric/PIT/unit_scope verified",
+    "unfilled_count=0",
+    "new_file_ref and run_url",
+    "remote_hash_verified=true"
+  ],
+  "source_times": "original timestamps plus Asia/Taipei offsets; not atomic snapshot"
+}
