@@ -1,0 +1,98 @@
+{
+  "as_of_taipei": "2026-10-28T07:36:33.208819+08:00",
+  "mode": "READ_ONLY_REAL_CONTENT_SEVEN_SOURCE_SAMPLE",
+  "per_source": {
+    "TWSE": {
+      "status": "PARTIAL_CONTENT_CHECK",
+      "period": "2001-01-11",
+      "rows_checked": 515,
+      "numeric_cells_checked": 6671,
+      "unverified": [
+        "MARGIN_ACCOUNTING_AND_FULL_SCOPE_NOT_PROVEN"
+      ],
+      "pit_verified": false
+    },
+    "TPEx": {
+      "status": "PARTIAL_CONTENT_CHECK",
+      "period": "2007-01-08",
+      "rows_checked": 383,
+      "numeric_cells_checked": 6511,
+      "unverified": [
+        "MARGIN_ACCOUNTING_AND_FULL_SCOPE_NOT_PROVEN"
+      ],
+      "pit_verified": false
+    },
+    "MOPS": {
+      "status": "BLOCKED_HEADER_ONLY",
+      "period": "2001-03-31",
+      "rows_checked": 4,
+      "numeric_cells_checked": 0,
+      "required_companies": 20,
+      "unverified": [
+        "NO_FINANCIAL_NUMERIC_VALUES",
+        "COMPANY_UNIVERSE_NOT_VERIFIED",
+        "ANNOUNCEMENT_PIT_UNKNOWN"
+      ]
+    },
+    "FinMind": {
+      "status": "PARTIAL_CONTENT_CHECK",
+      "period": "2000-01",
+      "code": "1515",
+      "rows_checked": 22,
+      "date_min": "2000-01-04",
+      "date_max": "2000-01-31",
+      "ohlc_relation_failures": 0,
+      "unverified": [
+        "HISTORICAL_UNIVERSE",
+        "SOURCE_CONTRACT_AND_UNIT",
+        "PIT_AND_INDEPENDENT_COMPARISON"
+      ]
+    },
+    "TAIFEX": {
+      "status": "PARTIAL_CONTENT_CHECK",
+      "rows_checked": 4065,
+      "members": [
+        "2000_fut.csv"
+      ],
+      "content_period": {
+        "min": "2000-01-04",
+        "max": "2000-12-30"
+      },
+      "products": [
+        "TE",
+        "TF",
+        "TX"
+      ],
+      "unverified": [
+        "ALL_EXPECTED_CONTRACTS",
+        "FIELD_SEMANTICS",
+        "PIT"
+      ]
+    },
+    "TDCC": {
+      "status": "PARTIAL_CONTENT_CHECK",
+      "period": "2025-10-31",
+      "code": "000218",
+      "rows_checked": 16,
+      "unverified": [
+        "HISTORICAL_UNIVERSE",
+        "GRADE_TOTALS_AND_UNITS",
+        "PIT"
+      ]
+    },
+    "NDC": {
+      "status": "PARTIAL_CONTENT_CHECK",
+      "month": "2000-01",
+      "tables": 5,
+      "gaps_reported": 2,
+      "source_archive_sha256": "c035dc5bbd3fe91ca80a620fd84828a54e8c49885a1b3aa51db5e42857772c83",
+      "unverified": [
+        "SERIES_LEVEL_UNIVERSE_AND_FREQUENCY",
+        "HISTORICAL_VINTAGE",
+        "NUMERIC_SEMANTICS"
+      ]
+    }
+  },
+  "release_decision": "BLOCKED",
+  "scope": "one registered source unit per source; not the complete dataset/universe"
+}
