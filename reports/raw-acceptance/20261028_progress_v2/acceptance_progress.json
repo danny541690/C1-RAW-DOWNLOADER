@@ -1,0 +1,656 @@
+{
+  "version": "JARVIS_ACCEPTANCE_PROGRESS_20261028_V2",
+  "created_at_taipei": "2026-10-28T06:53:29.525259+08:00",
+  "code_review_commit": "2a00959720b1c2d7968e616322855308be5e6dc9",
+  "original_spec_version": "JARVIS_RAW_ACCEPTANCE_20261027_V1",
+  "original_spec_sha256": "d58252284ec551d0dd73a95d9caea3db6dc18646d52f64e29fb9bcb6b7b18846",
+  "review_type": "STATIC_IMPLEMENTATION_MAPPING_NOT_NEW_DATA_ACCEPTANCE",
+  "rule_count": 37,
+  "all_database_acceptance": "UNKNOWN",
+  "new_data_downloads": 0,
+  "new_raw_validations": 0,
+  "closed_tasks": 0,
+  "approved_release_scopes": [],
+  "source_file_sha256": {
+    "scripts/v093_layer02_governance.py": "cd0332ed8dd227dbe6efbba0908a92b5ce475450159d41ed1f66bc480fac2c94",
+    "scripts/v093_official_repair.py": "fc81d4321010481505b30039f36d61210af95cbadd2d2281447deb349e4bde4f",
+    "scripts/v093_release_publisher.py": "aa3966fe34a28c6fa1382ec7aa9864041407cfb0e78cd6a06c0e708150b9651b",
+    "scripts/v093_official_finmind_gapfill.py": "4f57a3b2f489a383e88534c484bab968fadfb36465bae6ef784b82a2a4bb399b",
+    "scripts/v093_official_content_audit.py": "ff330e5e58600bd2f4a55237fe0edd3a3ab27a158a229db7c1a4da5355d586c6",
+    "scripts/v093_taifex_independent.py": "03b920a3b4ef2763b7d2dee8fa95b1d4e42eb825d668f7c1724f612d939a51b7",
+    "scripts/v093_ndc_independent.py": "f7464c801d820eb038d376c1787425a4de2b15fda08b3c008a8f93d5f1226b55",
+    "scripts/v093_standard_r4.py": "e8df9e8ddec0d1be08979eedb6e51f0e0a12e7cd124bb896b3777d1381cd0c51",
+    "scripts/v093_source_pit_unit_evidence.py": "2401f67fcb5881be9ccd6eb6314a02b1cf97b5d2fc795b0a2fa42b1168087f5f",
+    "scripts/v093_cross_source_numeric_audit.py": "3560eb573af1dd79a4d25d7b8d2716b55b8562663a6aea053cf4b98a322e3916",
+    "scripts/v093_repair_coordination.py": "65b58b394ac74b68b6cfb2a29507163bb6b400822416b748cf730d252fc1201c",
+    "scripts/v093_tdcc_independent.py": "107c97dba64c0a095c338b7930014060cc2a5c377fb93f5032fd21bc637a2140"
+  },
+  "rules": [
+    {
+      "rule_id": "G01",
+      "facet": "應有母體",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "NOT_ESTABLISHED_IN_THIS_REVIEW",
+      "implementation_evidence": [],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "核准逐來源、資料集、期間的應有歷史母體及分母；候選清單不可直接核准",
+      "required_evidence": "universe_version、歷史清單、適用性原因、核准人",
+      "pass_criteria": "每個應有觀察值可追溯至核准母體版本",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G02",
+      "facet": "口徑與覆蓋",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_layer02_governance.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "逐資料集核對頻率、單元與覆蓋範圍，消除檔案數和觀察值數混算",
+      "required_evidence": "計畫版本、分子明細、分母明細、排除審核",
+      "pass_criteria": "分子分母同來源、同期間、同粒度、同適用範圍",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G03",
+      "facet": "原件存取",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_repair.py",
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_release_publisher.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "對實際待發布原件逐檔遠端讀回驗SHA；不能用舊抽查替代全集",
+      "required_evidence": "request_id、file_id、bytes、sha256、readback_sha、時間、驗證器版本",
+      "pass_criteria": "遠端bytes與收據雜湊、長度一致且實際可讀",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G04",
+      "facet": "回應內容",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_finmind_gapfill.py",
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_content_audit.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "將HTTP成功、內容成功、空回應、拒絕與真無資料逐單元區分",
+      "required_evidence": "HTTP狀態、content_type、原始SHA、結構摘要、錯誤碼",
+      "pass_criteria": "實際市場資料符合資料集契約，完整解碼",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G05",
+      "facet": "壓縮與文件",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_taifex_independent.py",
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_ndc_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "逐實際包核CRC、全部成員、解壓限制、頁數及截斷",
+      "required_evidence": "CRC結果、成員清單、頁碼、parser_version、原檔SHA",
+      "pass_criteria": "所有預期成員/頁/表存在、無截斷；低置信欄已複核",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G06",
+      "facet": "日期語意",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_content_audit.py",
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_standard_r4.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "逐單元核內容期別；報表期別、匯出日、公告日及交易日分開",
+      "required_evidence": "原日期、標準日期、Asia/Taipei偏移、交易曆版本",
+      "pass_criteria": "日期符合資料集定義及查詢期間；保留原字串與時區",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G07",
+      "facet": "證券與主鍵",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_content_audit.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "補前導零等未覆蓋代碼規則與實際全範圍主鍵證據",
+      "required_evidence": "instrument_id、原代碼、market、type、有效起迄、跳過原因",
+      "pass_criteria": "適用證券均被檢查或逐筆列明不適用；無靜默跳過",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G08",
+      "facet": "完整性",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_layer02_governance.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "待核准母體後計算expected/actual/missing，不將UNKNOWN當完整",
+      "required_evidence": "expected/actual/missing keys、pagination收據、完整包manifest",
+      "pass_criteria": "missing=0且unexpected/duplicates已解釋；每個適用單元均涵蓋",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G09",
+      "facet": "空值與不適用",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_content_audit.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "核定每資料集空值及不適用理由，來源空回應不可逕認無資料",
+      "required_evidence": "適用性證據、假日/停牌事件、原始狀態字串",
+      "pass_criteria": "每個空值有missing/not_applicable/not_published/no_trade等明確原因",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G10",
+      "facet": "數值與單位",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_source_pit_unit_evidence.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "建立逐欄原生單位、幣別、倍率與精度契約；metadata探針不等於數值驗收",
+      "required_evidence": "field_contract_version、native_unit、currency、factor、precision",
+      "pass_criteria": "所有必要欄有型別、單位與合法範圍；公式比較容差有來源",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G11",
+      "facet": "欄位關係",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_content_audit.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "補齊適用的逐欄公式、容差與真實數據結果",
+      "required_evidence": "公式、欄位映射、逐筆差額、容差、例外證據",
+      "pass_criteria": "每項適用關係通過；零成交/價差/負淨買超按語意處理",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G12",
+      "facet": "檢查覆蓋",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_content_audit.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "將37規則映射到每個待發布單元；列出未檢欄位與略過原因",
+      "required_evidence": "checked_fields/keys、uncovered_fields、validator_version",
+      "pass_criteria": "每個必要欄/觀察值都有適用規則及結果；skipped有核准理由",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G13",
+      "facet": "PIT與版本",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_source_pit_unit_evidence.py",
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_layer02_governance.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "取得當時可得時間與歷史版本證據；尚無PIT證據的歷史回測不得放行",
+      "required_evidence": "publication_evidence、available_at、timezone、vintage、decision_cutoff",
+      "pass_criteria": "發布時間不晚於決策時點；可還原當時版本；時間精度足夠",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G14",
+      "facet": "跨來源一致",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_cross_source_numeric_audit.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "先核單位、還原與共同上游，再取得獨立逐值比較證據；比較器刻意不授予認證",
+      "required_evidence": "雙來源SHA、語意映射、差值、容差、共同上游",
+      "pass_criteria": "同契約值在明訂容差內；差異有來源解釋",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G15",
+      "facet": "重複與修訂",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_repair.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "補跨來源、重疊包、修訂版本與語意主鍵去重證據",
+      "required_evidence": "canonical_key、raw_sha、semantic_digest、supersedes",
+      "pass_criteria": "完全重送冪等；新修訂另版；跨年度包與月包觀察值不重複",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G16",
+      "facet": "排程與競態",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_repair_coordination.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "將租約、競態與斷點恢復證據映射到各實際worker；勿宣稱所有來源已驗完",
+      "required_evidence": "owner/lease/fence、CAS版本、before/after狀態、游標",
+      "pass_criteria": "同任務單一有效寫入；成功收據不被舊失敗覆蓋；恢復不重抓成功",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G17",
+      "facet": "重試與路由",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_finmind_gapfill.py",
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_repair.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "沿用累計次數、冷卻與來源配額；達上限或路由未明列待處理，不重設強跑",
+      "required_evidence": "error_class、attempt_total、next_retry_at、run_url、route_version",
+      "pass_criteria": "僅可重試錯誤在冷卻後有界重試；路由解法先驗證",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G18",
+      "facet": "驗收與關閉",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_release_publisher.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "發布器讀取證據並核SHA，但全37規則與逐任務VERIFIED/CLOSED整合尚未證明完成",
+      "required_evidence": "task_id、raw_sha、validation_artifact_sha、rule_results、reviewer、時間",
+      "pass_criteria": "同一SHA先VERIFIED後CLOSED；必需規則PASS、缺口/未知/衝突=0",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G19",
+      "facet": "歷程與重開",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "NOT_ESTABLISHED_IN_THIS_REVIEW",
+      "implementation_evidence": [],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "驗證追加歷程、重開及依賴重驗的全流程證據；本輪不假定既有帳本已完整達標",
+      "required_evidence": "event_id、previous/new_sha、run_url、reason、timestamps",
+      "pass_criteria": "每次關閉與重開可回溯；重開保留已下載事實",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G20",
+      "facet": "多處保存",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "NOT_ESTABLISHED_IN_THIS_REVIEW",
+      "implementation_evidence": [],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "本版報告三處保存不代表原始資料庫全量備份或復原演練通過",
+      "required_evidence": "snapshot_id、Git commit、Drive file_id、Library id、hash_manifest",
+      "pass_criteria": "三處指向同一版本；原件具恢復測試；密鑰不入報告",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G21",
+      "facet": "期限與鮮度",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_ndc_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "重新查證到期與來源最新發布；舊未發布狀態須重驗",
+      "required_evidence": "source_checked_at、expected_release、last_content_date、next_check",
+      "pass_criteria": "到期資料已取得或明列延遲；過期P1重查",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "G22",
+      "facet": "需求外資料",
+      "sources": "全部",
+      "definition_status": "DEFINED",
+      "implementation_status": "NOT_ESTABLISHED_IN_THIS_REVIEW",
+      "implementation_evidence": [],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "另列需求、指標與來源映射；七來源不能代表所有功能已覆蓋",
+      "required_evidence": "requirement_id、source/field、可用歷史、enabled/disabled理由",
+      "pass_criteria": "每個啟用指標都有原始欄位與可用期間；停用有原因",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "T01",
+      "facet": "日行情",
+      "sources": "TWSE；TPEx",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_content_audit.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "全適用歷史證券逐日檢查價格、量值與交易狀態；未覆蓋代碼不可略過",
+      "required_evidence": "原回應日期、行情表、交易狀態、逐筆檢查結果",
+      "pass_criteria": "OHLC精確關係成立；缺價與無交易有官方狀態；量值原生單位明確",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "T02",
+      "facet": "籌碼與事件",
+      "sources": "TWSE；TPEx",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_content_audit.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "融資券已有部分解析；法人、事件與其他表仍需逐資料集契約和真值驗收",
+      "required_evidence": "dataset schema、單位、事件日期類型、逐欄比較",
+      "pass_criteria": "負淨額可合法；餘額/比率與事件欄按語意驗收",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "T03",
+      "facet": "證券歷史",
+      "sources": "TWSE；TPEx",
+      "definition_status": "DEFINED",
+      "implementation_status": "NOT_ESTABLISHED_IN_THIS_REVIEW",
+      "implementation_evidence": [],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "補歷史證券主檔、轉市場、下市及公司行動；防倖存者偏差與還原混用",
+      "required_evidence": "historical_master、corporate_action、adjustment_basis",
+      "pass_criteria": "同公司身分與各期市場可追溯；現金股利/拆併股與價格基準明確",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "M01",
+      "facet": "財報母體",
+      "sources": "MOPS",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_repair.py",
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_standard_r4.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "核准歷史公司/季別/產業報表母體；早期比較路由保留未解，非直接認無資料",
+      "required_evidence": "expected_companies、actual_companies、statement_type、GAAP/schema",
+      "pass_criteria": "所有適用公司及必備科目齊全；缺項有適用性證據",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "M02",
+      "facet": "財報數值",
+      "sources": "MOPS",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_standard_r4.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "解析有財報值不等於三表勾稽通過；補幣別、單季累計、科目與公式驗證",
+      "required_evidence": "公式版本、currency、precision、quarter/cumulative、差額",
+      "pass_criteria": "必需公式與科目映射明確；容差依公布精度與公式項數核定",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "M03",
+      "facet": "營收與發布",
+      "sources": "MOPS",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_source_pit_unit_evidence.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "補實際公告與修訂證據；匯出日期不得替代公告時間",
+      "required_evidence": "report_period、announcement_id/time、export_time、revision",
+      "pass_criteria": "該公司該月原值與可得時間有證據；修訂版本可追溯",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "F01",
+      "facet": "資料集權限",
+      "sources": "FinMind",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_finmind_gapfill.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "逐資料集檢查授權與完整頁數；目前空回應及配額保護只覆蓋部分規則",
+      "required_evidence": "dataset、request params去密鑰、response code、covered dates",
+      "pass_criteria": "目前授權能取得該資料集且回應完整；額度有紀錄",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "F02",
+      "facet": "補件與語意",
+      "sources": "FinMind",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_official_finmind_gapfill.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "補件仍保留官方缺口；補逐日逐欄語意、單位、PIT與母體驗證",
+      "required_evidence": "official_task_id、supplement_sha、field/date映射、upstream",
+      "pass_criteria": "補件範圍逐日逐欄通過；仍保留官方缺口與來源血緣",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "A01",
+      "facet": "期貨主鍵",
+      "sources": "TAIFEX",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_taifex_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "補全部商品、合約、盤別、履約價與期權類型的主鍵覆蓋及夜盤語意",
+      "required_evidence": "contract/session/type、calendar、原日期、roll規則",
+      "pass_criteria": "無跨合約/盤別誤接；交易日依官方語意；到期後不續填舊月",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "A02",
+      "facet": "期貨包完整",
+      "sources": "TAIFEX",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_taifex_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "核對catalog與實際成員；雙向狀態分類差異待對帳，年度包不重算12月",
+      "required_evidence": "catalog_version、包內keys、session、capture_time、lost_snapshot_id",
+      "pass_criteria": "年度單元不重算12次；快照只代表實際觀測時間",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "A03",
+      "facet": "期貨數值",
+      "sources": "TAIFEX",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_taifex_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "基本CSV/數值檢查不足；補分商品單位、結算/收盤、OI及特殊價差規則",
+      "required_evidence": "field_semantics、contract_spec_version、precision、result",
+      "pass_criteria": "非負數規則只套數量等適用欄；價差與特殊商品依契約",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "D01",
+      "facet": "集保日期母體",
+      "sources": "TDCC",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_tdcc_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "查詢選單與4100候選不等於歷史母體；早期查詢未提供另找官方檔案",
+      "required_evidence": "published_week_list、historical_instruments、applicability",
+      "pass_criteria": "候選已核定或明列待核；每適用代碼有收據",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "D02",
+      "facet": "集保級距",
+      "sources": "TDCC",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_tdcc_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "整數與列數檢查只是部分實作；補級距全集、單位、合計與容差",
+      "required_evidence": "bin_schema、sum_relation、published_precision、total_scope",
+      "pass_criteria": "每個級距與合計關係按發布精度一致；總比率容差有理由",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "N01",
+      "facet": "景氣序列",
+      "sources": "NDC",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_ndc_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "逐序列核頻率、基期、季調、單位及應有期別；月包數不等於全序列完整",
+      "required_evidence": "series_id、frequency、base_year、SA/NSA、native_unit",
+      "pass_criteria": "序列契約明確；每個應有期間有值或經證實不適用",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    },
+    {
+      "rule_id": "N02",
+      "facet": "景氣版本發布",
+      "sources": "NDC",
+      "definition_status": "DEFINED",
+      "implementation_status": "PARTIAL_IMPLEMENTATION_IDENTIFIED",
+      "implementation_evidence": [
+        "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/2a00959720b1c2d7968e616322855308be5e6dc9/scripts/v093_ndc_independent.py"
+      ],
+      "full_rule_software_acceptance": "NOT_ESTABLISHED",
+      "full_scope_real_data_acceptance": "UNKNOWN",
+      "backtest_release": "BLOCKED_UNTIL_APPLICABLE_RULES_PASS",
+      "remaining": "來源檔版本不等於歷史發布vintage；補當時可得版本與最新發布重查",
+      "required_evidence": "source_url/version_sha、checked_at、release_date、vintage",
+      "pass_criteria": "P1有最近查證時間/來源版本；歷史回測選可得vintage",
+      "repair_policy": "Continue only an already validated bounded repair route; quarantine outputs until applicable acceptance passes."
+    }
+  ]
+}
