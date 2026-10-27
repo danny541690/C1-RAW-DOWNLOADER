@@ -1,0 +1,43 @@
+name: JARVIS RAW consolidated one-pass acceptance
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'tests/**'
+      - 'run_release_batch.py'
+      - 'requirements-qa.lock'
+      - '.github/workflows/jarvis-raw-repair-onepass-20261027.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'tests/**'
+      - 'run_release_batch.py'
+      - 'requirements-qa.lock'
+      - '.github/workflows/jarvis-raw-repair-onepass-20261027.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-raw-onepass-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  one-pass-full-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: All tests in one batch with unexpected sockets denied
+        run: python run_release_batch.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: raw-onepass-acceptance-${{ github.sha }}
+          path: results/

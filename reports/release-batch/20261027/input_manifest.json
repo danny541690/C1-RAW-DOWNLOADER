@@ -381,5 +381,6 @@
   "tests/test_v093_tpex_ex_dividend_event_dates.py": "095832ab739bfa9c149dfabb4d9d6554e389c28843c553e04eab2bbf49084603",
   "tests/test_v093_twse_all_rows_pit.py": "730b083590ca80814a4d445eaa634f7fd77c620529e57b333458d8425f0607e8",
   "tests/test_v093_twse_disclosure_pit.py": "a79115a0f7314f45db045eaee7682b540ccfa1729f7ce452ce7d66f2d6df67cd",
-  "tests/test_v093_v2_consolidated_launch_gate.py": "7e3653e861ecdf4a3d9ff26ab1bc4a032bcd35a965608704ff118491fdf8efdd"
+  "tests/test_v093_v2_consolidated_launch_gate.py": "7e3653e861ecdf4a3d9ff26ab1bc4a032bcd35a965608704ff118491fdf8efdd",
+  ".github/workflows/jarvis-raw-repair-onepass-20261027.yml": "c041d78ae426a274ddcf397909f156619b839299eed2a7d0341f42234ca54751"
 }
