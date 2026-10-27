@@ -1,0 +1,12 @@
+{
+  "spec_version": "JARVIS_RAW_ACCEPTANCE_20261027_V1",
+  "drive_folder": "https://drive.google.com/drive/folders/12YlhX7nWMMKPEi8k_7F9XMEpk6qaDM39",
+  "drive_workbook_id": "1Q-zssjHq7rkkC-r-vg3KSSiFATGoLan7",
+  "drive_zip_id": "1q44WPQU07Lqyu6GKBLsvq9VYEixCXlZe",
+  "chatgpt_workbook_id": "libfile_ef97aa0b4ce48191b8238fad7db4ea00",
+  "chatgpt_spec_id": "libfile_05bd1d7a45688191a67700453e769316",
+  "chatgpt_zip_id": "libfile_b99c0dd034508191936cf523632d478e",
+  "package_sha256": "eebafb1e7daf183c1e4aebac2c29948c4cc8660d8f4d5432f1cdaee4d6e4d638",
+  "deployed": false,
+  "actual_repairs": 0
+}

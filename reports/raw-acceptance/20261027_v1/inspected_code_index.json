@@ -1,0 +1,51 @@
+[
+  {
+    "local_evidence_file": "scripts_v093_source_pit_unit_evidence.py",
+    "repository": "danny541690/C1-RAW-DOWNLOADER",
+    "repository_path": "scripts/v093_source_pit_unit_evidence.py",
+    "sha256": "faf0c9a78d5feb0915bf969fdf8ea28d1daf6fdff472cc7638bd9e560e3e49ae",
+    "git_blob_sha": "9c77891fd49d42ce92f668c50b009ab72c3b71e6"
+  },
+  {
+    "local_evidence_file": "scripts_v093_taifex_independent.py",
+    "repository": "danny541690/C1-RAW-DOWNLOADER",
+    "repository_path": "scripts/v093_taifex_independent.py",
+    "sha256": "287f0e46d8ad6a665c3e00e99c49eee194ddd519a887bd010333b7aec7cf4f05",
+    "git_blob_sha": "b4ad6f88ecdebeb27d2ce3dd3b16bb9441bad057"
+  },
+  {
+    "local_evidence_file": "scripts_v093_ndc_independent.py",
+    "repository": "danny541690/C1-RAW-DOWNLOADER",
+    "repository_path": "scripts/v093_ndc_independent.py",
+    "sha256": "bbd7511f880a390b9c6ecb39ec0ce67319df75013767f9d54d93bb1111b7afb3",
+    "git_blob_sha": "8b1cb1c4272d61d63578c89fde26e8da01425c09"
+  },
+  {
+    "local_evidence_file": "reports_raw-register_20261027_v1_register.py",
+    "repository": "danny541690/C1-RAW-DOWNLOADER",
+    "repository_path": "reports/raw-register/20261027_v1/register.py",
+    "sha256": "2a79632263eed68dddd033984abecc1e8401c25cbaa59a0b5e4249a628d70a2d",
+    "git_blob_sha": "9a487295d4f0febd0ea6fd1a44c7d3384fea2334"
+  },
+  {
+    "local_evidence_file": "scripts_v093_official_content_audit.py",
+    "repository": "danny541690/C1-RAW-DOWNLOADER",
+    "repository_path": "scripts/v093_official_content_audit.py",
+    "sha256": "741c388d209a5e5f3bd0a0a249383e1dbd9ccb8495c26db5137665e6ccc1d1d3",
+    "git_blob_sha": "7cae79a87ad048eaed71c4926b6284097278b66c"
+  },
+  {
+    "local_evidence_file": "scripts_v093_official_problem_catalog.py",
+    "repository": "danny541690/C1-RAW-DOWNLOADER",
+    "repository_path": "scripts/v093_official_problem_catalog.py",
+    "sha256": "9f9d0e4f976cff6ae9eb5e03fe132f23f46ba67d852cd580dc70568ff5bd1edb",
+    "git_blob_sha": "6840c3d600fae8d2760d4a68950a8da7586ecd13"
+  },
+  {
+    "local_evidence_file": "scripts_v093_tdcc_independent.py",
+    "repository": "danny541690/C1-RAW-DOWNLOADER",
+    "repository_path": "scripts/v093_tdcc_independent.py",
+    "sha256": "e6e207f1660454d95a4cde39a9c14e4f2cd1312de47ade4348bff7e93b635763",
+    "git_blob_sha": "e03919f12d5a5ab72cc8c292765efd6c5a947876"
+  }
+]

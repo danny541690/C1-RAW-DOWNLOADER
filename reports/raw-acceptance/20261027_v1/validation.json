@@ -1,0 +1,20 @@
+{
+  "spec_version": "JARVIS_RAW_ACCEPTANCE_20261027_V1",
+  "rule_count": 37,
+  "sources": [
+    "TWSE",
+    "TPEx",
+    "MOPS",
+    "FinMind",
+    "TAIFEX",
+    "TDCC",
+    "NDC"
+  ],
+  "register_units_scanned": 337023,
+  "rules_unique_and_required_columns_nonempty": true,
+  "review_findings": 9,
+  "probe_is_synthetic": true,
+  "raw_values_revalidated": false,
+  "scheduler_changes": 0,
+  "closed_tasks": 0
+}

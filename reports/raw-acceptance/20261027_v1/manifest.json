@@ -1,0 +1,50 @@
+{
+  "JARVIS_七大來源錯誤處理與驗收規格表_20261027.xlsx": {
+    "bytes": 21608,
+    "sha256": "c9641da168fa5b3a08aec45cbc4adc13141e4b85f8baf0fef7227a3a7578a830"
+  },
+  "review_scan.py": {
+    "bytes": 2241,
+    "sha256": "0ba382b856e2c8b7fc070a85b432b1a30bd0eea2c11269a49a4c3c901c54095e"
+  },
+  "inspected_code_index.json": {
+    "bytes": 2361,
+    "sha256": "20b03208a4f8bf27190b39e457dfdbec569d7b11194dcfdbfb89cdba87b198c7"
+  },
+  "finish_acceptance.py": {
+    "bytes": 13948,
+    "sha256": "c9df96f388ff59414099578e6fe4923349f77edea5b31514adcb7e7778b17c0c"
+  },
+  "validation.json": {
+    "bytes": 410,
+    "sha256": "c97a69f6a353fd8757ba5ffbe01d53a6a1b4964680da49275d3b3360476488e7"
+  },
+  "五個處理佇列與分流表.csv": {
+    "bytes": 735,
+    "sha256": "e2143a0928ed593c39c134bd56ee01e0d079fb4c7910d8614102ae4ae32aae3c"
+  },
+  "複核發現與待確認清單.csv": {
+    "bytes": 2408,
+    "sha256": "d7ec997b57e40074aaab36b7ce965ace904027092b4ef4079f7be2fe930c0d52"
+  },
+  "JARVIS_七大來源錯誤處理與驗收規範_20261027.md": {
+    "bytes": 8160,
+    "sha256": "31cdd228f7df9c76b8ff59ae534db212e0d9f92b3266912fcde2fc11ed623792"
+  },
+  "acceptance_rules.json": {
+    "bytes": 28319,
+    "sha256": "d58252284ec551d0dd73a95d9caea3db6dc18646d52f64e29fb9bcb6b7b18846"
+  },
+  "七大來源錯誤處理與驗收規格表.csv": {
+    "bytes": 16676,
+    "sha256": "7cbf4a9a719db352e7dce96c8a51cbcf26ab9d7b8867828f5f6d1213efb89e1a"
+  },
+  "make_acceptance.py": {
+    "bytes": 17563,
+    "sha256": "a34f076c6b52c8016a609b867797d2c8f69c23ab207d747c3e0e150131d5244d"
+  },
+  "review_evidence.json": {
+    "bytes": 10645,
+    "sha256": "43d6a6f83e9c9c35c7accc033806906292584b32cb0ae6292227d5d7dc05acc4"
+  }
+}
