@@ -1,0 +1,5 @@
+Job_ID,工作,最後工作月份,檢查次數,存檔讀回修補次數,重解析次數,FinMind保存次數,FinMind失敗次數,精簡紀錄已生效,數值已驗證,PIT已驗證
+122208289182,Schedule 4 EARLY_DESC,2010-02,5,0,0,33,1,True,False,False
+122208289183,Schedule 2 RECENT_DESC,2022-12,206,4,73,3,0,True,False,False
+122208289392,Schedule 1 RECENT_ASC,2018-07,315,20,0,3,0,True,False,False
+122208289395,Schedule 3 EARLY_ASC,2003-02,16,0,0,13,0,True,False,False
