@@ -1,0 +1,431 @@
+{
+  "plan_version": "JARVIS_ACCEPTANCE_ACCELERATION_20261028_V1",
+  "status": "PLANNED_NOT_FULL_PIPELINE_IMPLEMENTED",
+  "created_at": "2026-10-28T15:32:31.221920+08:00",
+  "target_history": "2000-01-01 through 2026 latest due/published data; future/not-due excluded only with evidence",
+  "round_goal": {
+    "main_full_scope_runs": 1,
+    "targeted_correction_runs": 1,
+    "guaranteed_completion": false,
+    "rule": "Failures and missing evidence remain open; additional runs require explicit new cause"
+  },
+  "baseline": {
+    "full_groups": 0,
+    "partial": 6,
+    "unknown": 1,
+    "blocked": 1,
+    "last_code_tests_passed": 846,
+    "last_merged_pr": 43,
+    "last_merged_commit": "ac7cabf928af8929ae7a9a835d29f2192b3f467a",
+    "local_content_blocked_files": 6,
+    "local_content_evidence_records": 562,
+    "registered_record_count": 337281,
+    "approved_universe_count": null,
+    "approved_release_scopes": 0
+  },
+  "groups": [
+    {
+      "id": "R01",
+      "name": "母體與全量原件",
+      "primary_rules": [
+        "G01",
+        "G02",
+        "G08",
+        "M01",
+        "A02",
+        "D01"
+      ],
+      "status": "PARTIAL",
+      "ownership_status": "PROPOSED_PRIMARY_OWNER_NOT_RULE_COMPLETION"
+    },
+    {
+      "id": "R02",
+      "name": "歷史證券日期主鍵",
+      "primary_rules": [
+        "G06",
+        "G07",
+        "T03",
+        "A01"
+      ],
+      "status": "PARTIAL",
+      "ownership_status": "PROPOSED_PRIMARY_OWNER_NOT_RULE_COMPLETION"
+    },
+    {
+      "id": "R03",
+      "name": "欄位單位契約",
+      "primary_rules": [
+        "G09",
+        "G10",
+        "G22",
+        "F01",
+        "F02"
+      ],
+      "status": "PARTIAL",
+      "ownership_status": "PROPOSED_PRIMARY_OWNER_NOT_RULE_COMPLETION"
+    },
+    {
+      "id": "R04",
+      "name": "完整數值覆蓋",
+      "primary_rules": [
+        "G04",
+        "G05",
+        "G11",
+        "G12",
+        "T01",
+        "T02",
+        "M02",
+        "A03",
+        "D02",
+        "N01"
+      ],
+      "status": "PARTIAL",
+      "ownership_status": "PROPOSED_PRIMARY_OWNER_NOT_RULE_COMPLETION"
+    },
+    {
+      "id": "R05",
+      "name": "獨立跨來源比對",
+      "primary_rules": [
+        "G14",
+        "G15"
+      ],
+      "status": "PARTIAL",
+      "ownership_status": "PROPOSED_PRIMARY_OWNER_NOT_RULE_COMPLETION"
+    },
+    {
+      "id": "R06",
+      "name": "公告PIT與版本",
+      "primary_rules": [
+        "G13",
+        "M03",
+        "N02"
+      ],
+      "status": "UNKNOWN",
+      "ownership_status": "PROPOSED_PRIMARY_OWNER_NOT_RULE_COMPLETION"
+    },
+    {
+      "id": "R07",
+      "name": "真實發布與下游",
+      "primary_rules": [
+        "G16",
+        "G18",
+        "G19"
+      ],
+      "status": "BLOCKED",
+      "ownership_status": "PROPOSED_PRIMARY_OWNER_NOT_RULE_COMPLETION"
+    },
+    {
+      "id": "R08",
+      "name": "全量復原與時效",
+      "primary_rules": [
+        "G03",
+        "G17",
+        "G20",
+        "G21"
+      ],
+      "status": "PARTIAL",
+      "ownership_status": "PROPOSED_PRIMARY_OWNER_NOT_RULE_COMPLETION"
+    }
+  ],
+  "rule_ownership": [
+    {
+      "rule_id": "G01",
+      "name": "應有母體",
+      "primary_group": "R01",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G02",
+      "name": "口徑與覆蓋",
+      "primary_group": "R01",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G03",
+      "name": "原件存取",
+      "primary_group": "R08",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G04",
+      "name": "回應內容",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G05",
+      "name": "壓縮與文件",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G06",
+      "name": "日期語意",
+      "primary_group": "R02",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G07",
+      "name": "證券與主鍵",
+      "primary_group": "R02",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G08",
+      "name": "完整性",
+      "primary_group": "R01",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G09",
+      "name": "空值與不適用",
+      "primary_group": "R03",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G10",
+      "name": "數值與單位",
+      "primary_group": "R03",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G11",
+      "name": "欄位關係",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G12",
+      "name": "檢查覆蓋",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G13",
+      "name": "PIT與版本",
+      "primary_group": "R06",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G14",
+      "name": "跨來源一致",
+      "primary_group": "R05",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G15",
+      "name": "重複與修訂",
+      "primary_group": "R05",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G16",
+      "name": "排程與競態",
+      "primary_group": "R07",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G17",
+      "name": "重試與路由",
+      "primary_group": "R08",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G18",
+      "name": "驗收與關閉",
+      "primary_group": "R07",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G19",
+      "name": "歷程與重開",
+      "primary_group": "R07",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G20",
+      "name": "多處保存",
+      "primary_group": "R08",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G21",
+      "name": "期限與鮮度",
+      "primary_group": "R08",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "G22",
+      "name": "需求外資料",
+      "primary_group": "R03",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "T01",
+      "name": "日行情",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "T02",
+      "name": "籌碼與事件",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "T03",
+      "name": "證券歷史",
+      "primary_group": "R02",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "M01",
+      "name": "財報母體",
+      "primary_group": "R01",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "M02",
+      "name": "財報數值",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "M03",
+      "name": "營收與發布",
+      "primary_group": "R06",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "F01",
+      "name": "資料集權限",
+      "primary_group": "R03",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "F02",
+      "name": "補件與語意",
+      "primary_group": "R03",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "A01",
+      "name": "期貨主鍵",
+      "primary_group": "R02",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "A02",
+      "name": "期貨包完整",
+      "primary_group": "R01",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "A03",
+      "name": "期貨數值",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "D01",
+      "name": "集保日期母體",
+      "primary_group": "R01",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "D02",
+      "name": "集保級距",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "N01",
+      "name": "景氣序列",
+      "primary_group": "R04",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    },
+    {
+      "rule_id": "N02",
+      "name": "景氣版本發布",
+      "primary_group": "R06",
+      "execution_status": "REQUIRES_REAL_DATA_EVIDENCE_NOT_INFERRED_FROM_MAPPING"
+    }
+  ],
+  "stages": [
+    {
+      "id": "P1",
+      "name": "freeze scope and reconcile remote inventory",
+      "depends_on": []
+    },
+    {
+      "id": "P2",
+      "name": "read each unique RAW package once and bind SHA",
+      "depends_on": [
+        "P1"
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "run source-specific content/contract/PIT/cross-source checks",
+      "depends_on": [
+        "P2"
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "restore immutable candidate and verify freshness",
+      "depends_on": [
+        "P2"
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "collect all eight group evidence and evaluate release gate",
+      "depends_on": [
+        "P3",
+        "P4"
+      ]
+    },
+    {
+      "id": "P6",
+      "name": "publish only qualified scope; readback, downstream consumption and rollback checks",
+      "depends_on": [
+        "P5"
+      ]
+    }
+  ],
+  "proof_states": [
+    "PASS",
+    "FAIL",
+    "UNKNOWN",
+    "NOT_APPLICABLE_WITH_EVIDENCE"
+  ],
+  "missing_checker_state": "NOT_IMPLEMENTED_BLOCKED",
+  "hard_stops": [
+    "scope or denominator unknown",
+    "required checker missing",
+    "required evidence unknown",
+    "input snapshot changed without versioned continuation",
+    "payload or evidence SHA mismatch"
+  ],
+  "resume_key_fields": [
+    "source",
+    "dataset",
+    "logical_unit",
+    "period",
+    "raw_sha256",
+    "universe_version",
+    "contract_version",
+    "relevant_checker_signature",
+    "pit_evidence_digest"
+  ],
+  "reported_counts_separate": [
+    "expected_observations",
+    "unique_downloaded_logical_units",
+    "downloaded_artifact_versions",
+    "content_verified_units",
+    "missing_due_units",
+    "unknown_units",
+    "raw_only_units",
+    "approved_scope_units"
+  ]
+}
