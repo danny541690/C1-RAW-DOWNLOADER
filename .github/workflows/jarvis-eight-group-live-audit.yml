@@ -1,0 +1,129 @@
+name: JARVIS eight-group integrated live audit (release blocked)
+on:
+  push:
+    branches: [codex/acceptance-scheduler-3-workers-20261028]
+    paths: [.github/workflows/jarvis-eight-group-live-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-eight-group-integrated-audit
+  cancel-in-progress: false
+jobs:
+  integrated-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Check eight-group boundaries before live reads
+        run: |
+          python -m unittest discover -s tests -p 'test_acceptance_integrated.py' -v
+          python -m unittest discover -s tests -p 'test_eight_group_live_boundaries.py' -v
+      - name: Read existing metadata checkpoint without modifying it
+        run: python -m scripts.v093_acceptance_state restore --lane inventory --directory metadata-checkpoint --lease metadata-lease.json
+      - name: Bind the 87 original samples and available NDC/price samples to retained RAW
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python - <<'PY'
+          import csv,gzip,hashlib,io,json,re
+          from pathlib import Path
+          from googleapiclient.http import MediaIoBaseDownload
+          from scripts.annual_actual_firstpass import service
+          from scripts.v093_acceptance_scheduler import load
+          root=Path('results');root.mkdir();cache=root/'raw-cache';cache.mkdir()
+          seed=list(csv.DictReader(open('reports/raw-acceptance/20261028_eight_group_live/sample_index.csv',encoding='utf-8-sig')))
+          wanted={(x['source'],x['task_id']):x for x in seed};registered={};extra={};manifest={}
+          assert len(wanted)==len(seed)==87
+          for path in sorted(Path('reports/raw-register/20261027_v1/units').glob('*_units.csv.gz')):
+              manifest[path.name]=hashlib.sha256(path.read_bytes()).hexdigest()
+              with gzip.open(path,'rt',encoding='utf-8-sig',newline='') as stream:
+                  for row in csv.DictReader(stream):
+                      key=(row['來源'],row['單元ID'])
+                      if key in wanted:
+                          expected=wanted[key]
+                          assert key not in registered
+                          assert all(row[a]==expected[b] for a,b in [('原件參照','raw_reference'),('RAW_SHA256','raw_sha256'),('期間','period'),('資料集','dataset')])
+                          registered[key]=row
+                      if row['已下載']!='1':continue
+                      kind='NDC' if row['來源']=='NDC' else 'FinMind_price' if row['來源']=='FinMind' and row['資料集']=='TaiwanStockPrice' else None
+                      if kind and (kind not in extra or (row['期間'],row.get('代碼')=='2330')>(extra[kind]['期間'],extra[kind].get('代碼')=='2330')):extra[kind]=row
+          assert registered.keys()==wanted.keys()
+          selected=list(registered.values())+[r for r in extra.values() if (r['來源'],r['單元ID']) not in registered]
+          packages={}
+          for row in selected:
+              fid=row['原件參照'].partition('/')[0];assert re.fullmatch('[A-Za-z0-9_-]+',fid)
+              key=row['來源'],row['單元ID'];expected=wanted.get(key,{}).get('package_sha256')
+              if fid in packages and expected:assert packages[fid].get('expected_sha256') in (None,expected)
+              entry=packages.setdefault(fid,{'expected_sha256':expected})
+              if expected:entry['expected_sha256']=expected
+          assert len(packages)<=64
+          api=service();total=0;failures={}
+          for fid,entry in packages.items():
+              try:
+                  metadata=api.files().get(fileId=fid,fields='id,size,md5Checksum,version',supportsAllDrives=True).execute(num_retries=0)
+                  size=int(metadata.get('size',0));assert 0<size<=16*1024*1024 and total+size<=64*1024*1024
+                  stream=io.BytesIO();reader=MediaIoBaseDownload(stream,api.files().get_media(fileId=fid),chunksize=1024*1024);done=False
+                  while not done:
+                      _,done=reader.next_chunk(num_retries=0);assert stream.tell()<=size
+                  raw=stream.getvalue();assert len(raw)==size and metadata.get('md5Checksum')==hashlib.md5(raw).hexdigest()
+                  digest=hashlib.sha256(raw).hexdigest()
+                  if entry['expected_sha256']:assert digest==entry['expected_sha256']
+                  after=api.files().get(fileId=fid,fields='id,size,md5Checksum,version',supportsAllDrives=True).execute(num_retries=0);assert after==metadata
+                  (cache/fid).write_bytes(raw);total+=len(raw)
+                  entry.update(readback_sha256=digest,bytes=len(raw),historical_package_sha_bound=bool(entry['expected_sha256']))
+              except Exception as exc:failures[fid]=type(exc).__name__
+          checkpoint=load(Path('metadata-checkpoint/inventory.json.gz'))
+          assert checkpoint['phase']=='DONE'
+          remote=dict(schema=checkpoint['schema'],phase=checkpoint['phase'],started_at=checkpoint['started_at'],updated_at=checkpoint['updated_at'],root=checkpoint['root'],enumeration_complete=True,atomic_point_in_time_snapshot=False,files=list(checkpoint['files'].values()),historical_universe_approved=False,freshness_revalidated_this_run=False)
+          (root/'remote-snapshot.json').write_text(json.dumps(remote))
+          prepared=dict(original_samples=len(seed),extra_samples=[{k:r[k] for k in ('來源','資料集','單元ID','期間','原件參照','RAW_SHA256')} for r in extra.values()],packages=packages,package_read_failures=failures,total_readback_bytes=total,register_sha256=manifest,source_market_downloads=0,production_writes=0)
+          (root/'preparation.json').write_text(json.dumps(prepared,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps({'original_samples':len(seed),'extra_sources':list(extra),'packages_read':sum('readback_sha256' in e for e in packages.values()),'package_read_failures':failures,'bytes':total}))
+          PY
+      - name: Execute all eight groups and all 37 contracts on one frozen input set
+        run: |
+          python -m scripts.v093_acceptance_integrated --register reports/raw-register/20261027_v1/units --raw-cache results/raw-cache --out results/first --plan reports/raw-acceptance/20261028_acceleration_plan/execution_plan.json --esb-evidence reports/raw-acceptance/20261028_esb_contract --remote-snapshot results/remote-snapshot.json
+          python -m scripts.v093_acceptance_integrated --register reports/raw-register/20261027_v1/units --raw-cache results/raw-cache --out results/second --plan reports/raw-acceptance/20261028_acceleration_plan/execution_plan.json --esb-evidence reports/raw-acceptance/20261028_esb_contract --remote-snapshot results/remote-snapshot.json --resume results/first/content/checkpoint.json
+      - name: Verify resume, local restore and closed release gate
+        run: |
+          python - <<'PY'
+          import collections,json,os
+          from pathlib import Path
+          first=json.loads(Path('results/first/integrated_summary.json').read_text());second=json.loads(Path('results/second/integrated_summary.json').read_text())
+          prepared=json.loads(Path('results/preparation.json').read_text())
+          evidence=json.loads(Path('results/second/content/raw_content_evidence.json').read_text())
+          assert len(second['groups'])==8 and len(second['rules'])==37
+          assert first['input_plan']==second['input_plan']
+          assert second['completed_groups']==0 and second['approved_scopes']==[] and second['formal_release']=='BLOCKED'
+          assert second['production_writes']==0 and second['source_downloads']==0
+          assert first['recovery']['result']==second['recovery']['result']=='PASS_LOCAL_READBACK_SCOPE_RECOVERY'
+          assert second['content_counts'].get('resumed_content_units',0)>=first['content_counts'].get('new_content_units',0)>0
+          report={'eight_groups':second['groups'],'rule_counts':second['rule_counts'],'first_content_counts':first['content_counts'],'second_content_counts':second['content_counts'],'source_evidence_counts':dict(collections.Counter(e['source'] for e in evidence)),'extra_sample_sources':[e['來源'] for e in prepared['extra_samples']],'package_read_failures':prepared['package_read_failures'],'recovery':{k:second['recovery'][k] for k in ('result','units_verified','errors','scope','full_database_restore_verified','remote_backup_rechecked')},'formal_release':second['formal_release'],'completed_groups':second['completed_groups']}
+          Path('results/eight-group-result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as stream:stream.write(Path('results/second/README.md').read_text())
+          print(json.dumps(report,ensure_ascii=False))
+          assert not prepared['package_read_failures'], 'Some retained packages were not read; evidence report preserved'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvis-eight-group-live-audit-${{ github.run_id }}
+          path: |
+            results/preparation.json
+            results/eight-group-result.json
+            results/first/*.json
+            results/first/*.md
+            results/second/*.json
+            results/second/*.md
+            results/second/repair_queue.csv.gz
+          overwrite: true
+          retention-days: 30

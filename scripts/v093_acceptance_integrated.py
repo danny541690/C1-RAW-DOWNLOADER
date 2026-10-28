@@ -30,6 +30,7 @@ def verify_diagnostic(path,cache,archives):
  return dict(artifact=ref,input_references_checked=checked,input_errors=errors,result='INPUTS_REVALIDATED_HISTORICAL_DIAGNOSTIC' if not errors else 'INVALIDATED_DIAGNOSTIC',recomputed_numeric_pairs=False,reported_field_pairs=sum(metric_count(x.get('compared_pairs',0)) for x in obj.get('checks',{}).values()),reported_mismatches=sum(metric_count(x.get('mismatch',0)) for x in obj.get('checks',{}).values()),independence_verified=False,full_scope_verified=False)
 
 def recover_readback_scope(summary,content,cache,out,archives):
+ if not summary.get('archive_readbacks'):return dict(result='NOT_EXECUTED_NO_READBACK_SCOPE',files_restored=[],units_verified=0,errors=[],scope='NO_RESTORABLE_INPUTS',full_database_restore_verified=False,remote_backup_rechecked=False,account_loss_recovery_verified=False)
  restored=out/'restored_raw'
  if restored.exists() and any(restored.iterdir()):raise ValueError('RESTORE_TARGET_NOT_EMPTY')
  restored.mkdir(exist_ok=True);files=[];errors=[]
@@ -94,7 +95,7 @@ def triage_content_failures(content_dir,cache,archives):
    try:
     raw,_=batch.retained_raw(cache,r['raw_reference'],archives)
     if raw is None or batch.sha(raw)!=r['raw_sha256']:raise ValueError('TRIAGE_RAW_SHA_MISMATCH')
-    if r['source']=='MOPS' and r['dataset']=='BalanceSheet':
+    if r['source']=='MOPS' and r['dataset'] in ('BalanceSheet','IncomeStatement','CashflowStatement'):
      doc=html.fromstring(raw.decode('utf-8-sig'));bodies=doc.xpath('//*[@id="bodyTable"]//tbody');rows=doc.xpath('//*[@id="bodyTable"]//tbody/tr');period=doc.xpath('//input[@name="yearseason"]/@value')
      expected=r['period'][:4]+'Q'+str((int(r['period'][5:7])-1)//3+1)
      item.update(body_tables=len(bodies),account_rows=len(rows),response_period=period,company_headers=len(doc.xpath('//input[@name="reportName"]')))
