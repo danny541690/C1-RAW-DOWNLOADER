@@ -219,6 +219,22 @@ def work(rows, snapshot, state, read_remote, inspect, signatures, evidence=None,
             if counters['inspected'] % 20 == 0:
                 persist()
         persist()
+    current=[]
+    historical_blocks={(v['source'],v['task_id']) for v in outcomes.values() if v['status']=='CONTENT_BLOCKED'}
+    for fid,members in grouped.items():
+        if fid not in metadata:continue
+        for row in members:
+            scoped=[(str(k),v) for k,v in sorted(evidence.items()) if row['來源']=='FinMind' and k[1]==row.get('代碼') and k[0].startswith(row.get('月份') or '!')]
+            token=identity(row,metadata[fid],signatures[row['來源']],digest(scoped))
+            if token in outcomes:current.append(outcomes[token])
+    total=sum(map(len,grouped.values()))
+    state['progress']=dict(required_items=total,checked_items=len(current),
+        partial_content_items=sum(v['status']=='PARTIAL_CONTENT_NOT_RELEASED' for v in current),
+        content_blocked_items=sum(v['status']=='CONTENT_BLOCKED' for v in current),
+        repaired_content_blockers=sum(v['status']=='PARTIAL_CONTENT_NOT_RELEASED' and (v['source'],v['task_id']) in historical_blocks for v in current),
+        confirmed_exception_items=0,completed_items=0,pending_items=total,unchecked_items=total-len(current),
+        scope='REGISTERED_DOWNLOADED_SHARD_ONLY_NOT_GLOBAL_UNIVERSE',
+        evaluated_at=dt.datetime.fromtimestamp(now,dt.timezone.utc).isoformat())
     state['last_slice'] = counters
     persist()
     return counters
@@ -232,6 +248,8 @@ def report(state, slice_result):
                 groups=[dict(id=f'R{i:02}', status='BLOCKED' if i == 7 else 'OPEN',
                              full_acceptance=False) for i in range(1, 9)],
                 recorded_outcome_versions=len(state.get('outcomes', {})),
+                progress=state.get('progress'),
+                progress_recomputed_this_run=slice_result['status']=='SLICE_COMPLETE_NOT_FULL_ACCEPTANCE',
                 source_downloads=0, production_writes=0, approved_scopes=[],
                 missing_capabilities=['approved historical universe', 'all dataset contracts',
                                       'independent cross-source validation', 'historical PIT evidence',

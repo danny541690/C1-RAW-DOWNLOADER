@@ -8,7 +8,7 @@ import json
 import subprocess
 from pathlib import Path
 
-LANES = ('inventory', 'worker-0', 'worker-1', 'worker-2')
+LANES = ('inventory', 'worker-0', 'worker-1', 'worker-2', 'reports')
 FILES = ('inventory.json.gz', 'worker.json.gz')
 
 
@@ -17,7 +17,14 @@ def git(*args, data=None, check=True):
                           stderr=subprocess.PIPE, check=check)
 
 
+def allowed_files(lane):
+    if lane not in LANES:
+        raise ValueError('STATE_LANE_SCOPE')
+    return ('summary.json.gz',) if lane == 'reports' else FILES
+
+
 def restore(directory, lease, lane):
+    allowed = allowed_files(lane)
     branch = 'jarvis-acceptance-state/' + lane
     ref = 'refs/heads/' + branch
     listing = git('ls-remote', '--exit-code', '--heads', 'origin', ref, check=False)
@@ -30,7 +37,7 @@ def restore(directory, lease, lane):
         git('fetch', '--no-tags', '--depth=1', 'origin', ref)
         parent = git('rev-parse', 'FETCH_HEAD').stdout.decode().strip()
         names = git('ls-tree', '--name-only', parent).stdout.decode().splitlines()
-        if set(names) - set(FILES):
+        if set(names) - set(allowed):
             raise ValueError('UNEXPECTED_STATE_BRANCH_CONTENT')
         for name in names:
             (directory / name).write_bytes(git('show', parent + ':' + name).stdout)
@@ -40,12 +47,13 @@ def restore(directory, lease, lane):
 
 
 def commit(directory, lease, lane):
+    allowed = allowed_files(lane)
     info = json.loads(lease.read_text())
     branch = 'jarvis-acceptance-state/' + lane
     if info['branch'] != branch:
         raise ValueError('STATE_BRANCH_SCOPE')
     entries = []
-    for name in FILES:
+    for name in allowed:
         path = directory / name
         if path.is_file():
             blob = git('hash-object', '-w', '--stdin', data=path.read_bytes()).stdout.decode().strip()

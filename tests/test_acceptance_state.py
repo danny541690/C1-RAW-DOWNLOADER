@@ -53,6 +53,22 @@ class DurableStateTests(unittest.TestCase):
         durable.restore(d, self.p / 'ld.json', 'worker-1')
         self.assertEqual(load(d / 'worker.json.gz')['generation'], 2)
 
+    def test_reports_keep_committed_history_and_restore_latest(self):
+        a, lease = self.p / 'journal', self.p / 'report-lease.json'
+        durable.restore(a, lease, 'reports')
+        save(a / 'summary.json.gz', {'run_id': 'first', 'pipeline_status': 'INCOMPLETE'})
+        durable.commit(a, lease, 'reports')
+        first = __import__('json').loads(lease.read_text())['parent']
+        save(a / 'summary.json.gz', {'run_id': 'second', 'pipeline_status': 'PARTIAL'})
+        durable.commit(a, lease, 'reports')
+        second = __import__('json').loads(lease.read_text())['parent']
+        self.assertEqual(self.git('rev-parse', second + '^').stdout.decode().strip(), first)
+        restored = self.p / 'restored-reports'
+        durable.restore(restored, self.p / 'restore-report-lease.json', 'reports')
+        self.assertEqual(load(restored / 'summary.json.gz')['run_id'], 'second')
+        raw = self.git('show', first + ':summary.json.gz').stdout
+        self.assertIn(b'first', __import__('gzip').decompress(raw))
+
     def test_cross_worker_lease_is_rejected(self):
         a, lease = self.p / 'a', self.p / 'lease.json'
         durable.restore(a, lease, 'worker-0')

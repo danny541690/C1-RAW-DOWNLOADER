@@ -84,6 +84,24 @@ class CombinedPipelineTests(unittest.TestCase):
             self.assertEqual(combined['approved_scopes'], [])
             self.assertEqual(combined['full_groups_passed'], 0)
             self.assertEqual(payloads, original_payloads)
+            self.assertEqual(combined['progress']['checked_items'],len(rows))
+            self.assertEqual(combined['progress']['content_blocked_items'],1)
+            self.assertEqual(combined['progress']['repaired_content_blockers'],0)
+
+    def test_failure_and_bad_json_still_write_durable_report_bytes(self):
+        import os, subprocess, sys
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);reports=root/'reports';reports.mkdir()
+            (reports/'summary.json').write_text('invalid json')
+            env=dict(os.environ,INVENTORY_RESULT='failure',CONTENT_RESULT='skipped',GITHUB_RUN_ID='offline-failure-test')
+            run=subprocess.run([sys.executable,'-m','scripts.v093_acceptance_summary','--reports',str(reports),
+                '--out',str(root/'summary.json'),'--journal',str(root/'journal')],env=env,capture_output=True)
+            self.assertEqual(run.returncode,2,run.stderr.decode())
+            stored=worker.load(root/'journal/summary.json.gz')
+            self.assertEqual(stored['pipeline_status'],'INCOMPLETE')
+            self.assertIn('UPSTREAM_JOB_NOT_SUCCESSFUL',stored['errors'])
+            self.assertEqual(stored['run_id'],'offline-failure-test')
+            self.assertIsNone(stored['progress'])
 
     def test_missing_report_is_not_a_successful_combined_run(self):
         result = combine(self.make_reports()[:-1], 'success', 'success')
