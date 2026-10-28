@@ -1,0 +1,64 @@
+{
+  "kind": "METADATA_TO_RETAINED_REGISTER_RECONCILIATION",
+  "metadata_started_at": "2026-10-28T08:00:40.724796+00:00",
+  "metadata_updated_at": "2026-10-28T08:04:07.866930+00:00",
+  "metadata_snapshot_sha256": "28e717296c21d201d1c406c74b923415f2902a805e0e5e627c3b9d6cabce3acf",
+  "register_sha256": {
+    "FinMind_units.csv.gz": "bdad6d53c2af28ee8bcde9956233cce29a75204a03e274cd2c3769db0cd2b132",
+    "MOPS_units.csv.gz": "8f58b83cfd65a42cc7e72ccf7bb889ea11cb89a6ed64183869da0d92949afccd",
+    "NDC_units.csv.gz": "163bfa20d3730338d67d4b593a9278152f095f8d283407d76a6ccfd4454e47f5",
+    "TAIFEX_units.csv.gz": "abcdd88c92aa6ce955e0537c8aa1e15b8c82493fe69ca9e3c8bedb97f0862016",
+    "TDCC_units.csv.gz": "3df032876c0e04a278858e570e17e227241ffcb14a4713a8608f57a4c6b5403f",
+    "TPEx_units.csv.gz": "f153d3cc383cd61e287ac73cd6fc4e7afbedea830218b2f14c43a51b12dd557a",
+    "TWSE_units.csv.gz": "3c5a597b79b03f23e6f08f206e2f5d29759d51f34ea9a5cdb7067f5e69b61d86",
+    "supplemental_artifacts_units.csv.gz": "1078b7c2aa12cc7b37ed07f786a68acdfa969fffdcbc34ac7084a94c0b876cb5"
+  },
+  "enumeration_complete_for_filtered_raw_scope": true,
+  "atomic_point_in_time_snapshot": false,
+  "metadata_file_records": 70650,
+  "metadata_folder_records": 2490,
+  "registered_record_counts": {
+    "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 237323,
+    "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 99958
+  },
+  "sources": {
+    "FinMind": {
+      "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 262,
+      "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 801
+    },
+    "MOPS": {
+      "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 10248,
+      "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 8050
+    },
+    "NDC": {
+      "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 320,
+      "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 2
+    },
+    "TAIFEX": {
+      "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 2921,
+      "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 1841
+    },
+    "TDCC": {
+      "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 24067,
+      "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 181603
+    },
+    "TPEx": {
+      "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 28750,
+      "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 32085
+    },
+    "TWSE": {
+      "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 14617,
+      "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 31714
+    }
+  },
+  "unique_referenced_packages": 51518,
+  "referenced_packages_metadata_present": 51518,
+  "referenced_packages_not_observed": 0,
+  "unreferenced_metadata_files": 19132,
+  "unreferenced_metadata_files_are_missing_data": false,
+  "global_drive_absence_verified": false,
+  "raw_sha_readback_verified": false,
+  "approved_universe": null,
+  "formal_release": "BLOCKED",
+  "note": "Register includes historical task units and supplemental artifact versions; metadata file counts and task counts are different units. Snapshot listing covers exact year/source roots, not all Drive."
+}
