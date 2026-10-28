@@ -1,0 +1,587 @@
+{
+  "official_placeholder_vs_finmind_price_keys": 24,
+  "items": [
+    {
+      "date": "2026-09-01",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260901_44d4c07a4280f0b9188c.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 2,
+        "Trading_money": 16,
+        "Trading_turnover": 2
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-02",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260902_1e8c0dc069e7346ff1d6.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 110,
+        "Trading_money": 935,
+        "Trading_turnover": 1
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-03",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260903_2de5da9cb1cb082bf1d4.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 0,
+        "Trading_money": 0,
+        "Trading_turnover": 0
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260904_6a9f8fa3c5217eb3f821.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 218,
+        "Trading_money": 1876,
+        "Trading_turnover": 2
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-14",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260914_bccc8940d010c5d4e23e.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 91,
+        "Trading_money": 809,
+        "Trading_turnover": 2
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-15",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260915_67a5a1a3d2933c382234.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 5,
+        "Trading_money": 41,
+        "Trading_turnover": 3
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-16",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260916_21fcde7719225fb381e7.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 668,
+        "Trading_money": 5750,
+        "Trading_turnover": 3
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-17",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260917_a404bee5895f3ed7623d.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 790,
+        "Trading_money": 6271,
+        "Trading_turnover": 8
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-18",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260918_eb724d7ed92c6e670b5b.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 1252,
+        "Trading_money": 10440,
+        "Trading_turnover": 5
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260922_3004f7d585206411786d.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 110,
+        "Trading_money": 913,
+        "Trading_turnover": 2
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-23",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260923_21672d1bc403e525adfb.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 167,
+        "Trading_money": 1340,
+        "Trading_turnover": 3
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-24",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260924_dda130ec2fbfd747357a.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 1,
+        "Trading_money": 7,
+        "Trading_turnover": 1
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-24",
+      "code": "2321",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260924_dda130ec2fbfd747357a.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 377,
+        "Trading_money": 9407,
+        "Trading_turnover": 9
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "1538",
+      "official_source": "TWSE",
+      "official_raw_member": "prices_indices_20260929_e518633ede6f45da933b.raw",
+      "official_native_prices": {
+        "開盤價": "--",
+        "最高價": "--",
+        "最低價": "--",
+        "收盤價": "--"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 126,
+        "Trading_money": 1040,
+        "Trading_turnover": 5
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-01",
+      "code": "3085",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260901_0535ee1c39fff344094e.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 218,
+        "Trading_money": 2477,
+        "Trading_turnover": 8
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-01",
+      "code": "8047",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260901_0535ee1c39fff344094e.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 0,
+        "Trading_money": 0,
+        "Trading_turnover": 0
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-02",
+      "code": "3095",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260902_aa118d8d1577f32ed4fc.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 36,
+        "Trading_money": 1260,
+        "Trading_turnover": 8
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-09",
+      "code": "3085",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260909_a2b51fd7c6fb5ac2b001.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 861,
+        "Trading_money": 9321,
+        "Trading_turnover": 15
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-14",
+      "code": "3085",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260914_1861181f895868e88892.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 406,
+        "Trading_money": 4804,
+        "Trading_turnover": 5
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-14",
+      "code": "3095",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260914_1861181f895868e88892.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 817,
+        "Trading_money": 31732,
+        "Trading_turnover": 10
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-15",
+      "code": "4806",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260915_0934115f4840d915ff2e.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 290,
+        "Trading_money": 2364,
+        "Trading_turnover": 245
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-16",
+      "code": "8047",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260916_839f023e33faed84fbd5.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 0,
+        "Trading_money": 0,
+        "Trading_turnover": 0
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-23",
+      "code": "2937",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260923_fa56721b1498d37f3775.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 48,
+        "Trading_money": 2304,
+        "Trading_turnover": 1
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    },
+    {
+      "date": "2026-09-24",
+      "code": "2937",
+      "official_source": "TPEx",
+      "official_raw_member": "prices_20260924_d7bb62458af99194e7bd.raw",
+      "official_native_prices": {
+        "收盤": " ---",
+        "開盤": "---",
+        "最高": "---",
+        "最低": "---"
+      },
+      "finmind_native_prices": {
+        "open": 0.0,
+        "max": 0.0,
+        "min": 0.0,
+        "close": 0.0,
+        "Trading_Volume": 0,
+        "Trading_money": 0,
+        "Trading_turnover": 0
+      },
+      "status": "SOURCE_SEMANTIC_DIFFERENCE_REQUIRES_REVIEW_NOT_AUTO_FILL"
+    }
+  ],
+  "package_price_days": {
+    "TWSE": [
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-07",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-29",
+      "2026-09-30"
+    ],
+    "TPEx": [
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-07",
+      "2026-09-09",
+      "2026-09-11",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-21",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-30"
+    ]
+  },
+  "twse_present_tpex_absent_in_these_packages": [
+    "2026-09-04",
+    "2026-09-08",
+    "2026-09-10",
+    "2026-09-22",
+    "2026-09-29"
+  ],
+  "calendar_certified": false,
+  "source_availability_absence_certified": false,
+  "notes": [
+    "Source placeholders are preserved; no implicit forward fill or replacement",
+    "Different package day sets need current receipt and official calendar reconciliation before declaring missing source downloads"
+  ]
+}

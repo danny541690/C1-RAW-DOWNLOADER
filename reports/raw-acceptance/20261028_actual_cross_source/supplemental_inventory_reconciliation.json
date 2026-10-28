@@ -1,0 +1,675 @@
+{
+  "checked_at_taipei": "2026-10-28T09:34:05.058033+08:00",
+  "findings": [
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_1101_69d344ea9554a19e3fde.jsonl",
+      "sha256": "077192d5f95f0c7ff373678490d3919dc3fb0d68aa67c735e184623d929d57b0",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "1101"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_1441_09a461a5c9a21173e252.jsonl",
+      "sha256": "bf87e32a6af197f0786a5e9e074a55c30f1f7ff23ea73e633c8525c125b12a53",
+      "manifest_sha_match": true,
+      "records": 14,
+      "codes": [
+        "1441"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_1516_cfc06b36152b8946eb54.jsonl",
+      "sha256": "e584b9d305d3e683bc96ee9a140ea08b3f596edbe3b06f6372d0a82af809d67b",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "1516"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_1538_270ad11d85be0f3f0803.jsonl",
+      "sha256": "e3b1bcf4d2933fe3806ddf0000e2a5a3f2d0075caa7a87cb061bdca72b2d73a3",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "1538"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_1563_972b0a08ac17d2550544.jsonl",
+      "sha256": "688d726dfeb53976b74b255cb89126be80a4e92efda6cf8ea81cdcb5f7424a75",
+      "manifest_sha_match": true,
+      "records": 16,
+      "codes": [
+        "1563"
+      ],
+      "date_min": "2026-09-07",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_2067_c4fffd6eae56a6c2ccdf.jsonl",
+      "sha256": "0290187a55eccdfb549479a7e9225173779413066e5b3406f00218b8b5ea676b",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "2067"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_2321_455c126ca1a602b1efdc.jsonl",
+      "sha256": "92d16d281af4ec815866407fc97ed803878358f128332d2830a06530471bee55",
+      "manifest_sha_match": true,
+      "records": 13,
+      "codes": [
+        "2321"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_2323_c2db5d5e23b90a226fa4.jsonl",
+      "sha256": "979f1993a10bfb70244c618f1b6e9196e7351dd2ed2169747cee4b9904e2023e",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "2323"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_2330_5c6de140234d30cefcc6.jsonl",
+      "sha256": "7f3e4a914618e7b467a6437ea6851879c2bf60ac738f2632868fbb5bf3b26dde",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "2330"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_2601_5fc5c1a81d3e2cdcc2ee.jsonl",
+      "sha256": "45dd92101660109b4c9c170465a5c19276ba23a44cf53118b0a1cc6e77711d9b",
+      "manifest_sha_match": true,
+      "records": 16,
+      "codes": [
+        "2601"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-22",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_2937_c7a9d57ac1df0bd10ab0.jsonl",
+      "sha256": "42bf5922ad8ce172a48b0ef4a9f6a2331e28e05509c08a770f8a96755001bf83",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "2937"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_3085_1bb4d3168e0a66536be6.jsonl",
+      "sha256": "e7919b63bcb292e66577381bcfdcafb1a560fdb293ffb881a4b7355feea397be",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "3085"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_3095_b5ceb0706f96284b921b.jsonl",
+      "sha256": "be0aa2984cbaf0a57d9d2d38a99afb8cb8f142b00b24244884907d6365e7edea",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "3095"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_3356_0cae74fb3c877246a33f.jsonl",
+      "sha256": "5c6389ec5b3537c75bcac27a9f06b4ffaab3137ad3e3467f7ae7fd840feebd38",
+      "manifest_sha_match": true,
+      "records": 13,
+      "codes": [
+        "3356"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_3591_451cd3187c7d9188d18f.jsonl",
+      "sha256": "ce1b7b0dfc092651f271bd8bdf672685b7a732bb7bee364945c01012ef559a80",
+      "manifest_sha_match": true,
+      "records": 13,
+      "codes": [
+        "3591"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_3625_bb57e45c90dfc2363574.jsonl",
+      "sha256": "da6fb6577112b704ff290a6c8daba94aaeabcdf1e36e78136b8f2bb67537c75b",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "3625"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_3632_effdf7361f4be05ef1b5.jsonl",
+      "sha256": "e9f052285a3b2e447a1b73d505cf66524065dc5034a5fa3baca3f3067c6e1374",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "3632"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_3710_23f989e73ed2190449aa.jsonl",
+      "sha256": "d3b6506718c584ee8bc941d009f92401ccd677992708db07def3706f64f09600",
+      "manifest_sha_match": true,
+      "records": 13,
+      "codes": [
+        "3710"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_4155_bbf8ce3121bc27372374.jsonl",
+      "sha256": "8a0a2f0a5d13a6d61936439e3ca06be0dee72f7f92b519473b784dab07469b10",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "4155"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_4527_e8fd12808ff599337076.jsonl",
+      "sha256": "9be7a8da53ebfd7e5aef578aaae2e7f652349e32885136d997c0ccca68820bdc",
+      "manifest_sha_match": true,
+      "records": 19,
+      "codes": [
+        "4527"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-29",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_4747_c5b62788f6296e8f1c15.jsonl",
+      "sha256": "8f189e996dc1daa5d7b310e52b398131f84e60609bff6630bc5e3f0df557e36b",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "4747"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_4806_c011ae63488ff389a79d.jsonl",
+      "sha256": "ee08f3ddee4da30f2d0491a34145799632dbf04771ea235c43e3ab9c1c9f338c",
+      "manifest_sha_match": true,
+      "records": 16,
+      "codes": [
+        "4806"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-22",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_5301_6d6432a11e754c3d6ef3.jsonl",
+      "sha256": "186d4e8292216e0f0a3e84ec5bce84882268362c9db336ecbf184e9bd076f12b",
+      "manifest_sha_match": true,
+      "records": 19,
+      "codes": [
+        "5301"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-29",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_5904_dba172bc7b3a85a36ffd.jsonl",
+      "sha256": "ed1f4d21dd6ba8e8370309d75d50a60a934ce938534b7f784b70f7c8344814a7",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "5904"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6129_fac2e8107be968615df2.jsonl",
+      "sha256": "a180a3336334f8fb717fbb8d847ac66ad794593e31f7587d4050f1ca7853c4c6",
+      "manifest_sha_match": true,
+      "records": 13,
+      "codes": [
+        "6129"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6142_cbef5abc48d2722f172e.jsonl",
+      "sha256": "d0ecd94d7ddbe5406bec90b0d57124b3aec8285b0d180b8dc7bb601619382a9f",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "6142"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6167_9424be2e59d48d9f196b.jsonl",
+      "sha256": "05a815f4876d852c23451279ceeddda7d3cfb056cdf2f5f4534a93c7de349586",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "6167"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6173_38d02d14f8dc9a25a551.jsonl",
+      "sha256": "7369742a1f5eaed430aa3afcfa1b4d93a558bdf5722b6114a9fd7dd57a28146f",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "6173"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6176_ad47cf0aaf9455075c95.jsonl",
+      "sha256": "82bd44706ee272dfabcd697318f66a6f6f8af9c1722e1f198f0f7ae9f9e343d2",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "6176"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6241_03718783ae40bd28f8cb.jsonl",
+      "sha256": "b7fd2280f0db8498a798d1932251c26f2551113a22b3334b3ef36622a57f55b7",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "6241"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6461_048976de0c7aa3318259.jsonl",
+      "sha256": "ce47c059f7063344ffca5a17096215f03ef659eb0bee68a3d330e24c69ff5e48",
+      "manifest_sha_match": true,
+      "records": 15,
+      "codes": [
+        "6461"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6550_5022d07c386ee0ee2dec.jsonl",
+      "sha256": "a2d94e113c5b42198f40102c78d41686a5e8b1ae7fc82b84debd009d53a37e0a",
+      "manifest_sha_match": true,
+      "records": 14,
+      "codes": [
+        "6550"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_6949_c68f75bf67bac83f65a1.jsonl",
+      "sha256": "8a50a6c0c6723ace84df641f2e55427cb52487b10ab3d7856e99a4c388d59067",
+      "manifest_sha_match": true,
+      "records": 16,
+      "codes": [
+        "6949"
+      ],
+      "date_min": "2026-09-07",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_8047_0f4059f7c9df31d2d0f2.jsonl",
+      "sha256": "af8fa521d7e0da524e2d5d7471cb85fd48a4ad00e60eba37c4c76046771db394",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "8047"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_8059_26765675d167072b00ef.jsonl",
+      "sha256": "b5f4262826e831f669955b22cb8bcda6e3dc94088ed07aeca726aac39d718988",
+      "manifest_sha_match": true,
+      "records": 13,
+      "codes": [
+        "8059"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_8105_12c5ca64404c3d10e5ae.jsonl",
+      "sha256": "2d7e4653d74db06f1832ff8cfa3a7d0bf74360136fc5b905d8e1f8e1ebd9d86a",
+      "manifest_sha_match": true,
+      "records": 20,
+      "codes": [
+        "8105"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "month": "2026-09",
+      "archive_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+      "member": "price_complement_8277_bfbe1e54beea62ff5bfe.jsonl",
+      "sha256": "7e23414f9a6be8b799f43ff3bb6c0976ea8e8fdbf99af63d094d9314643d64c2",
+      "manifest_sha_match": true,
+      "records": 13,
+      "codes": [
+        "8277"
+      ],
+      "date_min": "2026-09-01",
+      "date_max": "2026-09-30",
+      "status": "RETAINED_RAW_FOUND_RECONCILE_FROZEN_REGISTER",
+      "numeric_certified": false,
+      "pit_verified": false
+    }
+  ],
+  "baseline_version": "20261027_V1_FROZEN",
+  "baseline_archive_reference_count": 0,
+  "source_downloads": 0,
+  "next_action": "Reconcile supplemental manifest and immutable original refs before updating downloaded/missing totals; do not blindly redownload retained source data."
+}
