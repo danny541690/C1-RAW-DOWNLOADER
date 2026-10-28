@@ -3,11 +3,26 @@ import gzip
 import tempfile
 import unittest
 from pathlib import Path
-from scripts.v093_acceptance_integrated import recover_readback_scope, triage_content_failures
+from scripts.v093_acceptance_integrated import recover_readback_scope, triage_content_failures, remote_metadata_observation
 from scripts.v093_prelaunch_acceptance_batch import ArchiveCache, sha
 
 
 class EightGroupLiveBoundaryTests(unittest.TestCase):
+    def test_current_inventory_counts_do_not_approve_observation_universe(self):
+        report=remote_metadata_observation(dict(schema='JARVIS_REMOTE_METADATA_V1',phase='DONE',enumeration_complete=True,
+            observation_universe_approved=True,files=[{'id':'folder','mimeType':'application/vnd.google-apps.folder'},
+                                                    {'id':'raw','mimeType':'application/json'}]))
+        self.assertEqual(report['folders'],1);self.assertEqual(report['file_metadata_records'],1)
+        self.assertTrue(report['root_enumeration_complete'])
+        self.assertFalse(report['global_enumeration_complete']);self.assertFalse(report['observation_universe_approved'])
+        self.assertFalse(report['raw_sha_readback_verified'])
+
+    def test_invalid_inventory_or_string_complete_flag_does_not_pass(self):
+        report=remote_metadata_observation(dict(schema='JARVIS_REMOTE_METADATA_V1',phase='DONE',enumeration_complete='true',files=[]))
+        self.assertFalse(report['root_enumeration_complete'])
+        for files in ({},[{'id':'raw'}],[{'id':'same','mimeType':'text/plain'}]*2):
+            with self.assertRaises(ValueError):remote_metadata_observation(dict(schema='JARVIS_REMOTE_METADATA_V1',files=files))
+
     def test_zero_restorable_packages_cannot_pass_recovery(self):
         with tempfile.TemporaryDirectory() as directory:
             p=Path(directory)

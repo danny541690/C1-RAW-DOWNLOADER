@@ -1,4 +1,5 @@
 name: JARVIS eight-group integrated live audit (release blocked)
+# Current and legacy inventory schemas remain metadata evidence, not universe approval.
 on:
   push:
     branches: [codex/acceptance-scheduler-3-workers-20261028]

@@ -62,6 +62,21 @@ RULE_REASONS={
  'R08':'已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收',
 }
 
+def remote_metadata_observation(remote):
+ if remote.get('schema')=='JARVIS_REMOTE_METADATA_V1':
+  files=remote.get('files')
+  if not isinstance(files,list) or any(not isinstance(f,dict) or not f.get('id') or not f.get('mimeType') for f in files):raise ValueError('REMOTE_METADATA_SCHEMA')
+  if len({f['id'] for f in files})!=len(files):raise ValueError('REMOTE_METADATA_DUPLICATE_ID')
+  folders=sum(f['mimeType']=='application/vnd.google-apps.folder' for f in files)
+  return dict(kind='SCOPED_REMOTE_METADATA_ONLY',folders=folders,file_metadata_records=len(files)-folders,
+              root_enumeration_complete=remote.get('enumeration_complete') is True and remote.get('phase')=='DONE',
+              global_enumeration_complete=False,observation_universe_approved=False,
+              freshness_revalidated_this_run=remote.get('freshness_revalidated_this_run') is True,
+              raw_sha_readback_verified=False)
+ folders=remote.get('folders',[])
+ if not isinstance(folders,list):raise ValueError('REMOTE_METADATA_SCHEMA')
+ return dict(kind='SCOPED_REMOTE_METADATA_ONLY',folders=len(folders),global_enumeration_complete=False,observation_universe_approved=False)
+
 def aggregate(plan,summary,content,diagnostic=None,recovery=None,remote=None):
  # Ownership lists must match the original 37-rule catalog. No user-supplied
  # passed flags or group labels are accepted as a release proof.
@@ -80,7 +95,7 @@ def aggregate(plan,summary,content,diagnostic=None,recovery=None,remote=None):
  if content:observed['R04'].append(dict(kind='PARTIAL_RAW_CONTENT',artifact_records=len(content),blocked_artifacts=counts.get('CONTENT_BLOCKED',0)))
  if diagnostic and diagnostic.get('result')=='INPUTS_REVALIDATED_HISTORICAL_DIAGNOSTIC':observed['R05'].append(dict(kind='HISTORICAL_DIAGNOSTIC_INPUTS_STILL_MATCH',references=diagnostic['input_references_checked'],reported_field_pairs=diagnostic['reported_field_pairs']))
  if recovery and recovery.get('result')=='PASS_LOCAL_READBACK_SCOPE_RECOVERY':observed['R08'].append(dict(kind='LOCAL_READBACK_SCOPE_RECOVERY',packages=len(recovery['files_restored']),units=recovery['units_verified']))
- if remote:observed['R01'].append(dict(kind='SCOPED_REMOTE_METADATA_ONLY',folders=len(remote.get('folders',[])),global_enumeration_complete=False))
+ if remote:observed['R01'].append(remote_metadata_observation(remote))
  rules=[dict(rule_id=r['rule_id'],name=r['name'],group=r['primary_group'],full_scope_result='UNKNOWN',reason=RULE_REASONS[r['primary_group']],observations=observed[r['primary_group']],execution_coverage='PARTIAL_ADAPTERS' if observed[r['primary_group']] else 'NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE',requires_action=True) for r in ownership]
  groups=[dict(id=g['id'],name=g['name'],result='BLOCKED' if g['id']=='R07' else 'PARTIAL' if observed[g['id']] else 'UNKNOWN',complete=False,observations=observed[g['id']],remaining=RULE_REASONS[g['id']],rules=[r['rule_id'] for r in rules if r['group']==g['id']]) for g in plan['groups']]
  return dict(groups=groups,group_counts=dict(collections.Counter(g['result'] for g in groups)),completed_groups=0,rules=rules,rule_counts=dict(collections.Counter(r['full_scope_result'] for r in rules)),approved_universe=None,approved_scopes=[],formal_release='BLOCKED',production_published=False)
@@ -129,8 +144,11 @@ def run(register,cache,out,plan_file,resume=None,esb_dir=None,diagnostic_file=No
  stages.append(dict(stage='recovery',result=recovery['result']))
  remote=None;remote_ref=None
  if remote_file:
-  try:remote,remote_ref=read_artifact(remote_file)
-  except (ValueError,OSError) as e:stages.append(dict(stage='remote_inventory',result='REMOTE_ARTIFACT_ERROR',error=str(e)))
+  try:
+   remote,remote_ref=read_artifact(remote_file)
+   remote_metadata_observation(remote)
+  except (ValueError,OSError) as e:
+   remote=None;stages.append(dict(stage='remote_inventory',result='REMOTE_ARTIFACT_ERROR',error=str(e)))
  result=aggregate(plan,summary,content,diagnostic,recovery,remote)
  triage=triage_content_failures(content_dir,Path(cache),archives)
  queues=queue_counts_and_copy(content_dir,out,triage)
