@@ -60,8 +60,10 @@ def inspect_raw(b,r,esb_evidence=None):
   return audit_rows(b,dict(source=s,category=cat))
  if s=='TAIFEX':
   from scripts.v093_taifex_independent import validate
-  if cat!='futDataDown' or not zipfile.is_zipfile(io.BytesIO(b)):raise ValueError('UNMAPPED_TAIFEX_DATASET')
-  y=r['期間'][:4];return validate(b,dict(kind='annual',start=y+'-01-01',end=y+'-12-31'))
+  if cat=='futDataDown' and zipfile.is_zipfile(io.BytesIO(b)):
+   y=r['期間'][:4];return validate(b,dict(kind='annual',start=y+'-01-01',end=y+'-12-31'))
+  from scripts.v093_taifex_monthly_content import inspect_month_csv
+  return inspect_month_csv(b,r)
  if s=='TDCC':
   from scripts.v093_tdcc_independent import validate_history
   return dict(rows=validate_history(b,r['期間'].replace('-',''),r['代碼']))
@@ -71,6 +73,9 @@ def inspect_raw(b,r,esb_evidence=None):
   obj=dict(status=200,data=[x['source_record'] for x in records],retained_representation='NATIVE_MONTH_PARTITION')
  else:obj=json.loads(b)
  if not isinstance(obj,dict):raise ValueError('EXPECTED_SOURCE_OBJECT')
+ if s=='FinMind' and cat=='TaiwanStockFinancialStatements':
+  from scripts.v093_finmind_financial_content import inspect_financial
+  return inspect_financial(obj,r)
  if s=='NDC':
   if obj.get('source')!='NDC' or obj.get('month')!=r['月份'] or not obj.get('tables'):raise ValueError('NDC_PERIOD_OR_TABLES')
   return dict(tables=len(obj['tables']),gaps=obj.get('gaps'),source_archive=obj.get('source_archive'),validation='MONTH_ENVELOPE_ONLY_NOT_SOURCE_XLSX_RECHECK')

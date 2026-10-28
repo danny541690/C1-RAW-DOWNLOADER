@@ -109,7 +109,8 @@ def csv_evidence(raw, start, end):
     if not indexes: raise ValueError('CSV_DATE_HEADER_MISSING')
     count = 0; lo = None; hi = None; products = set(); sessions = set(); footnotes=[]
     cleaned=[v.strip() for v in header]
-    price_names=('開盤價','最高價','最低價','最後成交價')
+    close_name='最後成交價' if '最後成交價' in cleaned else '收盤價'
+    price_names=('開盤價','最高價','最低價',close_name)
     price_indexes=[cleaned.index(n) for n in price_names] if all(n in cleaned for n in price_names) else []
     volume_indexes=[i for i,n in enumerate(cleaned) if n in ('成交量','合計成交量','未沖銷契約量','未沖銷契約數')]
     numeric_checks=0;price_missing_rows=0
