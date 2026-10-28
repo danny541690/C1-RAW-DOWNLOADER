@@ -1,0 +1,71 @@
+{
+  "checked_at_taipei": "2026-10-28T12:12:13.890561+08:00",
+  "completed_groups": 0,
+  "partial_groups": 6,
+  "unknown_groups": 1,
+  "blocked_groups": 1,
+  "groups": [
+    {
+      "id": "R01",
+      "name": "母體與全量原件",
+      "status": "PARTIAL",
+      "evidence": "已補存原件版本與部分SHA證據；全量母體及目前收據對帳未完"
+    },
+    {
+      "id": "R02",
+      "name": "歷史證券、日期及主鍵",
+      "status": "PARTIAL",
+      "evidence": "內容日期與部分主鍵已驗；資料當日市場別未核"
+    },
+    {
+      "id": "R03",
+      "name": "欄位與單位契約",
+      "status": "PARTIAL",
+      "evidence": "查得FinMind興櫃open及無公告價編碼契約；24鍵編碼一致；其他來源／日期適用性待核"
+    },
+    {
+      "id": "R04",
+      "name": "完整數值覆蓋",
+      "status": "PARTIAL",
+      "evidence": "556筆部分內容證據；44個價格關係鍵繼續隔離，6個早期財報未解"
+    },
+    {
+      "id": "R05",
+      "name": "獨立跨來源比對",
+      "status": "PARTIAL",
+      "evidence": "19000個價格欄位對診斷一致；獨立上游及完整範圍未核"
+    },
+    {
+      "id": "R06",
+      "name": "公告PIT與版本",
+      "status": "UNKNOWN",
+      "evidence": "仍缺歷史當時可得時間及原版／更正版證據"
+    },
+    {
+      "id": "R07",
+      "name": "真實發布與下游回測",
+      "status": "BLOCKED",
+      "evidence": "前置必要驗收未齊，核准發布範圍0"
+    },
+    {
+      "id": "R08",
+      "name": "全量還原與時效",
+      "status": "PARTIAL",
+      "evidence": "7來源檔案／包及283單元局部遠端還原通過；全庫未驗"
+    }
+  ],
+  "software_tests_last_run": {
+    "pass": 833,
+    "fail": 0,
+    "error": 0,
+    "skip": 0
+  },
+  "new_actual_checks": {
+    "isolated_price_keys_compared_to_current_official_scope": 44,
+    "matching_official_rows_found_for_isolated": 0,
+    "no_quote_encoding_pairs_verified": 24
+  },
+  "approved_scopes": [],
+  "formal_release": "BLOCKED",
+  "note": "Partially evidenced is not group acceptance. No global completion percentage until denominator and applicable scope approved."
+}

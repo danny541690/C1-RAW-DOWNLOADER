@@ -1,0 +1,27 @@
+{
+  "checked_at_taipei": "2026-10-28T12:12:13.890561+08:00",
+  "source": "FinMind",
+  "dataset": "TaiwanStockPrice",
+  "definition_evidence": [
+    {
+      "url": "https://finmind.github.io/tutor/TaiwanMarket/Technical/",
+      "paraphrase": "For an instrument proved emerging on the observation date, open represents previous-day average, not an opening trade. No published quote can be encoded as all-zero OHLC."
+    },
+    {
+      "url": "https://data.gov.tw/dataset/11747",
+      "paraphrase": "Official emerging quote schema exposes previous-day average, daily range and trade fields; it is not the same schema as ordinary exchange OHLC."
+    }
+  ],
+  "requirements_before_applying_emerging_rule": [
+    "As-of-date security market proof",
+    "Source field contract and date applicability",
+    "No-current-snapshot-substitution-for-history"
+  ],
+  "existing_repo_policy": {
+    "file": "config/history_source_registry.json",
+    "retain_emerging_raw_only": true
+  },
+  "six_codes_asof_market_verified": false,
+  "isolated_keys_auto_passed": false,
+  "raw_price_rewrite_permitted": false
+}
