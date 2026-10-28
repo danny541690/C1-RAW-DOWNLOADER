@@ -1,0 +1,155 @@
+{
+  "lock_match": true,
+  "packages": [
+    {
+      "package": "certifi",
+      "expected": "2026.10.18",
+      "actual": "2026.10.18",
+      "match": true
+    },
+    {
+      "package": "cffi",
+      "expected": "2.1.1",
+      "actual": "2.1.1",
+      "match": true
+    },
+    {
+      "package": "charset-normalizer",
+      "expected": "3.5.2",
+      "actual": "3.5.2",
+      "match": true
+    },
+    {
+      "package": "cryptography",
+      "expected": "50.0.2",
+      "actual": "50.0.2",
+      "match": true
+    },
+    {
+      "package": "google-api-core",
+      "expected": "2.42.0",
+      "actual": "2.42.0",
+      "match": true
+    },
+    {
+      "package": "google-api-python-client",
+      "expected": "2.201.0",
+      "actual": "2.201.0",
+      "match": true
+    },
+    {
+      "package": "google-auth",
+      "expected": "2.62.0",
+      "actual": "2.62.0",
+      "match": true
+    },
+    {
+      "package": "google-auth-httplib2",
+      "expected": "0.4.4",
+      "actual": "0.4.4",
+      "match": true
+    },
+    {
+      "package": "googleapis-common-protos",
+      "expected": "1.75.5",
+      "actual": "1.75.5",
+      "match": true
+    },
+    {
+      "package": "httplib2",
+      "expected": "0.32.0",
+      "actual": "0.32.0",
+      "match": true
+    },
+    {
+      "package": "idna",
+      "expected": "3.20",
+      "actual": "3.20",
+      "match": true
+    },
+    {
+      "package": "lxml",
+      "expected": "6.1.3",
+      "actual": "6.1.3",
+      "match": true
+    },
+    {
+      "package": "opentelemetry-api",
+      "expected": "1.45.1",
+      "actual": "1.45.1",
+      "match": true
+    },
+    {
+      "package": "proto-plus",
+      "expected": "1.29.0",
+      "actual": "1.29.0",
+      "match": true
+    },
+    {
+      "package": "protobuf",
+      "expected": "7.36.2",
+      "actual": "7.36.2",
+      "match": true
+    },
+    {
+      "package": "pyarrow",
+      "expected": "26.0.0",
+      "actual": "26.0.0",
+      "match": true
+    },
+    {
+      "package": "pyasn1",
+      "expected": "0.6.4",
+      "actual": "0.6.4",
+      "match": true
+    },
+    {
+      "package": "pyasn1_modules",
+      "expected": "0.4.2",
+      "actual": "0.4.2",
+      "match": true
+    },
+    {
+      "package": "pycparser",
+      "expected": "3.11",
+      "actual": "3.11",
+      "match": true
+    },
+    {
+      "package": "pyparsing",
+      "expected": "3.3.3",
+      "actual": "3.3.3",
+      "match": true
+    },
+    {
+      "package": "PyYAML",
+      "expected": "6.0.3",
+      "actual": "6.0.3",
+      "match": true
+    },
+    {
+      "package": "requests",
+      "expected": "2.34.2",
+      "actual": "2.34.2",
+      "match": true
+    },
+    {
+      "package": "typing_extensions",
+      "expected": "4.16.0",
+      "actual": "4.16.0",
+      "match": true
+    },
+    {
+      "package": "uritemplate",
+      "expected": "4.2.0",
+      "actual": "4.2.0",
+      "match": true
+    },
+    {
+      "package": "urllib3",
+      "expected": "2.8.0",
+      "actual": "2.8.0",
+      "match": true
+    }
+  ]
+}

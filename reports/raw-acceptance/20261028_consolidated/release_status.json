@@ -1,0 +1,83 @@
+{
+  "date_taipei": "2026-10-28T08:46:39.150402+08:00",
+  "tested_commit": "2c206e9858895ab7440981ac0bd100ba0306c0f7",
+  "software_suite": {
+    "run": 805,
+    "pass": 805,
+    "fail": 0,
+    "error": 0,
+    "skip": 0
+  },
+  "locked_environment_verified": true,
+  "real_matrix_samples": 5,
+  "real_numeric_cells": 4901,
+  "exact_balance_checks": 100,
+  "complete_database_release": "BLOCKED",
+  "approved_scopes": [],
+  "remaining": [
+    {
+      "id": "R01",
+      "item": "全量盤點與原件讀回",
+      "rules": "G01-G05、G08",
+      "acceptance": "核准逐來源／資料集／期間的應有母體，對帳目前收據；全量原件與SHA、CRC、頁數及缺件比對。",
+      "evidence_gap": "僅凍結337023單元及7件原件讀回；未全驗99700件。",
+      "status": "OPEN"
+    },
+    {
+      "id": "R02",
+      "item": "歷史證券與日期主鍵",
+      "rules": "G06-G09、G15、T03、A01、D01",
+      "acceptance": "歷史上市下市及轉市場、公司行動、官方交易／發布日曆、合約盤別、逐觀察值唯一鍵。",
+      "evidence_gap": "任務內20公司齊備非全歷史母體；全量日期／主鍵未完成。",
+      "status": "OPEN"
+    },
+    {
+      "id": "R03",
+      "item": "欄位與單位契約",
+      "rules": "G10、T02、F01-F02、A03、N01",
+      "acceptance": "逐欄原生單位、幣別、倍率、精度、季調基期、單季／累計、還原基準及授權範圍。",
+      "evidence_gap": "解析有原生單位文字；全資料集契約未核准。",
+      "status": "OPEN"
+    },
+    {
+      "id": "R04",
+      "item": "完整數值與檢查覆蓋",
+      "rules": "G11-G12、T01-T02、M01-M02、A02-A03、D02、N01",
+      "acceptance": "逐資料集、欄位與觀察值執行所有適用公式，列出空值／未覆蓋／例外並綁原件SHA。",
+      "evidence_gap": "5件財報4901格與100公司欄單一勾稽通過；其他公式及全量未驗。",
+      "status": "OPEN"
+    },
+    {
+      "id": "R05",
+      "item": "跨來源獨立比對",
+      "rules": "G14、F02",
+      "acceptance": "對齊期間、單位、還原與版本，查共同上游，逐值比較並處理衝突。",
+      "evidence_gap": "本輪無獨立來源逐值核准證據。",
+      "status": "OPEN"
+    },
+    {
+      "id": "R06",
+      "item": "公告PIT與修訂版本",
+      "rules": "G13、M03、N02",
+      "acceptance": "取得歷史當時可得時間及原版／更正版，按策略決策時點查無未來資訊。",
+      "evidence_gap": "現有最新版與匯出日期不能代替歷史PIT。",
+      "status": "OPEN"
+    },
+    {
+      "id": "R07",
+      "item": "真實資料發布與下游回測",
+      "rules": "G18-G19、G22",
+      "acceptance": "範圍內所有必要規則通過，驗收器核證據內容與SHA，實際標準資料讀回、依賴重算與回測輸入隔離／重開。",
+      "evidence_gap": "軟體發布拒絕測試通過；真實核准範圍仍0。",
+      "status": "OPEN"
+    },
+    {
+      "id": "R08",
+      "item": "全量備份還原與最新時效",
+      "rules": "G16-G17、G20-G21",
+      "acceptance": "驗實際排程斷點及收據、逾期來源重查、原件復原演練、跨儲存清單與SHA對帳。",
+      "evidence_gap": "既有排程與報告三處保存不足以證明全原始庫復原；本輪未演練。",
+      "status": "OPEN"
+    }
+  ]
+}
