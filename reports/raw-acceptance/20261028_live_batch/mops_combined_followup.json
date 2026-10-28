@@ -1,0 +1,35 @@
+{
+  "as_of": "2026-10-28 Asia/Taipei",
+  "scope": "MOPS BalanceSheet three archived real units",
+  "results": [
+    {
+      "period": "2001-03-31",
+      "raw_sha_match": true,
+      "content": "HEADER_ONLY",
+      "financial_numeric_values": 0
+    },
+    {
+      "period": "2013-09-30",
+      "raw_sha_match": true,
+      "zip_crc_ok": true,
+      "native_period": "2013Q3",
+      "expected_company_codes": 20,
+      "codes_visible_in_text": 20,
+      "visible_numeric_tokens": 962,
+      "generic_audit_numeric_cells_checked": 0
+    },
+    {
+      "period": "2025-09-30",
+      "raw_sha_match": true,
+      "zip_crc_ok": true,
+      "native_period": "2025Q3",
+      "expected_company_codes": 20,
+      "codes_visible_in_text": 20,
+      "visible_numeric_tokens": 940,
+      "generic_audit_numeric_cells_checked": 0
+    }
+  ],
+  "finding": "GENERIC_MOPS_HTML_AUDIT_NUMERIC_COVERAGE_GAP",
+  "limitation": "Visible numeric tokens and codes in page text are diagnostics, not mapped company/account cells or accounting/PIT approval. Specialized matrix staging parser could not execute in this workspace because pyarrow is missing.",
+  "formal_release": "BLOCKED"
+}
