@@ -1,0 +1,1940 @@
+{
+  "checked_at_taipei": "2026-10-28T08:39:27.373882+08:00",
+  "test": "ACTUAL_MOPS_MATRIX_STRUCTURE_AND_FINITE_NUMBERS",
+  "results": [
+    {
+      "period": "2013-09-30",
+      "raw_reference": "1UTfRLDpUv4s3cQrDoOZOM2SY31s9vWj4/35684fc0f08476ffba483885.raw",
+      "raw_sha256": "cc618012d7463f1a09f0b7d5fc119a4f0378500ce395c8608b5733dc4d03de3a",
+      "raw_sha_match": true,
+      "crc_ok": true,
+      "unit": {
+        "source": "MOPS",
+        "market": "UNKNOWN",
+        "dataset": "BalanceSheet",
+        "security_id": "ALL_MARKET",
+        "period_start": "2013-09-30",
+        "period_end": "2013-09-30",
+        "native_unit_id": "35684fc0f08476ffba483885"
+      },
+      "companies": 20,
+      "company_codes": [
+        "3031",
+        "3032",
+        "3033",
+        "3034",
+        "3035",
+        "3036",
+        "3037",
+        "3038",
+        "3040",
+        "3041",
+        "3042",
+        "3043",
+        "3044",
+        "3045",
+        "3046",
+        "3047",
+        "3048",
+        "3049",
+        "3050",
+        "3051"
+      ],
+      "accounts": 88,
+      "account_labels": [
+        "現金及約當現金",
+        "透過損益按公允價值衡量之金融資產－流動",
+        "備供出售金融資產－流動淨額",
+        "持有至到期日金融資產－流動淨額",
+        "避險之衍生金融資產－流動",
+        "無活絡市場之債券投資－流動淨額",
+        "應收票據淨額",
+        "應收票據－關係人淨額",
+        "應收帳款淨額",
+        "應收帳款－關係人淨額",
+        "應收建造合約款",
+        "其他應收款淨額",
+        "其他應收款－關係人淨額",
+        "當期所得稅資產",
+        "存貨",
+        "預付款項",
+        "待出售非流動資產（淨額）",
+        "其他流動資產",
+        "流動資產合計",
+        "透過損益按公允價值衡量之金融資產－非流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－非流動",
+        "備供出售金融資產－非流動淨額",
+        "持有至到期日金融資產－非流動淨額",
+        "避險之衍生金融資產－非流動",
+        "按攤銷後成本衡量之金融資產－非流動淨額",
+        "以成本衡量之金融資產－非流動淨額",
+        "無活絡市場之債券投資－非流動淨額",
+        "採用權益法之投資淨額",
+        "不動產、廠房及設備",
+        "投資性不動產淨額",
+        "無形資產",
+        "生物資產－非流動",
+        "遞延所得稅資產",
+        "其他非流動資產",
+        "非流動資產合計",
+        "資產總額",
+        "短期借款",
+        "應付短期票券",
+        "透過損益按公允價值衡量之金融負債－流動",
+        "避險之衍生金融負債－流動",
+        "應付票據",
+        "應付票據－關係人",
+        "應付帳款",
+        "應付帳款－關係人",
+        "其他應付款",
+        "其他應付款項－關係人",
+        "當期所得稅負債",
+        "負債準備－流動",
+        "與待出售非流動資產直接相關之負債",
+        "其他流動負債",
+        "流動負債合計",
+        "透過損益按公允價值衡量之金融負債－非流動",
+        "應付公司債",
+        "長期借款",
+        "負債準備－非流動",
+        "遞延所得稅負債",
+        "其他非流動負債",
+        "非流動負債合計",
+        "負債總額",
+        "普通股股本",
+        "特別股股本",
+        "債券換股權利證書",
+        "預收股本",
+        "待分配股票股利",
+        "股本合計",
+        "資本公積－發行溢價",
+        "資本公積－庫藏股票交易",
+        "資本公積－取得或處分子公司股權價格與帳面價值差額",
+        "資本公積－採用權益法認列關聯企業及合資股權淨值之變動數",
+        "資本公積－合併溢額",
+        "資本公積－員工認股權",
+        "資本公積－其他",
+        "資本公積合計",
+        "法定盈餘公積",
+        "特別盈餘公積",
+        "未分配盈餘（或待彌補虧損）",
+        "保留盈餘合計",
+        "國外營運機構財務報表換算之兌換差額",
+        "備供出售金融資產未實現損益",
+        "其他權益－其他",
+        "其他權益合計",
+        "庫藏股票",
+        "歸屬於母公司業主之權益合計",
+        "共同控制下前手權益",
+        "非控制權益",
+        "權益總額",
+        "預收股款（權益項下）之約當發行股數（單位：股）",
+        "母公司暨子公司所持有之母公司庫藏股股數（單位：股）"
+      ],
+      "numeric_cells": 962,
+      "missing_expected_codes": [],
+      "native_unit": "新台幣仟元",
+      "statement_scopes": [
+        "合併"
+      ],
+      "status": "MATRIX_PARSED_NOT_RELEASED",
+      "pit_verified": false,
+      "numeric_semantics_verified": false,
+      "balance_identity": {
+        "formula": "assets-liabilities-equity",
+        "policy": "Each company must have exactly one nonmissing total per category; null is never zero; exact equality only.",
+        "results": [
+          {
+            "code": "3031",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3032",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3033",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3034",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3035",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3036",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3037",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3038",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3040",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3041",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3042",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3043",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3044",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3045",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3046",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3047",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3048",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3049",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3050",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "3051",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 35,
+              "liabilities": 58,
+              "equity": 85
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          }
+        ]
+      }
+    },
+    {
+      "period": "2025-09-30",
+      "raw_reference": "1hvINMv4Z0nROGY9NEJAzmKMJ390wR8jf/0344ce6bbbcc640120e1cb3b.raw",
+      "raw_sha256": "0305c0117beecd0d20b4bc8d5d04543f1063098a1e43652241594ec16f082d34",
+      "raw_sha_match": true,
+      "crc_ok": true,
+      "unit": {
+        "source": "MOPS",
+        "market": "UNKNOWN",
+        "dataset": "BalanceSheet",
+        "security_id": "ALL_MARKET",
+        "period_start": "2025-09-30",
+        "period_end": "2025-09-30",
+        "native_unit_id": "0344ce6bbbcc640120e1cb3b"
+      },
+      "companies": 20,
+      "company_codes": [
+        "2614",
+        "2615",
+        "2616",
+        "2617",
+        "2618",
+        "2630",
+        "2633",
+        "2634",
+        "2636",
+        "2637",
+        "2640",
+        "2641",
+        "2642",
+        "2643",
+        "2645",
+        "2646",
+        "2701",
+        "2702",
+        "2704",
+        "2705"
+      ],
+      "accounts": 85,
+      "account_labels": [
+        "現金及約當現金",
+        "透過損益按公允價值衡量之金融資產－流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－流動",
+        "按攤銷後成本衡量之金融資產－流動",
+        "避險之金融資產－流動",
+        "合約資產－流動",
+        "應收票據淨額",
+        "應收票據－關係人淨額",
+        "應收帳款淨額",
+        "應收帳款－關係人淨額",
+        "應收融資租賃款淨額",
+        "應收融資租賃款淨額—關係人",
+        "其他應收款淨額",
+        "其他應收款－關係人淨額",
+        "本期所得稅資產",
+        "存貨",
+        "生物資產－流動",
+        "預付款項",
+        "待出售非流動資產（或處分群組）淨額",
+        "其他流動資產",
+        "流動資產合計",
+        "透過損益按公允價值衡量之金融資產－非流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－非流動",
+        "按攤銷後成本衡量之金融資產－非流動",
+        "採用權益法之投資",
+        "不動產、廠房及設備",
+        "使用權資產",
+        "投資性不動產淨額",
+        "無形資產",
+        "遞延所得稅資產",
+        "其他非流動資產",
+        "非流動資產合計",
+        "資產總額",
+        "短期借款",
+        "應付短期票券",
+        "避險之金融負債－流動",
+        "合約負債－流動",
+        "應付票據",
+        "應付票據－關係人",
+        "應付帳款",
+        "應付帳款－關係人",
+        "其他應付款",
+        "其他應付款項－關係人",
+        "本期所得稅負債",
+        "負債準備－流動",
+        "租賃負債－流動",
+        "其他流動負債",
+        "流動負債合計",
+        "透過損益按公允價值衡量之金融負債－非流動",
+        "避險之金融負債－非流動",
+        "合約負債－非流動",
+        "應付公司債",
+        "長期借款",
+        "負債準備－非流動",
+        "遞延所得稅負債",
+        "租賃負債－非流動",
+        "其他非流動負債",
+        "非流動負債合計",
+        "負債總額",
+        "普通股股本",
+        "股本合計",
+        "資本公積－發行溢價",
+        "資本公積－庫藏股票交易",
+        "資本公積－實際取得或處分子公司股權價格與帳面價值差額",
+        "資本公積-認列對子公司所有權權益變動數",
+        "資本公積－員工認股權",
+        "資本公積－認股權",
+        "資本公積－其他",
+        "資本公積合計",
+        "法定盈餘公積",
+        "特別盈餘公積",
+        "未分配盈餘（或待彌補虧損）",
+        "保留盈餘合計",
+        "國外營運機構財務報表換算之兌換差額",
+        "透過其他綜合損益按公允價值衡量之金融資產未實現評價損益",
+        "避險工具之損益",
+        "其他權益合計",
+        "庫藏股票",
+        "歸屬於母公司業主之權益合計",
+        "非控制權益",
+        "權益總額",
+        "負債及權益總計",
+        "待註銷股本股數（單位：股）",
+        "預收股款（權益項下）之約當發行股數（單位：股）",
+        "母公司暨子公司所持有之母公司庫藏股股數（單位：股）"
+      ],
+      "numeric_cells": 957,
+      "missing_expected_codes": [],
+      "native_unit": "新台幣仟元",
+      "statement_scopes": [
+        "個別",
+        "合併"
+      ],
+      "status": "MATRIX_PARSED_NOT_RELEASED",
+      "pit_verified": false,
+      "numeric_semantics_verified": false,
+      "balance_identity": {
+        "formula": "assets-liabilities-equity",
+        "policy": "Each company must have exactly one nonmissing total per category; null is never zero; exact equality only.",
+        "results": [
+          {
+            "code": "2614",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2615",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2616",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2617",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2618",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2630",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2633",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2634",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2636",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2637",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2640",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2641",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2642",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2643",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2645",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2646",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2701",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2702",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2704",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2705",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 58,
+              "equity": 80
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          }
+        ]
+      }
+    },
+    {
+      "period": "2025-09-30",
+      "raw_reference": "1hvINMv4Z0nROGY9NEJAzmKMJ390wR8jf/680e855c00aeaa466cc19c2b.raw",
+      "raw_sha256": "312a613b04a0d350f37ebc4b8d1e0a365d05eac1a9e8b0179ed4a4d2dec057ee",
+      "raw_sha_match": true,
+      "crc_ok": true,
+      "unit": {
+        "source": "MOPS",
+        "market": "UNKNOWN",
+        "dataset": "BalanceSheet",
+        "security_id": "ALL_MARKET",
+        "period_start": "2025-09-30",
+        "period_end": "2025-09-30",
+        "native_unit_id": "680e855c00aeaa466cc19c2b"
+      },
+      "companies": 20,
+      "company_codes": [
+        "2706",
+        "2707",
+        "2712",
+        "2718",
+        "2719",
+        "2722",
+        "2723",
+        "2724",
+        "2726",
+        "2727",
+        "2729",
+        "2731",
+        "2732",
+        "2734",
+        "2736",
+        "2739",
+        "2740",
+        "2743",
+        "2745",
+        "2748"
+      ],
+      "accounts": 75,
+      "account_labels": [
+        "現金及約當現金",
+        "透過損益按公允價值衡量之金融資產－流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－流動",
+        "按攤銷後成本衡量之金融資產－流動",
+        "合約資產－流動",
+        "應收票據淨額",
+        "應收帳款淨額",
+        "應收帳款－關係人淨額",
+        "應收融資租賃款淨額",
+        "其他應收款淨額",
+        "其他應收款－關係人淨額",
+        "本期所得稅資產",
+        "存貨",
+        "預付款項",
+        "其他流動資產",
+        "流動資產合計",
+        "透過損益按公允價值衡量之金融資產－非流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－非流動",
+        "按攤銷後成本衡量之金融資產－非流動",
+        "採用權益法之投資",
+        "不動產、廠房及設備",
+        "使用權資產",
+        "投資性不動產淨額",
+        "無形資產",
+        "遞延所得稅資產",
+        "其他非流動資產",
+        "非流動資產合計",
+        "資產總額",
+        "短期借款",
+        "應付短期票券",
+        "透過損益按公允價值衡量之金融負債－流動",
+        "合約負債－流動",
+        "應付票據",
+        "應付票據－關係人",
+        "應付帳款",
+        "應付帳款－關係人",
+        "其他應付款",
+        "其他應付款項－關係人",
+        "本期所得稅負債",
+        "負債準備－流動",
+        "租賃負債－流動",
+        "其他流動負債",
+        "流動負債合計",
+        "合約負債－非流動",
+        "應付公司債",
+        "長期借款",
+        "負債準備－非流動",
+        "遞延所得稅負債",
+        "租賃負債－非流動",
+        "其他非流動負債",
+        "非流動負債合計",
+        "負債總額",
+        "普通股股本",
+        "預收股本",
+        "股本合計",
+        "資本公積－發行溢價",
+        "資本公積－處分資產增益",
+        "資本公積－員工認股權",
+        "資本公積－其他",
+        "資本公積合計",
+        "法定盈餘公積",
+        "特別盈餘公積",
+        "未分配盈餘（或待彌補虧損）",
+        "保留盈餘合計",
+        "國外營運機構財務報表換算之兌換差額",
+        "透過其他綜合損益按公允價值衡量之金融資產未實現評價損益",
+        "其他權益合計",
+        "庫藏股票",
+        "歸屬於母公司業主之權益合計",
+        "非控制權益",
+        "權益總額",
+        "負債及權益總計",
+        "待註銷股本股數（單位：股）",
+        "預收股款（權益項下）之約當發行股數（單位：股）",
+        "母公司暨子公司所持有之母公司庫藏股股數（單位：股）"
+      ],
+      "numeric_cells": 965,
+      "missing_expected_codes": [],
+      "native_unit": "新台幣仟元",
+      "statement_scopes": [
+        "個別",
+        "合併"
+      ],
+      "status": "MATRIX_PARSED_NOT_RELEASED",
+      "pit_verified": false,
+      "numeric_semantics_verified": false,
+      "balance_identity": {
+        "formula": "assets-liabilities-equity",
+        "policy": "Each company must have exactly one nonmissing total per category; null is never zero; exact equality only.",
+        "results": [
+          {
+            "code": "2706",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2707",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2712",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2718",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2719",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2722",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2723",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2724",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2726",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2727",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2729",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2731",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2732",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2734",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2736",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2739",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2740",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2743",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2745",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2748",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 27,
+              "liabilities": 51,
+              "equity": 70
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          }
+        ]
+      }
+    },
+    {
+      "period": "2025-09-30",
+      "raw_reference": "1hvINMv4Z0nROGY9NEJAzmKMJ390wR8jf/8903f5fa8447138ed355bcc6.raw",
+      "raw_sha256": "bc2a86ccc7aefd8a00c46dc2baf197ab8e46880c3dcd9ff800ba0a85c1ee438d",
+      "raw_sha_match": true,
+      "crc_ok": true,
+      "unit": {
+        "source": "MOPS",
+        "market": "UNKNOWN",
+        "dataset": "BalanceSheet",
+        "security_id": "ALL_MARKET",
+        "period_start": "2025-09-30",
+        "period_end": "2025-09-30",
+        "native_unit_id": "8903f5fa8447138ed355bcc6"
+      },
+      "companies": 20,
+      "company_codes": [
+        "2540",
+        "2542",
+        "2543",
+        "2545",
+        "2546",
+        "2547",
+        "2548",
+        "2596",
+        "2597",
+        "2601",
+        "2603",
+        "2605",
+        "2606",
+        "2607",
+        "2608",
+        "2609",
+        "2610",
+        "2611",
+        "2612",
+        "2613"
+      ],
+      "accounts": 95,
+      "account_labels": [
+        "現金及約當現金",
+        "透過損益按公允價值衡量之金融資產－流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－流動",
+        "按攤銷後成本衡量之金融資產－流動",
+        "避險之金融資產－流動",
+        "合約資產－流動",
+        "應收票據淨額",
+        "應收票據－關係人淨額",
+        "應收帳款淨額",
+        "應收帳款－關係人淨額",
+        "應收融資租賃款淨額",
+        "其他應收款淨額",
+        "其他應收款－關係人淨額",
+        "本期所得稅資產",
+        "存貨",
+        "預付款項",
+        "待出售非流動資產（或處分群組）淨額",
+        "其他流動資產",
+        "流動資產合計",
+        "透過損益按公允價值衡量之金融資產－非流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－非流動",
+        "按攤銷後成本衡量之金融資產－非流動",
+        "避險之金融資產－非流動",
+        "合約資產－非流動",
+        "採用權益法之投資",
+        "不動產、廠房及設備",
+        "使用權資產",
+        "投資性不動產淨額",
+        "無形資產",
+        "遞延所得稅資產",
+        "其他非流動資產",
+        "非流動資產合計",
+        "資產總額",
+        "短期借款",
+        "應付短期票券",
+        "透過損益按公允價值衡量之金融負債－流動",
+        "避險之金融負債－流動",
+        "合約負債－流動",
+        "應付票據",
+        "應付票據－關係人",
+        "應付帳款",
+        "應付帳款－關係人",
+        "其他應付款",
+        "其他應付款項－關係人",
+        "本期所得稅負債",
+        "負債準備－流動",
+        "租賃負債－流動",
+        "其他流動負債",
+        "流動負債合計",
+        "透過損益按公允價值衡量之金融負債－非流動",
+        "避險之金融負債－非流動",
+        "合約負債－非流動",
+        "應付公司債",
+        "長期借款",
+        "負債準備－非流動",
+        "遞延所得稅負債",
+        "租賃負債－非流動",
+        "其他非流動負債",
+        "非流動負債合計",
+        "負債總額",
+        "普通股股本",
+        "債券換股權利證書",
+        "待分配股票股利",
+        "股本合計",
+        "權益─具證券性質之虛擬通貨",
+        "資本公積－發行溢價",
+        "資本公積－庫藏股票交易",
+        "資本公積－實際取得或處分子公司股權價格與帳面價值差額",
+        "資本公積-認列對子公司所有權權益變動數",
+        "資本公積－受贈資產",
+        "資本公積－採用權益法認列關聯企業及合資股權淨值之變動數",
+        "資本公積-採用權益法認列關聯企業及合資取得或處分子公司股權價格與帳面價值差額",
+        "資本公積－合併溢額",
+        "資本公積－員工認股權",
+        "資本公積－認股權",
+        "資本公積－其他",
+        "資本公積合計",
+        "法定盈餘公積",
+        "特別盈餘公積",
+        "未分配盈餘（或待彌補虧損）",
+        "保留盈餘合計",
+        "國外營運機構財務報表換算之兌換差額",
+        "透過其他綜合損益按公允價值衡量之金融資產未實現評價損益",
+        "避險工具之損益",
+        "不動產重估增值",
+        "其他權益合計",
+        "庫藏股票",
+        "歸屬於母公司業主之權益合計",
+        "共同控制下前手權益",
+        "非控制權益",
+        "權益總額",
+        "負債及權益總計",
+        "待註銷股本股數（單位：股）",
+        "預收股款（權益項下）之約當發行股數（單位：股）",
+        "母公司暨子公司所持有之母公司庫藏股股數（單位：股）"
+      ],
+      "numeric_cells": 1077,
+      "missing_expected_codes": [],
+      "native_unit": "新台幣仟元",
+      "statement_scopes": [
+        "合併"
+      ],
+      "status": "MATRIX_PARSED_NOT_RELEASED",
+      "pit_verified": false,
+      "numeric_semantics_verified": false,
+      "balance_identity": {
+        "formula": "assets-liabilities-equity",
+        "policy": "Each company must have exactly one nonmissing total per category; null is never zero; exact equality only.",
+        "results": [
+          {
+            "code": "2540",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2542",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2543",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2545",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2546",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2547",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2548",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2596",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2597",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2601",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2603",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2605",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2606",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2607",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2608",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2609",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2610",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2611",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2612",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2613",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 32,
+              "liabilities": 59,
+              "equity": 90
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          }
+        ]
+      }
+    },
+    {
+      "period": "2025-09-30",
+      "raw_reference": "1hvINMv4Z0nROGY9NEJAzmKMJ390wR8jf/bc5e4ace15d529ac95834166.raw",
+      "raw_sha256": "f35d2bfb4b3c6582279cc9b50057da016c514cdcd547b7a01b75768c4124a40b",
+      "raw_sha_match": true,
+      "crc_ok": true,
+      "unit": {
+        "source": "MOPS",
+        "market": "UNKNOWN",
+        "dataset": "BalanceSheet",
+        "security_id": "ALL_MARKET",
+        "period_start": "2025-09-30",
+        "period_end": "2025-09-30",
+        "native_unit_id": "bc5e4ace15d529ac95834166"
+      },
+      "companies": 20,
+      "company_codes": [
+        "2751",
+        "2752",
+        "2753",
+        "2754",
+        "2755",
+        "2756",
+        "2762",
+        "2801",
+        "2809",
+        "2812",
+        "2816",
+        "2820",
+        "2832",
+        "2834",
+        "2836",
+        "2838",
+        "2845",
+        "2849",
+        "2850",
+        "2851"
+      ],
+      "accounts": 182,
+      "account_labels": [
+        "現金及約當現金",
+        "存放央行及拆借銀行同業",
+        "透過損益按公允價值衡量之金融資產",
+        "透過其他綜合損益按公允價值衡量之金融資產",
+        "按攤銷後成本衡量之債務工具投資",
+        "避險之金融資產",
+        "附賣回票券及債券投資",
+        "應收款項－淨額",
+        "本期所得稅資產",
+        "待出售資產－淨額",
+        "待分配予業主之資產－淨額",
+        "貼現及放款－淨額",
+        "採用權益法之投資－淨額",
+        "受限制資產－淨額",
+        "其他金融資產－淨額",
+        "不動產及設備－淨額",
+        "使用權資產－淨額",
+        "投資性不動產－淨額",
+        "無形資產－淨額",
+        "遞延所得稅資產",
+        "其他資產－淨額",
+        "資產總計",
+        "央行及銀行同業存款",
+        "央行及同業融資",
+        "透過損益按公允價值衡量之金融負債",
+        "附買回票券及債券負債",
+        "應付款項",
+        "本期所得稅負債",
+        "存款及匯款",
+        "應付金融債券",
+        "應付公司債",
+        "特別股負債",
+        "其他金融負債",
+        "負債準備",
+        "租賃負債",
+        "遞延所得稅負債",
+        "其他負債",
+        "負債總計",
+        "普通股股本",
+        "特別股股本",
+        "股本合計",
+        "股本溢價",
+        "受贈公積",
+        "資本公積－庫藏股票交易",
+        "資本公積-買回具證券性質之虛擬通貨",
+        "資本公積－採權益法認列關聯企業及合資股權淨值之變動數",
+        "其他資本公積",
+        "資本公積合計",
+        "法定盈餘公積",
+        "特別盈餘公積",
+        "未分配盈餘（或待彌補虧損）",
+        "保留盈餘合計",
+        "國外營運機構財務報表換算之兌換差額",
+        "透過其他綜合損益按公允價值衡量之權益工具評價損益",
+        "透過其他綜合損益按公允價值衡量之債務工具損益",
+        "透過其他綜合損益按公允價值衡量之債務工具評價損益",
+        "透過其他綜合損益按公允價值衡量之債務工具備抵損失",
+        "其他權益合計",
+        "庫藏股票",
+        "歸屬於母公司業主之權益合計",
+        "共同控制下前手權益",
+        "非控制權益",
+        "權益總計",
+        "負債及權益總計",
+        "待註銷股本股數（單位：股）",
+        "母公司暨子公司所持有之母公司庫藏股股數（單位：股）",
+        "預收股款（權益項下）之約當發行股數（單位：股）",
+        "現金及約當現金",
+        "透過損益按公允價值衡量之金融資產－流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－流動",
+        "按攤銷後成本衡量之金融資產－流動",
+        "應收票據淨額",
+        "應收帳款淨額",
+        "應收帳款－關係人淨額",
+        "應收融資租賃款淨額",
+        "其他應收款淨額",
+        "其他應收款－關係人淨額",
+        "本期所得稅資產",
+        "存貨",
+        "預付款項",
+        "其他流動資產",
+        "流動資產合計",
+        "透過損益按公允價值衡量之金融資產－非流動",
+        "透過其他綜合損益按公允價值衡量之金融資產－非流動",
+        "按攤銷後成本衡量之金融資產－非流動",
+        "採用權益法之投資",
+        "不動產、廠房及設備",
+        "使用權資產",
+        "投資性不動產淨額",
+        "無形資產",
+        "遞延所得稅資產",
+        "其他非流動資產",
+        "非流動資產合計",
+        "資產總額",
+        "短期借款",
+        "合約負債－流動",
+        "應付票據",
+        "應付帳款",
+        "應付帳款－關係人",
+        "其他應付款",
+        "其他應付款項－關係人",
+        "本期所得稅負債",
+        "負債準備－流動",
+        "租賃負債－流動",
+        "其他流動負債",
+        "流動負債合計",
+        "透過損益按公允價值衡量之金融負債－非流動",
+        "合約負債－非流動",
+        "應付公司債",
+        "長期借款",
+        "負債準備－非流動",
+        "遞延所得稅負債",
+        "租賃負債－非流動",
+        "其他非流動負債",
+        "非流動負債合計",
+        "負債總額",
+        "普通股股本",
+        "預收股本",
+        "股本合計",
+        "資本公積－發行溢價",
+        "資本公積合計",
+        "法定盈餘公積",
+        "特別盈餘公積",
+        "未分配盈餘（或待彌補虧損）",
+        "保留盈餘合計",
+        "國外營運機構財務報表換算之兌換差額",
+        "透過其他綜合損益按公允價值衡量之金融資產未實現評價損益",
+        "其他權益合計",
+        "庫藏股票",
+        "歸屬於母公司業主之權益合計",
+        "非控制權益",
+        "權益總額",
+        "負債及權益總計",
+        "待註銷股本股數（單位：股）",
+        "預收股款（權益項下）之約當發行股數（單位：股）",
+        "母公司暨子公司所持有之母公司庫藏股股數（單位：股）",
+        "現金及約當現金",
+        "應收款項淨額",
+        "本期所得稅資產",
+        "透過損益按公允價值衡量之金融資產",
+        "透過其他綜合損益按公允價值衡量之金融資產",
+        "按攤銷後成本衡量之金融資產",
+        "採用權益法之投資－淨額",
+        "其他金融資產－淨額",
+        "投資性不動產淨額",
+        "再保險合約資產",
+        "不動產及設備",
+        "使用權資產",
+        "無形資產",
+        "遞延所得稅資產",
+        "其他資產",
+        "分離帳戶保險商品資產",
+        "資產總計",
+        "應付款項",
+        "本期所得稅負債",
+        "透過損益按公允價值衡量之金融負債",
+        "租賃負債",
+        "保險負債",
+        "負債準備",
+        "遞延所得稅負債",
+        "其他負債",
+        "負債總計",
+        "普通股股本",
+        "股本合計",
+        "資本公積－發行股票溢價",
+        "資本公積－庫藏股票交易",
+        "資本公積－員工認股權",
+        "資本公積－其他",
+        "資本公積合計",
+        "法定盈餘公積",
+        "特別盈餘公積",
+        "未分配盈餘",
+        "保留盈餘合計",
+        "國外營運機構財務報表換算之兌換差額",
+        "採用覆蓋法重分類之其他綜合損益",
+        "其他權益合計",
+        "庫藏股票",
+        "權益總計",
+        "負債及權益總計",
+        "待註銷股本股數（單位：股）",
+        "母公司暨子公司所持有之母公司庫藏股股數（單位：股）",
+        "預收股款（權益項下）之約當發行股數（單位：股）"
+      ],
+      "numeric_cells": 940,
+      "missing_expected_codes": [],
+      "native_unit": "新台幣仟元",
+      "statement_scopes": [
+        "個別",
+        "合併"
+      ],
+      "status": "MATRIX_PARSED_NOT_RELEASED",
+      "pit_verified": false,
+      "numeric_semantics_verified": false,
+      "balance_identity": {
+        "formula": "assets-liabilities-equity",
+        "policy": "Each company must have exactly one nonmissing total per category; null is never zero; exact equality only.",
+        "results": [
+          {
+            "code": "2751",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 93,
+              "liabilities": 115,
+              "equity": 131
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2752",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 93,
+              "liabilities": 115,
+              "equity": 131
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2753",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 93,
+              "liabilities": 115,
+              "equity": 131
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2754",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 93,
+              "liabilities": 115,
+              "equity": 131
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2755",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 93,
+              "liabilities": 115,
+              "equity": 131
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2756",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 93,
+              "liabilities": 115,
+              "equity": 131
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2762",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 93,
+              "liabilities": 115,
+              "equity": 131
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2801",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2809",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2812",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2816",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 152,
+              "liabilities": 161,
+              "equity": 177
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2820",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2832",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 152,
+              "liabilities": 161,
+              "equity": 177
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2834",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2836",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2838",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2845",
+            "statement_scope": "合併",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2849",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 21,
+              "liabilities": 37,
+              "equity": 62
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2850",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 152,
+              "liabilities": 161,
+              "equity": 177
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          },
+          {
+            "code": "2851",
+            "statement_scope": "個別",
+            "selected_rows": {
+              "assets": 152,
+              "liabilities": 161,
+              "equity": 177
+            },
+            "delta_native_unit": "0",
+            "result": "PASS_EXACT"
+          }
+        ]
+      }
+    }
+  ],
+  "release": "BLOCKED_PENDING_ACCOUNTING_UNIT_PIT_AND_UNIVERSE",
+  "production_writes": 0,
+  "release_gate_test": {
+    "candidate_kind_is_test_only": true,
+    "qa": {
+      "sha_readback": true,
+      "schema": true,
+      "unit": null,
+      "unique_key": null,
+      "numeric": null,
+      "universe": null,
+      "pit": null,
+      "source_contract": null,
+      "dependency": null
+    },
+    "result": "RELEASE_BLOCKED:unit,unique_key,numeric,universe,pit,source_contract,dependency",
+    "production_published": false
+  },
+  "balance_summary": {
+    "PASS_EXACT": 100
+  }
+}
