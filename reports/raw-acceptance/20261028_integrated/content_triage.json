@@ -1,0 +1,116 @@
+[
+  {
+    "task_key": "MOPS|065fc77ea82347c33e7502e8",
+    "source": "MOPS",
+    "dataset": "BalanceSheet",
+    "period": "2001-03-31",
+    "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/065fc77ea82347c33e7502e8.raw",
+    "raw_sha256": "a8a5eccf12c8ab10d118dbf535f006754ad814d22c3a612f4e73023b10066309",
+    "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+    "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+    "proposed_queue": "SOURCE_ROUTE_REVIEW",
+    "raw_changed": false,
+    "body_tables": 1,
+    "account_rows": 0,
+    "response_period": [
+      "2001Q1"
+    ],
+    "company_headers": 15,
+    "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+  },
+  {
+    "task_key": "MOPS|37b069dfb35140feb52cbef8",
+    "source": "MOPS",
+    "dataset": "BalanceSheet",
+    "period": "2001-03-31",
+    "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/37b069dfb35140feb52cbef8.raw",
+    "raw_sha256": "f64079b5e17a49ccddef95833a34b7d9c00317cca90713bac64d41e41b4ec213",
+    "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+    "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+    "proposed_queue": "SOURCE_ROUTE_REVIEW",
+    "raw_changed": false,
+    "body_tables": 1,
+    "account_rows": 0,
+    "response_period": [
+      "2001Q1"
+    ],
+    "company_headers": 17,
+    "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+  },
+  {
+    "task_key": "MOPS|3cb6b232ad5503ff05a16aa5",
+    "source": "MOPS",
+    "dataset": "BalanceSheet",
+    "period": "2001-03-31",
+    "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/3cb6b232ad5503ff05a16aa5.raw",
+    "raw_sha256": "45479f32dd67394ec53abe5cfa2fcdd40b286edd7802b05899680081f6f95555",
+    "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+    "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+    "proposed_queue": "SOURCE_ROUTE_REVIEW",
+    "raw_changed": false,
+    "body_tables": 1,
+    "account_rows": 0,
+    "response_period": [
+      "2001Q1"
+    ],
+    "company_headers": 15,
+    "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+  },
+  {
+    "task_key": "MOPS|61cb88e8f62bfbe8c0417cfb",
+    "source": "MOPS",
+    "dataset": "BalanceSheet",
+    "period": "2001-03-31",
+    "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/61cb88e8f62bfbe8c0417cfb.raw",
+    "raw_sha256": "a2d27bb74f781bca422b208ba1b5ee14acfa0fe76193a57011f243276bf0eda4",
+    "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+    "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+    "proposed_queue": "SOURCE_ROUTE_REVIEW",
+    "raw_changed": false,
+    "body_tables": 1,
+    "account_rows": 0,
+    "response_period": [
+      "2001Q1"
+    ],
+    "company_headers": 14,
+    "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+  },
+  {
+    "task_key": "MOPS|ad641ae239561edc42b4430f",
+    "source": "MOPS",
+    "dataset": "BalanceSheet",
+    "period": "2001-03-31",
+    "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/ad641ae239561edc42b4430f.raw",
+    "raw_sha256": "fc0e742194183aa57b9ed6b9ee9442cd2ed64acf29e33bb8f2e6051c4f3e8fe1",
+    "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+    "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+    "proposed_queue": "SOURCE_ROUTE_REVIEW",
+    "raw_changed": false,
+    "body_tables": 1,
+    "account_rows": 0,
+    "response_period": [
+      "2001Q1"
+    ],
+    "company_headers": 20,
+    "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+  },
+  {
+    "task_key": "MOPS|dfe91f5b73ad7fa049e92177",
+    "source": "MOPS",
+    "dataset": "BalanceSheet",
+    "period": "2001-03-31",
+    "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/dfe91f5b73ad7fa049e92177.raw",
+    "raw_sha256": "2d86d194f8879b255390a8778056368b55ff7684cb2ad12c5d04a3bb21f96542",
+    "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+    "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+    "proposed_queue": "SOURCE_ROUTE_REVIEW",
+    "raw_changed": false,
+    "body_tables": 1,
+    "account_rows": 0,
+    "response_period": [
+      "2001Q1"
+    ],
+    "company_headers": 17,
+    "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+  }
+]

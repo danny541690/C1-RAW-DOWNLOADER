@@ -1,0 +1,157 @@
+[
+  {
+    "id": "R01",
+    "name": "母體與全量原件",
+    "result": "PARTIAL",
+    "complete": false,
+    "observations": [
+      {
+        "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+        "records": 337281
+      },
+      {
+        "kind": "SCOPED_REMOTE_METADATA_ONLY",
+        "folders": 4,
+        "global_enumeration_complete": false
+      }
+    ],
+    "remaining": "核准母體與最新全量遠端收據對帳尚缺",
+    "rules": [
+      "G01",
+      "G02",
+      "G08",
+      "M01",
+      "A02",
+      "D01"
+    ]
+  },
+  {
+    "id": "R02",
+    "name": "歷史證券日期主鍵",
+    "result": "PARTIAL",
+    "complete": false,
+    "observations": [
+      {
+        "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+        "artifact_records": 258
+      }
+    ],
+    "remaining": "全範圍歷史證券有效期間及日曆證據未齊",
+    "rules": [
+      "G06",
+      "G07",
+      "T03",
+      "A01"
+    ]
+  },
+  {
+    "id": "R03",
+    "name": "欄位單位契約",
+    "result": "PARTIAL",
+    "complete": false,
+    "observations": [
+      {
+        "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+        "rows": 120
+      }
+    ],
+    "remaining": "全資料集欄位單位契約與適用性未齊",
+    "rules": [
+      "G09",
+      "G10",
+      "G22",
+      "F01",
+      "F02"
+    ]
+  },
+  {
+    "id": "R04",
+    "name": "完整數值覆蓋",
+    "result": "PARTIAL",
+    "complete": false,
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "remaining": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "rules": [
+      "G04",
+      "G05",
+      "G11",
+      "G12",
+      "T01",
+      "T02",
+      "M02",
+      "A03",
+      "D02",
+      "N01"
+    ]
+  },
+  {
+    "id": "R05",
+    "name": "獨立跨來源比對",
+    "result": "PARTIAL",
+    "complete": false,
+    "observations": [
+      {
+        "kind": "HISTORICAL_DIAGNOSTIC_INPUTS_STILL_MATCH",
+        "references": 298,
+        "reported_field_pairs": 19000
+      }
+    ],
+    "remaining": "跨來源結果僅診斷，完整範圍及上游獨立性未驗",
+    "rules": [
+      "G14",
+      "G15"
+    ]
+  },
+  {
+    "id": "R06",
+    "name": "公告PIT與版本",
+    "result": "UNKNOWN",
+    "complete": false,
+    "observations": [],
+    "remaining": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+    "rules": [
+      "G13",
+      "M03",
+      "N02"
+    ]
+  },
+  {
+    "id": "R07",
+    "name": "真實發布與下游",
+    "result": "BLOCKED",
+    "complete": false,
+    "observations": [],
+    "remaining": "前置實際證據不足；正式發布、下游及回復未執行",
+    "rules": [
+      "G16",
+      "G18",
+      "G19"
+    ]
+  },
+  {
+    "id": "R08",
+    "name": "全量復原與時效",
+    "result": "PARTIAL",
+    "complete": false,
+    "observations": [
+      {
+        "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+        "packages": 22,
+        "units": 562
+      }
+    ],
+    "remaining": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+    "rules": [
+      "G03",
+      "G17",
+      "G20",
+      "G21"
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "version": "JARVIS_POSTLAUNCH_FULL_SUITE_20261027_V7",
+  "base_commit": "e8a3829fa46e9c8d0af6c3c87ed8d57c9ed2d1e1",
+  "execution_input_sha256": "4bab73292d8aa135019fc46d4c5613be8ccfda60a0295dc65cbf26a6813be4c8",
+  "tested_version": "isolated candidate; source hashes in manifest",
+  "elapsed_seconds": 11.207,
+  "counts": {
+    "run": 872,
+    "pass": 872,
+    "fail": 0,
+    "error": 0,
+    "skip": 0
+  },
+  "live_network_disabled": true,
+  "market_downloads": 0,
+  "production_changes": 0,
+  "database_completeness": "UNKNOWN"
+}

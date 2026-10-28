@@ -1,0 +1,573 @@
+[
+  {
+    "rule_id": "G01",
+    "name": "應有母體",
+    "group": "R01",
+    "full_scope_result": "UNKNOWN",
+    "reason": "核准母體與最新全量遠端收據對帳尚缺",
+    "observations": [
+      {
+        "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+        "records": 337281
+      },
+      {
+        "kind": "SCOPED_REMOTE_METADATA_ONLY",
+        "folders": 4,
+        "global_enumeration_complete": false
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G02",
+    "name": "口徑與覆蓋",
+    "group": "R01",
+    "full_scope_result": "UNKNOWN",
+    "reason": "核准母體與最新全量遠端收據對帳尚缺",
+    "observations": [
+      {
+        "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+        "records": 337281
+      },
+      {
+        "kind": "SCOPED_REMOTE_METADATA_ONLY",
+        "folders": 4,
+        "global_enumeration_complete": false
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G03",
+    "name": "原件存取",
+    "group": "R08",
+    "full_scope_result": "UNKNOWN",
+    "reason": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+    "observations": [
+      {
+        "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+        "packages": 22,
+        "units": 562
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G04",
+    "name": "回應內容",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G05",
+    "name": "壓縮與文件",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G06",
+    "name": "日期語意",
+    "group": "R02",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全範圍歷史證券有效期間及日曆證據未齊",
+    "observations": [
+      {
+        "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+        "artifact_records": 258
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G07",
+    "name": "證券與主鍵",
+    "group": "R02",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全範圍歷史證券有效期間及日曆證據未齊",
+    "observations": [
+      {
+        "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+        "artifact_records": 258
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G08",
+    "name": "完整性",
+    "group": "R01",
+    "full_scope_result": "UNKNOWN",
+    "reason": "核准母體與最新全量遠端收據對帳尚缺",
+    "observations": [
+      {
+        "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+        "records": 337281
+      },
+      {
+        "kind": "SCOPED_REMOTE_METADATA_ONLY",
+        "folders": 4,
+        "global_enumeration_complete": false
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G09",
+    "name": "空值與不適用",
+    "group": "R03",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全資料集欄位單位契約與適用性未齊",
+    "observations": [
+      {
+        "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+        "rows": 120
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G10",
+    "name": "數值與單位",
+    "group": "R03",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全資料集欄位單位契約與適用性未齊",
+    "observations": [
+      {
+        "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+        "rows": 120
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G11",
+    "name": "欄位關係",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G12",
+    "name": "檢查覆蓋",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G13",
+    "name": "PIT與版本",
+    "group": "R06",
+    "full_scope_result": "UNKNOWN",
+    "reason": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+    "observations": [],
+    "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G14",
+    "name": "跨來源一致",
+    "group": "R05",
+    "full_scope_result": "UNKNOWN",
+    "reason": "跨來源結果僅診斷，完整範圍及上游獨立性未驗",
+    "observations": [
+      {
+        "kind": "HISTORICAL_DIAGNOSTIC_INPUTS_STILL_MATCH",
+        "references": 298,
+        "reported_field_pairs": 19000
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G15",
+    "name": "重複與修訂",
+    "group": "R05",
+    "full_scope_result": "UNKNOWN",
+    "reason": "跨來源結果僅診斷，完整範圍及上游獨立性未驗",
+    "observations": [
+      {
+        "kind": "HISTORICAL_DIAGNOSTIC_INPUTS_STILL_MATCH",
+        "references": 298,
+        "reported_field_pairs": 19000
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G16",
+    "name": "排程與競態",
+    "group": "R07",
+    "full_scope_result": "UNKNOWN",
+    "reason": "前置實際證據不足；正式發布、下游及回復未執行",
+    "observations": [],
+    "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G17",
+    "name": "重試與路由",
+    "group": "R08",
+    "full_scope_result": "UNKNOWN",
+    "reason": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+    "observations": [
+      {
+        "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+        "packages": 22,
+        "units": 562
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G18",
+    "name": "驗收與關閉",
+    "group": "R07",
+    "full_scope_result": "UNKNOWN",
+    "reason": "前置實際證據不足；正式發布、下游及回復未執行",
+    "observations": [],
+    "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G19",
+    "name": "歷程與重開",
+    "group": "R07",
+    "full_scope_result": "UNKNOWN",
+    "reason": "前置實際證據不足；正式發布、下游及回復未執行",
+    "observations": [],
+    "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G20",
+    "name": "多處保存",
+    "group": "R08",
+    "full_scope_result": "UNKNOWN",
+    "reason": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+    "observations": [
+      {
+        "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+        "packages": 22,
+        "units": 562
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G21",
+    "name": "期限與鮮度",
+    "group": "R08",
+    "full_scope_result": "UNKNOWN",
+    "reason": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+    "observations": [
+      {
+        "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+        "packages": 22,
+        "units": 562
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "G22",
+    "name": "需求外資料",
+    "group": "R03",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全資料集欄位單位契約與適用性未齊",
+    "observations": [
+      {
+        "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+        "rows": 120
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "T01",
+    "name": "日行情",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "T02",
+    "name": "籌碼與事件",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "T03",
+    "name": "證券歷史",
+    "group": "R02",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全範圍歷史證券有效期間及日曆證據未齊",
+    "observations": [
+      {
+        "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+        "artifact_records": 258
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "M01",
+    "name": "財報母體",
+    "group": "R01",
+    "full_scope_result": "UNKNOWN",
+    "reason": "核准母體與最新全量遠端收據對帳尚缺",
+    "observations": [
+      {
+        "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+        "records": 337281
+      },
+      {
+        "kind": "SCOPED_REMOTE_METADATA_ONLY",
+        "folders": 4,
+        "global_enumeration_complete": false
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "M02",
+    "name": "財報數值",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "M03",
+    "name": "營收與發布",
+    "group": "R06",
+    "full_scope_result": "UNKNOWN",
+    "reason": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+    "observations": [],
+    "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+    "requires_action": true
+  },
+  {
+    "rule_id": "F01",
+    "name": "資料集權限",
+    "group": "R03",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全資料集欄位單位契約與適用性未齊",
+    "observations": [
+      {
+        "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+        "rows": 120
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "F02",
+    "name": "補件與語意",
+    "group": "R03",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全資料集欄位單位契約與適用性未齊",
+    "observations": [
+      {
+        "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+        "rows": 120
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "A01",
+    "name": "期貨主鍵",
+    "group": "R02",
+    "full_scope_result": "UNKNOWN",
+    "reason": "全範圍歷史證券有效期間及日曆證據未齊",
+    "observations": [
+      {
+        "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+        "artifact_records": 258
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "A02",
+    "name": "期貨包完整",
+    "group": "R01",
+    "full_scope_result": "UNKNOWN",
+    "reason": "核准母體與最新全量遠端收據對帳尚缺",
+    "observations": [
+      {
+        "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+        "records": 337281
+      },
+      {
+        "kind": "SCOPED_REMOTE_METADATA_ONLY",
+        "folders": 4,
+        "global_enumeration_complete": false
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "A03",
+    "name": "期貨數值",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "D01",
+    "name": "集保日期母體",
+    "group": "R01",
+    "full_scope_result": "UNKNOWN",
+    "reason": "核准母體與最新全量遠端收據對帳尚缺",
+    "observations": [
+      {
+        "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+        "records": 337281
+      },
+      {
+        "kind": "SCOPED_REMOTE_METADATA_ONLY",
+        "folders": 4,
+        "global_enumeration_complete": false
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "D02",
+    "name": "集保級距",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "N01",
+    "name": "景氣序列",
+    "group": "R04",
+    "full_scope_result": "UNKNOWN",
+    "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+    "observations": [
+      {
+        "kind": "PARTIAL_RAW_CONTENT",
+        "artifact_records": 562,
+        "blocked_artifacts": 6
+      }
+    ],
+    "execution_coverage": "PARTIAL_ADAPTERS",
+    "requires_action": true
+  },
+  {
+    "rule_id": "N02",
+    "name": "景氣版本發布",
+    "group": "R06",
+    "full_scope_result": "UNKNOWN",
+    "reason": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+    "observations": [],
+    "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+    "requires_action": true
+  }
+]
