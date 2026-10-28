@@ -1,0 +1,134 @@
+name: JARVIS bounded read-only acceptance (3 workers)
+on:
+  schedule:
+    - cron: '17 18 * * *' # 02:17 Asia/Taipei; best-effort GitHub scheduling.
+  workflow_dispatch:
+    inputs:
+      clear_auth_hold:
+        description: 'After repairing Google authorization, clear this worker auth hold'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-scheduled-acceptance
+  cancel-in-progress: false
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: write # Only isolated QA checkpoint branches; no main/Drive writes.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - name: Restore durable inventory continuation
+        run: python -m scripts.v093_acceptance_state restore --lane inventory --directory durable --lease inventory-lease.json
+      - name: Enumerate existing RAW metadata only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          CLEAR_AUTH_HOLD: ${{ inputs.clear_auth_hold || false }}
+        run: |
+          args=()
+          if [ "$CLEAR_AUTH_HOLD" = true ]; then args+=(--clear-auth-hold); fi
+          python -m scripts.v093_acceptance_scheduler --inventory-only --state durable --lease inventory-lease.json --out results/inventory "${args[@]}"
+      - name: Persist inventory even after a bounded error
+        if: always()
+        run: |
+          if [ -f inventory-lease.json ]; then
+            python -m scripts.v093_acceptance_state save --lane inventory --directory durable --lease inventory-lease.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvis-acceptance-inventory-${{ github.run_id }}
+          path: |
+            durable/*.json.gz
+            results/inventory/summary.json
+          retention-days: 30
+  content:
+    needs: inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-qa.lock
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with:
+          name: jarvis-acceptance-inventory-${{ github.run_id }}
+          path: shared-inventory
+      - name: Restore this worker's durable continuation
+        run: python -m scripts.v093_acceptance_state restore --lane worker-${{ matrix.shard }} --directory durable --lease worker-lease.json
+      - name: Verify this worker's disjoint retained RAW packages
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          CLEAR_AUTH_HOLD: ${{ inputs.clear_auth_hold || false }}
+        run: |
+          args=()
+          if [ "$CLEAR_AUTH_HOLD" = true ]; then args+=(--clear-auth-hold); fi
+          python -m scripts.v093_acceptance_scheduler --state durable --lease worker-lease.json --inventory-state shared-inventory/durable --shard-index ${{ matrix.shard }} --out results/worker-${{ matrix.shard }} "${args[@]}"
+      - name: Persist worker continuation even after an error
+        if: always()
+        run: |
+          if [ -f worker-lease.json ]; then
+            python -m scripts.v093_acceptance_state save --lane worker-${{ matrix.shard }} --directory durable --lease worker-lease.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvis-acceptance-worker-${{ matrix.shard }}-${{ github.run_id }}
+          path: |
+            durable/*.json.gz
+            results/worker-${{ matrix.shard }}/summary.*
+          retention-days: 30
+  summary:
+    needs: [inventory, content]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: jarvis-acceptance-*-${{ github.run_id }}
+          path: combined
+      - name: Summarize actual evidence, keep all release gates closed
+        env:
+          INVENTORY_RESULT: ${{ needs.inventory.result }}
+          CONTENT_RESULT: ${{ needs.content.result }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          paths = sorted(pathlib.Path('combined').rglob('summary.json'))
+          summaries = [json.loads(p.read_text()) for p in paths]
+          workers = [s for s in summaries if s['slice']['status'] not in ('INVENTORY_COMPLETE', 'INVENTORY_INCOMPLETE')]
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('# JARVIS 自動驗收\n\n')
+              f.write('一個統籌、三個分工讀取既有原件的工作；正式發布核准範圍0。\n\n')
+              f.write('|工作|本輪狀態|\n|---|---|\n')
+              f.write(f"|盤點|{os.environ['INVENTORY_RESULT']}|\n|內容工作|{os.environ['CONTENT_RESULT']}|\n")
+              f.write(f"\n收到內容摘要 {len(workers)}/3；本輪內容檢查 {sum(s['slice']['inspected'] for s in workers)} 筆。\n\n")
+              f.write('八大組完整驗收仍未通過；缺母體、契約、PIT及未實作檢查器保持待核，不能用執行綠燈代替資料驗收。\n')
+          if os.environ['INVENTORY_RESULT'] != 'success' or os.environ['CONTENT_RESULT'] != 'success' or len(workers) != 3:
+              raise SystemExit('Incomplete acceptance run: inspect preserved checkpoints and job errors')
+          PY
