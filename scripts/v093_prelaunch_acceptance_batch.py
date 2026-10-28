@@ -2,7 +2,7 @@
 import argparse,collections,csv,datetime,gzip,hashlib,io,json,re,zipfile
 from pathlib import Path
 from decimal import Decimal
-VERSION='PRELAUNCH_COMBINED_V1'
+VERSION='PRELAUNCH_COMBINED_V2_NATIVE_SUPPLEMENTS'
 def sha(b):return hashlib.sha256(b).hexdigest()
 def inspect_raw(b,r):
  s=r['來源'];cat=r['資料集']
@@ -23,7 +23,35 @@ def inspect_raw(b,r):
     checks.append(dict(code=code,result='PASS_EXACT' if delta==0 else 'REVIEW_DELTA',delta=str(delta),rows={k:v[0][0] for k,v in vals.items()}))
    ev['balance_identity']=checks
   return ev
+ if s=='TPEx' and cat=='prices' and (r.get('原件參照','').endswith('.csv') or not b.lstrip().startswith((b'{',b'['))):
+  from scripts.v093_standard_r4 import decode,csv_header_date,day
+  from scripts.v093_official_content_audit import audit_json
+  text,encoding=decode(b);grid=list(csv.reader(io.StringIO(text)))
+  hi=next((i for i,row in enumerate(grid) if '代號' in row),None)
+  if hi is None:raise ValueError('CSV_HEADER_MISSING')
+  dates={day(x) for x in re.findall(r'(?<!\d)(20\d{6})(?!\d)',r['原件參照'])}-{None}
+  filename_day=next(iter(dates)) if len(dates)==1 else None
+  content_day=csv_header_date(s,grid,hi,filename_day)
+  if not content_day or content_day!=r['期間']:raise ValueError('CSV_CONTENT_PERIOD_NOT_CONFIRMED')
+  fields=grid[hi];data=[];metadata=[];managed=set();section='GENERAL';ci=fields.index('代號')
+  for index,row in enumerate(grid[hi+1:],hi+1):
+   if not any(str(v).strip() for v in row):continue
+   if row==fields:
+    metadata.append(dict(row_index=index,cells=row))
+   elif len(row)==len(fields):
+    data.append(row)
+    if section=='MANAGED':managed.add(row[ci].strip())
+   elif row==['管理股票']:
+    section='MANAGED';metadata.append(dict(row_index=index,cells=row))
+   elif (len(row)==1 and row[0].startswith(('註：','註:'))) or (len(row)==3 and row[0] in ('上櫃家數','總成交金額','總成交股數','總成交筆數') and row[2]==''):
+    metadata.append(dict(row_index=index,cells=row))
+   else:raise ValueError('CSV_UNRECOGNIZED_NON_DATA_ROW')
+  scope=sorted({row[ci].strip() for row in data if re.fullmatch('[1-9][0-9]{3}',row[ci].strip())}-managed)
+  ev=audit_json(json.dumps(dict(fields=fields,data=data)).encode(),dict(source=s,category=cat,applicable_security_codes=scope))
+  if managed:ev['unverified']=sorted(set(ev['unverified'])|{'MANAGED_STOCK_PRICE_SEMANTICS_NOT_PROVEN'})
+  ev.update(actual_date=content_day,date_proof='CSV_HEADER',encoding=encoding,csv_metadata_rows=metadata,managed_codes_not_ohlc_certified=sorted(managed));return ev
  if s in ('MOPS','TWSE','TPEx'):
+
   from scripts.v093_official_content_audit import audit_rows
   return audit_rows(b,dict(source=s,category=cat))
  if s=='TAIFEX':
@@ -33,11 +61,19 @@ def inspect_raw(b,r):
  if s=='TDCC':
   from scripts.v093_tdcc_independent import validate_history
   return dict(rows=validate_history(b,r['期間'].replace('-',''),r['代碼']))
- obj=json.loads(b)
+ if s=='FinMind' and r.get('原件參照','').endswith('.jsonl'):
+  records=[json.loads(line) for line in b.decode('utf-8-sig').splitlines() if line.strip()]
+  if not records or any(not isinstance(x,dict) or set(x)!={'parent_row_index','source_record'} or isinstance(x['parent_row_index'],bool) or not isinstance(x['parent_row_index'],int) or x['parent_row_index']<0 or not isinstance(x['source_record'],dict) for x in records):raise ValueError('INVALID_FINMIND_NATIVE_PARTITION')
+  obj=dict(status=200,data=[x['source_record'] for x in records],retained_representation='NATIVE_MONTH_PARTITION')
+ else:obj=json.loads(b)
+ if not isinstance(obj,dict):raise ValueError('EXPECTED_SOURCE_OBJECT')
  if s=='NDC':
   if obj.get('source')!='NDC' or obj.get('month')!=r['月份'] or not obj.get('tables'):raise ValueError('NDC_PERIOD_OR_TABLES')
   return dict(tables=len(obj['tables']),gaps=obj.get('gaps'),source_archive=obj.get('source_archive'),validation='MONTH_ENVELOPE_ONLY_NOT_SOURCE_XLSX_RECHECK')
  if s!='FinMind' or cat!='TaiwanStockPrice':raise ValueError('UNMAPPED_DATASET')
+ if 'rows' in obj:
+  if obj.get('status')!='RAW_MONTH_SLICE_NOT_PIT_VERIFIED' or obj.get('dataset')!=cat or obj.get('stock_id')!=r['代碼'] or not re.fullmatch('[0-9a-f]{64}',str(obj.get('response_sha256',''))) or obj.get('data'):raise ValueError('INVALID_FINMIND_SLICE_PROVENANCE')
+  obj=dict(status=200,data=obj['rows'],retained_representation='MONTH_SLICE_WITH_UNVERIFIED_PARENT_SHA')
  rows=obj.get('data');seen=set()
  if obj.get('status')!=200 or not isinstance(rows,list) or not rows:raise ValueError('FINMIND_EMPTY_OR_ERROR')
  for x in rows:
@@ -48,7 +84,7 @@ def inspect_raw(b,r):
   seen.add(key);v={k:Decimal(str(x[k])) for k in ('open','max','min','close')}
   if not all(n.is_finite() for n in v.values()):raise ValueError('NONFINITE_PRICE')
   if not v['min']<=v['open']<=v['max'] or not v['min']<=v['close']<=v['max']:raise ValueError('OHLC_RELATIONSHIP')
- return dict(rows=len(rows),ohlc_rows_checked=len(rows))
+ return dict(rows=len(rows),ohlc_rows_checked=len(rows),representation=obj.get('retained_representation','NATIVE_API_RESPONSE'),parent_response_sha_readback_verified=False)
 def retained_raw(cache,ref,archives):
  fid,sep,member=ref.partition('/')
  if not re.fullmatch(r'[A-Za-z0-9_-]+',fid):raise ValueError('UNSAFE_CACHE_ID')
@@ -81,7 +117,7 @@ def run(register,cache,out,resume=None):
      s=r['來源'];c=sources.setdefault(s,collections.Counter());c['units']+=1;counts['units']+=1;key=s+'|'+r['單元ID'];ref=r['原件參照']
      status='RECONCILE_FROZEN_MISSING';action='先對帳最新收據與核准母體，再決定是否下載'
      if r['已下載']=='1':
-      counts['frozen_downloaded_units']+=1
+      counts['registered_retained_units']+=1
       try:
        b,archive_sha=retained_raw(cache,ref,archives)
        if b is None:status='RAW_NOT_IN_LOCAL_CACHE';action='讀回既有原件，勿直接重下載來源'
@@ -100,7 +136,7 @@ def run(register,cache,out,resume=None):
  try:gate_release({'kind':'APPROVED_STANDARD','qa':{}});gate='UNEXPECTED_PASS'
  except GateBlocked as e:gate=str(e)
  names=('母體與全量原件','歷史證券日期主鍵','欄位單位契約','完整數值覆蓋','獨立跨來源比對','公告PIT與版本','真實發布與下游','全量復原與時效')
- summary=dict(version=VERSION,checked_at_taipei=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),register_snapshot='20261027_V1_FROZEN_NOT_CURRENT',register_sha256=manifest,validator_signature=signature,counts=dict(counts),sources={s:dict(c) for s,c in sources.items()},groups=[dict(id='R%02d'%(i+1),name=n,result='PARTIAL' if i in (0,1,3) else 'BLOCKED' if i==6 else 'UNKNOWN') for i,n in enumerate(names)],release_gate=gate,approved_scopes=[],source_downloads=0,production_writes=0)
+ summary=dict(version=VERSION,checked_at_taipei=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),register_snapshot='INPUT_REGISTER_SET_NOT_APPROVED_UNIVERSE',register_sha256=manifest,validator_signature=signature,counts=dict(counts),sources={s:dict(c) for s,c in sources.items()},groups=[dict(id='R%02d'%(i+1),name=n,result='PARTIAL' if i in (0,1,3) else 'BLOCKED' if i==6 else 'UNKNOWN') for i,n in enumerate(names)],release_gate=gate,approved_scopes=[],source_downloads=0,production_writes=0)
  for name,obj in [('summary.json',summary),('raw_content_evidence.json',evidence),('checkpoint.json',dict(signature=signature,completed=completed))]:(out/name).write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
  return summary
 def main():

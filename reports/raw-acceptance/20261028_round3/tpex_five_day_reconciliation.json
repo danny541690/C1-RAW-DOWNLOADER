@@ -1,0 +1,47 @@
+{
+  "candidates_resolved_as_retained": 5,
+  "need_source_redownload_on_this_evidence": false,
+  "items": [
+    {
+      "date": "2026-09-29",
+      "reference": "1MHMveRwByWuc5v5pjS1n_i3Dr8-SZ7fl/complement_prices_20260929_7face5611577f7b3bcde.raw",
+      "raw_sha256": "41e64aef784e9e4b0672330800acecd5d2b06d7d7f95e51a5b391eb4f5998c4e",
+      "package_crc": true,
+      "content_date": "2026-09-29",
+      "result": "RETAINED_RAW_FOUND_SHA_DATE_VERIFIED_NOT_NUMERIC_UNIVERSE_APPROVED"
+    },
+    {
+      "date": "2026-09-04",
+      "reference": "1MHMveRwByWuc5v5pjS1n_i3Dr8-SZ7fl/complement_prices_20260904_c7ad26cdc4de5efb6ef7.raw",
+      "raw_sha256": "c9986a62a71262272c6bdea498b2f4c1814c2ec475e9e86de80f58f29e2402f1",
+      "package_crc": true,
+      "content_date": "2026-09-04",
+      "result": "RETAINED_RAW_FOUND_SHA_DATE_VERIFIED_NOT_NUMERIC_UNIVERSE_APPROVED"
+    },
+    {
+      "date": "2026-09-10",
+      "reference": "1MHMveRwByWuc5v5pjS1n_i3Dr8-SZ7fl/complement_prices_20260910_ed1356666463ca4c9f32.raw",
+      "raw_sha256": "7524b7ffc3051ab9ad5bf73213e6ebc6a873afe53aebb41636d13ef96ffc25d9",
+      "package_crc": true,
+      "content_date": "2026-09-10",
+      "result": "RETAINED_RAW_FOUND_SHA_DATE_VERIFIED_NOT_NUMERIC_UNIVERSE_APPROVED"
+    },
+    {
+      "date": "2026-09-08",
+      "reference": "1-LacMHLRFczb9I-LA3MddWRLwskMyy72/7b9e21b438fe99bc8531b6d9.raw",
+      "raw_sha256": "e9c5a86950f88ae2222126fa54af463e32d4f0f8d5d1d5ac64a328fa03932bee",
+      "package_crc": true,
+      "content_date": "2026-09-08",
+      "result": "RETAINED_RAW_FOUND_SHA_DATE_VERIFIED_NOT_NUMERIC_UNIVERSE_APPROVED"
+    },
+    {
+      "date": "2026-09-22",
+      "reference": "1yGCCksAm8XnGQF37mbdBvj0if9IegHKC/db7942a3246980afe0d6fffe.raw",
+      "raw_sha256": "71ac58753d77665a7c3cbf26b33225be6d7c0183ff68712ed33235754930999a",
+      "package_crc": true,
+      "content_date": "2026-09-22",
+      "result": "RETAINED_RAW_FOUND_SHA_DATE_VERIFIED_NOT_NUMERIC_UNIVERSE_APPROVED"
+    }
+  ],
+  "note": "Close missing-file candidate only, not all quality rules or official repair tasks."
+}

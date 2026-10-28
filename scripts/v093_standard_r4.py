@@ -14,6 +14,7 @@ from scripts.v093_indexed_drive import IndexedDrive,CheckpointThrottle
 VERSION = 'NATIVE_R4_20261020_1'
 PARSER_REVISION = 'FINMIND_MONTH_SLICE_ROWS_V1'
 NATIVE_PARSER_REVISION = 'NATIVE_MATRIX_AND_INDEX_ROWS_V2'
+CSV_HEADER_REVISION = 'TPEX_CSV_HEADER_CONTENT_DATE_V1'
 SYMBOLS = ('stock_id','SecuritiesCompanyCode','股票代號','證券代號','代號','公司代號','公司代碼','Code','StockCode','stockNo')
 DATES = ('date','Date','trade_date','資料日期','日期','年月日')
 PERIODS = ('資料年月','營收年月','revenue_month','年月')
@@ -127,6 +128,23 @@ def mops_matrix_rows(name,raw,partition):
     return out,dict(STAGED_CELLS=len(out),NATIVE_RECORDS=len(matrix['cells']),
                     MOPS_MATRIX_CELLS=len(out)), 'utf-8-sig'
 
+def csv_header_date(source,grid,header_index,filename_day=None):
+    """TPEx CSV content date is evidence; filename alone never proves it."""
+    if source!='TPEx':return None
+    observed=[]
+    for row in grid[:header_index]:
+        line=' '.join(str(v).strip() for v in row).strip()
+        match=re.fullmatch(r'資料日期\s*[:：]\s*(.*?)\s*',line)
+        if match:
+            value=day(match.group(1))
+            if not value:raise ValueError('INVALID_CSV_HEADER_DATE')
+            observed.append(value)
+    values=set(observed)
+    if len(values)>1:raise ValueError('CSV_HEADER_DATE_CONFLICT')
+    value=next(iter(values)) if values else None
+    if value and filename_day and value!=filename_day:raise ValueError('CSV_HEADER_FILENAME_DATE_CONFLICT')
+    return value
+
 def parse_member(source,name,raw,partition):
     if source=='MOPS' and any(r in name for r in ('IncomeStatement','BalanceSheet','CashflowStatement')):
         return mops_matrix_rows(name,raw,partition)
@@ -134,7 +152,7 @@ def parse_member(source,name,raw,partition):
     filename_days={day(m) for m in re.findall(r'(?<!\d)(20\d{6})(?!\d)',name)}-{None}
     filename_day=next(iter(filename_days)) if len(filename_days)==1 else None
     is_revenue=bool(re.search(r'revenue|t21sc03',name,re.I))
-    html_period=None
+    html_period=None;csv_content_day=None
     if text.lstrip().startswith('<'):
         root=html.fromstring(text)
         titles=[e.text_content() for e in root.xpath('//title|//b|//h1|//h2|//h3') if '營業收入統計表' in e.text_content()]
@@ -178,10 +196,10 @@ def parse_member(source,name,raw,partition):
     else:
         grid=list(csv.reader(io.StringIO(text)));hi=next((i for i,r in enumerate(grid) if any(x.strip() in SYMBOLS for x in r)),None)
         if hi is not None:
-            fields=grid[hi]
+            fields=grid[hi];csv_content_day=csv_header_date(source,grid,hi,filename_day)
             for i,row in enumerate(grid[hi+1:],hi+1):
                 if len(row)!=len(fields):stats['ROW_WIDTH_MISMATCH']+=1;continue
-                records.append(('csv',i,positional(fields,row),None))
+                records.append(('csv',i,positional(fields,row),csv_content_day))
     out=[]; seen=set()
     for tab,i,vals,response_date in records:
         symbol=str(get(vals,SYMBOLS) or '').strip()
@@ -201,7 +219,7 @@ def parse_member(source,name,raw,partition):
         else:
             if rd and response_date and rd!=response_date:stats['ROW_RESPONSE_DATE_CONFLICT']+=1;continue
             obsday=rd or response_date or filename_day
-            observation=obsday;proof='ROW' if rd else ('RESPONSE' if response_date else 'FILENAME_ONLY')
+            observation=obsday;proof='ROW' if rd else (('CSV_HEADER' if csv_content_day else 'RESPONSE') if response_date else 'FILENAME_ONLY')
             if not observation:stats['NO_CONTENT_OR_FILENAME_DATE']+=1;continue
         if observation[:7]!=partition:stats['OUTSIDE_PARTITION']+=1;continue
         date_keys={basekey(k) for k in vals if basekey(k) in DATES+PERIODS+SYMBOLS+('revenue_year','營收年度','營收月份','出表日期','年度','季別','year','quarter','season')}
@@ -233,6 +251,9 @@ def receipt_key(source,raw_sha,name=''):
     revision=PARSER_REVISION if source=='FinMind' else ''
     if (source=='MOPS' and any(r in name for r in ('IncomeStatement','BalanceSheet','CashflowStatement'))) or (source in ('TWSE','TPEx') and name.startswith('indices_')):
         revision=NATIVE_PARSER_REVISION
+    # A TPEx ZIP can contain CSV alternates: invalidate its staging receipt once,
+    # retaining original RAW and all prior immutable output generations.
+    if source=='TPEx':revision+=CSV_HEADER_REVISION
     return hashlib.sha256((source+VERSION+revision+raw_sha).encode()).hexdigest()
 
 def run(year,mo,sources=None,max_minutes=20,registry_namespace=None):
