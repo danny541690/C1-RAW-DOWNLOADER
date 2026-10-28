@@ -16,7 +16,7 @@ concurrency:
 jobs:
   inventory:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     permissions:
       contents: write # Only isolated QA checkpoint branches; no main/Drive writes.
     steps:
@@ -38,7 +38,12 @@ jobs:
         run: |
           args=()
           if [ "$CLEAR_AUTH_HOLD" = true ]; then args+=(--clear-auth-hold); fi
-          python -m scripts.v093_acceptance_scheduler --inventory-only --state durable --lease inventory-lease.json --out results/inventory "${args[@]}"
+          for slice in 1 2 3 4 5; do
+            python -m scripts.v093_acceptance_scheduler --inventory-only --state durable --lease inventory-lease.json --out results/inventory "${args[@]}"
+            if python -c "from scripts.v093_acceptance_scheduler import load; from pathlib import Path; raise SystemExit(0 if load(Path('durable/inventory.json.gz'))['phase']=='DONE' else 1)"; then
+              break
+            fi
+          done
       - name: Persist inventory even after a bounded error
         if: always()
         run: |

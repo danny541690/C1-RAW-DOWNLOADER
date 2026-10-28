@@ -1,0 +1,189 @@
+{
+  "version": "JARVIS_LIVE_READINESS_20261028_V1",
+  "run_id": 40667509465,
+  "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40667509465",
+  "tested_commit": "ebf046f203619c74fb6d40aa59c09e3decf396d2",
+  "software_ci": {
+    "tests": 904,
+    "pass_count": 904,
+    "fail_count": 0,
+    "error_count": 0,
+    "skip_count": 0,
+    "run_id": 40666269376,
+    "scope": "UNCHANGED_RUNTIME_CODE"
+  },
+  "inventory_metadata_records": 71645,
+  "atomic_inventory_snapshot": false,
+  "observation_universe_approved": false,
+  "first_round_new_units": 49,
+  "second_round_new_units": 38,
+  "second_round_reused_units": 49,
+  "total_outcome_versions": 87,
+  "outcome_counts": {
+    "CONTENT_BLOCKED": 12,
+    "PARTIAL_CONTENT_NOT_RELEASED": 75
+  },
+  "source_counts": {
+    "MOPS": 7,
+    "TWSE": 34,
+    "TDCC": 17,
+    "TAIFEX": 5,
+    "TPEx": 23,
+    "FinMind": 1
+  },
+  "ndc_sampled": false,
+  "raw_sha_conflicts": 0,
+  "transport_errors": 0,
+  "error_counts": {
+    "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH": 6,
+    "ValueError:UNMAPPED_TAIFEX_DATASET": 5,
+    "ValueError:UNMAPPED_DATASET": 1
+  },
+  "qa_state_branches": [
+    "jarvis-acceptance-state/inventory",
+    "jarvis-acceptance-state/worker-0",
+    "jarvis-acceptance-state/worker-1",
+    "jarvis-acceptance-state/worker-2"
+  ],
+  "production_raw_writes": 0,
+  "source_market_downloads": 0,
+  "daily_schedule_enabled": false,
+  "pr_merged": false,
+  "full_groups_passed": 0,
+  "approved_scopes": [],
+  "readiness": "BOUNDED_READONLY_PIPELINE_VERIFIED_WITH_DATA_BLOCKERS",
+  "blocked_units": [
+    {
+      "source": "MOPS",
+      "dataset": "IncomeStatement",
+      "task_id": "d1870f6cbf4d22d2f1355dfd",
+      "period": "2005-09-30",
+      "raw_reference": "1-0rt6e8C6MGzx_MqsndIf1QEa2AvxhZH/d1870f6cbf4d22d2f1355dfd.raw",
+      "raw_sha256": "c18b863740382adc07feccd35586cd41af3e142b972f8818839c73e9251e31dc",
+      "package_sha256": "e870fe68977a3569c9464df8591365bdb1e224b48b67bc7e9f813e22173feee1",
+      "checker_signature": "452036d0a7ea21d75a480dbf0c58d9af9edbaed05b50f3137d0f5bec8761d6a4",
+      "error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH"
+    },
+    {
+      "source": "MOPS",
+      "dataset": "IncomeStatement",
+      "task_id": "c746d7ed6162503b1b845246",
+      "period": "2005-09-30",
+      "raw_reference": "1-0rt6e8C6MGzx_MqsndIf1QEa2AvxhZH/c746d7ed6162503b1b845246.raw",
+      "raw_sha256": "7c03b1575fbe20f9faa30f4fbf92ab7f4d0ec4c5e0e1c703d75b1d78937bdfdd",
+      "package_sha256": "e870fe68977a3569c9464df8591365bdb1e224b48b67bc7e9f813e22173feee1",
+      "checker_signature": "452036d0a7ea21d75a480dbf0c58d9af9edbaed05b50f3137d0f5bec8761d6a4",
+      "error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH"
+    },
+    {
+      "source": "MOPS",
+      "dataset": "IncomeStatement",
+      "task_id": "6337a598ddf56080747ef0be",
+      "period": "2005-09-30",
+      "raw_reference": "1-0rt6e8C6MGzx_MqsndIf1QEa2AvxhZH/6337a598ddf56080747ef0be.raw",
+      "raw_sha256": "a9299cde64625e592bd0a9e8d07c39988d07a13e31696e5494420db5abe1e6c8",
+      "package_sha256": "e870fe68977a3569c9464df8591365bdb1e224b48b67bc7e9f813e22173feee1",
+      "checker_signature": "452036d0a7ea21d75a480dbf0c58d9af9edbaed05b50f3137d0f5bec8761d6a4",
+      "error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH"
+    },
+    {
+      "source": "TAIFEX",
+      "dataset": "dlBargainOrderDown",
+      "task_id": "HISTORY|dlBargainOrderDown|2017-11",
+      "period": "2017-11-01",
+      "raw_reference": "1-1mDNvfzrUUq49qjKKUQTl8430r1AOmH",
+      "raw_sha256": "7732a22c55b9a4bb48212e278e44e51a4db541cdc6e7ba5a6b5fd51506e1d9c4",
+      "package_sha256": "7732a22c55b9a4bb48212e278e44e51a4db541cdc6e7ba5a6b5fd51506e1d9c4",
+      "checker_signature": "0b9d0acf0430447eef9d22a2d8e45b734b658c64b6113c5bcdeafe374adcf869",
+      "error": "ValueError:UNMAPPED_TAIFEX_DATASET"
+    },
+    {
+      "source": "MOPS",
+      "dataset": "IncomeStatement",
+      "task_id": "14386a6360b3f552c8582707",
+      "period": "2005-09-30",
+      "raw_reference": "1-0rt6e8C6MGzx_MqsndIf1QEa2AvxhZH/14386a6360b3f552c8582707.raw",
+      "raw_sha256": "cce0576212b68b81d8c072f69b510936482e4710d53895fd484018e9d4b6f364",
+      "package_sha256": "e870fe68977a3569c9464df8591365bdb1e224b48b67bc7e9f813e22173feee1",
+      "checker_signature": "452036d0a7ea21d75a480dbf0c58d9af9edbaed05b50f3137d0f5bec8761d6a4",
+      "error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH"
+    },
+    {
+      "source": "MOPS",
+      "dataset": "IncomeStatement",
+      "task_id": "7cc7f77de7c64397d83d56db",
+      "period": "2005-09-30",
+      "raw_reference": "1-0rt6e8C6MGzx_MqsndIf1QEa2AvxhZH/7cc7f77de7c64397d83d56db.raw",
+      "raw_sha256": "b4f7fe8f3fc39832681f77ec9fd80c2ac5d3bd29819939765a575f64e6c98c38",
+      "package_sha256": "e870fe68977a3569c9464df8591365bdb1e224b48b67bc7e9f813e22173feee1",
+      "checker_signature": "452036d0a7ea21d75a480dbf0c58d9af9edbaed05b50f3137d0f5bec8761d6a4",
+      "error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH"
+    },
+    {
+      "source": "TAIFEX",
+      "dataset": "largeTraderFutDown",
+      "task_id": "HISTORY|largeTraderFutDown|2006-05",
+      "period": "2006-05-01",
+      "raw_reference": "1--1Zb9GmtxrPwc60Ecds4Ex3o79QxkAD",
+      "raw_sha256": "0241fb07ba2822752ee79ea63db009ce82d3edad95e0b9cfeec58d90b40a8214",
+      "package_sha256": "0241fb07ba2822752ee79ea63db009ce82d3edad95e0b9cfeec58d90b40a8214",
+      "checker_signature": "0b9d0acf0430447eef9d22a2d8e45b734b658c64b6113c5bcdeafe374adcf869",
+      "error": "ValueError:UNMAPPED_TAIFEX_DATASET"
+    },
+    {
+      "source": "MOPS",
+      "dataset": "IncomeStatement",
+      "task_id": "0c9d66726e9fbbffbf1c9da3",
+      "period": "2005-09-30",
+      "raw_reference": "1-0rt6e8C6MGzx_MqsndIf1QEa2AvxhZH/0c9d66726e9fbbffbf1c9da3.raw",
+      "raw_sha256": "56f61c2fe24f30dc7882d016468ec85fe2565e51871e6b2dcbf4d78bda1a668c",
+      "package_sha256": "e870fe68977a3569c9464df8591365bdb1e224b48b67bc7e9f813e22173feee1",
+      "checker_signature": "452036d0a7ea21d75a480dbf0c58d9af9edbaed05b50f3137d0f5bec8761d6a4",
+      "error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH"
+    },
+    {
+      "source": "TAIFEX",
+      "dataset": "combinationOrderDown",
+      "task_id": "HISTORY|combinationOrderDown|2017-04",
+      "period": "2017-04-01",
+      "raw_reference": "1-3fuDTUvkx_9vheMp2NxCeOkSuQxyOh6",
+      "raw_sha256": "bba52a80ef401f6ef22bfeac234e483a0351f9db735d9d9d367d504a01a9cd7d",
+      "package_sha256": "bba52a80ef401f6ef22bfeac234e483a0351f9db735d9d9d367d504a01a9cd7d",
+      "checker_signature": "0b9d0acf0430447eef9d22a2d8e45b734b658c64b6113c5bcdeafe374adcf869",
+      "error": "ValueError:UNMAPPED_TAIFEX_DATASET"
+    },
+    {
+      "source": "TAIFEX",
+      "dataset": "dlLargeTraderOptDown",
+      "task_id": "HISTORY|dlLargeTraderOptDown|2017-05",
+      "period": "2017-05-01",
+      "raw_reference": "1-2UjTqBCK1vZXizpwB1CipO2SqB-Ml4s",
+      "raw_sha256": "721cbcd74e22ac698d59a8eceeb8f1c278165b6ece063da7f68497838c1aacdd",
+      "package_sha256": "721cbcd74e22ac698d59a8eceeb8f1c278165b6ece063da7f68497838c1aacdd",
+      "checker_signature": "0b9d0acf0430447eef9d22a2d8e45b734b658c64b6113c5bcdeafe374adcf869",
+      "error": "ValueError:UNMAPPED_TAIFEX_DATASET"
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockFinancialStatements",
+      "task_id": "8ad8f17cc21531e270a4bcc1",
+      "period": "2010-06",
+      "raw_reference": "1-0ugI5KvMQaC2lCRfLatdaOegdZlSlzQ/8ad8f17cc21531e270a4bcc1.raw",
+      "raw_sha256": "0e8a698b689028800e652d92fdb563dae62575a985214a73dde1353ef4a8064a",
+      "package_sha256": "628d24f94471fd58aff1f88b4ac290340962531bba6a16cfb03c8acd0fe9a164",
+      "checker_signature": "a28660a71bf434f290dd03e86a80e2e6e9bab32bbbce2bb9fd7369a5deaa335a",
+      "error": "ValueError:UNMAPPED_DATASET"
+    },
+    {
+      "source": "TAIFEX",
+      "dataset": "futDataDown",
+      "task_id": "MARKET|futures|2026-06",
+      "period": "2026-06-01",
+      "raw_reference": "1-0HIqfZXmA779Yku0ZrlxaA43BP0RxoN",
+      "raw_sha256": "6822b3eeaa831c072055e3ae9b010fd2b63e3e0e9cb7205e8074610b337f72b8",
+      "package_sha256": "6822b3eeaa831c072055e3ae9b010fd2b63e3e0e9cb7205e8074610b337f72b8",
+      "checker_signature": "0b9d0acf0430447eef9d22a2d8e45b734b658c64b6113c5bcdeafe374adcf869",
+      "error": "ValueError:UNMAPPED_TAIFEX_DATASET"
+    }
+  ]
+}
