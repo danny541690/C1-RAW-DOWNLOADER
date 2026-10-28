@@ -1,0 +1,1402 @@
+{
+  "checked_at": "2026-10-28T05:45:48.611854+00:00",
+  "source_manifest": {
+    "1269": {
+      "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1269&date=2026%2F09%2F01&type=Monthly&response=json",
+      "sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    "1271": {
+      "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1271&date=2026%2F09%2F01&type=Monthly&response=json",
+      "sha256": "552fa8a0c663e092b02d497fd83293bd15829ec595de95e76cf13dcdbf7b2f96"
+    },
+    "1293": {
+      "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1293&date=2026%2F09%2F01&type=Monthly&response=json",
+      "sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    "1343": {
+      "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1343&date=2026%2F09%2F01&type=Monthly&response=json",
+      "sha256": "315d55fffe30a8918ca6e389d59bcc324cd9ae922ec25d00bf475bfb71b304d5"
+    },
+    "1480": {
+      "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1480&date=2026%2F09%2F01&type=Monthly&response=json",
+      "sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    "1594": {
+      "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1594&date=2026%2F09%2F01&type=Monthly&response=json",
+      "sha256": "f6a056ff26ed743cb72b0392e275153acfd9d47be65561be1dfa88b1d4fc89f4"
+    }
+  },
+  "rows": [
+    {
+      "code": "1269",
+      "date": "2026-09-01",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/01",
+        "13,867",
+        "830,684",
+        "62.50",
+        "59.60",
+        "59.90",
+        "16",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": null,
+      "open_matches_previous_row_average": null,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1269.json",
+      "market_evidence_sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    {
+      "code": "1269",
+      "date": "2026-09-07",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/07",
+        "12,825",
+        "744,877",
+        "59.90",
+        "57.10",
+        "58.08",
+        "16",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 56.71,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1269.json",
+      "market_evidence_sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    {
+      "code": "1269",
+      "date": "2026-09-08",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/08",
+        "8,239",
+        "458,733",
+        "56.40",
+        "53.70",
+        "55.68",
+        "21",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 58.08,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1269.json",
+      "market_evidence_sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    {
+      "code": "1269",
+      "date": "2026-09-09",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/09",
+        "7,533",
+        "427,174",
+        "58.40",
+        "56.20",
+        "56.71",
+        "8",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 55.68,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1269.json",
+      "market_evidence_sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    {
+      "code": "1269",
+      "date": "2026-09-10",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/10",
+        "301",
+        "17,548",
+        "58.30",
+        "58.30",
+        "58.30",
+        "2",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 56.71,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1269.json",
+      "market_evidence_sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    {
+      "code": "1269",
+      "date": "2026-09-11",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/11",
+        "11",
+        "643",
+        "58.50",
+        "58.50",
+        "58.50",
+        "2",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 58.3,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1269.json",
+      "market_evidence_sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    {
+      "code": "1269",
+      "date": "2026-09-18",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/18",
+        "412",
+        "24,102",
+        "58.50",
+        "58.50",
+        "58.50",
+        "8",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 56.52,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1269.json",
+      "market_evidence_sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    {
+      "code": "1269",
+      "date": "2026-09-23",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/23",
+        "9",
+        "525",
+        "58.40",
+        "58.40",
+        "58.40",
+        "2",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 56.72,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1269.json",
+      "market_evidence_sha256": "7b7a3d55ac1634c33fe6d661ce521cb7404c80573c8e5ac8292bb642bd80ad24"
+    },
+    {
+      "code": "1271",
+      "date": "2026-09-07",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/07",
+        "99,883",
+        "5,871,869",
+        "59.50",
+        "58.30",
+        "58.79",
+        "88",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 59.75,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1271.json",
+      "market_evidence_sha256": "552fa8a0c663e092b02d497fd83293bd15829ec595de95e76cf13dcdbf7b2f96"
+    },
+    {
+      "code": "1271",
+      "date": "2026-09-08",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/08",
+        "111,068",
+        "6,624,805",
+        "60.20",
+        "58.80",
+        "59.65",
+        "66",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 58.79,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1271.json",
+      "market_evidence_sha256": "552fa8a0c663e092b02d497fd83293bd15829ec595de95e76cf13dcdbf7b2f96"
+    },
+    {
+      "code": "1271",
+      "date": "2026-09-10",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/10",
+        "53,896",
+        "3,229,126",
+        "60.20",
+        "59.40",
+        "59.91",
+        "44",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 59.04,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1271.json",
+      "market_evidence_sha256": "552fa8a0c663e092b02d497fd83293bd15829ec595de95e76cf13dcdbf7b2f96"
+    },
+    {
+      "code": "1293",
+      "date": "2026-09-04",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/04",
+        "7,001",
+        "161,473",
+        "23.15",
+        "23.00",
+        "23.06",
+        "5",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 22.88,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1293.json",
+      "market_evidence_sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    {
+      "code": "1293",
+      "date": "2026-09-08",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/08",
+        "1,102",
+        "25,351",
+        "23.10",
+        "22.05",
+        "23.00",
+        "4",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 22.04,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1293.json",
+      "market_evidence_sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    {
+      "code": "1293",
+      "date": "2026-09-09",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/09",
+        "38",
+        "877",
+        "23.10",
+        "23.10",
+        "23.10",
+        "3",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 23.0,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1293.json",
+      "market_evidence_sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    {
+      "code": "1293",
+      "date": "2026-09-11",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/11",
+        "4,001",
+        "93,524",
+        "24.20",
+        "23.10",
+        "23.38",
+        "3",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 23.07,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1293.json",
+      "market_evidence_sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    {
+      "code": "1293",
+      "date": "2026-09-15",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/15",
+        "1",
+        "23",
+        "23.60",
+        "23.60",
+        "23.60",
+        "1",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 23.13,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1293.json",
+      "market_evidence_sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    {
+      "code": "1293",
+      "date": "2026-09-17",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/17",
+        "1",
+        "23",
+        "23.60",
+        "23.60",
+        "23.60",
+        "1",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 23.0,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1293.json",
+      "market_evidence_sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    {
+      "code": "1293",
+      "date": "2026-09-22",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/22",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 23.6,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1293.json",
+      "market_evidence_sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    {
+      "code": "1293",
+      "date": "2026-09-23",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/23",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 0.0,
+      "open_matches_previous_row_average": false,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1293.json",
+      "market_evidence_sha256": "9bffa3c9efb6d844ea67ff086fb083f085bcdad397231c560c244ecf0f544bf8"
+    },
+    {
+      "code": "1343",
+      "date": "2026-09-08",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/08",
+        "3,114",
+        "94,484",
+        "30.70",
+        "29.70",
+        "30.34",
+        "8",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 30.71,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1343.json",
+      "market_evidence_sha256": "315d55fffe30a8918ca6e389d59bcc324cd9ae922ec25d00bf475bfb71b304d5"
+    },
+    {
+      "code": "1343",
+      "date": "2026-09-11",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/11",
+        "20,124",
+        "596,175",
+        "29.80",
+        "29.50",
+        "29.63",
+        "15",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 29.85,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1343.json",
+      "market_evidence_sha256": "315d55fffe30a8918ca6e389d59bcc324cd9ae922ec25d00bf475bfb71b304d5"
+    },
+    {
+      "code": "1343",
+      "date": "2026-09-15",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/15",
+        "7,345",
+        "207,971",
+        "28.75",
+        "28.15",
+        "28.31",
+        "10",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 28.97,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1343.json",
+      "market_evidence_sha256": "315d55fffe30a8918ca6e389d59bcc324cd9ae922ec25d00bf475bfb71b304d5"
+    },
+    {
+      "code": "1343",
+      "date": "2026-09-17",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/17",
+        "3,035",
+        "88,928",
+        "29.45",
+        "29.30",
+        "29.30",
+        "5",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 28.65,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1343.json",
+      "market_evidence_sha256": "315d55fffe30a8918ca6e389d59bcc324cd9ae922ec25d00bf475bfb71b304d5"
+    },
+    {
+      "code": "1343",
+      "date": "2026-09-22",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/22",
+        "18,063",
+        "569,276",
+        "31.95",
+        "30.40",
+        "31.52",
+        "24",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 30.04,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1343.json",
+      "market_evidence_sha256": "315d55fffe30a8918ca6e389d59bcc324cd9ae922ec25d00bf475bfb71b304d5"
+    },
+    {
+      "code": "1343",
+      "date": "2026-09-23",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/23",
+        "48,358",
+        "1,558,480",
+        "33.45",
+        "31.75",
+        "32.23",
+        "54",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 31.52,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1343.json",
+      "market_evidence_sha256": "315d55fffe30a8918ca6e389d59bcc324cd9ae922ec25d00bf475bfb71b304d5"
+    },
+    {
+      "code": "1343",
+      "date": "2026-09-30",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/30",
+        "46,055",
+        "1,559,062",
+        "35.00",
+        "33.15",
+        "33.85",
+        "38",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 32.32,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1343.json",
+      "market_evidence_sha256": "315d55fffe30a8918ca6e389d59bcc324cd9ae922ec25d00bf475bfb71b304d5"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-01",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/01",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": null,
+      "open_matches_previous_row_average": null,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-02",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/02",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 0.0,
+      "open_matches_previous_row_average": false,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-03",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/03",
+        "5,000",
+        "39,380",
+        "7.90",
+        "7.87",
+        "7.88",
+        "2",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 0.0,
+      "open_matches_previous_row_average": false,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-07",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/07",
+        "1,126",
+        "8,996",
+        "7.99",
+        "7.99",
+        "7.99",
+        "2",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.96,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-10",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/10",
+        "3,000",
+        "23,850",
+        "7.95",
+        "7.95",
+        "7.95",
+        "2",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.88,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-15",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/15",
+        "5,000",
+        "38,350",
+        "7.67",
+        "7.67",
+        "7.67",
+        "1",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.7,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-17",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/17",
+        "5",
+        "39",
+        "7.80",
+        "7.80",
+        "7.80",
+        "1",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.65,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-18",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/18",
+        "58,005",
+        "434,687",
+        "7.57",
+        "7.45",
+        "7.49",
+        "11",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.8,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-21",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/21",
+        "46,000",
+        "346,400",
+        "7.56",
+        "7.50",
+        "7.53",
+        "9",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.49,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-23",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/23",
+        "35,000",
+        "265,600",
+        "7.63",
+        "7.56",
+        "7.59",
+        "6",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.51,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1480",
+      "date": "2026-09-24",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/24",
+        "21,996",
+        "168,109",
+        "7.67",
+        "7.62",
+        "7.64",
+        "7",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.59,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb/TaiwanStockPrice/1480.json",
+      "market_evidence_sha256": "ff197b11cb30cc063a5b4ac2264fd61d128f40cfcaa355d7ecd2b2dac99ec199"
+    },
+    {
+      "code": "1594",
+      "date": "2026-09-02",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/02",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.75,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1dBD17dBFCfOr69UTTeTSAg_FBsEGXR3i/TaiwanStockPrice/1594.json",
+      "market_evidence_sha256": "f6a056ff26ed743cb72b0392e275153acfd9d47be65561be1dfa88b1d4fc89f4"
+    },
+    {
+      "code": "1594",
+      "date": "2026-09-03",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/03",
+        "6,002",
+        "47,795",
+        "8.00",
+        "7.89",
+        "7.96",
+        "5",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 0.0,
+      "open_matches_previous_row_average": false,
+      "close_not_verified": true,
+      "raw_reference": "1dBD17dBFCfOr69UTTeTSAg_FBsEGXR3i/TaiwanStockPrice/1594.json",
+      "market_evidence_sha256": "f6a056ff26ed743cb72b0392e275153acfd9d47be65561be1dfa88b1d4fc89f4"
+    },
+    {
+      "code": "1594",
+      "date": "2026-09-04",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/04",
+        "2",
+        "16",
+        "8.05",
+        "8.05",
+        "8.05",
+        "1",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.96,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1dBD17dBFCfOr69UTTeTSAg_FBsEGXR3i/TaiwanStockPrice/1594.json",
+      "market_evidence_sha256": "f6a056ff26ed743cb72b0392e275153acfd9d47be65561be1dfa88b1d4fc89f4"
+    },
+    {
+      "code": "1594",
+      "date": "2026-09-07",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/07",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 8.05,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1dBD17dBFCfOr69UTTeTSAg_FBsEGXR3i/TaiwanStockPrice/1594.json",
+      "market_evidence_sha256": "f6a056ff26ed743cb72b0392e275153acfd9d47be65561be1dfa88b1d4fc89f4"
+    },
+    {
+      "code": "1594",
+      "date": "2026-09-10",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/10",
+        "1,001",
+        "7,797",
+        "7.79",
+        "7.79",
+        "7.79",
+        "2",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 8.05,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1dBD17dBFCfOr69UTTeTSAg_FBsEGXR3i/TaiwanStockPrice/1594.json",
+      "market_evidence_sha256": "f6a056ff26ed743cb72b0392e275153acfd9d47be65561be1dfa88b1d4fc89f4"
+    },
+    {
+      "code": "1594",
+      "date": "2026-09-11",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/11",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.79,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1dBD17dBFCfOr69UTTeTSAg_FBsEGXR3i/TaiwanStockPrice/1594.json",
+      "market_evidence_sha256": "f6a056ff26ed743cb72b0392e275153acfd9d47be65561be1dfa88b1d4fc89f4"
+    },
+    {
+      "code": "1594",
+      "date": "2026-09-29",
+      "as_of_market": "TPEx_ESB",
+      "official_row": [
+        "115/09/29",
+        "2",
+        "15",
+        "7.98",
+        "7.98",
+        "7.98",
+        "1",
+        "0",
+        "0",
+        "0.00",
+        "0.00",
+        "0.00",
+        "0"
+      ],
+      "comparisons": {
+        "max": true,
+        "min": true,
+        "Trading_Volume": true,
+        "Trading_money": true
+      },
+      "previous_row_average": 7.7,
+      "open_matches_previous_row_average": true,
+      "close_not_verified": true,
+      "raw_reference": "1dBD17dBFCfOr69UTTeTSAg_FBsEGXR3i/TaiwanStockPrice/1594.json",
+      "market_evidence_sha256": "f6a056ff26ed743cb72b0392e275153acfd9d47be65561be1dfa88b1d4fc89f4"
+    }
+  ],
+  "keys": 44,
+  "as_of_market_evidenced": 44,
+  "four_field_all_match": 44,
+  "mismatches": [],
+  "formal_release_approved": false,
+  "raw_changed": false,
+  "note": "ESB retained RAW only policy remains. No official closing-price proof; no blanket acceptance. Previous available row is not certified trading calendar predecessor."
+}
