@@ -1,0 +1,32 @@
+{
+  "round": 3,
+  "software_tests": {
+    "run": 833,
+    "pass": 833,
+    "fail": 0,
+    "error": 0,
+    "skip": 0
+  },
+  "working_register_records": 337281,
+  "base_register_records": 337023,
+  "supplemental_artifact_versions": 258,
+  "register_is_approved_universe": false,
+  "partial_content_evidence_records": 556,
+  "blocked_content_records": 12,
+  "old_mops_blocked": 6,
+  "finmind_month_files_isolated": 6,
+  "finmind_ohlc_keys_isolated": 44,
+  "finmind_observed_date_code_keys": 4936,
+  "eligible_after_relationship_filter": 4892,
+  "diagnostic_matched_date_code_keys": 4750,
+  "diagnostic_price_field_pairs": 19000,
+  "diagnostic_abs_tolerance": 0.01,
+  "diagnostic_price_mismatches": 0,
+  "current_unmatched_eligible_keys": 142,
+  "previous_115_matched_now": 87,
+  "previous_115_still_unmatched": 28,
+  "tpex_five_day_missing_file_candidates": "RESOLVED_AS_RETAINED_RAW_SHA_DATE_VERIFIED_NOT_QUALITY_CLOSED",
+  "formal_release": "BLOCKED",
+  "approved_scopes": [],
+  "source_downloads": 0
+}
