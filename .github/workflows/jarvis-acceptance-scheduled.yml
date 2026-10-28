@@ -1,10 +1,10 @@
 name: JARVIS bounded read-only acceptance (3 workers)
 on:
   push:
-    branches: [codex/acceptance-scheduler-3-workers-20261028]
+    branches: [main, codex/acceptance-scheduler-3-workers-20261028]
     paths: [.github/workflows/jarvis-acceptance-scheduled.yml]
   schedule:
-    - cron: '17 18 * * *' # 02:17 Asia/Taipei; best-effort GitHub scheduling.
+    - cron: '17 * * * *' # Every hour at :17; best-effort GitHub scheduling.
   workflow_dispatch:
     inputs:
       clear_auth_hold:
