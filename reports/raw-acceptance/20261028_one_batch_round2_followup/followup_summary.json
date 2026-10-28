@@ -1,0 +1,33 @@
+{
+  "round": "ROUND2_FOLLOWUP",
+  "R05": {
+    "result": "BLOCKED",
+    "reason": "BLOCKED_NO_MATCHING_DOWNLOADED_PERIOD_IN_FROZEN_REGISTER",
+    "scope": "Frozen register only; current Drive may contain additional RAW not yet reconciled."
+  },
+  "R07": {
+    "result": "BLOCKED",
+    "observed_shadow_report_period": "2026-09",
+    "observed_shadow_updated_at": "2026-10-20T01:24:14.984466+00:00",
+    "observed_shadow_approved": false,
+    "blockers": [
+      "SOURCE_UNIT_CONTRACT",
+      "HISTORICAL_SECURITY_UNIVERSE",
+      "VERIFIED_TRADING_CALENDAR",
+      "CORPORATE_ACTION_BASIS",
+      "INDEPENDENT_GOLDEN",
+      "FULL_WARMUP",
+      "RELEASE_EVIDENCE"
+    ]
+  },
+  "R08": {
+    "result": "PARTIAL_SCOPED_RECOVERY_PASS",
+    "restored_files": 7,
+    "restored_units": 283,
+    "full_database_restore_verified": false
+  },
+  "formal_release": "BLOCKED",
+  "approved_scopes": [],
+  "source_downloads": 0,
+  "production_data_published": false
+}
