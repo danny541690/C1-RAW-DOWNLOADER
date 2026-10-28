@@ -152,9 +152,15 @@ def run(register,cache,out,plan_file,resume=None,esb_dir=None,diagnostic_file=No
  result=aggregate(plan,summary,content,diagnostic,recovery,remote)
  triage=triage_content_failures(content_dir,Path(cache),archives)
  queues=queue_counts_and_copy(content_dir,out,triage)
+ from scripts.v093_acceptance_progress import build_progress,render_progress
+ prior_progress=sorted((Path(__file__).resolve().parent.parent/'reports/raw-acceptance').glob('*/progress_*.json'))
+ progress=build_progress(out/'repair_queue.csv.gz',summary['checker_signatures'],result['groups'],prior_progress)
+ (out/'progress.json').write_text(json.dumps(progress,ensure_ascii=False,indent=2)+'\n')
+ (out/'PROGRESS.md').write_text(render_progress(progress))
+ result['progress_counts']={k:v for k,v in progress.items() if k not in ('checked_items','groups','definitions')}
  result.update(version='JARVIS_INTEGRATED_READONLY_V1',run_id='integrated_'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'),checked_at_taipei=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),stages=stages,input_plan=plan_ref,remote_snapshot=remote_ref,diagnostic=diagnostic,recovery=recovery,content_triage=triage,queues=queues,content_counts=summary['counts'],elapsed_seconds=round(time.monotonic()-start,3),cache_metrics=dict(packages=len(archives),unique_member_extractions=archives.member_extractions),source_downloads=0,production_writes=0,limitations=['Full remote inventory, approved universe, full PIT and production validators are not implemented by this entry point','37 UNKNOWN full-scope rule results are explicit gaps, not passes','Historical diagnostic numbers are reused only after input SHA readback; numeric comparisons not rerun'])
  for name,obj in [('integrated_summary.json',result),('rule_results.json',result['rules']),('group_results.json',result['groups']),('content_triage.json',triage)]:(out/name).write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
- report=['# 賈維斯合併執行結果','',f"八組完成 {result['completed_groups']}/8；狀態 {result['group_counts']}。正式發布 BLOCKED。",'',f"內容清單 {summary['counts']}。",'', '| 組別 | 狀態 | 尚缺條件 |','|---|---|---|']+[f"| {g['id']} {g['name']} | {g['result']} | {g['remaining']} |" for g in result['groups']]
+ report=[render_progress(progress),'# 賈維斯合併執行結果','',f"八組完成 {result['completed_groups']}/8；狀態 {result['group_counts']}。正式發布 BLOCKED。",'',f"內容清單 {summary['counts']}。",'', '| 組別 | 狀態 | 尚缺條件 |','|---|---|---|']+[f"| {g['id']} {g['name']} | {g['result']} | {g['remaining']} |" for g in result['groups']]
  report+=['','所有 37 條全範圍規格仍為 UNKNOWN；已完成的是本次可執行的內容、證據讀回與局部復原，不代表全庫八組通過。','',f"本輪時間 {result['elapsed_seconds']} 秒；佇列 {queues}。查詢單元／補存版本混合筆數不可當作完整性分母。"]
  (out/'README.md').write_text('\n'.join(report)+'\n');return result
 
