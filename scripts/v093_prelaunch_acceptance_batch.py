@@ -2,7 +2,11 @@
 import argparse,collections,csv,datetime,gzip,hashlib,io,json,re,zipfile
 from pathlib import Path
 from decimal import Decimal
-VERSION='PRELAUNCH_COMBINED_V3_DATED_ESB_RAW_ONLY'
+VERSION='PRELAUNCH_COMBINED_V4_DEPENDENCY_RESUME'
+CACHE_SCHEMA='DEPENDENCY_CONTEXT_V1'
+class ArchiveCache(dict):
+ def __init__(self):
+  super().__init__();self.members={};self.member_extractions=0
 def sha(b):return hashlib.sha256(b).hexdigest()
 def inspect_raw(b,r,esb_evidence=None):
  s=r['來源'];cat=r['資料集']
@@ -103,16 +107,21 @@ def retained_raw(cache,ref,archives):
   archives[fid]=(raw,sha(raw))
  raw,archive_sha=archives[fid]
  if sep:
-  with zipfile.ZipFile(io.BytesIO(raw)) as z:raw=z.read(member)
+  member_cache=getattr(archives,'members',None);k=(fid,member)
+  if member_cache is not None and k in member_cache:raw=member_cache[k]
+  else:
+   with zipfile.ZipFile(io.BytesIO(raw)) as z:raw=z.read(member)
+   if member_cache is not None:member_cache[k]=raw;archives.member_extractions+=1
  return raw,archive_sha
-def run(register,cache,out,resume=None,esb_dir=None):
+def run(register,cache,out,resume=None,esb_dir=None,archive_cache=None):
  if not register.is_dir() or not list(register.glob('*_units.csv.gz')):raise ValueError('REGISTER_INPUT_MISSING')
  out.mkdir(parents=True,exist_ok=True)
  from scripts.v093_esb_market_evidence import load_evidence
  esb_evidence=load_evidence(esb_dir) if esb_dir else {}
- signature=sha(b''.join(p.read_bytes() for p in sorted(Path(__file__).parent.glob('*.py')))+json.dumps(sorted(esb_evidence.items()),sort_keys=True,default=str).encode())
- old=json.loads(resume.read_text()) if resume and resume.is_file() else {};prior=old.get('completed',{}) if old.get('signature')==signature else {}
- counts=collections.Counter();sources={};archives={};completed={};evidence=[];manifest={}
+ from scripts.v093_acceptance_dependencies import checker_signatures,cache_token,digest
+ signatures=checker_signatures(Path(__file__).resolve().parent.parent);signature=digest(signatures)
+ old=json.loads(resume.read_text()) if resume and resume.is_file() else {};prior=old.get('completed',{}) if old.get('cache_schema')==CACHE_SCHEMA else {}
+ counts=collections.Counter();sources={};archives=archive_cache if archive_cache is not None else ArchiveCache();completed={};evidence=[];manifest={}
  cols=('task_key','source','dataset','year','month','period','raw_reference','raw_sha256','status','next_action')
  with gzip.open(out/'next_round.csv.gz','wt',encoding='utf-8-sig',newline='') as stream:
   writer=csv.DictWriter(stream,fieldnames=cols);writer.writeheader()
@@ -130,7 +139,7 @@ def run(register,cache,out,resume=None,esb_dir=None):
        else:
         actual=sha(b)
         if actual!=r['RAW_SHA256']:raise ValueError('RAW_SHA_MISMATCH')
-        token=sha((key+actual+archive_sha).encode());ev=prior.get(token)
+        token=cache_token(r,actual,archive_sha,signatures.get(s,signature),esb_evidence);ev=prior.get(token)
         if ev:counts['resumed_content_units']+=1
         else:
          ev=dict(task_key=key,source=s,dataset=r['資料集'],period=r['期間'],raw_reference=ref,raw_sha256=actual,archive_sha256=archive_sha,content=inspect_raw(b,r,esb_evidence),result='PARTIAL_CONTENT_NOT_RELEASED');counts['new_content_units']+=1
@@ -144,8 +153,8 @@ def run(register,cache,out,resume=None,esb_dir=None):
  try:gate_release({'kind':'APPROVED_STANDARD','qa':{}});gate='UNEXPECTED_PASS'
  except GateBlocked as e:gate=str(e)
  names=('母體與全量原件','歷史證券日期主鍵','欄位單位契約','完整數值覆蓋','獨立跨來源比對','公告PIT與版本','真實發布與下游','全量復原與時效')
- summary=dict(version=VERSION,checked_at_taipei=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),register_snapshot='INPUT_REGISTER_SET_NOT_APPROVED_UNIVERSE',register_sha256=manifest,validator_signature=signature,counts=dict(counts),sources={s:dict(c) for s,c in sources.items()},groups=[dict(id='R%02d'%(i+1),name=n,result='PARTIAL' if i in (0,1,3) else 'BLOCKED' if i==6 else 'UNKNOWN') for i,n in enumerate(names)],release_gate=gate,approved_scopes=[],source_downloads=0,production_writes=0)
- for name,obj in [('summary.json',summary),('raw_content_evidence.json',evidence),('checkpoint.json',dict(signature=signature,completed=completed))]:(out/name).write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
+ summary=dict(version=VERSION,checked_at_taipei=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),register_snapshot='INPUT_REGISTER_SET_NOT_APPROVED_UNIVERSE',register_sha256=manifest,validator_signature=signature,checker_signatures=signatures,archive_readbacks={fid:dict(sha256=v[1],bytes=len(v[0])) for fid,v in archives.items()},counts=dict(counts),sources={s:dict(c) for s,c in sources.items()},groups=[dict(id='R%02d'%(i+1),name=n,result='PARTIAL' if i in (0,1,3) else 'BLOCKED' if i==6 else 'UNKNOWN') for i,n in enumerate(names)],release_gate=gate,approved_scopes=[],source_downloads=0,production_writes=0)
+ for name,obj in [('summary.json',summary),('raw_content_evidence.json',evidence),('checkpoint.json',dict(cache_schema=CACHE_SCHEMA,signature=signature,checker_signatures=signatures,completed=completed))]:(out/name).write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
  return summary
 def main():
  p=argparse.ArgumentParser();p.add_argument('--register',required=True,type=Path);p.add_argument('--raw-cache',required=True,type=Path);p.add_argument('--out',required=True,type=Path);p.add_argument('--resume',type=Path);p.add_argument('--esb-evidence',type=Path);a=p.parse_args();print(json.dumps(run(a.register,a.raw_cache,a.out,a.resume,a.esb_evidence)['counts'],ensure_ascii=False))
