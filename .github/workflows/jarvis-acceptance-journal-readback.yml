@@ -1,0 +1,41 @@
+name: JARVIS saved journal cold readback
+on:
+  push:
+    branches: [codex/acceptance-scheduler-3-workers-20261028]
+    paths: [.github/workflows/jarvis-acceptance-journal-readback.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore saved report in a fresh runner
+        run: python -m scripts.v093_acceptance_state restore --lane reports --directory restored-journal --lease restored-lease.json
+      - name: Verify saved run identity, counts and release boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from scripts.v093_acceptance_scheduler import load
+          value=load(Path('restored-journal/summary.json.gz'))
+          assert value['run_id']=='40714834207'
+          assert value['workflow_sha']=='2b5a7fbe08a06772e481d646c513e62ad8d77429'
+          assert value['errors']==[] and value['reported_workers']==3
+          assert value['progress']['checked_items']==49
+          assert value['progress']['repaired_content_blockers']==3
+          assert value['approved_scopes']==[] and value['production_writes']==0
+          Path('saved-report.json').write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(dict(cold_restore_verified=True,saved_run_id=value['run_id'],progress=value['progress']),ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: restored-journal-${{ github.run_id }}
+          path: saved-report.json
+          retention-days: 30

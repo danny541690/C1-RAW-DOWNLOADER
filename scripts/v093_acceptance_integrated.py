@@ -30,6 +30,7 @@ def verify_diagnostic(path,cache,archives):
  return dict(artifact=ref,input_references_checked=checked,input_errors=errors,result='INPUTS_REVALIDATED_HISTORICAL_DIAGNOSTIC' if not errors else 'INVALIDATED_DIAGNOSTIC',recomputed_numeric_pairs=False,reported_field_pairs=sum(metric_count(x.get('compared_pairs',0)) for x in obj.get('checks',{}).values()),reported_mismatches=sum(metric_count(x.get('mismatch',0)) for x in obj.get('checks',{}).values()),independence_verified=False,full_scope_verified=False)
 
 def recover_readback_scope(summary,content,cache,out,archives):
+ if not summary.get('archive_readbacks'):return dict(result='NOT_EXECUTED_NO_READBACK_SCOPE',files_restored=[],units_verified=0,errors=[],scope='NO_RESTORABLE_INPUTS',full_database_restore_verified=False,remote_backup_rechecked=False,account_loss_recovery_verified=False)
  restored=out/'restored_raw'
  if restored.exists() and any(restored.iterdir()):raise ValueError('RESTORE_TARGET_NOT_EMPTY')
  restored.mkdir(exist_ok=True);files=[];errors=[]
@@ -61,6 +62,21 @@ RULE_REASONS={
  'R08':'已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收',
 }
 
+def remote_metadata_observation(remote):
+ if remote.get('schema')=='JARVIS_REMOTE_METADATA_V1':
+  files=remote.get('files')
+  if not isinstance(files,list) or any(not isinstance(f,dict) or not f.get('id') or not f.get('mimeType') for f in files):raise ValueError('REMOTE_METADATA_SCHEMA')
+  if len({f['id'] for f in files})!=len(files):raise ValueError('REMOTE_METADATA_DUPLICATE_ID')
+  folders=sum(f['mimeType']=='application/vnd.google-apps.folder' for f in files)
+  return dict(kind='SCOPED_REMOTE_METADATA_ONLY',folders=folders,file_metadata_records=len(files)-folders,
+              root_enumeration_complete=remote.get('enumeration_complete') is True and remote.get('phase')=='DONE',
+              global_enumeration_complete=False,observation_universe_approved=False,
+              freshness_revalidated_this_run=remote.get('freshness_revalidated_this_run') is True,
+              raw_sha_readback_verified=False)
+ folders=remote.get('folders',[])
+ if not isinstance(folders,list):raise ValueError('REMOTE_METADATA_SCHEMA')
+ return dict(kind='SCOPED_REMOTE_METADATA_ONLY',folders=len(folders),global_enumeration_complete=False,observation_universe_approved=False)
+
 def aggregate(plan,summary,content,diagnostic=None,recovery=None,remote=None):
  # Ownership lists must match the original 37-rule catalog. No user-supplied
  # passed flags or group labels are accepted as a release proof.
@@ -79,7 +95,7 @@ def aggregate(plan,summary,content,diagnostic=None,recovery=None,remote=None):
  if content:observed['R04'].append(dict(kind='PARTIAL_RAW_CONTENT',artifact_records=len(content),blocked_artifacts=counts.get('CONTENT_BLOCKED',0)))
  if diagnostic and diagnostic.get('result')=='INPUTS_REVALIDATED_HISTORICAL_DIAGNOSTIC':observed['R05'].append(dict(kind='HISTORICAL_DIAGNOSTIC_INPUTS_STILL_MATCH',references=diagnostic['input_references_checked'],reported_field_pairs=diagnostic['reported_field_pairs']))
  if recovery and recovery.get('result')=='PASS_LOCAL_READBACK_SCOPE_RECOVERY':observed['R08'].append(dict(kind='LOCAL_READBACK_SCOPE_RECOVERY',packages=len(recovery['files_restored']),units=recovery['units_verified']))
- if remote:observed['R01'].append(dict(kind='SCOPED_REMOTE_METADATA_ONLY',folders=len(remote.get('folders',[])),global_enumeration_complete=False))
+ if remote:observed['R01'].append(remote_metadata_observation(remote))
  rules=[dict(rule_id=r['rule_id'],name=r['name'],group=r['primary_group'],full_scope_result='UNKNOWN',reason=RULE_REASONS[r['primary_group']],observations=observed[r['primary_group']],execution_coverage='PARTIAL_ADAPTERS' if observed[r['primary_group']] else 'NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE',requires_action=True) for r in ownership]
  groups=[dict(id=g['id'],name=g['name'],result='BLOCKED' if g['id']=='R07' else 'PARTIAL' if observed[g['id']] else 'UNKNOWN',complete=False,observations=observed[g['id']],remaining=RULE_REASONS[g['id']],rules=[r['rule_id'] for r in rules if r['group']==g['id']]) for g in plan['groups']]
  return dict(groups=groups,group_counts=dict(collections.Counter(g['result'] for g in groups)),completed_groups=0,rules=rules,rule_counts=dict(collections.Counter(r['full_scope_result'] for r in rules)),approved_universe=None,approved_scopes=[],formal_release='BLOCKED',production_published=False)
@@ -94,7 +110,7 @@ def triage_content_failures(content_dir,cache,archives):
    try:
     raw,_=batch.retained_raw(cache,r['raw_reference'],archives)
     if raw is None or batch.sha(raw)!=r['raw_sha256']:raise ValueError('TRIAGE_RAW_SHA_MISMATCH')
-    if r['source']=='MOPS' and r['dataset']=='BalanceSheet':
+    if r['source']=='MOPS' and r['dataset'] in ('BalanceSheet','IncomeStatement','CashflowStatement'):
      doc=html.fromstring(raw.decode('utf-8-sig'));bodies=doc.xpath('//*[@id="bodyTable"]//tbody');rows=doc.xpath('//*[@id="bodyTable"]//tbody/tr');period=doc.xpath('//input[@name="yearseason"]/@value')
      expected=r['period'][:4]+'Q'+str((int(r['period'][5:7])-1)//3+1)
      item.update(body_tables=len(bodies),account_rows=len(rows),response_period=period,company_headers=len(doc.xpath('//input[@name="reportName"]')))
@@ -128,14 +144,23 @@ def run(register,cache,out,plan_file,resume=None,esb_dir=None,diagnostic_file=No
  stages.append(dict(stage='recovery',result=recovery['result']))
  remote=None;remote_ref=None
  if remote_file:
-  try:remote,remote_ref=read_artifact(remote_file)
-  except (ValueError,OSError) as e:stages.append(dict(stage='remote_inventory',result='REMOTE_ARTIFACT_ERROR',error=str(e)))
+  try:
+   remote,remote_ref=read_artifact(remote_file)
+   remote_metadata_observation(remote)
+  except (ValueError,OSError) as e:
+   remote=None;stages.append(dict(stage='remote_inventory',result='REMOTE_ARTIFACT_ERROR',error=str(e)))
  result=aggregate(plan,summary,content,diagnostic,recovery,remote)
  triage=triage_content_failures(content_dir,Path(cache),archives)
  queues=queue_counts_and_copy(content_dir,out,triage)
+ from scripts.v093_acceptance_progress import build_progress,render_progress
+ prior_progress=sorted((Path(__file__).resolve().parent.parent/'reports/raw-acceptance').glob('*/progress_*.json'))
+ progress=build_progress(out/'repair_queue.csv.gz',summary['checker_signatures'],result['groups'],prior_progress)
+ (out/'progress.json').write_text(json.dumps(progress,ensure_ascii=False,indent=2)+'\n')
+ (out/'PROGRESS.md').write_text(render_progress(progress))
+ result['progress_counts']={k:v for k,v in progress.items() if k not in ('checked_items','groups','definitions')}
  result.update(version='JARVIS_INTEGRATED_READONLY_V1',run_id='integrated_'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'),checked_at_taipei=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),stages=stages,input_plan=plan_ref,remote_snapshot=remote_ref,diagnostic=diagnostic,recovery=recovery,content_triage=triage,queues=queues,content_counts=summary['counts'],elapsed_seconds=round(time.monotonic()-start,3),cache_metrics=dict(packages=len(archives),unique_member_extractions=archives.member_extractions),source_downloads=0,production_writes=0,limitations=['Full remote inventory, approved universe, full PIT and production validators are not implemented by this entry point','37 UNKNOWN full-scope rule results are explicit gaps, not passes','Historical diagnostic numbers are reused only after input SHA readback; numeric comparisons not rerun'])
  for name,obj in [('integrated_summary.json',result),('rule_results.json',result['rules']),('group_results.json',result['groups']),('content_triage.json',triage)]:(out/name).write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
- report=['# 賈維斯合併執行結果','',f"八組完成 {result['completed_groups']}/8；狀態 {result['group_counts']}。正式發布 BLOCKED。",'',f"內容清單 {summary['counts']}。",'', '| 組別 | 狀態 | 尚缺條件 |','|---|---|---|']+[f"| {g['id']} {g['name']} | {g['result']} | {g['remaining']} |" for g in result['groups']]
+ report=[render_progress(progress),'# 賈維斯合併執行結果','',f"八組完成 {result['completed_groups']}/8；狀態 {result['group_counts']}。正式發布 BLOCKED。",'',f"內容清單 {summary['counts']}。",'', '| 組別 | 狀態 | 尚缺條件 |','|---|---|---|']+[f"| {g['id']} {g['name']} | {g['result']} | {g['remaining']} |" for g in result['groups']]
  report+=['','所有 37 條全範圍規格仍為 UNKNOWN；已完成的是本次可執行的內容、證據讀回與局部復原，不代表全庫八組通過。','',f"本輪時間 {result['elapsed_seconds']} 秒；佇列 {queues}。查詢單元／補存版本混合筆數不可當作完整性分母。"]
  (out/'README.md').write_text('\n'.join(report)+'\n');return result
 

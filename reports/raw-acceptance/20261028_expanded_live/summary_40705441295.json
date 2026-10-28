@@ -1,0 +1,281 @@
+{
+  "date": "2026-10-28",
+  "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40705441295",
+  "runtime_commit": "cdce93d94e89f33e96b1c456e3e8756c1a7e76d5",
+  "prior_expansion_packages_excluded": 12,
+  "expansion_packages": [
+    {
+      "file_id": "1he4E7rrv6eY1ZzWiSV62Q17NV3fjPJfE",
+      "source": "FinMind",
+      "period": "2000-01",
+      "dataset": "TaiwanStockPrice"
+    },
+    {
+      "file_id": "1Ee3fcTPzjGFA8O_zGtR3Ui0LD-H8EeEC",
+      "source": "FinMind",
+      "period": "2000-01",
+      "dataset": "TaiwanStockPrice"
+    },
+    {
+      "file_id": "1OPkcx_J_GPQwIuA2mPs4seiwT44Fcm4j",
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "dataset": "BalanceSheet"
+    },
+    {
+      "file_id": "1hjjQA2UDVRB8n2m3a0EtnS_NwanarvMe",
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "dataset": "IncomeStatement"
+    },
+    {
+      "file_id": "1dttQ1D6uDWvf7vLLPHu_yojJHSfRAb3w",
+      "source": "NDC",
+      "period": "2000-03",
+      "dataset": "2000-03"
+    },
+    {
+      "file_id": "1w1aDA5HwNgdoF1esH4ROXQuOFNV2Ipp6",
+      "source": "NDC",
+      "period": "2000-04",
+      "dataset": "2000-04"
+    },
+    {
+      "file_id": "1ola57BCnLoy3c_kY8RvYdFC9QyG7FFml",
+      "source": "TAIFEX",
+      "period": "2001-01-01",
+      "dataset": "optDataDown"
+    },
+    {
+      "file_id": "1GusAiozaOn7oIr_9OwX49-iDASJyls5v",
+      "source": "TAIFEX",
+      "period": "2001-12-01",
+      "dataset": "dlPcRatioDown"
+    },
+    {
+      "file_id": "1GcerA4PG6t4EvidL9yMa7fIQLqTbqy1z",
+      "source": "TDCC",
+      "period": "2025-10-31",
+      "dataset": "distribution_20251031_000708"
+    },
+    {
+      "file_id": "1o8B7o8D9S87BPkXqmjuCHs1Zked8EB8p",
+      "source": "TDCC",
+      "period": "2025-10-31",
+      "dataset": "distribution_20251031_000779"
+    },
+    {
+      "file_id": "19f4dbA8jorUzfz62CkCPIjQaVnJvaDkB",
+      "source": "TPEx",
+      "period": "2007-01-09",
+      "dataset": "marketcap"
+    },
+    {
+      "file_id": "1sl4aoeQQfdtGIL7J9sgbkVISxKAc0IVK",
+      "source": "TPEx",
+      "period": "2007-01-15",
+      "dataset": "valuation"
+    }
+  ],
+  "skipped_expansion": {},
+  "audit_round_complete": true,
+  "passes_executed": 1,
+  "full_acceptance_complete": false,
+  "next_action": "Advance unread RAW or change missing evidence/checkers; do not repeat unchanged samples to claim progress",
+  "eight_groups": [
+    {
+      "id": "R01",
+      "name": "母體與全量原件",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+          "records": 337023
+        },
+        {
+          "kind": "SCOPED_REMOTE_METADATA_ONLY",
+          "folders": 2490,
+          "file_metadata_records": 71645,
+          "root_enumeration_complete": true,
+          "global_enumeration_complete": false,
+          "observation_universe_approved": false,
+          "freshness_revalidated_this_run": false,
+          "raw_sha_readback_verified": false
+        }
+      ],
+      "remaining": "核准母體與最新全量遠端收據對帳尚缺",
+      "rules": [
+        "G01",
+        "G02",
+        "G08",
+        "M01",
+        "A02",
+        "D01"
+      ]
+    },
+    {
+      "id": "R02",
+      "name": "歷史證券日期主鍵",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+          "artifact_records": 3
+        }
+      ],
+      "remaining": "全範圍歷史證券有效期間及日曆證據未齊",
+      "rules": [
+        "G06",
+        "G07",
+        "T03",
+        "A01"
+      ]
+    },
+    {
+      "id": "R03",
+      "name": "欄位單位契約",
+      "result": "UNKNOWN",
+      "complete": false,
+      "observations": [],
+      "remaining": "全資料集欄位單位契約與適用性未齊",
+      "rules": [
+        "G09",
+        "G10",
+        "G22",
+        "F01",
+        "F02"
+      ]
+    },
+    {
+      "id": "R04",
+      "name": "完整數值覆蓋",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 94,
+          "blocked_artifacts": 20
+        }
+      ],
+      "remaining": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "rules": [
+        "G04",
+        "G05",
+        "G11",
+        "G12",
+        "T01",
+        "T02",
+        "M02",
+        "A03",
+        "D02",
+        "N01"
+      ]
+    },
+    {
+      "id": "R05",
+      "name": "獨立跨來源比對",
+      "result": "UNKNOWN",
+      "complete": false,
+      "observations": [],
+      "remaining": "跨來源結果僅診斷，完整範圍及上游獨立性未驗",
+      "rules": [
+        "G14",
+        "G15"
+      ]
+    },
+    {
+      "id": "R06",
+      "name": "公告PIT與版本",
+      "result": "UNKNOWN",
+      "complete": false,
+      "observations": [],
+      "remaining": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+      "rules": [
+        "G13",
+        "M03",
+        "N02"
+      ]
+    },
+    {
+      "id": "R07",
+      "name": "真實發布與下游",
+      "result": "BLOCKED",
+      "complete": false,
+      "observations": [],
+      "remaining": "前置實際證據不足；正式發布、下游及回復未執行",
+      "rules": [
+        "G16",
+        "G18",
+        "G19"
+      ]
+    },
+    {
+      "id": "R08",
+      "name": "全量復原與時效",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+          "packages": 62,
+          "units": 94
+        }
+      ],
+      "remaining": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+      "rules": [
+        "G03",
+        "G17",
+        "G20",
+        "G21"
+      ]
+    }
+  ],
+  "rule_counts": {
+    "UNKNOWN": 37
+  },
+  "first_content_counts": {
+    "units": 337023,
+    "RECONCILE_FROZEN_MISSING": 237323,
+    "registered_retained_units": 99700,
+    "RAW_NOT_IN_LOCAL_CACHE": 99586,
+    "new_content_units": 94,
+    "REMAINING_RULES_OPEN": 94,
+    "CONTENT_BLOCKED": 20
+  },
+  "second_content_counts": {
+    "units": 337023,
+    "RECONCILE_FROZEN_MISSING": 237323,
+    "registered_retained_units": 99700,
+    "RAW_NOT_IN_LOCAL_CACHE": 99586,
+    "new_content_units": 94,
+    "REMAINING_RULES_OPEN": 94,
+    "CONTENT_BLOCKED": 20
+  },
+  "source_evidence_counts": {
+    "FinMind": 4,
+    "MOPS": 1,
+    "NDC": 3,
+    "TAIFEX": 5,
+    "TDCC": 19,
+    "TPEx": 28,
+    "TWSE": 34
+  },
+  "extra_sample_sources": [
+    "FinMind",
+    "NDC"
+  ],
+  "package_read_failures": {},
+  "recovery": {
+    "result": "PASS_LOCAL_READBACK_SCOPE_RECOVERY",
+    "units_verified": 94,
+    "errors": [],
+    "scope": "ONLY_RAW_PACKAGES_READ_IN_THIS_CONTENT_BATCH",
+    "full_database_restore_verified": false,
+    "remote_backup_rechecked": false
+  },
+  "formal_release": "BLOCKED",
+  "completed_groups": 0
+}

@@ -24,11 +24,11 @@ def dependency_manifest(root,modules):
  return seen
 
 SOURCE_MODULES={
- 'FinMind':['v093_esb_market_evidence'],
+ 'FinMind':['v093_esb_market_evidence','v093_finmind_financial_content'],
  'MOPS':['v093_stage06_financial_repair','v093_official_content_audit'],
  'TWSE':['v093_official_content_audit'],
  'TPEx':['v093_official_content_audit','v093_standard_r4'],
- 'TAIFEX':['v093_taifex_independent'],
+ 'TAIFEX':['v093_taifex_independent','v093_taifex_monthly_content'],
  'TDCC':['v093_tdcc_independent'],
  'NDC':[],
 }

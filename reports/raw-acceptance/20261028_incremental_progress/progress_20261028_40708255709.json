@@ -1,0 +1,1014 @@
+{
+  "schema": "JARVIS_INCREMENTAL_PROGRESS_V1",
+  "scope": "FROZEN_REGISTER_TASKS_NOT_APPROVED_GLOBAL_UNIVERSE",
+  "required_items": 337023,
+  "checked_items_count": 113,
+  "partial_content_items": 94,
+  "repaired_items": 0,
+  "confirmed_exception_items": 0,
+  "completed_items": 0,
+  "pending_items": 337023,
+  "unchecked_items": 336910,
+  "content_blocked_items": 19,
+  "newly_checked_items": 113,
+  "newly_repaired_items": 0,
+  "reused_prior_checked_items": 0,
+  "invalidated_prior_items": 0,
+  "current_batch_queues": {
+    "RECONCILE_LATEST": 237323,
+    "READBACK_EXISTING": 99587,
+    "COMPLETE_EVIDENCE": 94,
+    "SOURCE_ROUTE_REVIEW": 18,
+    "REPAIR_CONTENT": 1
+  },
+  "checked_items": {
+    "FinMind|03e667888c777dfc80d1dac0": {
+      "source": "FinMind",
+      "period": "2000-01",
+      "raw_sha256": "c786cc69ee43ce008873cbfc2a8ad24e193f072a1d468206349e305d3582770c",
+      "checker_signature": "95cd5c01edd5aea1eb18b36718aec140af93cb2189ef64fca51f367b09ba8ccb",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "FinMind|03f189ce84c2c5ef92ba39ce": {
+      "source": "FinMind",
+      "period": "2000-01",
+      "raw_sha256": "0e51909149bc8eead7ffa8044666e8ead1925e8e465bdd0eec38364a8788fc9b",
+      "checker_signature": "95cd5c01edd5aea1eb18b36718aec140af93cb2189ef64fca51f367b09ba8ccb",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "FinMind|f4f1b1e37b3066f0636bafe4": {
+      "source": "FinMind",
+      "period": "2000-01",
+      "raw_sha256": "daee6b633d6f24570eb807957706aee6c318c810af9f72a719e0b79ce3e8c957",
+      "checker_signature": "95cd5c01edd5aea1eb18b36718aec140af93cb2189ef64fca51f367b09ba8ccb",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "FinMind|8ad8f17cc21531e270a4bcc1": {
+      "source": "FinMind",
+      "period": "2010-06",
+      "raw_sha256": "0e8a698b689028800e652d92fdb563dae62575a985214a73dde1353ef4a8064a",
+      "checker_signature": "95cd5c01edd5aea1eb18b36718aec140af93cb2189ef64fca51f367b09ba8ccb",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "MOPS|0e0c83582b744583bd6d740b": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "33f0185acb89d4c96ad7e0365d94a711e6811189585524514a85d512e45642a2",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|11844c72c52c13cd03c6d74a": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "48e17f8d9c29c79e57374c315a17b018f5dd85a44e2e01c2bb4904a79453c9ae",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|3b55c585ecbf5e312a0f3364": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "a73556c2dbf768016d1800cbd70e44d8e5f4b7aa26ffc4c462bcb4776ae44591",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|41594d89b4eeaa08d7365f04": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "9b677d633f8cc39a055785062c81c07a875624c1bc2a2af1a4a22cf1850edd84",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|6a392115ef60d957fff056c1": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "45479f32dd67394ec53abe5cfa2fcdd40b286edd7802b05899680081f6f95555",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|76249d5bd22bc4d064f5a20a": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "2d86d194f8879b255390a8778056368b55ff7684cb2ad12c5d04a3bb21f96542",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|7f51be6b81cd761014f24f41": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "f9872175b92d68fade2047ab5a7805d8b0fdd62eb2f83ac7cde7592a61a62c05",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|8785725c8486a3d27b1cdf8b": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "582e3e18a17358b2c679609d04956199d0d83db03d843b77f0e104a5e2acd48f",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|961bcc2de1807b0f267f8cc4": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "d7d26ba186abb85ce3b763395e905ef5f6c7c244e7630180e3ee31a46a5ac92f",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|9775e968e8fddb02b3afcd45": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "f0f7ab0ffd88104432d4b7eefa3c5d4a32ae3fac57393b160f67ffacd65372aa",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|a98e8bde74eb0a1a0a587bfd": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "a8a5eccf12c8ab10d118dbf535f006754ad814d22c3a612f4e73023b10066309",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|eb62766f6759a28593b60e25": {
+      "source": "MOPS",
+      "period": "2001-03-31",
+      "raw_sha256": "fc0e742194183aa57b9ed6b9ee9442cd2ed64acf29e33bb8f2e6051c4f3e8fe1",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|0c9d66726e9fbbffbf1c9da3": {
+      "source": "MOPS",
+      "period": "2005-09-30",
+      "raw_sha256": "56f61c2fe24f30dc7882d016468ec85fe2565e51871e6b2dcbf4d78bda1a668c",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|14386a6360b3f552c8582707": {
+      "source": "MOPS",
+      "period": "2005-09-30",
+      "raw_sha256": "cce0576212b68b81d8c072f69b510936482e4710d53895fd484018e9d4b6f364",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|6337a598ddf56080747ef0be": {
+      "source": "MOPS",
+      "period": "2005-09-30",
+      "raw_sha256": "a9299cde64625e592bd0a9e8d07c39988d07a13e31696e5494420db5abe1e6c8",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|7cc7f77de7c64397d83d56db": {
+      "source": "MOPS",
+      "period": "2005-09-30",
+      "raw_sha256": "b4f7fe8f3fc39832681f77ec9fd80c2ac5d3bd29819939765a575f64e6c98c38",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|c746d7ed6162503b1b845246": {
+      "source": "MOPS",
+      "period": "2005-09-30",
+      "raw_sha256": "7c03b1575fbe20f9faa30f4fbf92ab7f4d0ec4c5e0e1c703d75b1d78937bdfdd",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|d1870f6cbf4d22d2f1355dfd": {
+      "source": "MOPS",
+      "period": "2005-09-30",
+      "raw_sha256": "c18b863740382adc07feccd35586cd41af3e142b972f8818839c73e9251e31dc",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "MOPS|bf6e69b7850cc5eec04a5bfc": {
+      "source": "MOPS",
+      "period": "2013-03-31",
+      "raw_sha256": "1450e53a2d194fca238933a37b8cc34e1dfc7ad2e864c3c00ea9acfb8cb2a707",
+      "checker_signature": "90cde646edff49627f0c2e4171c6cf5e766da526108147a69fd6a367e9b40121",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "NDC|2000-05": {
+      "source": "NDC",
+      "period": "2000-05",
+      "raw_sha256": "9e61e74b29f8ac3f758dee9c94a235ff16726b328839a480057adb54e8699c95",
+      "checker_signature": "401f1ddf4019264d6bcdfb9ee055e8ea6ff73c8772af1a52c0e6beafb72bde2c",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "NDC|2000-06": {
+      "source": "NDC",
+      "period": "2000-06",
+      "raw_sha256": "534735ba14b9aecbc8ef503b6d261312c51fd1dae815c2c041840c0ae8dd5721",
+      "checker_signature": "401f1ddf4019264d6bcdfb9ee055e8ea6ff73c8772af1a52c0e6beafb72bde2c",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "NDC|2026-08": {
+      "source": "NDC",
+      "period": "2026-08",
+      "raw_sha256": "a18c0c5901296a51d5f7a011ded97b140422da898e0d3b11109147ef53c952ff",
+      "checker_signature": "401f1ddf4019264d6bcdfb9ee055e8ea6ff73c8772af1a52c0e6beafb72bde2c",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TAIFEX|ANNUAL|futures|2002": {
+      "source": "TAIFEX",
+      "period": "2002-01-01",
+      "raw_sha256": "e439c786c4edb26a5ecc3b2b94a9fa8c068c4af0291014fa1869ff517edaee11",
+      "checker_signature": "8dce1cc8f48a9fa2248c440e87e1aed341ae41c367714834b319de39e002aea4",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TAIFEX|ANNUAL|options|2002": {
+      "source": "TAIFEX",
+      "period": "2002-01-01",
+      "raw_sha256": "1d3c92148106a2e7b28e0f4a44be69fbdb9e6676968632f95eea7730d8f2ef1e",
+      "checker_signature": "8dce1cc8f48a9fa2248c440e87e1aed341ae41c367714834b319de39e002aea4",
+      "status": "CONTENT_BLOCKED",
+      "repaired_content_blocker": false
+    },
+    "TAIFEX|HISTORY|largeTraderFutDown|2006-05": {
+      "source": "TAIFEX",
+      "period": "2006-05-01",
+      "raw_sha256": "0241fb07ba2822752ee79ea63db009ce82d3edad95e0b9cfeec58d90b40a8214",
+      "checker_signature": "8dce1cc8f48a9fa2248c440e87e1aed341ae41c367714834b319de39e002aea4",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TAIFEX|HISTORY|combinationOrderDown|2017-04": {
+      "source": "TAIFEX",
+      "period": "2017-04-01",
+      "raw_sha256": "bba52a80ef401f6ef22bfeac234e483a0351f9db735d9d9d367d504a01a9cd7d",
+      "checker_signature": "8dce1cc8f48a9fa2248c440e87e1aed341ae41c367714834b319de39e002aea4",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TAIFEX|HISTORY|dlLargeTraderOptDown|2017-05": {
+      "source": "TAIFEX",
+      "period": "2017-05-01",
+      "raw_sha256": "721cbcd74e22ac698d59a8eceeb8f1c278165b6ece063da7f68497838c1aacdd",
+      "checker_signature": "8dce1cc8f48a9fa2248c440e87e1aed341ae41c367714834b319de39e002aea4",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TAIFEX|HISTORY|dlBargainOrderDown|2017-11": {
+      "source": "TAIFEX",
+      "period": "2017-11-01",
+      "raw_sha256": "7732a22c55b9a4bb48212e278e44e51a4db541cdc6e7ba5a6b5fd51506e1d9c4",
+      "checker_signature": "8dce1cc8f48a9fa2248c440e87e1aed341ae41c367714834b319de39e002aea4",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TAIFEX|MARKET|futures|2026-06": {
+      "source": "TAIFEX",
+      "period": "2026-06-01",
+      "raw_sha256": "6822b3eeaa831c072055e3ae9b010fd2b63e3e0e9cb7205e8074610b337f72b8",
+      "checker_signature": "8dce1cc8f48a9fa2248c440e87e1aed341ae41c367714834b319de39e002aea4",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251031|000815": {
+      "source": "TDCC",
+      "period": "2025-10-31",
+      "raw_sha256": "fc942e6b5fe642c701b9b17872b15c26c057668adbe628e1652a399bcf987afc",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251031|000856": {
+      "source": "TDCC",
+      "period": "2025-10-31",
+      "raw_sha256": "690b2ec9a3581cf6e89dc01267062619cd4ef82dfbd1ee43bad2d5eaf19073f2",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251031|1612": {
+      "source": "TDCC",
+      "period": "2025-10-31",
+      "raw_sha256": "70fda35bb248f858b3a04964c55b9abe685bdc3d0bb9abd1dfe1b1ac6e277022",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251031|2637": {
+      "source": "TDCC",
+      "period": "2025-10-31",
+      "raw_sha256": "11ddd33f9c1295fb61a60fd7ac740fc91a583c68f34418d6f40c5de2b8286e10",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251031|7806": {
+      "source": "TDCC",
+      "period": "2025-10-31",
+      "raw_sha256": "130dc01b715d5ef716910c9a4c7cd961696bcdabf9bc01275783b8b857336343",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251031|YJH5": {
+      "source": "TDCC",
+      "period": "2025-10-31",
+      "raw_sha256": "0d9938a5818ee5c09b7615a97cdf4795c87477e4d1a86e7cd2558e4e1f750af0",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251107|8927": {
+      "source": "TDCC",
+      "period": "2025-11-07",
+      "raw_sha256": "a9b8f8a97ab8217644f9066ed46826d2a4ec160ceca232e0772b73ccdbc8da3b",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251107|YJR4": {
+      "source": "TDCC",
+      "period": "2025-11-07",
+      "raw_sha256": "0992d8562f467b8ad7b9c44b60159d056e29fce762b65afe29628820e8ecb1fa",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251107|YY0037": {
+      "source": "TDCC",
+      "period": "2025-11-07",
+      "raw_sha256": "3c223fc0f219f3d0acb2123ce421c2e03ec6793811a55b407935ea7d9319be35",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251114|6471": {
+      "source": "TDCC",
+      "period": "2025-11-14",
+      "raw_sha256": "b7deffce0303d5515fdffa93ef1d2d8174deaef6dc9281857926b8081bee6775",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20251114|6818": {
+      "source": "TDCC",
+      "period": "2025-11-14",
+      "raw_sha256": "97333372bfe7fbf1482358ad4ecdd4724d3718d532e0f569077e85457ba32de7",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20261002|3530": {
+      "source": "TDCC",
+      "period": "2026-10-02",
+      "raw_sha256": "b3c0ac3aa173cd6b56b4c418b1f8236ae858fbe69c37469845631ad3b6ae666f",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20261002|6984": {
+      "source": "TDCC",
+      "period": "2026-10-02",
+      "raw_sha256": "65cc6eef1ec2e35c542346d8e79d8559c310c911340d98fb86e52b31af85300c",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20261002|YFQ1": {
+      "source": "TDCC",
+      "period": "2026-10-02",
+      "raw_sha256": "e0048af23764e542f688e2f382c41961c203750d2fceedb930b26fa5d0cc358d",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20261002|YKJ1": {
+      "source": "TDCC",
+      "period": "2026-10-02",
+      "raw_sha256": "264731f76f7bc1fb876d522a12bbe28b31a65e6a6838da93492485de5816adff",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20261008|00639": {
+      "source": "TDCC",
+      "period": "2026-10-08",
+      "raw_sha256": "8466d12ee55f4e577763b30e830923e1c9493a460976262e74cb74e11a553552",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20261008|3516": {
+      "source": "TDCC",
+      "period": "2026-10-08",
+      "raw_sha256": "7bb6bc7198bc1c2144c9360138b568804725f3b693a602190d274abd52e9e43d",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20261008|4994": {
+      "source": "TDCC",
+      "period": "2026-10-08",
+      "raw_sha256": "c3fcc02859e34dc57e3d5c3d226cc5383b55e0cc3648c4f07c8f1c0c6381fe55",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TDCC|20261008|8281": {
+      "source": "TDCC",
+      "period": "2026-10-08",
+      "raw_sha256": "609a790a587c016282f88ab75da9039d7e19b797232105f85f863f5410071ed7",
+      "checker_signature": "85b7ac9dc818b43dd58039c07d2bbbbc6df368bff9431dcd30adc6b5bdbc10a0",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|2963676aaeffe0364c40da24": {
+      "source": "TPEx",
+      "period": "2007-01-03",
+      "raw_sha256": "101fb449498363155a1f29556923da4630797c2ee8ef9c76dbf815b9e5819b43",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|2ae97845783c18b952d9a3b2": {
+      "source": "TPEx",
+      "period": "2007-01-30",
+      "raw_sha256": "059e22341c7a54356ff97ef2584c182450e3cd2a286c3193eacfe788b523ad5e",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|60325c5de752b4955e35180f": {
+      "source": "TPEx",
+      "period": "2007-01-30",
+      "raw_sha256": "ebca611182fc37c0042e54f1a2b65fde9e48e236084201cfb5dd5ac2c8dcf405",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|f1e10775983caa0ccd9da736": {
+      "source": "TPEx",
+      "period": "2007-01-03",
+      "raw_sha256": "6feb1c95e9ed795188e74d4b60b6e40fea98abf7e61c2c6fba9f570fc9c9365e",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|091a6d728d2d8f470fa5567d": {
+      "source": "TPEx",
+      "period": "2007-05-23",
+      "raw_sha256": "5fc6637c97340ad43a5fd132fa6493d15b36b87a15503e6792a21eea2526ed3d",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|6f70f4ca944bf352aec4a196": {
+      "source": "TPEx",
+      "period": "2007-05-23",
+      "raw_sha256": "b5ca89680c49814a1c63a9a14bb3098ca39aa355b820d09801e14f25bf852def",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|db7252a866630294a9adf04f": {
+      "source": "TPEx",
+      "period": "2007-05-23",
+      "raw_sha256": "b6ea147d6ed99da17128dec3a5be3d6cf7ab2dba4a34880ee904ed153e560db2",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|31b30e092468168cca96a9d0": {
+      "source": "TPEx",
+      "period": "2009-03-31",
+      "raw_sha256": "4d37a8dcf3488def856cd4130519ffeefb8f3802ed9fd95d8ddb8afc6fc1bfce",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|6bd449ab12e7258c655b5bbd": {
+      "source": "TPEx",
+      "period": "2009-03-31",
+      "raw_sha256": "988f5d89c0a43adba253baf0b6f22dc50f197f06ff2de8ba1b0cd99395443b3c",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|807b36efb7f3dff5fe683ade": {
+      "source": "TPEx",
+      "period": "2009-03-31",
+      "raw_sha256": "77093f6f4b96541b77785e24097ff8c679c5bc374044dae2bbb168637bce45f0",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|c082cf8e699d820a1230f017": {
+      "source": "TPEx",
+      "period": "2009-03-31",
+      "raw_sha256": "0943e78fb713bbe58414098b17b0d432ce0e7047a8e99a29c3a7d798cf9e3920",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|7693fb4a3f1d3d9c67ade944": {
+      "source": "TPEx",
+      "period": "2012-02-06",
+      "raw_sha256": "281f5a647377b461707a3103292fd194d366e95419b03f78c5a1c82626242681",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|af5d9e55e6e01ab98f7b92cd": {
+      "source": "TPEx",
+      "period": "2012-02-06",
+      "raw_sha256": "c4dbc21a017a0916fc4054d8af738dd655aeaa3adf155acadc9cd6d0900e5586",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|ee606256d0d82a609c06c335": {
+      "source": "TPEx",
+      "period": "2012-02-06",
+      "raw_sha256": "1fa65dcb3053d769f1f17d96e530de3905a6829fb7a370553393992f117147c6",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|99deb4cc55d7c39d9af1464a": {
+      "source": "TPEx",
+      "period": "2012-10-22",
+      "raw_sha256": "f67efc79e51bf9d2fcd88f47e19ac177d6ccebecbea3a3ef0ba9839257eb8590",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|c7f6d22b5b90f547361c66bb": {
+      "source": "TPEx",
+      "period": "2013-05-17",
+      "raw_sha256": "b3bf8b9ce0e716d151a7308c6bfab8c1ca4a73b89dfadac77fc73a8a056da90b",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|b77fb80483198cf63fbe6ac9": {
+      "source": "TPEx",
+      "period": "2013-10-16",
+      "raw_sha256": "f6f39f378cab119083f7a3656c29b23c34bb960b98e8ca1885cf9b92bd4fa281",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|1f803528c8ecf6ec9975be90": {
+      "source": "TPEx",
+      "period": "2014-01-09",
+      "raw_sha256": "72b3a2fbbde806ae89a46692724b1f553c3cf366d9c46e305a9fb3dc8868e617",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|48d327549b55e0ef8bd9a791": {
+      "source": "TPEx",
+      "period": "2022-09-21",
+      "raw_sha256": "1154a5250ea94bcd1119c09994b1fb826496a332553d9ee49fd4fc594385b92f",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|53dc67afa3944806d0870447": {
+      "source": "TPEx",
+      "period": "2022-09-20",
+      "raw_sha256": "8a199762a81c2d779abdbe1c3cb2a03f274ac0f340a46c9acef5cd9fbc35595c",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|6d09f383d5ddc524a7bc2957": {
+      "source": "TPEx",
+      "period": "2022-09-20",
+      "raw_sha256": "ae9b7275dfcc52bb95a49fb2a9a4ff8a7bb8ef6eef375b68bfbbfefa85600309",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|b01892d9193a3c3d66aa3054": {
+      "source": "TPEx",
+      "period": "2022-09-21",
+      "raw_sha256": "9d07076d64353cdb55ff369946ff09d7822fc6b368659e3e247dd61ab98fb432",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|f57ce6c5f819d0a950cbb20c": {
+      "source": "TPEx",
+      "period": "2022-09-21",
+      "raw_sha256": "96154b700253cb48ae1bd8192abae22862068c311cab7f58fe76f10ca705c46b",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|8ba5255b9f5e4cd6bebee18d": {
+      "source": "TPEx",
+      "period": "2024-01-11",
+      "raw_sha256": "1053e088688ed7646217339ed6ae0ccc3a77d47b4ad910f731fc4dffd766d50f",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|28bc7d1456ba7608ce02210c": {
+      "source": "TPEx",
+      "period": "2024-04-11",
+      "raw_sha256": "3f27f61bce9e275e889b8a7f9b6218cc64cf6655e1a17a1ebb8cfd61fd907a48",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|e6000e973b066be340afa7b6": {
+      "source": "TPEx",
+      "period": "2024-06-13",
+      "raw_sha256": "2b819ad27802896af9650206e7419a0a1bbf491526c82d3875facb241d56ac06",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TPEx|67584853a320786cdc5bfbc0": {
+      "source": "TPEx",
+      "period": "2024-07-04",
+      "raw_sha256": "e2c263e018084e4f10e47cac33ebfeec8969a0250a3d259c6d80f34f79fd034b",
+      "checker_signature": "30f50f1958b4da203e1e18651fa66b86e38e0cf41ae09c4fe507cd032bf95372",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|7fcd6ffaf5248db0c9a14b18": {
+      "source": "TWSE",
+      "period": "2001-11-01",
+      "raw_sha256": "30b9d54a091b9cc3731cceb81eb7fb502e69f0076532762dd094a3a7986c5f9d",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|06d58aec3de4698665c083d8": {
+      "source": "TWSE",
+      "period": "2007-01-19",
+      "raw_sha256": "d9a4fb2938caa2f22eaa5bb88a9f69e1beb12826e211bad66d105451d14e906b",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|cf7ecef1dbf48130dcd736aa": {
+      "source": "TWSE",
+      "period": "2007-01-18",
+      "raw_sha256": "7247603e7f4cc9c17442a534835ec78f59bf3e656d6f3affc4523ecd6213c044",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|d09343cc5490b403e41029ec": {
+      "source": "TWSE",
+      "period": "2007-01-18",
+      "raw_sha256": "79a9e6e4e16ffd9e03af8ed69437ea9a62d74a8da2e338eb160026bbd4c53d89",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|d7ace535399c62ec3a897e48": {
+      "source": "TWSE",
+      "period": "2007-01-19",
+      "raw_sha256": "dcfee4450988372e09d4ed568313953705ebb7d7402dd3a8c6d16858cdae5b9b",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|e2d6411e9bc90736eb342c21": {
+      "source": "TWSE",
+      "period": "2007-01-19",
+      "raw_sha256": "64f5329b65b67e7d34a313096252ee3882ae39e9a95f2f364b7e7e3a5bc4d6df",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|2ad786261e0c00f6c75218f7": {
+      "source": "TWSE",
+      "period": "2010-10-11",
+      "raw_sha256": "9f5daef2df2c00b956eb61a24404199e8ba27fb1a786e57e30b9b54a83ad01d4",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|7e638d83c672e01e52e46310": {
+      "source": "TWSE",
+      "period": "2010-10-11",
+      "raw_sha256": "70cedadc11b6bebb053eda46bb0700ea77dde31ce059167b976485a6da0c5d26",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|99c8d59a0d938142f49b5f52": {
+      "source": "TWSE",
+      "period": "2010-10-11",
+      "raw_sha256": "86d5586bcbf5a1e2317b9290069b542343bbb2680999d5a5ca93cf105fa133e6",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|cf6e1eeb6d9024ecf708574d": {
+      "source": "TWSE",
+      "period": "2010-10-11",
+      "raw_sha256": "f79111d5688a6ca3edd62815cc9745bc0146ed28b83f4f611dd5f41d858646af",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|e9eb9e59e86ad59561cc3908": {
+      "source": "TWSE",
+      "period": "2010-10-11",
+      "raw_sha256": "5f7e6cacac4b19057115a637b91d59b5636c4a0dcb10f870d24a1c0393933d06",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|1500f570a177c86a23ed225b": {
+      "source": "TWSE",
+      "period": "2011-03-14",
+      "raw_sha256": "3c27932f7520b5b89ac8a5df7214bf9a49b28fa15a45c67f1ac5e8e3921e205f",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|443e605c31bed9dfeac1a917": {
+      "source": "TWSE",
+      "period": "2011-03-14",
+      "raw_sha256": "34ffc29bd2622e7ced967eb32dfc23dab0e7e7f03095c22c356ad458f4c61fd1",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|54e0d7f9eb1fb880011aee3a": {
+      "source": "TWSE",
+      "period": "2011-03-14",
+      "raw_sha256": "aa2185d8ebeb99870af4c209a6e27f1511428889d501c8253eff2fa7e75eddaf",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|92f0d2a65bdc7e7bb558d531": {
+      "source": "TWSE",
+      "period": "2011-03-14",
+      "raw_sha256": "98c3fa7b5dc3cc5186f8d6ee48db7567d61d5fe7f81d4542f68e535f81375a31",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|cd7682e33c5cdce7054dabba": {
+      "source": "TWSE",
+      "period": "2011-03-14",
+      "raw_sha256": "4a0f95878b8cccb105d9458fdb1a5429036c04cb7b6d623aa394530647a0cc9b",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|7b52304be8b9ea734e300a34": {
+      "source": "TWSE",
+      "period": "2013-09-03",
+      "raw_sha256": "ff1c7a97fd4c58b9ad6e9314f82fb335592ff125bb773d676103a989db054153",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|19b927a66ad10b723b80adf3": {
+      "source": "TWSE",
+      "period": "2014-12-12",
+      "raw_sha256": "9c52b162fdd2753bed42143908565ce4bfbd935dfc9178a15fb11c57832a4427",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|61313aee65584739a9c6cc69": {
+      "source": "TWSE",
+      "period": "2014-12-12",
+      "raw_sha256": "85acb0e23277c53b07a416161840e8020b1f530e278bb7a6ab34c8f322ba8e20",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|028ca2098a838f955a54ab5f": {
+      "source": "TWSE",
+      "period": "2020-08-28",
+      "raw_sha256": "04e4e02b54be9f873cea63feae8d619853853ec1d9eb2f8ec446daacb79fcd8a",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|234d5012e5238ef4ad14b606": {
+      "source": "TWSE",
+      "period": "2020-08-28",
+      "raw_sha256": "cdb6b55c766d24dffe4ca21987453ee53fd49f728624052b8b02b0589cd8cd71",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|3cf99c4bbe6867b2a1603f4e": {
+      "source": "TWSE",
+      "period": "2020-08-28",
+      "raw_sha256": "a1b503bdefcaf58a3ca61aa5887cd19c03d29684552b978a92990d853afbedeb",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|92c5c385695d91a5183a7a55": {
+      "source": "TWSE",
+      "period": "2020-08-28",
+      "raw_sha256": "e4585d63e966968d839438e65c3c28010062515657b262e489101bde456ec4e0",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|d1636a1da4bc4532c273c62d": {
+      "source": "TWSE",
+      "period": "2020-08-28",
+      "raw_sha256": "73390eab0d44f60460bda2d4fa3c99c56fd1e1bd6aecd9e17eaf58a223b60eaa",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|d8b09be3942a9fc2d649ff83": {
+      "source": "TWSE",
+      "period": "2020-08-28",
+      "raw_sha256": "243e287678f14f0de64c381bb96dc0ffeefb6a9679f0e99e93069c1d1fc5ab99",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|0ca9d56289db76c228f7b911": {
+      "source": "TWSE",
+      "period": "2020-12-10",
+      "raw_sha256": "c4522c279ccc805d544a79101e2b9542c091ce39f13a79880ff72e8d16476218",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|1b14b01b1a71c02ef8ff72e6": {
+      "source": "TWSE",
+      "period": "2020-12-10",
+      "raw_sha256": "a72a93158f39a050f60057a30fd71f91eda2a07208031d5425616b52fbaa2b6e",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|1f87d7df0c313dbe8c81914f": {
+      "source": "TWSE",
+      "period": "2020-12-10",
+      "raw_sha256": "aea94181ddfb185bb2f0b8c93c4a9ead87e8bb0142dc7a2108b61bd8d1152e50",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|bb6fe4a18b637cfa85079281": {
+      "source": "TWSE",
+      "period": "2020-12-10",
+      "raw_sha256": "17ab6cb2fce54f9d8e2e5c8eb470b20ad4e9faff8059041ec1706d87bdfacf03",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|bd75115abaf3141eae9be305": {
+      "source": "TWSE",
+      "period": "2020-12-10",
+      "raw_sha256": "707d895fb7146bf1687c3e32ef1414284ec8d9cd91ee2355b81e70e4d5b26e10",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|cd2eb5ca6168db2c1fbc29ed": {
+      "source": "TWSE",
+      "period": "2020-12-10",
+      "raw_sha256": "b9bac7433e82d50a2041d0af46b67e1cdedba0f5dbce9d102e85609520cd6fff",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|7770d5a614f45b53609b2b78": {
+      "source": "TWSE",
+      "period": "2024-02-15",
+      "raw_sha256": "d1073b3f814b870c4511c5661bca45a02b976d0eac3245841f218de5645b2a81",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|cd7bd7d901bbf2bc9bef5cb2": {
+      "source": "TWSE",
+      "period": "2024-06-12",
+      "raw_sha256": "0e74963a1e49eb158432b1b05943b48b722d4fd06169f91f4998e3115a1e9657",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    },
+    "TWSE|3f0d82033713caa2b314b0c6": {
+      "source": "TWSE",
+      "period": "2025-06-09",
+      "raw_sha256": "3ca32dded44fdfa3c35d99dbcb54518c27abdea6757a08828f29824669916b2f",
+      "checker_signature": "fbeff399304bb470821e4f5cf2846c7bf55a84b47546ce1ace5d20bda9f60f67",
+      "status": "REMAINING_RULES_OPEN",
+      "repaired_content_blocker": false
+    }
+  },
+  "groups": [
+    {
+      "id": "R01",
+      "name": "母體與全量原件",
+      "required_rules": 6,
+      "completed_rules": 0,
+      "pending_rules": 6,
+      "partial_evidence_records": 0,
+      "remaining": "核准母體與最新全量遠端收據對帳尚缺"
+    },
+    {
+      "id": "R02",
+      "name": "歷史證券日期主鍵",
+      "required_rules": 4,
+      "completed_rules": 0,
+      "pending_rules": 4,
+      "partial_evidence_records": 3,
+      "remaining": "全範圍歷史證券有效期間及日曆證據未齊"
+    },
+    {
+      "id": "R03",
+      "name": "欄位單位契約",
+      "required_rules": 5,
+      "completed_rules": 0,
+      "pending_rules": 5,
+      "partial_evidence_records": 0,
+      "remaining": "全資料集欄位單位契約與適用性未齊"
+    },
+    {
+      "id": "R04",
+      "name": "完整數值覆蓋",
+      "required_rules": 10,
+      "completed_rules": 0,
+      "pending_rules": 10,
+      "partial_evidence_records": 94,
+      "remaining": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理"
+    },
+    {
+      "id": "R05",
+      "name": "獨立跨來源比對",
+      "required_rules": 2,
+      "completed_rules": 0,
+      "pending_rules": 2,
+      "partial_evidence_records": 0,
+      "remaining": "跨來源結果僅診斷，完整範圍及上游獨立性未驗"
+    },
+    {
+      "id": "R06",
+      "name": "公告PIT與版本",
+      "required_rules": 3,
+      "completed_rules": 0,
+      "pending_rules": 3,
+      "partial_evidence_records": 0,
+      "remaining": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊"
+    },
+    {
+      "id": "R07",
+      "name": "真實發布與下游",
+      "required_rules": 3,
+      "completed_rules": 0,
+      "pending_rules": 3,
+      "partial_evidence_records": 0,
+      "remaining": "前置實際證據不足；正式發布、下游及回復未執行"
+    },
+    {
+      "id": "R08",
+      "name": "全量復原與時效",
+      "required_rules": 4,
+      "completed_rules": 0,
+      "pending_rules": 4,
+      "partial_evidence_records": 94,
+      "remaining": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收"
+    }
+  ],
+  "definitions": {
+    "checked": "已執行部分內容檢查，包含仍有阻擋者；可與待處理重疊",
+    "repaired": "先前內容阻擋已重驗解除；仍可能有其他規則待完成",
+    "exceptions": "僅計有查證證據且已核准的例外；目前未接入例外核准器",
+    "pending": "尚未整項結案；含已部分檢查與尚未檢查，不等於全部都是錯誤"
+  },
+  "formal_release": "BLOCKED",
+  "approved_global_denominator": false,
+  "checked_date": "2026-10-28",
+  "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40708255709"
+}
