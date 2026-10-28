@@ -33,7 +33,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_eight_group_live_boundaries.py' -v
       - name: Read existing metadata checkpoint without modifying it
         run: python -m scripts.v093_acceptance_state restore --lane inventory --directory metadata-checkpoint --lease metadata-lease.json
-      - name: Bind the 87 original samples and available NDC/price samples to retained RAW
+      - name: Bind baseline evidence and expand into unread retained packages
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -71,12 +71,32 @@ jobs:
               if fid in packages and expected:assert packages[fid].get('expected_sha256') in (None,expected)
               entry=packages.setdefault(fid,{'expected_sha256':expected})
               if expected:entry['expected_sha256']=expected
+          # Broaden this audit instead of rerunning only the same 89 units.
+          # Use metadata solely to budget reads, never to certify content.
+          checkpoint=load(Path('metadata-checkpoint/inventory.json.gz'))
+          metadata_by_id=checkpoint['files'];baseline_ids=set(packages)
+          expansion=[];source_budget={}
+          for path in sorted(Path('reports/raw-register/20261027_v1/units').glob('*_units.csv.gz')):
+              with gzip.open(path,'rt',encoding='utf-8-sig',newline='') as stream:
+                  for row in csv.DictReader(stream):
+                      if row['已下載']!='1' or len(expansion)>=12:continue
+                      fid=row['原件參照'].partition('/')[0];source=row['來源']
+                      if fid in packages or source_budget.get(source,0)>=2:continue
+                      if not re.fullmatch('[A-Za-z0-9_-]+',fid):continue
+                      size=int(metadata_by_id.get(fid,{}).get('size',0))
+                      if not 0<size<=4*1024*1024:continue
+                      packages[fid]={'expected_sha256':None,'expansion':True}
+                      expansion.append(dict(file_id=fid,source=source,period=row['期間'],dataset=row['資料集']))
+                      source_budget[source]=source_budget.get(source,0)+1
           assert len(packages)<=64
-          api=service();total=0;failures={}
+          api=service();total=0;failures={};skipped_expansion={}
           for fid,entry in packages.items():
               try:
                   metadata=api.files().get(fileId=fid,fields='id,size,md5Checksum,version',supportsAllDrives=True).execute(num_retries=0)
-                  size=int(metadata.get('size',0));assert 0<size<=16*1024*1024 and total+size<=64*1024*1024
+                  size=int(metadata.get('size',0))
+                  if entry.get('expansion') and not (0<size<=4*1024*1024 and total+size<=64*1024*1024):
+                      skipped_expansion[fid]='LIVE_SIZE_EXCEEDS_READ_BUDGET';continue
+                  assert 0<size<=16*1024*1024 and total+size<=64*1024*1024
                   stream=io.BytesIO();reader=MediaIoBaseDownload(stream,api.files().get_media(fileId=fid),chunksize=1024*1024);done=False
                   while not done:
                       _,done=reader.next_chunk(num_retries=0);assert stream.tell()<=size
@@ -91,7 +111,7 @@ jobs:
           assert checkpoint['phase']=='DONE'
           remote=dict(schema=checkpoint['schema'],phase=checkpoint['phase'],started_at=checkpoint['started_at'],updated_at=checkpoint['updated_at'],root=checkpoint['root'],enumeration_complete=True,atomic_point_in_time_snapshot=False,files=list(checkpoint['files'].values()),historical_universe_approved=False,freshness_revalidated_this_run=False)
           (root/'remote-snapshot.json').write_text(json.dumps(remote))
-          prepared=dict(original_samples=len(seed),extra_samples=[{k:r[k] for k in ('來源','資料集','單元ID','期間','原件參照','RAW_SHA256')} for r in extra.values()],packages=packages,package_read_failures=failures,total_readback_bytes=total,register_sha256=manifest,source_market_downloads=0,production_writes=0)
+          prepared=dict(expansion_packages=expansion,skipped_expansion=skipped_expansion,baseline_package_count=len(baseline_ids),original_samples=len(seed),extra_samples=[{k:r[k] for k in ('來源','資料集','單元ID','期間','原件參照','RAW_SHA256')} for r in extra.values()],packages=packages,package_read_failures=failures,total_readback_bytes=total,register_sha256=manifest,source_market_downloads=0,production_writes=0)
           (root/'preparation.json').write_text(json.dumps(prepared,ensure_ascii=False,indent=2)+'\n')
           print(json.dumps({'original_samples':len(seed),'extra_sources':list(extra),'packages_read':sum('readback_sha256' in e for e in packages.values()),'package_read_failures':failures,'bytes':total}))
           PY
@@ -120,7 +140,7 @@ jobs:
           assert first['content_counts'].get('new_content_units',0)>0
           if selected.name=='second':
               assert second['content_counts'].get('resumed_content_units',0)>=first['content_counts']['new_content_units']
-          report={'audit_round_complete':True,'passes_executed':2 if selected.name=='second' else 1,'full_acceptance_complete':False,'next_action':'Advance unread RAW or change missing evidence/checkers; do not repeat unchanged samples to claim progress','eight_groups':second['groups'],'rule_counts':second['rule_counts'],'first_content_counts':first['content_counts'],'second_content_counts':second['content_counts'],'source_evidence_counts':dict(collections.Counter(e['source'] for e in evidence)),'extra_sample_sources':[e['來源'] for e in prepared['extra_samples']],'package_read_failures':prepared['package_read_failures'],'recovery':{k:second['recovery'][k] for k in ('result','units_verified','errors','scope','full_database_restore_verified','remote_backup_rechecked')},'formal_release':second['formal_release'],'completed_groups':second['completed_groups']}
+          report={'expansion_packages':prepared['expansion_packages'],'skipped_expansion':prepared['skipped_expansion'],'audit_round_complete':True,'passes_executed':2 if selected.name=='second' else 1,'full_acceptance_complete':False,'next_action':'Advance unread RAW or change missing evidence/checkers; do not repeat unchanged samples to claim progress','eight_groups':second['groups'],'rule_counts':second['rule_counts'],'first_content_counts':first['content_counts'],'second_content_counts':second['content_counts'],'source_evidence_counts':dict(collections.Counter(e['source'] for e in evidence)),'extra_sample_sources':[e['來源'] for e in prepared['extra_samples']],'package_read_failures':prepared['package_read_failures'],'recovery':{k:second['recovery'][k] for k in ('result','units_verified','errors','scope','full_database_restore_verified','remote_backup_rechecked')},'formal_release':second['formal_release'],'completed_groups':second['completed_groups']}
           Path('results/eight-group-result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as stream:stream.write((selected/'README.md').read_text())
           print(json.dumps(report,ensure_ascii=False))
