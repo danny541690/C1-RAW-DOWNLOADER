@@ -1,0 +1,103 @@
+{
+  "checked_at_taipei": "2026-10-28T23:22:09.563196+08:00",
+  "readiness": "CANDIDATE_READONLY_PIPELINE_VERIFIED_NOT_DEPLOYED",
+  "runtime_commit": "2b5a7fbe08a06772e481d646c513e62ad8d77429",
+  "local_tests_passed": 58,
+  "cloud_regression": {
+    "id": 40714850418,
+    "conclusion": "success"
+  },
+  "live_pipeline": {
+    "id": 40714834207,
+    "conclusion": "success",
+    "summary": {
+      "schema": "JARVIS_ACCEPTANCE_SCHEDULER_SUMMARY_V1",
+      "pipeline_status": "PARTIAL_EVIDENCE_NOT_FULL_ACCEPTANCE",
+      "progress": {
+        "required_items": 99700,
+        "checked_items": 49,
+        "partial_content_items": 43,
+        "content_blocked_items": 6,
+        "repaired_content_blockers": 3,
+        "confirmed_exception_items": 0,
+        "completed_items": 0,
+        "pending_items": 99700,
+        "unchecked_items": 99651
+      },
+      "progress_available_workers": 3,
+      "errors": [],
+      "missing_lanes": [],
+      "reported_workers": 3,
+      "inspected_this_run": 49,
+      "lanes": {
+        "inventory": {
+          "status": "INVENTORY_COMPLETE",
+          "inspected": 0,
+          "packages": 0,
+          "file_metadata_records": 71645
+        },
+        "worker-0": {
+          "status": "SLICE_COMPLETE_NOT_FULL_ACCEPTANCE",
+          "inspected": 15,
+          "packages": 8,
+          "bytes": 416766,
+          "reused": 0,
+          "held": 0,
+          "inventory_unmatched": 0
+        },
+        "worker-1": {
+          "status": "SLICE_COMPLETE_NOT_FULL_ACCEPTANCE",
+          "inspected": 21,
+          "packages": 8,
+          "bytes": 858116,
+          "reused": 0,
+          "held": 0,
+          "inventory_unmatched": 0
+        },
+        "worker-2": {
+          "status": "SLICE_COMPLETE_NOT_FULL_ACCEPTANCE",
+          "inspected": 13,
+          "packages": 8,
+          "bytes": 4511250,
+          "reused": 0,
+          "held": 0,
+          "inventory_unmatched": 0
+        }
+      },
+      "full_groups_passed": 0,
+      "approved_scopes": [],
+      "production_writes": 0,
+      "note": "Worker evidence only; no approved historical universe or full eight-group acceptance",
+      "run_id": "40714834207",
+      "run_attempt": "1",
+      "checked_at_taipei": "2026-10-28T23:22:09.563196+08:00",
+      "workflow_sha": "2b5a7fbe08a06772e481d646c513e62ad8d77429",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40714834207"
+    }
+  },
+  "fresh_runner_saved_journal_readback": {
+    "id": 40715568848,
+    "conclusion": "success",
+    "saved_run_id": "40714834207"
+  },
+  "durable_branches": {
+    "inventory": "f17786adfe1680d3f8ad9d795ba50634a8bc313a",
+    "worker-0": "87d9ab06a91b6406d33dc88716e89e93cefd7693",
+    "worker-1": "8f65ce8f5bfd85a0409d50246fb26cf6207b96da",
+    "worker-2": "dd3a4cb279919eb101af98f081bad2a0b320fa35",
+    "reports": "229b1d1e99eb6723eda3e3aaea7f0c59a2ed9c29"
+  },
+  "retention": {
+    "qa_branches": "Git parent history, no configured 30-day artifact expiry",
+    "actions_fallback_artifacts_days": 30
+  },
+  "daily_schedule_enabled": false,
+  "main_merged": false,
+  "formal_data_release": "BLOCKED",
+  "unimplemented": [
+    "approved global universe and full validators",
+    "verified exceptions approval",
+    "reconciliation with external repair receipts"
+  ],
+  "interruption_limit": "Ordinary errors save reports; forced cancellation/platform or network outage resumes from last successful checkpoint, not guaranteed final in-flight step."
+}
