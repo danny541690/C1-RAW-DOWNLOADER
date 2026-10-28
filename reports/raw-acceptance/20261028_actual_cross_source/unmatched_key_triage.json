@@ -1,0 +1,1052 @@
+{
+  "scope": "Only the two retained official September packages; not official historical availability",
+  "unmatched_keys": 115,
+  "reason_counts": {
+    "TWSE": {
+      "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW": 14,
+      "RAW_DAY_PRESENT_CODE_ABSENT": 101
+    },
+    "TPEx": {
+      "RAW_DAY_PRESENT_CODE_ABSENT": 11,
+      "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW": 10,
+      "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE": 94
+    }
+  },
+  "items": [
+    {
+      "date": "2026-09-01",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-01",
+      "code": "3085",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-01",
+      "code": "8047",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-02",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-02",
+      "code": "3095",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-03",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "2067",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "2937",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "3085",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "3095",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "3625",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "3632",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "3710",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "4527",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "4747",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "4806",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "5301",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "5904",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "6167",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "6173",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "6241",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "8047",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "8059",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-04",
+      "code": "8277",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "2067",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "2937",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "3085",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "3095",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "3625",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "3632",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "3710",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "4527",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "4747",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "4806",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "5301",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "5904",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "6167",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "6173",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "6241",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "8047",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "8059",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-08",
+      "code": "8277",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-09",
+      "code": "3085",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "2067",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "2937",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "3085",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "3095",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "3625",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "3632",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "4527",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "4747",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "4806",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "5301",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "5904",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "6167",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "6173",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "6241",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "6461",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-10",
+      "code": "8047",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-14",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-14",
+      "code": "3085",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-14",
+      "code": "3095",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-15",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-15",
+      "code": "4806",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-16",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-16",
+      "code": "8047",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-17",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-18",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "2067",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "2937",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "3085",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "3095",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "3625",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "3632",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "3710",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "4527",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "4747",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "4806",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "5301",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "5904",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "6129",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "6167",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "6173",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "6241",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "6461",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "8047",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "8059",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-22",
+      "code": "8277",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-23",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-23",
+      "code": "2937",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-24",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-24",
+      "code": "2321",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_PRESENT_CODE_ABSENT"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-24",
+      "code": "2937",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "1538",
+      "source_status": {
+        "TWSE": "RAW_CODE_PRESENT_PARSER_OR_FIELD_REVIEW",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "2067",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "2937",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "3085",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "3095",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "3625",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "3632",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "3710",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "4527",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "4747",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "5301",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "5904",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "6129",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "6167",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "6173",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "6241",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "6461",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "8047",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "8059",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    },
+    {
+      "date": "2026-09-29",
+      "code": "8277",
+      "source_status": {
+        "TWSE": "RAW_DAY_PRESENT_CODE_ABSENT",
+        "TPEx": "RAW_DAY_NOT_IN_THIS_MONTH_PACKAGE"
+      },
+      "result": "OPEN_NOT_ABSENCE_CERTIFIED"
+    }
+  ]
+}

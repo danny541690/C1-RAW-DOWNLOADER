@@ -1,0 +1,37 @@
+{
+  "period": "2026-09",
+  "software_tests": {
+    "run": 817,
+    "pass": 817,
+    "fail": 0,
+    "error": 0,
+    "skip": 0
+  },
+  "parser_comparator_bug_fixed": "Accept one through four column-position digits; parser emits unpadded __col_8",
+  "tpex_native_price_aliases": [
+    "開盤",
+    "最高",
+    "最低",
+    "收盤"
+  ],
+  "price_files_reconciled": 37,
+  "finmind_records": 656,
+  "matched_date_code_keys": 541,
+  "diagnostic_field_pairs": 2164,
+  "diagnostic_abs_tolerance": 0.01,
+  "diagnostic_mismatches": 0,
+  "unmatched_date_code_keys": 115,
+  "official_placeholder_vs_finmind_price_keys": 24,
+  "tpex_price_files_not_in_this_package": [
+    "2026-09-04",
+    "2026-09-08",
+    "2026-09-10",
+    "2026-09-22",
+    "2026-09-29"
+  ],
+  "independent_numeric_verified": false,
+  "unit_contract_verified": false,
+  "pit_verified": false,
+  "formal_release": "BLOCKED",
+  "approved_scopes": []
+}
