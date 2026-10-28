@@ -1,0 +1,66 @@
+{
+  "new_unit_count": 283,
+  "by_source": [
+    {
+      "source": "FinMind",
+      "cumulative_units": 2,
+      "new_units": 1,
+      "rows_in_new_units": 22,
+      "new_financial_cells": 0
+    },
+    {
+      "source": "MOPS",
+      "cumulative_units": 11,
+      "new_units": 6,
+      "rows_in_new_units": 0,
+      "new_financial_cells": 5947
+    },
+    {
+      "source": "NDC",
+      "cumulative_units": 2,
+      "new_units": 1,
+      "rows_in_new_units": 0,
+      "new_financial_cells": 0
+    },
+    {
+      "source": "TAIFEX",
+      "cumulative_units": 2,
+      "new_units": 1,
+      "rows_in_new_units": 551831,
+      "new_financial_cells": 0
+    },
+    {
+      "source": "TDCC",
+      "cumulative_units": 2,
+      "new_units": 1,
+      "rows_in_new_units": 17,
+      "new_financial_cells": 0
+    },
+    {
+      "source": "TPEx",
+      "cumulative_units": 155,
+      "new_units": 152,
+      "rows_in_new_units": 349121,
+      "new_financial_cells": 0
+    },
+    {
+      "source": "TWSE",
+      "cumulative_units": 122,
+      "new_units": 121,
+      "rows_in_new_units": 161078,
+      "new_financial_cells": 0
+    }
+  ],
+  "cumulative_balance_identity_counts": {
+    "PASS_EXACT": 220
+  },
+  "unverified_flag_unit_counts": {
+    "MARGIN_ACCOUNTING_AND_FULL_SCOPE_NOT_PROVEN": 42,
+    "NUMERIC_FIELD_RULES_NOT_COVERED": 124,
+    "NO_VALID_TRADE_PRICE_REQUIRES_REVIEW": 31,
+    "OHLC_SECURITY_OUTSIDE_VALIDATED_SCOPE": 35
+  },
+  "formal_release": "BLOCKED",
+  "approved_scopes": [],
+  "note": "All evidence is partial; counts are source query units/records, not a completion denominator."
+}
