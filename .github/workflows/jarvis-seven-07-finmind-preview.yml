@@ -1,0 +1,25 @@
+name: JARVIS seven-source 7 FinMind design preview
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-seven-preview-finmind
+  cancel-in-progress: false
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate source and descending campaign policy
+        run: python -m scripts.v093_seven_source_plan --source FinMind --as-of 2026-10-29 --out results/FinMind-design.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seven-source-FinMind-preview-${{ github.run_id }}
+          path: results/FinMind-design.json
+          retention-days: 30

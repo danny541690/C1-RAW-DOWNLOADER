@@ -1,0 +1,162 @@
+{
+  "schema": "JARVIS_SEVEN_SOURCE_DESIGN_V1",
+  "version": "20261029_DESIGN_R1",
+  "activate_production": false,
+  "direction": "DESC",
+  "floor": "2000-01",
+  "upper": "2026-10-29",
+  "upper_is_frozen_per_campaign": true,
+  "latest_month_partial": true,
+  "work_budget_minutes": 45,
+  "job_timeout_minutes": 60,
+  "lease_ttl_minutes": 90,
+  "heartbeat_seconds": 60,
+  "watchdog_cron": "3,13,23,33,43,53 * * * *",
+  "continuation": "Explicit workflow_dispatch only after durable save, ready work remains and no source hold; cron is recovery, not normal waiting",
+  "initial_concurrent_sources": 7,
+  "attempts": {
+    "max_total": 4,
+    "reset_on_restart": false,
+    "respect_retry_after": true,
+    "reconcile_unknown_intent_before_retry": true
+  },
+  "capacity_shares": {
+    "new_updates": 0.1,
+    "historical_desc": 0.7,
+    "due_repairs": 0.2,
+    "unused_capacity_borrowable": true
+  },
+  "raw_root": "01_RAW/{YYYY}/{source}/{YYYY-MM}",
+  "raw_immutable": true,
+  "raw_monetary_units": "NATIVE",
+  "display_amount_unit": "NTD_100_MILLION_WHERE_APPLICABLE",
+  "analysis_markets": [
+    "TSE",
+    "OTC"
+  ],
+  "esb_policy": "RETAIN_RAW_ONLY",
+  "legacy_import_allowed": false,
+  "states": [
+    "NEEDS_RECONCILIATION",
+    "READY_CHECK",
+    "READY_FETCH",
+    "REQUEST_INTENT",
+    "RAW_SAVED",
+    "READBACK_VERIFIED",
+    "BASIC_QA_PASS",
+    "NUMERIC_QA_PASS",
+    "PIT_QA_PASS",
+    "READY_RELEASE_REVIEW",
+    "REPAIR_PENDING",
+    "RETRY_WAIT",
+    "SOURCE_HOLD",
+    "CONTENT_BLOCKED",
+    "VERIFIED_EXCEPTION"
+  ],
+  "lanes": [
+    {
+      "id": 1,
+      "source": "TWSE",
+      "workflow": "jarvis-seven-01-twse-preview.yml",
+      "lock": "jarvis-source-twse",
+      "state_branch": "jarvis-source-state/TWSE",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "SOURCE_FILTER_MISSING_IN_SHARED_OFFICIAL_WORKER",
+        "SOURCE_QUEUE_AND_FENCED_WRITES_NOT_INTEGRATED",
+        "END_TO_END_REPAIR_REVERIFY_NOT_ACCEPTED"
+      ]
+    },
+    {
+      "id": 2,
+      "source": "TPEx",
+      "workflow": "jarvis-seven-02-tpex-preview.yml",
+      "lock": "jarvis-source-tpex",
+      "state_branch": "jarvis-source-state/TPEx",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "SOURCE_FILTER_MISSING_IN_SHARED_OFFICIAL_WORKER",
+        "SOURCE_QUEUE_AND_FENCED_WRITES_NOT_INTEGRATED",
+        "END_TO_END_REPAIR_REVERIFY_NOT_ACCEPTED"
+      ]
+    },
+    {
+      "id": 3,
+      "source": "MOPS",
+      "workflow": "jarvis-seven-03-mops-preview.yml",
+      "lock": "jarvis-source-mops",
+      "state_branch": "jarvis-source-state/MOPS",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "SOURCE_FILTER_MISSING_IN_SHARED_OFFICIAL_WORKER",
+        "PRE_2013_FINANCIAL_ROUTES_REQUIRE_EVIDENCE",
+        "DETACH_EMBEDDED_FINMIND_BEFORE_SEVENTH_LANE"
+      ]
+    },
+    {
+      "id": 4,
+      "source": "TAIFEX",
+      "workflow": "jarvis-seven-04-taifex-preview.yml",
+      "lock": "jarvis-source-taifex",
+      "state_branch": "jarvis-source-state/TAIFEX",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "CURRENT_BIDIRECTIONAL_OWNERSHIP_MUST_BE_MIGRATED_TO_FULL_DESC",
+        "UNIFY_REPAIR_REVERIFY_RECEIPTS_AND_RETRY_LIMIT"
+      ]
+    },
+    {
+      "id": 5,
+      "source": "TDCC",
+      "workflow": "jarvis-seven-05-tdcc-preview.yml",
+      "lock": "jarvis-source-tdcc",
+      "state_branch": "jarvis-source-state/TDCC",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "DESC_CURRENTLY_EXCLUDES_DATES_BEFORE_2026_05",
+        "MENU_AVAILABILITY_IS_NOT_HISTORICAL_UNIVERSE",
+        "UNIFY_REPAIR_REVERIFY_RECEIPTS_AND_RETRY_LIMIT"
+      ]
+    },
+    {
+      "id": 6,
+      "source": "NDC",
+      "workflow": "jarvis-seven-06-ndc-preview.yml",
+      "lock": "jarvis-source-ndc",
+      "state_branch": "jarvis-source-state/NDC",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "REUSE_SOURCE_BUNDLE_WITH_MONTH_LINEAGE",
+        "HISTORICAL_VINTAGES_NOT_PROVEN",
+        "UNIFY_REPAIR_REVERIFY_RECEIPTS"
+      ]
+    },
+    {
+      "id": 7,
+      "source": "FinMind",
+      "workflow": "jarvis-seven-07-finmind-preview.yml",
+      "lock": "jarvis-source-finmind",
+      "state_branch": "jarvis-source-state/FinMind",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": 20,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "STANDALONE_GAP_CONSUMER_ADAPTER_MISSING",
+        "EXPLICIT_GAPS_AND_SEMANTIC_CONTRACT_REQUIRED",
+        "DISABLE_EMBEDDED_SUPPLEMENT_CALLS_AT_CUTOVER"
+      ]
+    }
+  ]
+}
