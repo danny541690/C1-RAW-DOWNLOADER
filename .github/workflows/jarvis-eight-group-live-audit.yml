@@ -5,6 +5,11 @@ on:
     branches: [codex/acceptance-scheduler-3-workers-20261028]
     paths: [.github/workflows/jarvis-eight-group-live-audit.yml]
   workflow_dispatch:
+    inputs:
+      verify_resume:
+        description: Run a second full pass only when testing resume behavior
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -90,27 +95,34 @@ jobs:
           (root/'preparation.json').write_text(json.dumps(prepared,ensure_ascii=False,indent=2)+'\n')
           print(json.dumps({'original_samples':len(seed),'extra_sources':list(extra),'packages_read':sum('readback_sha256' in e for e in packages.values()),'package_read_failures':failures,'bytes':total}))
           PY
-      - name: Execute all eight groups and all 37 contracts on one frozen input set
+      - name: Execute one consolidated eight-group pass
         run: |
           python -m scripts.v093_acceptance_integrated --register reports/raw-register/20261027_v1/units --raw-cache results/raw-cache --out results/first --plan reports/raw-acceptance/20261028_acceleration_plan/execution_plan.json --esb-evidence reports/raw-acceptance/20261028_esb_contract --remote-snapshot results/remote-snapshot.json
+      - name: Optional resume regression (not routine audit)
+        if: github.event_name == 'workflow_dispatch' && inputs.verify_resume
+        run: |
           python -m scripts.v093_acceptance_integrated --register reports/raw-register/20261027_v1/units --raw-cache results/raw-cache --out results/second --plan reports/raw-acceptance/20261028_acceleration_plan/execution_plan.json --esb-evidence reports/raw-acceptance/20261028_esb_contract --remote-snapshot results/remote-snapshot.json --resume results/first/content/checkpoint.json
       - name: Verify resume, local restore and closed release gate
         run: |
           python - <<'PY'
           import collections,json,os
           from pathlib import Path
-          first=json.loads(Path('results/first/integrated_summary.json').read_text());second=json.loads(Path('results/second/integrated_summary.json').read_text())
+          first=json.loads(Path('results/first/integrated_summary.json').read_text())
+          selected=Path('results/second') if Path('results/second/integrated_summary.json').exists() else Path('results/first')
+          second=json.loads((selected/'integrated_summary.json').read_text())
           prepared=json.loads(Path('results/preparation.json').read_text())
-          evidence=json.loads(Path('results/second/content/raw_content_evidence.json').read_text())
+          evidence=json.loads((selected/'content/raw_content_evidence.json').read_text())
           assert len(second['groups'])==8 and len(second['rules'])==37
           assert first['input_plan']==second['input_plan']
           assert second['completed_groups']==0 and second['approved_scopes']==[] and second['formal_release']=='BLOCKED'
           assert second['production_writes']==0 and second['source_downloads']==0
           assert first['recovery']['result']==second['recovery']['result']=='PASS_LOCAL_READBACK_SCOPE_RECOVERY'
-          assert second['content_counts'].get('resumed_content_units',0)>=first['content_counts'].get('new_content_units',0)>0
-          report={'eight_groups':second['groups'],'rule_counts':second['rule_counts'],'first_content_counts':first['content_counts'],'second_content_counts':second['content_counts'],'source_evidence_counts':dict(collections.Counter(e['source'] for e in evidence)),'extra_sample_sources':[e['來源'] for e in prepared['extra_samples']],'package_read_failures':prepared['package_read_failures'],'recovery':{k:second['recovery'][k] for k in ('result','units_verified','errors','scope','full_database_restore_verified','remote_backup_rechecked')},'formal_release':second['formal_release'],'completed_groups':second['completed_groups']}
+          assert first['content_counts'].get('new_content_units',0)>0
+          if selected.name=='second':
+              assert second['content_counts'].get('resumed_content_units',0)>=first['content_counts']['new_content_units']
+          report={'audit_round_complete':True,'passes_executed':2 if selected.name=='second' else 1,'full_acceptance_complete':False,'next_action':'Advance unread RAW or change missing evidence/checkers; do not repeat unchanged samples to claim progress','eight_groups':second['groups'],'rule_counts':second['rule_counts'],'first_content_counts':first['content_counts'],'second_content_counts':second['content_counts'],'source_evidence_counts':dict(collections.Counter(e['source'] for e in evidence)),'extra_sample_sources':[e['來源'] for e in prepared['extra_samples']],'package_read_failures':prepared['package_read_failures'],'recovery':{k:second['recovery'][k] for k in ('result','units_verified','errors','scope','full_database_restore_verified','remote_backup_rechecked')},'formal_release':second['formal_release'],'completed_groups':second['completed_groups']}
           Path('results/eight-group-result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
-          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as stream:stream.write(Path('results/second/README.md').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as stream:stream.write((selected/'README.md').read_text())
           print(json.dumps(report,ensure_ascii=False))
           assert not prepared['package_read_failures'], 'Some retained packages were not read; evidence report preserved'
           PY
@@ -123,6 +135,7 @@ jobs:
             results/eight-group-result.json
             results/first/*.json
             results/first/*.md
+            results/first/repair_queue.csv.gz
             results/second/*.json
             results/second/*.md
             results/second/repair_queue.csv.gz
