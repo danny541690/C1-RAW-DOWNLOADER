@@ -1,0 +1,5 @@
+{
+  "scripts/v093_prelaunch_acceptance_batch.py": "69cbe6017695b9dc126032ba0a8791fdc7324601555ac1b3d5aee7c9266cb871",
+  "scripts/v093_esb_market_evidence.py": "49ca3b9f7a23eaeeef181bd426e5b38564d64d5991340e993197e14cba651ff5",
+  "tests/test_esb_market_evidence.py": "1ec15b2bc431e8266d764d1a6434d009ba0845a9ec6fee15aca74b973330b642"
+}

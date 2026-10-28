@@ -1,0 +1,103 @@
+{
+  "version": "PRELAUNCH_COMBINED_V3_DATED_ESB_RAW_ONLY",
+  "checked_at_taipei": "2026-10-28T14:54:38.505210+08:00",
+  "register_snapshot": "INPUT_REGISTER_SET_NOT_APPROVED_UNIVERSE",
+  "register_sha256": {
+    "FinMind_units.csv.gz": "bdad6d53c2af28ee8bcde9956233cce29a75204a03e274cd2c3769db0cd2b132",
+    "MOPS_units.csv.gz": "8f58b83cfd65a42cc7e72ccf7bb889ea11cb89a6ed64183869da0d92949afccd",
+    "NDC_units.csv.gz": "163bfa20d3730338d67d4b593a9278152f095f8d283407d76a6ccfd4454e47f5",
+    "TAIFEX_units.csv.gz": "abcdd88c92aa6ce955e0537c8aa1e15b8c82493fe69ca9e3c8bedb97f0862016",
+    "TDCC_units.csv.gz": "3df032876c0e04a278858e570e17e227241ffcb14a4713a8608f57a4c6b5403f",
+    "TPEx_units.csv.gz": "f153d3cc383cd61e287ac73cd6fc4e7afbedea830218b2f14c43a51b12dd557a",
+    "TWSE_units.csv.gz": "3c5a597b79b03f23e6f08f206e2f5d29759d51f34ea9a5cdb7067f5e69b61d86",
+    "supplemental_artifacts_units.csv.gz": "1078b7c2aa12cc7b37ed07f786a68acdfa969fffdcbc34ac7084a94c0b876cb5"
+  },
+  "validator_signature": "752de8a55971d843f838007c80b320180966f80af56d0dc8809ce6298e586e65",
+  "counts": {
+    "units": 337281,
+    "RECONCILE_FROZEN_MISSING": 237323,
+    "registered_retained_units": 99958,
+    "new_content_units": 562,
+    "REMAINING_RULES_OPEN": 556,
+    "RAW_NOT_IN_LOCAL_CACHE": 99390,
+    "CONTENT_BLOCKED": 6,
+    "ESB_RAW_ONLY_RULES_OPEN": 6
+  },
+  "sources": {
+    "FinMind": {
+      "units": 1063,
+      "content_evidence_units": 258
+    },
+    "MOPS": {
+      "units": 18298,
+      "content_blocked_units": 6,
+      "content_evidence_units": 11
+    },
+    "NDC": {
+      "units": 322,
+      "content_evidence_units": 2
+    },
+    "TAIFEX": {
+      "units": 4762,
+      "content_evidence_units": 2
+    },
+    "TDCC": {
+      "units": 205670,
+      "content_evidence_units": 2
+    },
+    "TPEx": {
+      "units": 60835,
+      "content_evidence_units": 165
+    },
+    "TWSE": {
+      "units": 46331,
+      "content_evidence_units": 122
+    }
+  },
+  "groups": [
+    {
+      "id": "R01",
+      "name": "母體與全量原件",
+      "result": "PARTIAL"
+    },
+    {
+      "id": "R02",
+      "name": "歷史證券日期主鍵",
+      "result": "PARTIAL"
+    },
+    {
+      "id": "R03",
+      "name": "欄位單位契約",
+      "result": "UNKNOWN"
+    },
+    {
+      "id": "R04",
+      "name": "完整數值覆蓋",
+      "result": "PARTIAL"
+    },
+    {
+      "id": "R05",
+      "name": "獨立跨來源比對",
+      "result": "UNKNOWN"
+    },
+    {
+      "id": "R06",
+      "name": "公告PIT與版本",
+      "result": "UNKNOWN"
+    },
+    {
+      "id": "R07",
+      "name": "真實發布與下游",
+      "result": "BLOCKED"
+    },
+    {
+      "id": "R08",
+      "name": "全量復原與時效",
+      "result": "UNKNOWN"
+    }
+  ],
+  "release_gate": "RELEASE_BLOCKED:sha_readback,schema,unit,unique_key,numeric,universe,pit,source_contract,dependency",
+  "approved_scopes": [],
+  "source_downloads": 0,
+  "production_writes": 0
+}

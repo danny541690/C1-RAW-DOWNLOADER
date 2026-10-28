@@ -1,0 +1,32 @@
+{
+  "1269": {
+    "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1269&date=2026%2F08%2F01&type=Monthly&response=json",
+    "sha256": "87b91a75fc7d094b5ad254cbaef47317cbe2302ed654e82d65d8bae59f0774bc",
+    "rows": 21
+  },
+  "1271": {
+    "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1271&date=2026%2F08%2F01&type=Monthly&response=json",
+    "sha256": "ca722a7406af20a70f2a5a36a03634f9c7227a659781b43941e3b3bfa3d8561f",
+    "rows": 21
+  },
+  "1293": {
+    "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1293&date=2026%2F08%2F01&type=Monthly&response=json",
+    "sha256": "311eac4a405a3c0d7887c20a192fa2ed287fc886f86af2a24bc490c9721c4b1a",
+    "rows": 21
+  },
+  "1343": {
+    "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1343&date=2026%2F08%2F01&type=Monthly&response=json",
+    "sha256": "169d7d747af8c24b0cb8f4db0bb4840e88d4e662ab37b9e0e38df177ea63e715",
+    "rows": 21
+  },
+  "1480": {
+    "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1480&date=2026%2F08%2F01&type=Monthly&response=json",
+    "sha256": "9bbf2510de47aa34d00c4d77b883da54d48e5aea128f8bc0c6512bade03e641c",
+    "rows": 21
+  },
+  "1594": {
+    "url": "https://www.tpex.org.tw/www/zh-tw/emerging/historical?code=1594&date=2026%2F08%2F01&type=Monthly&response=json",
+    "sha256": "5cca6d8465de4c80efefee703e590e87f493fda700db801e9aafebeee80bd021",
+    "rows": 21
+  }
+}

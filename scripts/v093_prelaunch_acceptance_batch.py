@@ -2,9 +2,9 @@
 import argparse,collections,csv,datetime,gzip,hashlib,io,json,re,zipfile
 from pathlib import Path
 from decimal import Decimal
-VERSION='PRELAUNCH_COMBINED_V2_NATIVE_SUPPLEMENTS'
+VERSION='PRELAUNCH_COMBINED_V3_DATED_ESB_RAW_ONLY'
 def sha(b):return hashlib.sha256(b).hexdigest()
-def inspect_raw(b,r):
+def inspect_raw(b,r,esb_evidence=None):
  s=r['來源'];cat=r['資料集']
  if s=='MOPS' and cat in ('BalanceSheet','IncomeStatement','CashflowStatement'):
   from scripts.v093_stage06_financial_repair import structure,number,text
@@ -74,7 +74,7 @@ def inspect_raw(b,r):
  if 'rows' in obj:
   if obj.get('status')!='RAW_MONTH_SLICE_NOT_PIT_VERIFIED' or obj.get('dataset')!=cat or obj.get('stock_id')!=r['代碼'] or not re.fullmatch('[0-9a-f]{64}',str(obj.get('response_sha256',''))) or obj.get('data'):raise ValueError('INVALID_FINMIND_SLICE_PROVENANCE')
   obj=dict(status=200,data=obj['rows'],retained_representation='MONTH_SLICE_WITH_UNVERIFIED_PARENT_SHA')
- rows=obj.get('data');seen=set()
+ rows=obj.get('data');seen=set();esb_rows=[]
  if obj.get('status')!=200 or not isinstance(rows,list) or not rows:raise ValueError('FINMIND_EMPTY_OR_ERROR')
  for x in rows:
   if x.get('stock_id')!=r['代碼'] or not str(x.get('date','')).startswith(r['月份']):raise ValueError('FINMIND_PERIOD_CODE')
@@ -83,8 +83,12 @@ def inspect_raw(b,r):
   if key in seen:raise ValueError('DUPLICATE_KEY')
   seen.add(key);v={k:Decimal(str(x[k])) for k in ('open','max','min','close')}
   if not all(n.is_finite() for n in v.values()):raise ValueError('NONFINITE_PRICE')
-  if not v['min']<=v['open']<=v['max'] or not v['min']<=v['close']<=v['max']:raise ValueError('OHLC_RELATIONSHIP')
- return dict(rows=len(rows),ohlc_rows_checked=len(rows),representation=obj.get('retained_representation','NATIVE_API_RESPONSE'),parent_response_sha_readback_verified=False)
+  if esb_evidence and key in esb_evidence:
+   from scripts.v093_esb_market_evidence import compare_row
+   esb_rows.append(compare_row(x,esb_evidence[key]))
+   if not v['min']<=v['close']<=v['max']:raise ValueError('ESB_LAST_TRADE_RELATIONSHIP')
+  elif not v['min']<=v['open']<=v['max'] or not v['min']<=v['close']<=v['max']:raise ValueError('OHLC_RELATIONSHIP')
+ return dict(rows=len(rows),ohlc_rows_checked=len(rows)-len(esb_rows),esb_raw_only_rows=esb_rows,analysis_release_approved=False,representation=obj.get('retained_representation','NATIVE_API_RESPONSE'),parent_response_sha_readback_verified=False)
 def retained_raw(cache,ref,archives):
  fid,sep,member=ref.partition('/')
  if not re.fullmatch(r'[A-Za-z0-9_-]+',fid):raise ValueError('UNSAFE_CACHE_ID')
@@ -101,10 +105,12 @@ def retained_raw(cache,ref,archives):
  if sep:
   with zipfile.ZipFile(io.BytesIO(raw)) as z:raw=z.read(member)
  return raw,archive_sha
-def run(register,cache,out,resume=None):
+def run(register,cache,out,resume=None,esb_dir=None):
  if not register.is_dir() or not list(register.glob('*_units.csv.gz')):raise ValueError('REGISTER_INPUT_MISSING')
  out.mkdir(parents=True,exist_ok=True)
- signature=sha(b''.join(p.read_bytes() for p in sorted(Path(__file__).parent.glob('*.py'))))
+ from scripts.v093_esb_market_evidence import load_evidence
+ esb_evidence=load_evidence(esb_dir) if esb_dir else {}
+ signature=sha(b''.join(p.read_bytes() for p in sorted(Path(__file__).parent.glob('*.py')))+json.dumps(sorted(esb_evidence.items()),sort_keys=True,default=str).encode())
  old=json.loads(resume.read_text()) if resume and resume.is_file() else {};prior=old.get('completed',{}) if old.get('signature')==signature else {}
  counts=collections.Counter();sources={};archives={};completed={};evidence=[];manifest={}
  cols=('task_key','source','dataset','year','month','period','raw_reference','raw_sha256','status','next_action')
@@ -127,9 +133,11 @@ def run(register,cache,out,resume=None):
         token=sha((key+actual+archive_sha).encode());ev=prior.get(token)
         if ev:counts['resumed_content_units']+=1
         else:
-         ev=dict(task_key=key,source=s,dataset=r['資料集'],period=r['期間'],raw_reference=ref,raw_sha256=actual,archive_sha256=archive_sha,content=inspect_raw(b,r),result='PARTIAL_CONTENT_NOT_RELEASED');counts['new_content_units']+=1
+         ev=dict(task_key=key,source=s,dataset=r['資料集'],period=r['期間'],raw_reference=ref,raw_sha256=actual,archive_sha256=archive_sha,content=inspect_raw(b,r,esb_evidence),result='PARTIAL_CONTENT_NOT_RELEASED');counts['new_content_units']+=1
         completed[token]=ev;evidence.append(ev);c['content_evidence_units']+=1;status='REMAINING_RULES_OPEN';action='補母體、契約、完整數值與PIT等適用證據'
       except Exception as e:status='CONTENT_BLOCKED';action=type(e).__name__+':'+str(e)[:240];c['content_blocked_units']+=1
+     if status=='REMAINING_RULES_OPEN' and ev.get('content',{}).get('esb_raw_only_rows'):
+      status='ESB_RAW_ONLY_RULES_OPEN';action='興櫃原件保留；開盤語意、末筆價及PIT未全驗，不進正式分析'
      counts[status]+=1
      writer.writerow(dict(task_key=key,source=s,dataset=r['資料集'],year=r['年份'],month=r['月份'],period=r['期間'],raw_reference=ref,raw_sha256=r['RAW_SHA256'],status=status,next_action=action))
  from scripts.v093_layer02_governance import gate_release,GateBlocked
@@ -140,5 +148,5 @@ def run(register,cache,out,resume=None):
  for name,obj in [('summary.json',summary),('raw_content_evidence.json',evidence),('checkpoint.json',dict(signature=signature,completed=completed))]:(out/name).write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
  return summary
 def main():
- p=argparse.ArgumentParser();p.add_argument('--register',required=True,type=Path);p.add_argument('--raw-cache',required=True,type=Path);p.add_argument('--out',required=True,type=Path);p.add_argument('--resume',type=Path);a=p.parse_args();print(json.dumps(run(a.register,a.raw_cache,a.out,a.resume)['counts'],ensure_ascii=False))
+ p=argparse.ArgumentParser();p.add_argument('--register',required=True,type=Path);p.add_argument('--raw-cache',required=True,type=Path);p.add_argument('--out',required=True,type=Path);p.add_argument('--resume',type=Path);p.add_argument('--esb-evidence',type=Path);a=p.parse_args();print(json.dumps(run(a.register,a.raw_cache,a.out,a.resume,a.esb_evidence)['counts'],ensure_ascii=False))
 if __name__=='__main__':main()
