@@ -227,7 +227,7 @@ def work(rows, snapshot, state, read_remote, inspect, signatures, evidence=None,
 def report(state, slice_result):
     # Report only this worker's evidence, never promote historical partial
     # reports into current full-group PASS results.
-    return dict(schema=SCHEMA, slice=slice_result,
+    return dict(schema=SCHEMA, lane=state.get('lane'), slice=slice_result,
                 historical_target='2000-01 through 2026; dataset applicability not approved',
                 groups=[dict(id=f'R{i:02}', status='BLOCKED' if i == 7 else 'OPEN',
                              full_acceptance=False) for i in range(1, 9)],

@@ -53,6 +53,7 @@ jobs:
             durable/*.json.gz
             results/inventory/summary.json
           retention-days: 30
+          overwrite: true
   content:
     needs: inventory
     runs-on: ubuntu-latest
@@ -102,33 +103,31 @@ jobs:
             durable/*.json.gz
             results/worker-${{ matrix.shard }}/summary.*
           retention-days: 30
+          overwrite: true
   summary:
     needs: [inventory, content]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          pattern: jarvis-acceptance-*-${{ github.run_id }}
-          path: combined
+          name: jarvis-acceptance-inventory-${{ github.run_id }}
+          path: combined/inventory
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: jarvis-acceptance-worker-*-${{ github.run_id }}
+          path: combined/workers
       - name: Summarize actual evidence, keep all release gates closed
         env:
           INVENTORY_RESULT: ${{ needs.inventory.result }}
           CONTENT_RESULT: ${{ needs.content.result }}
-        run: |
-          python - <<'PY'
-          import json, os, pathlib
-          paths = sorted(pathlib.Path('combined').rglob('summary.json'))
-          summaries = [json.loads(p.read_text()) for p in paths]
-          workers = [s for s in summaries if s['slice']['status'] not in ('INVENTORY_COMPLETE', 'INVENTORY_INCOMPLETE')]
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
-              f.write('# JARVIS 自動驗收\n\n')
-              f.write('一個統籌、三個分工讀取既有原件的工作；正式發布核准範圍0。\n\n')
-              f.write('|工作|本輪狀態|\n|---|---|\n')
-              f.write(f"|盤點|{os.environ['INVENTORY_RESULT']}|\n|內容工作|{os.environ['CONTENT_RESULT']}|\n")
-              f.write(f"\n收到內容摘要 {len(workers)}/3；本輪內容檢查 {sum(s['slice']['inspected'] for s in workers)} 筆。\n\n")
-              f.write('八大組完整驗收仍未通過；缺母體、契約、PIT及未實作檢查器保持待核，不能用執行綠燈代替資料驗收。\n')
-          if os.environ['INVENTORY_RESULT'] != 'success' or os.environ['CONTENT_RESULT'] != 'success' or len(workers) != 3:
-              raise SystemExit('Incomplete acceptance run: inspect preserved checkpoints and job errors')
-          PY
+        run: python -m scripts.v093_acceptance_summary --reports combined --out results/combined-summary.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvis-acceptance-result-${{ github.run_id }}
+          path: results/combined-summary.json
+          retention-days: 30
+          overwrite: true
