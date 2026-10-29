@@ -3,13 +3,13 @@ import argparse,contextlib,datetime,hashlib,io,json,time,unittest
 from pathlib import Path
 import yaml
 
-PATTERNS=('test_workflow_dispatch.py','test_source_executor.py','test_source_state_pages.py','test_retained_stream_verify.py','test_legacy_handoff.py','test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
+PATTERNS=('test_review_import.py','test_workflow_dispatch.py','test_source_executor.py','test_source_state_pages.py','test_retained_stream_verify.py','test_legacy_handoff.py','test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
           'test_source_closed_loop_preflight.py','test_source_coordination.py','test_source_git_store.py','test_acceptance_scheduler.py','test_acceptance_state.py','test_tdcc_download_v4.py')
 BLOCKERS={
  'source_executors':'BLOCKED_NOT_INTEGRATED',
- 'distributed_fencing_and_immediate_continuation':'BLOCKED_NOT_INTEGRATED',
+ 'distributed_fencing_and_immediate_continuation':'QA_PASSED_PRODUCTION_ENTRYPOINT_NOT_CONNECTED',
  'live_twelve_slot_fetch_save_reverify':'NOT_RUN',
- 'one_time_legacy_shutdown_and_state_migration':'NOT_RUN',
+ 'one_time_legacy_shutdown_and_state_migration':'LEGACY_STOPPED_REVIEW_CAPTURED_FORMAL_IMPORT_NOT_EXECUTED',
  'real_rate_limits_and_three_day_throughput':'NOT_RUN'}
 
 def main():
@@ -37,7 +37,7 @@ def main():
   source_environment='Fake official HTTP; native TDCC parser; real local files, bare Git and transactional SQLite shared by threads and separate processes; not live Drive or GitHub distributed CAS',
   elapsed_seconds=round(time.monotonic()-start,3),cutover_strategy='ONE_TIME_SWITCH_NO_DUAL_OPERATION',
   existing_online_schedules_changed=False,
-  input_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(set((root/'scripts').glob('v093_source_*.py'))|set((root/'scripts').glob('v093_tdcc*.py'))|{root/'config/v093_seven_source_design.json'}|{root/'tests'/name for name in PATTERNS})})
+  input_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(set((root/'scripts').glob('v093_source_*.py'))|set((root/'scripts').glob('v093_tdcc*.py'))|{root/'config/v093_seven_source_design.json'}|{root/'tests'/name for name in PATTERNS}|{root/'scripts/v093_review_import.py'})})
  (a.out/'summary.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
  (a.out/'tests.log').write_text(log.getvalue())
  (a.out/'README.md').write_text('# 十二工作槽合併測試\n\n'+f"已實作測試 {'PASS' if passed else 'FAIL'}：{test_result}。十二份預覽YAML驗證錯誤 {len(errors)}。\n\n"+
