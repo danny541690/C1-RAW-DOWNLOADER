@@ -1,0 +1,11 @@
+{
+  "file_id": "11SZB2MYaEqOdZzC7iUv7H_ckWNGe2QCO",
+  "bytes": 49535982,
+  "expected_sha256": "0951325a8c032cb87459fdaaec9fd9efa933aef33bb25c0dda1b1bd0ad43fc5b",
+  "actual_sha256": "0951325a8c032cb87459fdaaec9fd9efa933aef33bb25c0dda1b1bd0ad43fc5b",
+  "unchanged_version": true,
+  "readback_verified": true,
+  "numeric_verified": false,
+  "pit_verified": false,
+  "full_acceptance": false
+}

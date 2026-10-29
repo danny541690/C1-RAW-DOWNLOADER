@@ -1,0 +1,62 @@
+[
+  {
+    "source": "FinMind",
+    "direction": "DESC",
+    "tasks": 2711
+  },
+  {
+    "source": "MOPS",
+    "direction": "ASC",
+    "tasks": 11756
+  },
+  {
+    "source": "MOPS",
+    "direction": "DESC",
+    "tasks": 11756
+  },
+  {
+    "source": "NDC",
+    "direction": "DESC",
+    "tasks": 322
+  },
+  {
+    "source": "TAIFEX",
+    "direction": "ASC",
+    "tasks": 2530
+  },
+  {
+    "source": "TAIFEX",
+    "direction": "DESC",
+    "tasks": 2531
+  },
+  {
+    "source": "TDCC",
+    "direction": "ASC",
+    "tasks": 24029
+  },
+  {
+    "source": "TDCC",
+    "direction": "DESC",
+    "tasks": 24030
+  },
+  {
+    "source": "TPEx",
+    "direction": "ASC",
+    "tasks": 31407
+  },
+  {
+    "source": "TPEx",
+    "direction": "DESC",
+    "tasks": 31407
+  },
+  {
+    "source": "TWSE",
+    "direction": "ASC",
+    "tasks": 23521
+  },
+  {
+    "source": "TWSE",
+    "direction": "DESC",
+    "tasks": 23521
+  }
+]
