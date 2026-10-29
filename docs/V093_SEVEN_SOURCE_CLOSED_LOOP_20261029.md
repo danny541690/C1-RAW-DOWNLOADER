@@ -104,3 +104,11 @@ TWSE、TPEx、MOPS、TDCC各兩槽（DESC與ASC），TAIFEX、NDC、FinMind各�
 完整新十一槽來源接線、分散式任務fencing、自動立即續跑、真實Drive下載閉環、一次停舊切新與實測吞吐仍未完成，報表會保持BLOCKED／NOT_RUN。本機閉環案例使用假HTTP與真實本機檔案，不是市場實抓。
 
 收據遷移模組會回讀驗SHA、保留最大已知重試數、列管衝突；最大值不能替代不同來源分叉嘗試歷史的對帳。TDCC scope模組保留已凍結owner，新日期另外列管，不在執行中偷改分界；它還不是舊worker的正式全歷史入口。
+
+## 12. V3：十一工作協調合併驗證
+
+新增v093_source_coordination.py，將原本只有分配規格的任務處理進一步實作為可注入持久CAS的協調核心：唯一領取、遞增fence、租約續期、來源隔離、HTTP前REQUEST_INTENT保存、四次總嘗試、存檔與回讀分層、過期中斷意圖轉RECONCILE，以及保存續派送intent後才呼叫dispatch。派送狀態不明列待核對，不直接盲目再送。
+
+本機測試使用真實交易式SQLite作CAS替身，十一個thread分別持有store instance共同處理44項唯一任務；另以兩個獨立Python程序競爭一項任務，只有一個owner。這是隔離測試共享狀態，不是可給不同GitHub runner各自放一份SQLite就運作；正式遠端CAS adapter仍未接入。RAW下載及GitHub dispatch都是測試回呼。
+
+合併預檢81項通過、十一份YAML解析通過，報告在reports/raw-acceptance/20261029_eleven_slot_preflight_v3。仍保留來源executor、真正跨runner遠端狀態接線、真實Drive閉環、一次停舊切新及流量測試為BLOCKED／NOT_RUN。線上排程本輪未更動。
