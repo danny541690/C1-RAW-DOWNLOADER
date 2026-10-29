@@ -1,0 +1,57 @@
+{
+  "schema": "JARVIS_FAULT_COPY_NATIVE_REPAIR_V1",
+  "source": "TDCC",
+  "period": "2025-12-05",
+  "code": "8401",
+  "explicit_fault_injected_copy": true,
+  "cold_recovered": true,
+  "qa_copy_repaired": 1,
+  "real_market_invalid_file_repaired": 0,
+  "formal_raw_writes": 0,
+  "formal_data_repaired": 0,
+  "source_requests": 0,
+  "old_qa_reference": "1fvNCrShezzaTSSMtZyuKp3y2jmU1lqAA",
+  "old_qa_sha256": "66c5c428c06fd9b30d0d629aebbbaacb5fbc5705ff09775c56c751d55ba19954",
+  "verified_replacement_reference": "1swo48wB5owZwjdr8zL_gPZAvVOEVIavc",
+  "verified_replacement_sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546",
+  "result": {
+    "task_key": "TDCC|2025-12|20251205|8401|EXPLICIT_QA_COPY",
+    "sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546",
+    "reference": "18gllujx4-XtFKkVvVBZBA7WnBaahtomq",
+    "stats": {
+      "basic_verified": true,
+      "rows": 16
+    },
+    "numeric_verified": false,
+    "pit_verified": false,
+    "full_acceptance": false
+  },
+  "storage_receipt": {
+    "raw_reference": "18gllujx4-XtFKkVvVBZBA7WnBaahtomq",
+    "raw_sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546",
+    "readback_verified": true,
+    "reference": "1p7tq0ccb7bVOobHQ_75e_u3YPSfRsEso",
+    "sha256": "47a22f61db9a84b6d0c22e487b0d3cfd972a85f6ad8ac127b155c1fc924d3ab9"
+  },
+  "latest_native_history": {
+    "TDCC|2025-12|20251205|8401": {
+      "status": "RAW_BASIC_VERIFIED",
+      "attempts": 2,
+      "has_save_intent": true,
+      "period": "2025-12-05",
+      "ref": "refs/heads/jarvis-source-preflight/native-positive-40910020200-1/TDCC",
+      "commit": "890da9541aeb64a61ad966ab845a03d9dcadd154",
+      "raw_reference": "1swo48wB5owZwjdr8zL_gPZAvVOEVIavc",
+      "raw_sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546"
+    }
+  },
+  "history_pins": [
+    {
+      "ref": "refs/heads/jarvis-source-preflight/native-positive-40910020200-1/TDCC",
+      "commit": "890da9541aeb64a61ad966ab845a03d9dcadd154",
+      "observed_commit": "890da9541aeb64a61ad966ab845a03d9dcadd154"
+    }
+  ],
+  "production_activation": false,
+  "full_acceptance": false
+}

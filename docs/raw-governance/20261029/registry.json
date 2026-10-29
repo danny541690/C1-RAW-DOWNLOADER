@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R14",
+  "version": "20261030_R15",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -286,6 +286,44 @@
       "formal_raw_writes": 0,
       "confirmed_historical_exceptions": 0,
       "drive_final_receipt_file_id": "1yJEz-ZYbNspWf7BpSGSu-jf210BMe4wB"
+    },
+    {
+      "id": "T29",
+      "name": "TDCC真實Native缺件下載保存與獨立冷恢復",
+      "status": "PASS_REAL_MISSING_QA_NOT_FORMAL_RELEASE",
+      "source_sha": "cba3969025c9200277a5cfc99001d1721490319e",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40910020200",
+      "whole_repository_tests": 1067,
+      "source_requests": 3,
+      "cold_resume_source_requests": 0,
+      "period": "2025-12-05",
+      "code": "8401",
+      "rows": 16,
+      "prior_attempts": 1,
+      "attempts": 2,
+      "qa_downloaded": 1,
+      "formal_raw_writes": 0,
+      "formal_data_repaired": 0,
+      "drive_receipt_file_id": "1LI67k0uQcdt_6zkVCxH6NamkAVaxIKoq",
+      "production_activation": false,
+      "initial_publication_failure_preserved": true
+    },
+    {
+      "id": "T30",
+      "name": "原生補正核心、跨批次次數、穩定讀取及真實QA副本恢復",
+      "status": "PASS_IMPLEMENTED_CORE_AND_QA_PRODUCTION_STILL_BLOCKED",
+      "source_sha": "f5e5df3fd4db8aaeb5d5da06bb8f93ee37aba7d5",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40912120747",
+      "whole_repository_tests": 1072,
+      "qa_fault_copy_repaired": 1,
+      "new_qa_repairs_latest_verification": 0,
+      "formal_data_repaired": 0,
+      "source_requests": 0,
+      "initial_failure_run": 40911231116,
+      "cold_recovery_run": 40911890716,
+      "five_source_native_recheck_run": 40911890612,
+      "drive_receipt_file_id": "117RmYkp09eyLEakHp-msDR7YWLMuYHgx",
+      "production_activation": false
     }
   ],
   "rules": [
@@ -1358,5 +1396,5 @@
       "item": "After G1-G3 pass, merge pinned candidate, recheck old writers/ghost queue and validate the initial formal batch"
     }
   ],
-  "latest_tested_sha": "7c7db39e5dfed18d835aabe02d14943ff9a18b24"
+  "latest_tested_sha": "f5e5df3fd4db8aaeb5d5da06bb8f93ee37aba7d5"
 }

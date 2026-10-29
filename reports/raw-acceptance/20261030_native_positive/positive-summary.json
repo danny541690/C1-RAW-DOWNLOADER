@@ -1,0 +1,905 @@
+{
+  "schema": "JARVIS_NATIVE_POSITIVE_MERGED_BATCH_V1",
+  "run_id": "40910020200",
+  "source_sha": "cba3969025c9200277a5cfc99001d1721490319e",
+  "jobs": {
+    "regression": "success",
+    "legacy-audit": "success",
+    "capture": "success",
+    "resume": "success"
+  },
+  "offline": {
+    "tests": 1067,
+    "passed": true
+  },
+  "capture": {
+    "schema": "JARVIS_NATIVE_MISSING_CAPTURE_V1",
+    "outcomes": [
+      {
+        "key": "TDCC|2025-12|20251205|8401",
+        "period": "2025-12-05",
+        "code": "8401",
+        "status": "REAL_RAW_SAVED_COLD_RESUME_REQUIRED",
+        "prior_attempts": 1,
+        "attempts": 2,
+        "source_requests": 2,
+        "rejected_evidence": null
+      }
+    ],
+    "excluded_later_qa": {
+      "TDCC|2025-12|20251205|8042": {
+        "status": "APPLICABILITY_HOLD",
+        "attempts": 2,
+        "has_save_intent": false
+      },
+      "TDCC|2026-09|20260911|6912": {
+        "status": "RAW_BASIC_VERIFIED",
+        "attempts": 2,
+        "has_save_intent": true
+      }
+    },
+    "source_requests": 3,
+    "qa_only": true,
+    "formal_raw_writes": 0,
+    "production_activation": false,
+    "positive_saved": true
+  },
+  "cold_resume": {
+    "schema": "JARVIS_NATIVE_MISSING_COLD_RESUME_V1",
+    "outcomes": [
+      {
+        "key": "TDCC|2025-12|20251205|8401",
+        "period": "2025-12-05",
+        "attempts": 2,
+        "evidence": {
+          "task_key": "TDCC|2025-12|20251205|8401",
+          "sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546",
+          "reference": "1swo48wB5owZwjdr8zL_gPZAvVOEVIavc",
+          "stats": {
+            "basic_verified": true,
+            "rows": 16
+          },
+          "numeric_verified": false,
+          "pit_verified": false,
+          "full_acceptance": false
+        },
+        "storage_receipt": {
+          "raw_reference": "1swo48wB5owZwjdr8zL_gPZAvVOEVIavc",
+          "raw_sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546",
+          "readback_verified": true,
+          "reference": "15D_teG3WUexTZ05xXdQlr-Gzs04eQe6g",
+          "sha256": "12bd594005dff4a8d8747c53bf5b30444484ebb41492ac3e126a0dae263ae8e7"
+        }
+      }
+    ],
+    "source_requests_this_job": 0,
+    "source_requests_total": 3,
+    "formal_raw_writes": 0,
+    "qa_downloaded_and_basic_verified": 1,
+    "formal_data_repaired": 0,
+    "production_activation": false,
+    "full_acceptance": false
+  },
+  "old_writer_audit": {
+    "schema": "JARVIS_OVERNIGHT_LIVE_OLD_WRITER_AUDIT_V1",
+    "checked_at_taipei": "2026-10-30T00:18:01.046056+08:00",
+    "workflows": [
+      {
+        "id": 394884636,
+        "path": ".github/workflows/four-lane-live-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394895705,
+        "path": ".github/workflows/four-lane-month-integration.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394856871,
+        "path": ".github/workflows/four-source-repair-review.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399266721,
+        "path": ".github/workflows/jarvis-acceptance-blocked-followup.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399566226,
+        "path": ".github/workflows/jarvis-acceptance-journal-readback.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399240768,
+        "path": ".github/workflows/jarvis-acceptance-live-rehearsal.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399145021,
+        "path": ".github/workflows/jarvis-acceptance-remote-inventory.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399561416,
+        "path": ".github/workflows/jarvis-acceptance-scheduled.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391885852,
+        "path": ".github/workflows/jarvis-checkpoint-replan-launch-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399291425,
+        "path": ".github/workflows/jarvis-eight-group-live-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392585810,
+        "path": ".github/workflows/jarvis-financial-continue-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392262802,
+        "path": ".github/workflows/jarvis-four-consumers-60m-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391792184,
+        "path": ".github/workflows/jarvis-live-staging-followthrough-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392251696,
+        "path": ".github/workflows/jarvis-parallel-four-30m-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391782044,
+        "path": ".github/workflows/jarvis-raw-first-live-batch-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392273198,
+        "path": ".github/workflows/jarvis-raw-hourly-60m-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 398214465,
+        "path": ".github/workflows/jarvis-raw-repair-onepass-20261027.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391845831,
+        "path": ".github/workflows/jarvis-replan-stop-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391887014,
+        "path": ".github/workflows/jarvis-resume-201404-30-10-10-10-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391741593,
+        "path": ".github/workflows/jarvis-retire-legacy-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392433204,
+        "path": ".github/workflows/jarvis-stage06-drive-publish-test-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392528968,
+        "path": ".github/workflows/jarvis-stage06-financial-expand-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392504517,
+        "path": ".github/workflows/jarvis-stage06-full-launch-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392360714,
+        "path": ".github/workflows/jarvis-stage06-ledger-task-test-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391767368,
+        "path": ".github/workflows/jarvis-start-live-five-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391777998,
+        "path": ".github/workflows/jarvis-start-live-five-v2-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392540621,
+        "path": ".github/workflows/jarvis-terminal-worker-recovery-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 396147289,
+        "path": ".github/workflows/pause-all-finalize-20261026.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 396145414,
+        "path": ".github/workflows/pause-all-google-auth-20261026.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394864608,
+        "path": ".github/workflows/pause-legacy-four-20261024.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392987176,
+        "path": ".github/workflows/provider-sample-20261016.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 397210533,
+        "path": ".github/workflows/resume-audited-downloads-20261026.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 395000467,
+        "path": ".github/workflows/taifex-v3-handoff-20261024.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394779320,
+        "path": ".github/workflows/tdcc-history-repair-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 395011971,
+        "path": ".github/workflows/tdcc-timeout-handoff-20261024.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388836023,
+        "path": ".github/workflows/v093-2024-four-source-annual-capture.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389056869,
+        "path": ".github/workflows/v093-2024-full-year-qa-repair-r1.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389155467,
+        "path": ".github/workflows/v093-2024-integrity-r2.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389159961,
+        "path": ".github/workflows/v093-2024-tpex-correct-r3.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389156476,
+        "path": ".github/workflows/v093-2024-tpex-date-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389076549,
+        "path": ".github/workflows/v093-2025-2026-443-integration-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389045025,
+        "path": ".github/workflows/v093-202609-deep-source-scan-fixed.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389043849,
+        "path": ".github/workflows/v093-202609-deep-source-scan.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388536097,
+        "path": ".github/workflows/v093-actual-partial-2024.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388119911,
+        "path": ".github/workflows/v093-annual-plan.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390281963,
+        "path": ".github/workflows/v093-audit-backlog.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388580020,
+        "path": ".github/workflows/v093-bulk-drive-e2e.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388589452,
+        "path": ".github/workflows/v093-bulk-feb-dec-combined.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388587833,
+        "path": ".github/workflows/v093-bulk-january-e2e.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388572957,
+        "path": ".github/workflows/v093-bulk-market-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391187034,
+        "path": ".github/workflows/v093-combined-prelaunch-fast-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391656552,
+        "path": ".github/workflows/v093-complete-prelaunch-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391282997,
+        "path": ".github/workflows/v093-concurrent-multimonth-cas-integrated.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391179723,
+        "path": ".github/workflows/v093-consolidated-prelaunch-gates.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390676147,
+        "path": ".github/workflows/v093-conversion-2023.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391177452,
+        "path": ".github/workflows/v093-corrected-price-reconciliation.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388908407,
+        "path": ".github/workflows/v093-cross-asset-52-second-pass.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388898547,
+        "path": ".github/workflows/v093-cross-asset-72-sep-pilot.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388913109,
+        "path": ".github/workflows/v093-cross-asset-third-pass-source-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391247609,
+        "path": ".github/workflows/v093-cross-runner-cas-retry-merge.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391246739,
+        "path": ".github/workflows/v093-cross-runner-github-cas-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391281821,
+        "path": ".github/workflows/v093-cross-runner-recovery-integrated.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391176335,
+        "path": ".github/workflows/v093-cross-source-price-readonly-probe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391240257,
+        "path": ".github/workflows/v093-cross-workflow-lock-a.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391240307,
+        "path": ".github/workflows/v093-cross-workflow-lock-b.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391271972,
+        "path": ".github/workflows/v093-data-manifest-crash-recovery.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391162263,
+        "path": ".github/workflows/v093-deep-repair-three-lane-smoke.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388209339,
+        "path": ".github/workflows/v093-drive-auth-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388487883,
+        "path": ".github/workflows/v093-drive-checkpoint-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391212478,
+        "path": ".github/workflows/v093-drive-concurrency-release-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391257754,
+        "path": ".github/workflows/v093-drive-helper-fault-injection.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391287709,
+        "path": ".github/workflows/v093-durable-backlog-restart-integrated.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391243611,
+        "path": ".github/workflows/v093-durable-queue-cancel-recovery.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390165314,
+        "path": ".github/workflows/v093-feature-history.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388183941,
+        "path": ".github/workflows/v093-finmind-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389244421,
+        "path": ".github/workflows/v093-finmind-free-2026-backfill.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389239115,
+        "path": ".github/workflows/v093-finmind-free-2026-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389034229,
+        "path": ".github/workflows/v093-finmind-three-year-coverage-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391301144,
+        "path": ".github/workflows/v093-five-stage-combined-launch-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391167564,
+        "path": ".github/workflows/v093-five-stage-dependency-smoke.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391188070,
+        "path": ".github/workflows/v093-five-stage-integrated-prelaunch-test.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391734233,
+        "path": ".github/workflows/v093-five-stage-policy-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388591285,
+        "path": ".github/workflows/v093-four-source-mini-e2e.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388524660,
+        "path": ".github/workflows/v093-full-readiness-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389542457,
+        "path": ".github/workflows/v093-history-2023-to-2014-descending.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390718048,
+        "path": ".github/workflows/v093-independent-raw.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391280865,
+        "path": ".github/workflows/v093-integrated-safety-regression.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391227952,
+        "path": ".github/workflows/v093-isolated-drive-race-reproduction.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390764404,
+        "path": ".github/workflows/v093-l1-secondpass-qa-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391092171,
+        "path": ".github/workflows/v093-l1-thirdpass-gated-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389098951,
+        "path": ".github/workflows/v093-layer02-2025-2026-all-months.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389093973,
+        "path": ".github/workflows/v093-layer02-format-probe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389129043,
+        "path": ".github/workflows/v093-layer02-governance-policy-sync.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389128174,
+        "path": ".github/workflows/v093-layer02-governance-tests.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389971175,
+        "path": ".github/workflows/v093-layer02-r3-2025-2026.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389091776,
+        "path": ".github/workflows/v093-layer02-standard-r1-pilot.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389096102,
+        "path": ".github/workflows/v093-layer02-standard-r2.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 393062898,
+        "path": ".github/workflows/v093-live-resume-watchdog.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391279144,
+        "path": ".github/workflows/v093-manifest-false-certification-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390743176,
+        "path": ".github/workflows/v093-merged-quick-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391232323,
+        "path": ".github/workflows/v093-multiprocess-lease-crash-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391178094,
+        "path": ".github/workflows/v093-multistock-historical-qa-readonly.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394255149,
+        "path": ".github/workflows/v093-ndc-independent.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389037670,
+        "path": ".github/workflows/v093-official-first-finmind-delta-test.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394904073,
+        "path": ".github/workflows/v093-official-four-lane-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 393608880,
+        "path": ".github/workflows/v093-official-only-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 393596952,
+        "path": ".github/workflows/v093-official-only-two-ended.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390030530,
+        "path": ".github/workflows/v093-operational-control.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391185406,
+        "path": ".github/workflows/v093-otc-numeric-reconciliation-retry-safe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391184902,
+        "path": ".github/workflows/v093-otc-numeric-reconciliation-safe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391184438,
+        "path": ".github/workflows/v093-otc-schema-full-regression-safe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390128449,
+        "path": ".github/workflows/v093-parallel-workers.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391176634,
+        "path": ".github/workflows/v093-price-basis-diagnostic-readonly.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388831191,
+        "path": ".github/workflows/v093-production-gap-test.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391290876,
+        "path": ".github/workflows/v093-production-release-readonly-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391200315,
+        "path": ".github/workflows/v093-production-scheduler-conflict-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391242437,
+        "path": ".github/workflows/v093-queue-stress-one.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391242478,
+        "path": ".github/workflows/v093-queue-stress-three.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391242459,
+        "path": ".github/workflows/v093-queue-stress-two.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390756928,
+        "path": ".github/workflows/v093-raw-2015-to-2000.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390709485,
+        "path": ".github/workflows/v093-raw-firstpass.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390744214,
+        "path": ".github/workflows/v093-raw-resume.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391175353,
+        "path": ".github/workflows/v093-readonly-integration-probe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388189196,
+        "path": ".github/workflows/v093-remaining-sources.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394753402,
+        "path": ".github/workflows/v093-repair-prelaunch-tests.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391254854,
+        "path": ".github/workflows/v093-retry-exhaustion-corrected.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391254446,
+        "path": ".github/workflows/v093-retry-exhaustion-safety-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390697538,
+        "path": ".github/workflows/v093-stop-all.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390757277,
+        "path": ".github/workflows/v093-stop-prior-raw-once.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394842279,
+        "path": ".github/workflows/v093-taifex-independent-asc.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394231455,
+        "path": ".github/workflows/v093-taifex-independent.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394849391,
+        "path": ".github/workflows/v093-tdcc-independent-asc.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394199526,
+        "path": ".github/workflows/v093-tdcc-independent.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389294427,
+        "path": ".github/workflows/v093-three-year-finmind-gap-supplement.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389413337,
+        "path": ".github/workflows/v093-three-year-monthly-continuation.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389291909,
+        "path": ".github/workflows/v093-three-year-official-gap-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391231128,
+        "path": ".github/workflows/v093-transaction-fencing-prelaunch.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388176113,
+        "path": ".github/workflows/v093-twse-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388811583,
+        "path": ".github/workflows/v093-unified-annual-integration.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388492217,
+        "path": ".github/workflows/v093-unified-preflight.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391305920,
+        "path": ".github/workflows/v093-v2-01-raw.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306021,
+        "path": ".github/workflows/v093-v2-02-qa.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306051,
+        "path": ".github/workflows/v093-v2-03-price.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306068,
+        "path": ".github/workflows/v093-v2-04-financial.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306100,
+        "path": ".github/workflows/v093-v2-05-chip.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392498437,
+        "path": ".github/workflows/v093-v2-06-reconcile-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 393418650,
+        "path": ".github/workflows/v093-v2-07-raw-ascending.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391331063,
+        "path": ".github/workflows/v093-v2-all-month-file-metadata-combined.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391370999,
+        "path": ".github/workflows/v093-v2-consolidated-prelaunch-release-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391354596,
+        "path": ".github/workflows/v093-v2-consolidated-repair-triage-qa.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306218,
+        "path": ".github/workflows/v093-v2-cutover-contract-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391324565,
+        "path": ".github/workflows/v093-v2-drive-guard-historical-adapter-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391356441,
+        "path": ".github/workflows/v093-v2-duplicate-historical-boundary-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391387501,
+        "path": ".github/workflows/v093-v2-final-real-data-launch-smoke.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391328865,
+        "path": ".github/workflows/v093-v2-full-history-inventory-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391373752,
+        "path": ".github/workflows/v093-v2-onepass-five-stage-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391325911,
+        "path": ".github/workflows/v093-v2-real-drive-isolated-historical-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391327364,
+        "path": ".github/workflows/v093-v2-real-historical-sha-crc-repair-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391390313,
+        "path": ".github/workflows/v093-v2-real-native-parser-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391321804,
+        "path": ".github/workflows/v093-v2-shared-lease-adapter-integrated.yml",
+        "state": "disabled_manually"
+      }
+    ],
+    "active_old_triggers": [],
+    "outstanding_old_writers": [],
+    "quarantined_metadata": {
+      "id": 39611764652,
+      "status": "queued",
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "job_count": 0
+    },
+    "read_only": true,
+    "production_activation": false,
+    "passed": true
+  },
+  "production_activation": false,
+  "formal_raw_writes": 0,
+  "formal_data_repaired": 0,
+  "limitation": "Positive missing native adapter acceptance and repair control regression; no claim that all source formats, real corrupted market RAW repairs, production catalogs or long-run quotas are accepted",
+  "implemented_batch_passed": true
+}
