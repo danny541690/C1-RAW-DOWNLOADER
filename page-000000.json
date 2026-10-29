@@ -1,0 +1,1 @@
+{"entry-DESC-bad":{"attempts":0,"definition":{"key":"entry-DESC-bad","period":"2026-10-29","slot":"DESC","source":"TPEx"},"fence":0,"status":"READY"},"entry-DESC-good":{"attempts":0,"definition":{"key":"entry-DESC-good","period":"2026-10-29","slot":"DESC","source":"TPEx"},"fence":0,"status":"READY"}}
