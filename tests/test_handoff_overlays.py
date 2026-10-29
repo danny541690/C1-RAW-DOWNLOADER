@@ -32,3 +32,11 @@ class EmptyClassificationTests(unittest.TestCase):
   from scripts.v093_source_adapters import unconfirmed_empty
   for code in ('SOURCE_STATUS:too many requests','ROW_FIELD_WIDTH_MISMATCH','RESPONSE_DATE_MISMATCH:2000-01-01'):
    self.assertFalse(unconfirmed_empty('TWSE',ValueError(code)))
+
+class RecoveryWorkflowTests(unittest.TestCase):
+ def test_recovery_yaml_reuses_ten_passed_slots_and_runs_only_two_sources(self):
+  import yaml
+  from pathlib import Path
+  d=yaml.load(Path('.github/workflows/jarvis-seven-oldest-side-recovery.yml').read_text(),Loader=yaml.BaseLoader)
+  self.assertEqual(d['jobs']['slots']['strategy']['matrix']['source'],['TWSE','TPEx'])
+  self.assertIn('40968961523',Path('.github/workflows/jarvis-seven-oldest-side-recovery.yml').read_text())
