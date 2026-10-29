@@ -88,3 +88,11 @@
 - [Drive執行設定](https://drive.google.com/file/d/15u9Pg_U-1hshn-fJuBUAVv_il51RS7JN/view)
 - [GitHub觸發後續workflow規則](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)
 - repo config/v093_five_stage_policy.json、scripts/v093_official_repair.py、scripts/v093_official_finmind_gapfill.py、scripts/v093_tdcc_independent.py、scripts/v093_taifex_independent.py、scripts/v093_ndc_independent.py及最近五天修正。
+
+## 10. 依工作量修訂：七來源、十一個候選工作槽（本節取代每來源固定一條）
+
+TWSE、TPEx、MOPS、TDCC各兩槽（DESC與ASC），TAIFEX、NDC、FinMind各一槽，共11。11個workflow目前都只是手動規格預覽，沒有cron或市場寫入；不是已接好11個下載器。每來源仍共享供應商配額，雙向輸出／狀態分區各自隔離。
+
+新增v093_source_partition.py可驗證任務清單按成本分界、頭尾順序、互斥及保留未知適用性。此模組是決定性分配契約，不是已部署的跨GitHub runner租約。相同輸入順序改變不改變分配；任務或成本清單變更需新generation及遷移，不可在執行中直接重分配。
+
+目前依本機39項合併測試通過；既有worker／durable-state測試為真實本機Git與假遠端來源，未測11條新下載程式的真實Drive閉環。上線門檻與阻擋見reports/raw-acceptance/20261029_eleven_slot_preflight/。

@@ -1,0 +1,25 @@
+name: JARVIS seven-source 2 TPEx oldest-first partition preview
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-seven-preview-tpex-asc
+  cancel-in-progress: false
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate source and descending campaign policy
+        run: python -m scripts.v093_seven_source_plan --source TPEx --direction ASC --as-of 2026-10-29 --out results/TPEx-design.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seven-source-TPEx-asc-preview-${{ github.run_id }}
+          path: results/TPEx-design.json
+          retention-days: 30

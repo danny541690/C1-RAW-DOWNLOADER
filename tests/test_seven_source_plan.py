@@ -25,13 +25,18 @@ class SevenSourcePlanTests(unittest.TestCase):
   for k,v in [('official_evidence_id',None),('confirmed_gap',False),('period','2026-10-30'),('definition_unit_frequency_verified',False),('official_source','FinMind')]:
    bad=dict(g);bad[k]=v;self.assertFalse(eligible_gap(bad,'2026-10-29'))
   self.assertEqual(build_plan(self.c,'FinMind','2026-10-29',[g])['eligible_finmind_gap_tasks'],1)
+ def test_bidirectional_slots_only_for_large_sources(self):
+  r=build_plan(self.c,'TDCC','2026-10-29',direction='ASC')
+  self.assertEqual(r['month_priority'][0],'2000-01')
+  with self.assertRaises(ValueError):build_plan(self.c,'NDC','2026-10-29',direction='ASC')
+
  def test_previews_do_not_pretend_months_are_verified_tasks(self):
   for source in SOURCES:
    r=build_plan(self.c,source,'2026-10-29')
    self.assertEqual((r['market_requests'],r['production_writes']),(0,0))
    self.assertTrue(r['readiness_blockers']);self.assertFalse(r['month_count_is_expected_data_unit_denominator'])
- def test_seven_manual_workflows_have_no_live_schedule_or_source_secret(self):
-  paths=list(Path('.github/workflows').glob('jarvis-seven-*-preview.yml'));self.assertEqual(len(paths),7)
+ def test_eleven_manual_workflows_have_no_live_schedule_or_source_secret(self):
+  paths=list(Path('.github/workflows').glob('jarvis-seven-*-preview.yml'));self.assertEqual(len(paths),11)
   for p in paths:
    s=p.read_text();self.assertIn('workflow_dispatch:',s);self.assertNotIn('schedule:',s)
    self.assertNotIn('secrets.',s);self.assertIn('v093_seven_source_plan',s)

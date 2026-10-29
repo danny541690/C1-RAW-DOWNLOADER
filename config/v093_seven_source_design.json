@@ -158,5 +158,84 @@
         "DISABLE_EMBEDDED_SUPPLEMENT_CALLS_AT_CUTOVER"
       ]
     }
+  ],
+  "slots": [
+    {
+      "source": "TWSE",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-01-twse-preview.yml",
+      "lock": "jarvis-seven-twse-desc",
+      "state_branch": "jarvis-source-state/TWSE/DESC"
+    },
+    {
+      "source": "TWSE",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-01-twse-oldest-preview.yml",
+      "lock": "jarvis-seven-twse-asc",
+      "state_branch": "jarvis-source-state/TWSE/ASC"
+    },
+    {
+      "source": "TPEx",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-02-tpex-preview.yml",
+      "lock": "jarvis-seven-tpex-desc",
+      "state_branch": "jarvis-source-state/TPEx/DESC"
+    },
+    {
+      "source": "TPEx",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-02-tpex-oldest-preview.yml",
+      "lock": "jarvis-seven-tpex-asc",
+      "state_branch": "jarvis-source-state/TPEx/ASC"
+    },
+    {
+      "source": "MOPS",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-03-mops-preview.yml",
+      "lock": "jarvis-seven-mops-desc",
+      "state_branch": "jarvis-source-state/MOPS/DESC"
+    },
+    {
+      "source": "MOPS",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-03-mops-oldest-preview.yml",
+      "lock": "jarvis-seven-mops-asc",
+      "state_branch": "jarvis-source-state/MOPS/ASC"
+    },
+    {
+      "source": "TAIFEX",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-04-taifex-preview.yml",
+      "lock": "jarvis-seven-taifex-desc",
+      "state_branch": "jarvis-source-state/TAIFEX/DESC"
+    },
+    {
+      "source": "TDCC",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-05-tdcc-preview.yml",
+      "lock": "jarvis-seven-tdcc-desc",
+      "state_branch": "jarvis-source-state/TDCC/DESC"
+    },
+    {
+      "source": "TDCC",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-05-tdcc-oldest-preview.yml",
+      "lock": "jarvis-seven-tdcc-asc",
+      "state_branch": "jarvis-source-state/TDCC/ASC"
+    },
+    {
+      "source": "NDC",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-06-ndc-preview.yml",
+      "lock": "jarvis-seven-ndc-desc",
+      "state_branch": "jarvis-source-state/NDC/DESC"
+    },
+    {
+      "source": "FinMind",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-07-finmind-preview.yml",
+      "lock": "jarvis-seven-finmind-desc",
+      "state_branch": "jarvis-source-state/FinMind/DESC"
+    }
   ]
 }
