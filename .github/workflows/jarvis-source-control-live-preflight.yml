@@ -1,8 +1,5 @@
-name: JARVIS eleven-slot real Git control preflight
+name: JARVIS twelve-slot real Git control preflight
 on:
-  push:
-    branches: [codex/seven-source-closed-loop-design-20261029]
-    paths: [.github/workflows/jarvis-source-control-live-preflight.yml]
   workflow_dispatch:
 permissions:
   contents: write
@@ -32,7 +29,7 @@ jobs:
     timeout-minutes: 6
     strategy:
       fail-fast: false
-      max-parallel: 11
+      max-parallel: 12
       matrix:
         include:
           - {source: TWSE, slot: DESC}
@@ -42,6 +39,7 @@ jobs:
           - {source: MOPS, slot: DESC}
           - {source: MOPS, slot: ASC}
           - {source: TAIFEX, slot: DESC}
+          - {source: TAIFEX, slot: ASC}
           - {source: TDCC, slot: DESC}
           - {source: TDCC, slot: ASC}
           - {source: NDC, slot: DESC}

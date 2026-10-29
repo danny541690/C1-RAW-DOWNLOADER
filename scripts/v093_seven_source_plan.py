@@ -24,12 +24,12 @@ def validate_config(config):
         if len({x[field] for x in lanes})!=7:raise ValueError('SHARED_'+field.upper())
     from scripts.v093_source_partition import COUNTS
     slots=config['slots']
-    if len(slots)!=11:raise ValueError('EXACT_ELEVEN_SLOTS')
+    if len(slots)!=12:raise ValueError('EXACT_TWELVE_SLOTS')
     for source,count in COUNTS.items():
         selected=[x for x in slots if x['source']==source]
         if len(selected)!=count or {x['direction'] for x in selected}!=({'DESC','ASC'} if count==2 else {'DESC'}):raise ValueError('SLOT_ALLOCATION')
     for field in ('workflow','lock','state_branch'):
-        if len({x[field] for x in slots})!=11:raise ValueError('DUPLICATE_SLOT_'+field)
+        if len({x[field] for x in slots})!=12:raise ValueError('DUPLICATE_SLOT_'+field)
     return config
 
 def eligible_gap(gap, as_of):

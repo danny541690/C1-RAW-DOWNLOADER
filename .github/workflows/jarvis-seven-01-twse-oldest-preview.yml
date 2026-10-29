@@ -1,4 +1,4 @@
-name: JARVIS seven-source 1 TWSE oldest-first partition preview
+name: 證交所排程一之二（1-2）｜最舊往新｜候選預覽
 on:
   workflow_dispatch:
 permissions:
@@ -15,11 +15,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Validate source and descending campaign policy
-        run: python -m scripts.v093_seven_source_plan --source TWSE --direction ASC --as-of 2026-10-29 --out results/TWSE-design.json
+      - name: Validate source and direction
+        run: python -m scripts.v093_seven_source_plan --source TWSE --direction ASC --as-of 2026-10-29 --out results/TWSE-ASC-design.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: seven-source-TWSE-asc-preview-${{ github.run_id }}
-          path: results/TWSE-design.json
+          name: source-1-2-preview-${{ github.run_id }}
+          path: results/TWSE-ASC-design.json
           retention-days: 30

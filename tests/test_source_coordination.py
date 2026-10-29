@@ -23,7 +23,7 @@ class CoordinationTests(unittest.TestCase):
   self.path=Path(self.tmp.name)/'state.db';self.store=SQLiteCAS(self.path);self.now=[1000]
   self.c=Coordinator(self.store,'TWSE',clock=lambda:self.now[0],ttl=20)
  def add(self,n=1):self.c.add([dict(source='TWSE',key=str(i),slot='DESC',period=f'2026-10-{i+1:02d}') for i in range(n)])
- def test_eleven_simultaneous_workers_never_duplicate_or_cross_sources(self):
+ def test_twelve_simultaneous_workers_never_duplicate_or_cross_sources(self):
   jobs=[];seen=[];lock=threading.Lock()
   for source,count in COUNTS.items():
    c=Coordinator(self.store,source)
@@ -38,8 +38,8 @@ class CoordinationTests(unittest.TestCase):
     c.begin_request(t);raw=(source+t['key']).encode();sha=hashlib.sha256(raw).hexdigest()
     c.saved(t,sha);c.verified(t,sha,True)
     with lock:seen.append((source,t['key']))
-  with concurrent.futures.ThreadPoolExecutor(max_workers=11) as pool:list(pool.map(work,jobs))
-  self.assertEqual(len(seen),44);self.assertEqual(len(set(seen)),44)
+  with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:list(pool.map(work,jobs))
+  self.assertEqual(len(seen),48);self.assertEqual(len(set(seen)),48)
   for source in COUNTS:
    _,s=self.store.read(source);self.assertTrue(all(t['status']=='RAW_BASIC_VERIFIED' for t in s['tasks'].values()))
  def test_separate_processes_share_one_durable_claim(self):

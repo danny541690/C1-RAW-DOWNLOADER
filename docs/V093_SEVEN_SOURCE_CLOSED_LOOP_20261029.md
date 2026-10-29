@@ -120,3 +120,7 @@ TWSE、TPEx、MOPS、TDCC各兩槽（DESC與ASC），TAIFEX、NDC、FinMind各�
 新增一次性jarvis-source-control-live-preflight.yml：seed七個專用QA分支，十一個獨立GitHub worker寫入各自測試槽，再由另一個全新runner讀回全部來源。這項驗證使用真實GitHub保存／競爭／讀回，payload是合成控制資料，沒有市場HTTP、Google Drive或正式資料庫寫入。它不是第十二條正式來源排程，沒有cron。
 
 本機合併87項與十一預覽YAML通過；正式遠端驗證結果以該workflow實際run為準，不提前宣稱成功。來源executor、真實Drive資料閉環、自動續派送的GitHub API接線、一次停舊切新與流量工期仍待驗收。
+
+## 14. 最新命名與十二條配置
+
+以docs/V093_SCHEDULE_NAMES_20261029.md為準：證交所1-1/1-2、櫃買2-1/2-2、公開資訊3-1/3-2、集保4-1/4-2、期交所5-1/5-2、國發會6-1、FinMind7-1。期交所新增ASC後總數12；其他十一槽描述保留為歷史版本，非現行配置。來源與方向狀態鍵不變，改名不重設進度。

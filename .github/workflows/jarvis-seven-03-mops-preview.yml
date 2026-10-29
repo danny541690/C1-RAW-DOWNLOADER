@@ -1,10 +1,10 @@
-name: JARVIS seven-source 3 MOPS design preview
+name: 公開資訊觀測站排程三之一（3-1）｜最新往舊｜候選預覽
 on:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: jarvis-seven-preview-mops
+  group: jarvis-seven-preview-mops-desc
   cancel-in-progress: false
 jobs:
   preview:
@@ -15,11 +15,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Validate source and descending campaign policy
-        run: python -m scripts.v093_seven_source_plan --source MOPS --as-of 2026-10-29 --out results/MOPS-design.json
+      - name: Validate source and direction
+        run: python -m scripts.v093_seven_source_plan --source MOPS --direction DESC --as-of 2026-10-29 --out results/MOPS-DESC-design.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: seven-source-MOPS-preview-${{ github.run_id }}
-          path: results/MOPS-design.json
+          name: source-3-1-preview-${{ github.run_id }}
+          path: results/MOPS-DESC-design.json
           retention-days: 30

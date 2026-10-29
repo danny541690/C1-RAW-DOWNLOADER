@@ -2,7 +2,7 @@ import random,unittest
 from scripts.v093_source_partition import COUNTS,partition
 class SourcePartitionTests(unittest.TestCase):
  def rows(self,n=10):return [dict(source='TDCC',key=str(i),period=f'2025-{i+1:02d}',availability='PROVEN_APPLICABLE') for i in range(n)]
- def test_exact_eleven_slots_for_seven_sources(self):self.assertEqual((len(COUNTS),sum(COUNTS.values())),(7,11))
+ def test_exact_twelve_slots_for_seven_sources(self):self.assertEqual((len(COUNTS),sum(COUNTS.values())),(7,12))
  def test_both_frontiers_cover_every_task_exactly_once(self):
   rows=self.rows();r=partition(rows,'TDCC','2026-10-29')
   self.assertFalse(set(r['latest_first'])&set(r['oldest_first']))

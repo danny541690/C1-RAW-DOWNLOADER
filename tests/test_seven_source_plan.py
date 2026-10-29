@@ -35,8 +35,8 @@ class SevenSourcePlanTests(unittest.TestCase):
    r=build_plan(self.c,source,'2026-10-29')
    self.assertEqual((r['market_requests'],r['production_writes']),(0,0))
    self.assertTrue(r['readiness_blockers']);self.assertFalse(r['month_count_is_expected_data_unit_denominator'])
- def test_eleven_manual_workflows_have_no_live_schedule_or_source_secret(self):
-  paths=list(Path('.github/workflows').glob('jarvis-seven-*-preview.yml'));self.assertEqual(len(paths),11)
+ def test_twelve_manual_workflows_have_no_live_schedule_or_source_secret(self):
+  paths=list(Path('.github/workflows').glob('jarvis-seven-*-preview.yml'));self.assertEqual(len(paths),12)
   for p in paths:
    s=p.read_text();self.assertIn('workflow_dispatch:',s);self.assertNotIn('schedule:',s)
    self.assertNotIn('secrets.',s);self.assertIn('v093_seven_source_plan',s)

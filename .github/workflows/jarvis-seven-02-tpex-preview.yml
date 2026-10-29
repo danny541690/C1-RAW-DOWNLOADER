@@ -1,10 +1,10 @@
-name: JARVIS seven-source 2 TPEx design preview
+name: 櫃買中心排程二之一（2-1）｜最新往舊｜候選預覽
 on:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: jarvis-seven-preview-tpex
+  group: jarvis-seven-preview-tpex-desc
   cancel-in-progress: false
 jobs:
   preview:
@@ -15,11 +15,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Validate source and descending campaign policy
-        run: python -m scripts.v093_seven_source_plan --source TPEx --as-of 2026-10-29 --out results/TPEx-design.json
+      - name: Validate source and direction
+        run: python -m scripts.v093_seven_source_plan --source TPEx --direction DESC --as-of 2026-10-29 --out results/TPEx-DESC-design.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: seven-source-TPEx-preview-${{ github.run_id }}
-          path: results/TPEx-design.json
+          name: source-2-1-preview-${{ github.run_id }}
+          path: results/TPEx-DESC-design.json
           retention-days: 30

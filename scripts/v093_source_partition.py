@@ -1,6 +1,6 @@
 """Deterministic workload partition contract, not a distributed execution lease."""
 import datetime as dt,hashlib,json,math
-COUNTS={'TWSE':2,'TPEx':2,'MOPS':2,'TAIFEX':1,'TDCC':2,'NDC':1,'FinMind':1}
+COUNTS={'TWSE':2,'TPEx':2,'MOPS':2,'TAIFEX':2,'TDCC':2,'NDC':1,'FinMind':1}
 
 def partition(rows,source,as_of):
     if source not in COUNTS:raise ValueError('UNKNOWN_SOURCE')

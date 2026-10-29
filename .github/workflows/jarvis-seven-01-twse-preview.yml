@@ -1,10 +1,10 @@
-name: JARVIS seven-source 1 TWSE design preview
+name: 證交所排程一之一（1-1）｜最新往舊｜候選預覽
 on:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: jarvis-seven-preview-twse
+  group: jarvis-seven-preview-twse-desc
   cancel-in-progress: false
 jobs:
   preview:
@@ -15,11 +15,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Validate source and descending campaign policy
-        run: python -m scripts.v093_seven_source_plan --source TWSE --as-of 2026-10-29 --out results/TWSE-design.json
+      - name: Validate source and direction
+        run: python -m scripts.v093_seven_source_plan --source TWSE --direction DESC --as-of 2026-10-29 --out results/TWSE-DESC-design.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: seven-source-TWSE-preview-${{ github.run_id }}
-          path: results/TWSE-design.json
+          name: source-1-1-preview-${{ github.run_id }}
+          path: results/TWSE-DESC-design.json
           retention-days: 30
