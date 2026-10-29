@@ -1,0 +1,77 @@
+{
+  "schema": "JARVIS_FROZEN_HANDOFF_REPLAY_V1",
+  "frozen_run": 40806985547,
+  "ledger_files": 2389,
+  "input_receipts": 520703,
+  "normalized_receipts": 472837,
+  "issues": 47866,
+  "issues_by_reason": {
+    "PERIOD_UNPROVEN": 47499,
+    "SOURCE_UNKNOWN": 367
+  },
+  "sources": {
+    "FinMind": {
+      "receipts": 2711,
+      "unique_tasks": 2711,
+      "actions": {
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 395,
+        "VERIFY_RETAINED_RAW_FIRST": 2316
+      }
+    },
+    "MOPS": {
+      "receipts": 54657,
+      "unique_tasks": 23512,
+      "actions": {
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 15328,
+        "VERIFY_RETAINED_RAW_FIRST": 8174,
+        "RETRY_EXHAUSTED_REVIEW": 10
+      }
+    },
+    "NDC": {
+      "receipts": 322,
+      "unique_tasks": 322,
+      "actions": {
+        "VERIFY_RETAINED_RAW_FIRST": 320,
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2
+      }
+    },
+    "TAIFEX": {
+      "receipts": 9546,
+      "unique_tasks": 5061,
+      "actions": {
+        "VERIFY_RETAINED_RAW_FIRST": 3216,
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 1845
+      }
+    },
+    "TDCC": {
+      "receipts": 1330,
+      "unique_tasks": 665,
+      "actions": {
+        "VERIFY_RETAINED_RAW_FIRST": 665
+      }
+    },
+    "TPEx": {
+      "receipts": 224719,
+      "unique_tasks": 62814,
+      "actions": {
+        "VERIFY_RETAINED_RAW_FIRST": 60174,
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2636,
+        "VERSION_CONFLICT_REVIEW": 4
+      }
+    },
+    "TWSE": {
+      "receipts": 179552,
+      "unique_tasks": 47042,
+      "actions": {
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 10776,
+        "VERIFY_RETAINED_RAW_FIRST": 36257,
+        "RETRY_EXHAUSTED_REVIEW": 1,
+        "VERSION_CONFLICT_REVIEW": 8
+      }
+    }
+  },
+  "market_requests": 0,
+  "drive_requests": 0,
+  "production_writes": 0,
+  "ready_for_production_cutover": false
+}
