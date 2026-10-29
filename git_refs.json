@@ -1,0 +1,752 @@
+[
+  {
+    "ref": "refs/heads/codex/acceptance-scheduler-3-workers-20261028",
+    "node_id": "REF_kwDOVN8wGNoAOHJlZnMvaGVhZHMvY29kZXgvYWNjZXB0YW5jZS1zY2hlZHVsZXItMy13b3JrZXJzLTIwMjYxMDI4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/codex/acceptance-scheduler-3-workers-20261028",
+    "object": {
+      "sha": "131962e46c2d8c6914da7008aa1714651e9da331",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/131962e46c2d8c6914da7008aa1714651e9da331"
+    }
+  },
+  {
+    "ref": "refs/heads/codex/pause-legacy-handoff-20261029",
+    "node_id": "REF_kwDOVN8wGNoALnJlZnMvaGVhZHMvY29kZXgvcGF1c2UtbGVnYWN5LWhhbmRvZmYtMjAyNjEwMjk",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/codex/pause-legacy-handoff-20261029",
+    "object": {
+      "sha": "7668b3f334f12bd91f31a48d3462c3a59632dc37",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/7668b3f334f12bd91f31a48d3462c3a59632dc37"
+    }
+  },
+  {
+    "ref": "refs/heads/codex/seven-source-closed-loop-design-20261029",
+    "node_id": "REF_kwDOVN8wGNoAOXJlZnMvaGVhZHMvY29kZXgvc2V2ZW4tc291cmNlLWNsb3NlZC1sb29wLWRlc2lnbi0yMDI2MTAyOQ",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/codex/seven-source-closed-loop-design-20261029",
+    "object": {
+      "sha": "eeca2da25796550dd28f0aad6bf510943cb57e21",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/eeca2da25796550dd28f0aad6bf510943cb57e21"
+    }
+  },
+  {
+    "ref": "refs/heads/docs/acceptance-acceleration-20261028",
+    "node_id": "REF_kwDOVN8wGNoAMHJlZnMvaGVhZHMvZG9jcy9hY2NlcHRhbmNlLWFjY2VsZXJhdGlvbi0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/docs/acceptance-acceleration-20261028",
+    "object": {
+      "sha": "18fdb8d315c37f708eaad3f635222a54922289e7",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/18fdb8d315c37f708eaad3f635222a54922289e7"
+    }
+  },
+  {
+    "ref": "refs/heads/docs/acceptance-progress-20261028-v2",
+    "node_id": "REF_kwDOVN8wGNoAL3JlZnMvaGVhZHMvZG9jcy9hY2NlcHRhbmNlLXByb2dyZXNzLTIwMjYxMDI4LXYy",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/docs/acceptance-progress-20261028-v2",
+    "object": {
+      "sha": "4da5947b8f2871deccccfd536d857ff340e20adb",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/4da5947b8f2871deccccfd536d857ff340e20adb"
+    }
+  },
+  {
+    "ref": "refs/heads/evidence/esb-44keys-20261028",
+    "node_id": "REF_kwDOVN8wGNoAJ3JlZnMvaGVhZHMvZXZpZGVuY2UvZXNiLTQ0a2V5cy0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/evidence/esb-44keys-20261028",
+    "object": {
+      "sha": "c76cbb3aec3feafe4899f59994525a9982fc27ff",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/c76cbb3aec3feafe4899f59994525a9982fc27ff"
+    }
+  },
+  {
+    "ref": "refs/heads/feat/prelaunch-one-batch-20261028",
+    "node_id": "REF_kwDOVN8wGNoALHJlZnMvaGVhZHMvZmVhdC9wcmVsYXVuY2gtb25lLWJhdGNoLTIwMjYxMDI4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/feat/prelaunch-one-batch-20261028",
+    "object": {
+      "sha": "94ed63d52be54a46308de0c46fbde43feb65dc1e",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/94ed63d52be54a46308de0c46fbde43feb65dc1e"
+    }
+  },
+  {
+    "ref": "refs/heads/feat/round3-native-supplement-acceptance-20261028",
+    "node_id": "REF_kwDOVN8wGNoAPHJlZnMvaGVhZHMvZmVhdC9yb3VuZDMtbmF0aXZlLXN1cHBsZW1lbnQtYWNjZXB0YW5jZS0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/feat/round3-native-supplement-acceptance-20261028",
+    "object": {
+      "sha": "c672602767df1b3abf0b880435e8b7810ec065ef",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/c672602767df1b3abf0b880435e8b7810ec065ef"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/dated-esb-raw-only-20261028",
+    "node_id": "REF_kwDOVN8wGNoAKnJlZnMvaGVhZHMvZml4L2RhdGVkLWVzYi1yYXctb25seS0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/dated-esb-raw-only-20261028",
+    "object": {
+      "sha": "8c7f3cc94f9fdbaf4ed8d64daef335748683b638",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/8c7f3cc94f9fdbaf4ed8d64daef335748683b638"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/integrated-acceptance-resume-20261028",
+    "node_id": "REF_kwDOVN8wGNoANHJlZnMvaGVhZHMvZml4L2ludGVncmF0ZWQtYWNjZXB0YW5jZS1yZXN1bWUtMjAyNjEwMjg",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/integrated-acceptance-resume-20261028",
+    "object": {
+      "sha": "c013b426a80dfbb3c5b1671d01802aeca4a911bc",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/c013b426a80dfbb3c5b1671d01802aeca4a911bc"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/native-price-cross-comparison-20261028",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvZml4L25hdGl2ZS1wcmljZS1jcm9zcy1jb21wYXJpc29uLTIwMjYxMDI4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/native-price-cross-comparison-20261028",
+    "object": {
+      "sha": "e61f811a4d2701d8137976cd02c554a125f40473",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/e61f811a4d2701d8137976cd02c554a125f40473"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/official-missing-financial-v8-20261025",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvZml4L29mZmljaWFsLW1pc3NpbmctZmluYW5jaWFsLXY4LTIwMjYxMDI1",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/official-missing-financial-v8-20261025",
+    "object": {
+      "sha": "93749358acdf077e84515b5fbe7c2b314671c157",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/93749358acdf077e84515b5fbe7c2b314671c157"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/official-recovery-v6-20261024",
+    "node_id": "REF_kwDOVN8wGNoALHJlZnMvaGVhZHMvZml4L29mZmljaWFsLXJlY292ZXJ5LXY2LTIwMjYxMDI0",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/official-recovery-v6-20261024",
+    "object": {
+      "sha": "347ba6b8d51c8d934dd94e2aac8fbec2ec06569e",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/347ba6b8d51c8d934dd94e2aac8fbec2ec06569e"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/official-targeted-retry-v7-20261024",
+    "node_id": "REF_kwDOVN8wGNoAMnJlZnMvaGVhZHMvZml4L29mZmljaWFsLXRhcmdldGVkLXJldHJ5LXY3LTIwMjYxMDI0",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/official-targeted-retry-v7-20261024",
+    "object": {
+      "sha": "441ad2657bd4b401f0dc6187785562a62bd056d3",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/441ad2657bd4b401f0dc6187785562a62bd056d3"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/official-zero-results-v5",
+    "node_id": "REF_kwDOVN8wGNoAJ3JlZnMvaGVhZHMvZml4L29mZmljaWFsLXplcm8tcmVzdWx0cy12NQ",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/official-zero-results-v5",
+    "object": {
+      "sha": "0de03dc15d868b89a680d9de67838f4492c986e7",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/0de03dc15d868b89a680d9de67838f4492c986e7"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/prelaunch-shared-repair-20261024",
+    "node_id": "REF_kwDOVN8wGNoAL3JlZnMvaGVhZHMvZml4L3ByZWxhdW5jaC1zaGFyZWQtcmVwYWlyLTIwMjYxMDI0",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/prelaunch-shared-repair-20261024",
+    "object": {
+      "sha": "6df706a35af8756e824021c14cec4ae22fe26045",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/6df706a35af8756e824021c14cec4ae22fe26045"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-catalog-parity-v6-20261025",
+    "node_id": "REF_kwDOVN8wGNoAMHJlZnMvaGVhZHMvZml4L3RhaWZleC1jYXRhbG9nLXBhcml0eS12Ni0yMDI2MTAyNQ",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-catalog-parity-v6-20261025",
+    "object": {
+      "sha": "ec211c9d2a997f1c07410082cd5a6eadfe2a6844",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/ec211c9d2a997f1c07410082cd5a6eadfe2a6844"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-ccp-mirror-v81-20261025",
+    "node_id": "REF_kwDOVN8wGNoALXJlZnMvaGVhZHMvZml4L3RhaWZleC1jY3AtbWlycm9yLXY4MS0yMDI2MTAyNQ",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-ccp-mirror-v81-20261025",
+    "object": {
+      "sha": "bf844f118e46f284e37fb070f4358e3704593799",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/bf844f118e46f284e37fb070f4358e3704593799"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-futures-csv-schema-v51-20261025",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvZml4L3RhaWZleC1mdXR1cmVzLWNzdi1zY2hlbWEtdjUxLTIwMjYxMDI1",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-futures-csv-schema-v51-20261025",
+    "object": {
+      "sha": "4a4a385d1fc2e9ea83087a4a0ba6a5f2e4e691b7",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/4a4a385d1fc2e9ea83087a4a0ba6a5f2e4e691b7"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-native-api-csv-v5-20261025",
+    "node_id": "REF_kwDOVN8wGNoAMHJlZnMvaGVhZHMvZml4L3RhaWZleC1uYXRpdmUtYXBpLWNzdi12NS0yMDI2MTAyNQ",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-native-api-csv-v5-20261025",
+    "object": {
+      "sha": "1d1c403de856449eaa886f3628db043f82a7866d",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/1d1c403de856449eaa886f3628db043f82a7866d"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-native-layout-v3",
+    "node_id": "REF_kwDOVN8wGNoAJnJlZnMvaGVhZHMvZml4L3RhaWZleC1uYXRpdmUtbGF5b3V0LXYz",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-native-layout-v3",
+    "object": {
+      "sha": "e6e48c8b93ff202cf93ed9942d52cfebec969716",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/e6e48c8b93ff202cf93ed9942d52cfebec969716"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-official-mirrors-v7-20261025",
+    "node_id": "REF_kwDOVN8wGNoAMnJlZnMvaGVhZHMvZml4L3RhaWZleC1vZmZpY2lhbC1taXJyb3JzLXY3LTIwMjYxMDI1",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-official-mirrors-v7-20261025",
+    "object": {
+      "sha": "ef6a8a16a992a2a9f3a3a4b06a3c7aba2877d940",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/ef6a8a16a992a2a9f3a3a4b06a3c7aba2877d940"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-options-layout-v31",
+    "node_id": "REF_kwDOVN8wGNoAKHJlZnMvaGVhZHMvZml4L3RhaWZleC1vcHRpb25zLWxheW91dC12MzE",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-options-layout-v31",
+    "object": {
+      "sha": "9cf320973f9ff3e946472e8a45ec031dfb19f8e4",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/9cf320973f9ff3e946472e8a45ec031dfb19f8e4"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-peer-recovery-v4-20261024",
+    "node_id": "REF_kwDOVN8wGNoAL3JlZnMvaGVhZHMvZml4L3RhaWZleC1wZWVyLXJlY292ZXJ5LXY0LTIwMjYxMDI0",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-peer-recovery-v4-20261024",
+    "object": {
+      "sha": "36f3e915ae0865a0d72e496222dafd686c167243",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/36f3e915ae0865a0d72e496222dafd686c167243"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-route-recovery-v8-20261025",
+    "node_id": "REF_kwDOVN8wGNoAMHJlZnMvaGVhZHMvZml4L3RhaWZleC1yb3V0ZS1yZWNvdmVyeS12OC0yMDI2MTAyNQ",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-route-recovery-v8-20261025",
+    "object": {
+      "sha": "944d18a61fc7807eb19397aeb4a4d87ce62d674e",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/944d18a61fc7807eb19397aeb4a4d87ce62d674e"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-short-cooldown-v82-20261025",
+    "node_id": "REF_kwDOVN8wGNoAMXJlZnMvaGVhZHMvZml4L3RhaWZleC1zaG9ydC1jb29sZG93bi12ODItMjAyNjEwMjU",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-short-cooldown-v82-20261025",
+    "object": {
+      "sha": "c6e23b77d54f4ff815980052bf8dedc9a69e97e2",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/c6e23b77d54f4ff815980052bf8dedc9a69e97e2"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-summary-null-v61-20261025",
+    "node_id": "REF_kwDOVN8wGNoAL3JlZnMvaGVhZHMvZml4L3RhaWZleC1zdW1tYXJ5LW51bGwtdjYxLTIwMjYxMDI1",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-summary-null-v61-20261025",
+    "object": {
+      "sha": "dd61daa3bf9bc18ad3739ce779b5a176d9026454",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/dd61daa3bf9bc18ad3739ce779b5a176d9026454"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/taifex-v3-handoff",
+    "node_id": "REF_kwDOVN8wGNoAIHJlZnMvaGVhZHMvZml4L3RhaWZleC12My1oYW5kb2Zm",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/taifex-v3-handoff",
+    "object": {
+      "sha": "cf87deda977eb2bfff8e81435977854b0ceb4feb",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/cf87deda977eb2bfff8e81435977854b0ceb4feb"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/tdcc-history-restart-20261024",
+    "node_id": "REF_kwDOVN8wGNoALHJlZnMvaGVhZHMvZml4L3RkY2MtaGlzdG9yeS1yZXN0YXJ0LTIwMjYxMDI0",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/tdcc-history-restart-20261024",
+    "object": {
+      "sha": "6e9fd498eb18e77acbcaea45cd3ed9801e613f1c",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/6e9fd498eb18e77acbcaea45cd3ed9801e613f1c"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/tdcc-progress-v6-20261024",
+    "node_id": "REF_kwDOVN8wGNoAKHJlZnMvaGVhZHMvZml4L3RkY2MtcHJvZ3Jlc3MtdjYtMjAyNjEwMjQ",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/tdcc-progress-v6-20261024",
+    "object": {
+      "sha": "915e8abe8839d9ff067bf36d1daafac8d98b72dc",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/915e8abe8839d9ff067bf36d1daafac8d98b72dc"
+    }
+  },
+  {
+    "ref": "refs/heads/fix/tdcc-timeout-and-requested-floor",
+    "node_id": "REF_kwDOVN8wGNoAL3JlZnMvaGVhZHMvZml4L3RkY2MtdGltZW91dC1hbmQtcmVxdWVzdGVkLWZsb29y",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/fix/tdcc-timeout-and-requested-floor",
+    "object": {
+      "sha": "6ce946e6e39a348ae35630680b58b193b5bffa42",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/6ce946e6e39a348ae35630680b58b193b5bffa42"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-acceptance-state/inventory",
+    "node_id": "REF_kwDOVN8wGNoALHJlZnMvaGVhZHMvamFydmlzLWFjY2VwdGFuY2Utc3RhdGUvaW52ZW50b3J5",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-acceptance-state/inventory",
+    "object": {
+      "sha": "e3f4522c3cdbae0725ef8ecb9618c27c997a7a4a",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/e3f4522c3cdbae0725ef8ecb9618c27c997a7a4a"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-acceptance-state/reports",
+    "node_id": "REF_kwDOVN8wGNoAKnJlZnMvaGVhZHMvamFydmlzLWFjY2VwdGFuY2Utc3RhdGUvcmVwb3J0cw",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-acceptance-state/reports",
+    "object": {
+      "sha": "eeb17fdf0c725b1a1905ca0b7f8ab0e11e9c392f",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/eeb17fdf0c725b1a1905ca0b7f8ab0e11e9c392f"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-acceptance-state/worker-0",
+    "node_id": "REF_kwDOVN8wGNoAK3JlZnMvaGVhZHMvamFydmlzLWFjY2VwdGFuY2Utc3RhdGUvd29ya2VyLTA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-acceptance-state/worker-0",
+    "object": {
+      "sha": "b28480a5232f538f6738c90fd2ec59c74dfad12f",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/b28480a5232f538f6738c90fd2ec59c74dfad12f"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-acceptance-state/worker-1",
+    "node_id": "REF_kwDOVN8wGNoAK3JlZnMvaGVhZHMvamFydmlzLWFjY2VwdGFuY2Utc3RhdGUvd29ya2VyLTE",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-acceptance-state/worker-1",
+    "object": {
+      "sha": "cb768828b1fd16ac9ffb90e5386ba374fd3fb019",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/cb768828b1fd16ac9ffb90e5386ba374fd3fb019"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-acceptance-state/worker-2",
+    "node_id": "REF_kwDOVN8wGNoAK3JlZnMvaGVhZHMvamFydmlzLWFjY2VwdGFuY2Utc3RhdGUvd29ya2VyLTI",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-acceptance-state/worker-2",
+    "object": {
+      "sha": "8304f8fb592cf51f0cc5e6331f79cb7ef2918443",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/8304f8fb592cf51f0cc5e6331f79cb7ef2918443"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40796907530-1/FinMind",
+    "node_id": "REF_kwDOVN8wGNoAOHJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA3OTY5MDc1MzAtMS9GaW5NaW5k",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40796907530-1/FinMind",
+    "object": {
+      "sha": "a65f892cd1018fe1df85aadc6dd32fc1d79bb770",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/a65f892cd1018fe1df85aadc6dd32fc1d79bb770"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40796907530-1/MOPS",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA3OTY5MDc1MzAtMS9NT1BT",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40796907530-1/MOPS",
+    "object": {
+      "sha": "ddef107548509ecd4bfe8691768b29e406c94a47",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/ddef107548509ecd4bfe8691768b29e406c94a47"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40796907530-1/NDC",
+    "node_id": "REF_kwDOVN8wGNoANHJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA3OTY5MDc1MzAtMS9OREM",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40796907530-1/NDC",
+    "object": {
+      "sha": "0cdcd55e8bc65392b15618342ef2249181de3bc5",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/0cdcd55e8bc65392b15618342ef2249181de3bc5"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40796907530-1/TAIFEX",
+    "node_id": "REF_kwDOVN8wGNoAN3JlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA3OTY5MDc1MzAtMS9UQUlGRVg",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40796907530-1/TAIFEX",
+    "object": {
+      "sha": "fb67cf93a0dbd08764e57885edc8d21c0b87fc65",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/fb67cf93a0dbd08764e57885edc8d21c0b87fc65"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40796907530-1/TDCC",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA3OTY5MDc1MzAtMS9UREND",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40796907530-1/TDCC",
+    "object": {
+      "sha": "753fe2f58551c56e9e6e46bc38f8eda1c372417a",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/753fe2f58551c56e9e6e46bc38f8eda1c372417a"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40796907530-1/TPEx",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA3OTY5MDc1MzAtMS9UUEV4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40796907530-1/TPEx",
+    "object": {
+      "sha": "ea997f82b44ea34fcb6793783bfa08ec207a07e7",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/ea997f82b44ea34fcb6793783bfa08ec207a07e7"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40796907530-1/TWSE",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA3OTY5MDc1MzAtMS9UV1NF",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40796907530-1/TWSE",
+    "object": {
+      "sha": "4fead24aa4c6a67adaac138b79901ff182bd1500",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/4fead24aa4c6a67adaac138b79901ff182bd1500"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40802230135-1/FinMind",
+    "node_id": "REF_kwDOVN8wGNoAOHJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA4MDIyMzAxMzUtMS9GaW5NaW5k",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40802230135-1/FinMind",
+    "object": {
+      "sha": "19cc218bd4b98df445932d5acef1310bd49a580d",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/19cc218bd4b98df445932d5acef1310bd49a580d"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40802230135-1/MOPS",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA4MDIyMzAxMzUtMS9NT1BT",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40802230135-1/MOPS",
+    "object": {
+      "sha": "ed43d3b9d1eec340aac2deafa0236f8fe934c8a1",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/ed43d3b9d1eec340aac2deafa0236f8fe934c8a1"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40802230135-1/NDC",
+    "node_id": "REF_kwDOVN8wGNoANHJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA4MDIyMzAxMzUtMS9OREM",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40802230135-1/NDC",
+    "object": {
+      "sha": "ab0b27367996deab395af6856d3dac4904a112ba",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/ab0b27367996deab395af6856d3dac4904a112ba"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40802230135-1/TAIFEX",
+    "node_id": "REF_kwDOVN8wGNoAN3JlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA4MDIyMzAxMzUtMS9UQUlGRVg",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40802230135-1/TAIFEX",
+    "object": {
+      "sha": "20607aa9c7ebb62ee1f209203a95bfb062376e57",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/20607aa9c7ebb62ee1f209203a95bfb062376e57"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40802230135-1/TDCC",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA4MDIyMzAxMzUtMS9UREND",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40802230135-1/TDCC",
+    "object": {
+      "sha": "0c03f13aa076eb4a215391c9be83494d6174587b",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/0c03f13aa076eb4a215391c9be83494d6174587b"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40802230135-1/TPEx",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA4MDIyMzAxMzUtMS9UUEV4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40802230135-1/TPEx",
+    "object": {
+      "sha": "c3f4009f3b758e54b621205147a6181cf352f4cb",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/c3f4009f3b758e54b621205147a6181cf352f4cb"
+    }
+  },
+  {
+    "ref": "refs/heads/jarvis-source-preflight/40802230135-1/TWSE",
+    "node_id": "REF_kwDOVN8wGNoANXJlZnMvaGVhZHMvamFydmlzLXNvdXJjZS1wcmVmbGlnaHQvNDA4MDIyMzAxMzUtMS9UV1NF",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/jarvis-source-preflight/40802230135-1/TWSE",
+    "object": {
+      "sha": "d41216dbd50728abda42a55792bc16384c8aa771",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/d41216dbd50728abda42a55792bc16384c8aa771"
+    }
+  },
+  {
+    "ref": "refs/heads/main",
+    "node_id": "REF_kwDOVN8wGK9yZWZzL2hlYWRzL21haW4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/main",
+    "object": {
+      "sha": "623c5ba816e0deeb86aa17227f0a205dcac28ff3",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/623c5ba816e0deeb86aa17227f0a205dcac28ff3"
+    }
+  },
+  {
+    "ref": "refs/heads/release/postlaunch-gap-route-20261027",
+    "node_id": "REF_kwDOVN8wGNoAMHJlZnMvaGVhZHMvcmVsZWFzZS9wb3N0bGF1bmNoLWdhcC1yb3V0ZS0yMDI2MTAyNw",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/release/postlaunch-gap-route-20261027",
+    "object": {
+      "sha": "e01d933c18832251452f3d6ec07e2a9ab1bd1bf8",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/e01d933c18832251452f3d6ec07e2a9ab1bd1bf8"
+    }
+  },
+  {
+    "ref": "refs/heads/release/raw-repair-consolidated-20261027",
+    "node_id": "REF_kwDOVN8wGNoAM3JlZnMvaGVhZHMvcmVsZWFzZS9yYXctcmVwYWlyLWNvbnNvbGlkYXRlZC0yMDI2MTAyNw",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/release/raw-repair-consolidated-20261027",
+    "object": {
+      "sha": "77b0715c1cc063b8961d852067494ea393356231",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/77b0715c1cc063b8961d852067494ea393356231"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/eight-group-progress-followup-20261028",
+    "node_id": "REF_kwDOVN8wGNoAOXJlZnMvaGVhZHMvcmVwb3J0cy9laWdodC1ncm91cC1wcm9ncmVzcy1mb2xsb3d1cC0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/eight-group-progress-followup-20261028",
+    "object": {
+      "sha": "7f9bf37b0a3b11d06a31722abf6fe8ba4e38c87e",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/7f9bf37b0a3b11d06a31722abf6fe8ba4e38c87e"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/jarvis-merged-tests-20261027-v1",
+    "node_id": "REF_kwDOVN8wGNoAMnJlZnMvaGVhZHMvcmVwb3J0cy9qYXJ2aXMtbWVyZ2VkLXRlc3RzLTIwMjYxMDI3LXYx",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/jarvis-merged-tests-20261027-v1",
+    "object": {
+      "sha": "926fcee2996141b74bab3f7679a44222a8ed4e6a",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/926fcee2996141b74bab3f7679a44222a8ed4e6a"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/jarvis-merged-tests-20261027-v2",
+    "node_id": "REF_kwDOVN8wGNoAMnJlZnMvaGVhZHMvcmVwb3J0cy9qYXJ2aXMtbWVyZ2VkLXRlc3RzLTIwMjYxMDI3LXYy",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/jarvis-merged-tests-20261027-v2",
+    "object": {
+      "sha": "d630a366685c2a6bc35c0ea9263871b0f2d7071d",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/d630a366685c2a6bc35c0ea9263871b0f2d7071d"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/jarvis-merged-tests-20261027-v3",
+    "node_id": "REF_kwDOVN8wGNoAMnJlZnMvaGVhZHMvcmVwb3J0cy9qYXJ2aXMtbWVyZ2VkLXRlc3RzLTIwMjYxMDI3LXYz",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/jarvis-merged-tests-20261027-v3",
+    "object": {
+      "sha": "73905ace201add49032cd6024194cf8ab524eca4",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/73905ace201add49032cd6024194cf8ab524eca4"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/jarvis-merged-tests-20261027-v4",
+    "node_id": "REF_kwDOVN8wGNoAMnJlZnMvaGVhZHMvcmVwb3J0cy9qYXJ2aXMtbWVyZ2VkLXRlc3RzLTIwMjYxMDI3LXY0",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/jarvis-merged-tests-20261027-v4",
+    "object": {
+      "sha": "13ebc2945d617370afde2630038a4400b828b7e8",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/13ebc2945d617370afde2630038a4400b828b7e8"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/jarvis-merged-tests-20261027-v5",
+    "node_id": "REF_kwDOVN8wGNoAMnJlZnMvaGVhZHMvcmVwb3J0cy9qYXJ2aXMtbWVyZ2VkLXRlc3RzLTIwMjYxMDI3LXY1",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/jarvis-merged-tests-20261027-v5",
+    "object": {
+      "sha": "0a209b2d7d39b45557e2c8a2ecf3a002a624d7b1",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/0a209b2d7d39b45557e2c8a2ecf3a002a624d7b1"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/main-acceptance-progress-20261028",
+    "node_id": "REF_kwDOVN8wGNoANHJlZnMvaGVhZHMvcmVwb3J0cy9tYWluLWFjY2VwdGFuY2UtcHJvZ3Jlc3MtMjAyNjEwMjg",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/main-acceptance-progress-20261028",
+    "object": {
+      "sha": "bf9c86f1ea6642b00baa97620b9bebb4389fcaba",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/bf9c86f1ea6642b00baa97620b9bebb4389fcaba"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/mops-matrix-actual-20261028",
+    "node_id": "REF_kwDOVN8wGNoALnJlZnMvaGVhZHMvcmVwb3J0cy9tb3BzLW1hdHJpeC1hY3R1YWwtMjAyNjEwMjg",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/mops-matrix-actual-20261028",
+    "object": {
+      "sha": "46f03df89a5fdcd3ea0103effaf8a7a3a123121b",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/46f03df89a5fdcd3ea0103effaf8a7a3a123121b"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/mops-matrix-followup-20261028",
+    "node_id": "REF_kwDOVN8wGNoAMHJlZnMvaGVhZHMvcmVwb3J0cy9tb3BzLW1hdHJpeC1mb2xsb3d1cC0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/mops-matrix-followup-20261028",
+    "object": {
+      "sha": "df6d25bc829248426694b9bb5eae0105165c365c",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/df6d25bc829248426694b9bb5eae0105165c365c"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/mops-matrix-v2-20261028",
+    "node_id": "REF_kwDOVN8wGNoAKnJlZnMvaGVhZHMvcmVwb3J0cy9tb3BzLW1hdHJpeC12Mi0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/mops-matrix-v2-20261028",
+    "object": {
+      "sha": "3190f06f7060c4bb1d38f5533a29730f0f73879c",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/3190f06f7060c4bb1d38f5533a29730f0f73879c"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/one-batch-round2-20261028",
+    "node_id": "REF_kwDOVN8wGNoALHJlZnMvaGVhZHMvcmVwb3J0cy9vbmUtYmF0Y2gtcm91bmQyLTIwMjYxMDI4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/one-batch-round2-20261028",
+    "object": {
+      "sha": "3dbf2e98c0f3bcf6f8ea5afaaeee4c92a2a6199c",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/3dbf2e98c0f3bcf6f8ea5afaaeee4c92a2a6199c"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/prelaunch-consolidated-20261028",
+    "node_id": "REF_kwDOVN8wGNoAMnJlZnMvaGVhZHMvcmVwb3J0cy9wcmVsYXVuY2gtY29uc29saWRhdGVkLTIwMjYxMDI4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/prelaunch-consolidated-20261028",
+    "object": {
+      "sha": "472a3f621fc51c4ab016d727ab485cea1b404104",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/472a3f621fc51c4ab016d727ab485cea1b404104"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/prelaunch-content-20261028",
+    "node_id": "REF_kwDOVN8wGNoALXJlZnMvaGVhZHMvcmVwb3J0cy9wcmVsYXVuY2gtY29udGVudC0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/prelaunch-content-20261028",
+    "object": {
+      "sha": "a60c28fc647172137f431356b185f8f9b903e667",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/a60c28fc647172137f431356b185f8f9b903e667"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/prelaunch-real-batch-20261028",
+    "node_id": "REF_kwDOVN8wGNoAMHJlZnMvaGVhZHMvcmVwb3J0cy9wcmVsYXVuY2gtcmVhbC1iYXRjaC0yMDI2MTAyOA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/prelaunch-real-batch-20261028",
+    "object": {
+      "sha": "f9956f5467214ec362ba64e0f1575f47250aa8f3",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/f9956f5467214ec362ba64e0f1575f47250aa8f3"
+    }
+  },
+  {
+    "ref": "refs/heads/reports/round2-recovery-followup-20261028",
+    "node_id": "REF_kwDOVN8wGNoANHJlZnMvaGVhZHMvcmVwb3J0cy9yb3VuZDItcmVjb3ZlcnktZm9sbG93dXAtMjAyNjEwMjg",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/reports/round2-recovery-followup-20261028",
+    "object": {
+      "sha": "2774a57b5b2b89cc3effbc4cac7834c8aa53e957",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/2774a57b5b2b89cc3effbc4cac7834c8aa53e957"
+    }
+  },
+  {
+    "ref": "refs/heads/review/four-source-repair-20261024",
+    "node_id": "REF_kwDOVN8wGNoALXJlZnMvaGVhZHMvcmV2aWV3L2ZvdXItc291cmNlLXJlcGFpci0yMDI2MTAyNA",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/review/four-source-repair-20261024",
+    "object": {
+      "sha": "e0fe60f02afc919cfc265b851ace79888ebcc610",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/e0fe60f02afc919cfc265b851ace79888ebcc610"
+    }
+  },
+  {
+    "ref": "refs/heads/taifex-audit-yaml-fix",
+    "node_id": "REF_kwDOVN8wGNoAIHJlZnMvaGVhZHMvdGFpZmV4LWF1ZGl0LXlhbWwtZml4",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/taifex-audit-yaml-fix",
+    "object": {
+      "sha": "9ca1e308a19f3d0d38c0ebd0f66cf9ac560f1123",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/9ca1e308a19f3d0d38c0ebd0f66cf9ac560f1123"
+    }
+  },
+  {
+    "ref": "refs/heads/taifex-explicit-asc-fix",
+    "node_id": "REF_kwDOVN8wGNoAInJlZnMvaGVhZHMvdGFpZmV4LWV4cGxpY2l0LWFzYy1maXg",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/taifex-explicit-asc-fix",
+    "object": {
+      "sha": "3fada71bf4a0c32202302611c2c5d13c841abb25",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/3fada71bf4a0c32202302611c2c5d13c841abb25"
+    }
+  },
+  {
+    "ref": "refs/heads/taifex-recorded-repair-only",
+    "node_id": "REF_kwDOVN8wGNoAJnJlZnMvaGVhZHMvdGFpZmV4LXJlY29yZGVkLXJlcGFpci1vbmx5",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/taifex-recorded-repair-only",
+    "object": {
+      "sha": "90ee43df5d489bac427dbe1401dc51e6c6b9d64b",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/90ee43df5d489bac427dbe1401dc51e6c6b9d64b"
+    }
+  },
+  {
+    "ref": "refs/heads/taifex-remote-raw-audit-v9",
+    "node_id": "REF_kwDOVN8wGNoAJXJlZnMvaGVhZHMvdGFpZmV4LXJlbW90ZS1yYXctYXVkaXQtdjk",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/taifex-remote-raw-audit-v9",
+    "object": {
+      "sha": "a824ed910ed228ff39fd0ada830c4f62214c177e",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/a824ed910ed228ff39fd0ada830c4f62214c177e"
+    }
+  },
+  {
+    "ref": "refs/heads/tdcc-phase-error-recovery-v7",
+    "node_id": "REF_kwDOVN8wGNoAJ3JlZnMvaGVhZHMvdGRjYy1waGFzZS1lcnJvci1yZWNvdmVyeS12Nw",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/tdcc-phase-error-recovery-v7",
+    "object": {
+      "sha": "022c2f579b1d50f2ee67bf1280fad7b936a17af1",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/022c2f579b1d50f2ee67bf1280fad7b936a17af1"
+    }
+  },
+  {
+    "ref": "refs/heads/test/finmind-real-empty-20261028",
+    "node_id": "REF_kwDOVN8wGNoAK3JlZnMvaGVhZHMvdGVzdC9maW5taW5kLXJlYWwtZW1wdHktMjAyNjEwMjg",
+    "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/refs/heads/test/finmind-real-empty-20261028",
+    "object": {
+      "sha": "6376227744c9d9789cf35cbe6b1027061979251d",
+      "type": "commit",
+      "url": "https://api.github.com/repos/danny541690/C1-RAW-DOWNLOADER/git/commits/6376227744c9d9789cf35cbe6b1027061979251d"
+    }
+  }
+]
