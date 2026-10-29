@@ -1,0 +1,53 @@
+name: JARVIS full 189521-task paged state restore test
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-full-state-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-full-state-test
+  cancel-in-progress: false
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore actual reviewed handoff tasks
+        run: |
+          mkdir frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen-review
+          git archive refs/remotes/origin/frozen-review | tar -x -C frozen
+      - run: python -m scripts.v093_full_state_preflight save --namespace full-${{ github.run_id }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-state-save
+          path: results
+          retention-days: 90
+  verify:
+    needs: save
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: full-state-save
+          path: expected
+      - name: Cold restore all seven sources from remote Git pages
+        run: python -m scripts.v093_full_state_preflight verify --namespace full-${{ github.run_id }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-state-verify
+          path: results
+          retention-days: 90

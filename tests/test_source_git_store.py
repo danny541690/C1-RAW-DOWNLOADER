@@ -42,3 +42,12 @@ class GitStoreTests(unittest.TestCase):
   with self.assertRaises(ValueError):self.store(self.a).cas('TWSE',0,dict(source='MOPS'))
   with self.assertRaises(StoreUnavailable):GitCAS(self.a,'jarvis-source-preflight/small',max_bytes=1).cas('TWSE',0,dict(source='TWSE'))
   self.assertEqual(self.git('ls-remote','--heads',str(self.remote),'refs/heads/main').stdout,b'')
+ def test_paged_commit_cold_restore_and_resume_never_resets_attempts(self):
+  store=GitCAS(self.a,'jarvis-source-preflight/paged',page_bytes=1500)
+  state=dict(source='TWSE',tasks={str(i):dict(status='RECONCILE',attempts=4,note='x'*100) for i in range(30)})
+  self.assertTrue(store.cas('TWSE',0,state))
+  cold=GitCAS(self.repo('paged-cold'),'jarvis-source-preflight/paged',page_bytes=1500)
+  rev,actual=cold.read('TWSE');self.assertEqual(actual,state)
+  self.assertGreater(len(self.git('-C',str(self.a),'ls-tree','--name-only',rev).stdout.splitlines()),2)
+  actual['tasks']['0']['status']='REVIEW'
+  self.assertTrue(cold.cas('TWSE',rev,actual));self.assertEqual(store.read('TWSE')[1]['tasks']['0']['attempts'],4)

@@ -6,11 +6,12 @@ not credentials or RAW bytes. Each operation avoids checkout/index/FETCH_HEAD.
 import json,re,subprocess,uuid
 from pathlib import Path
 from scripts.v093_source_coordination import SOURCES
+from scripts.v093_source_state_pages import pack,unpack,SCHEMA
 class StoreUnavailable(RuntimeError):pass
 
 class GitCAS:
- def __init__(self,repo,prefix='jarvis-source-state',max_bytes=32*1024*1024):
-  self.repo=Path(repo);self.prefix=prefix;self.max_bytes=max_bytes
+ def __init__(self,repo,prefix='jarvis-source-state',max_bytes=512*1024*1024,page_bytes=1024*1024):
+  self.repo=Path(repo);self.prefix=prefix;self.max_bytes=max_bytes;self.page_bytes=page_bytes
   if prefix!='jarvis-source-state' and not re.fullmatch(r'jarvis-source-preflight/[0-9A-Za-z_-]+',prefix):raise ValueError('QA_BRANCH_NAMESPACE_ONLY')
  def git(self,*args,data=None,check=True):
   p=subprocess.run(['git',*args],cwd=self.repo,input=data,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -35,6 +36,9 @@ class GitCAS:
   raw=self.git('show',revision+':state.json').stdout
   if len(raw)>self.max_bytes:raise StoreUnavailable('STATE_REQUIRES_PAGING')
   value=json.loads(raw)
+  if value.get('schema')==SCHEMA:
+   try:value=unpack(raw,lambda name:self.git('show',revision+':'+name).stdout,self.page_bytes,self.max_bytes)
+   except ValueError as exc:raise StoreUnavailable(str(exc)) from None
   if value.get('source')!=source:raise StoreUnavailable('STATE_SOURCE_MISMATCH')
   return revision,value
  def cas(self,source,revision,state):
@@ -42,10 +46,13 @@ class GitCAS:
   if state.get('source')!=source:raise ValueError('STATE_SOURCE_SCOPE')
   if revision!=0 and not (isinstance(revision,str) and re.fullmatch('[0-9a-f]{40}',revision)):
    raise ValueError('INVALID_REVISION')
-  raw=json.dumps(state,ensure_ascii=False,sort_keys=True,allow_nan=False).encode()
-  if len(raw)>self.max_bytes:raise StoreUnavailable('STATE_REQUIRES_PAGING')
-  blob=self.git('hash-object','-w','--stdin',data=raw).stdout.decode().strip()
-  tree=self.git('mktree',data=f'100644 blob {blob}\tstate.json\n'.encode()).stdout.decode().strip()
+  try:files=pack(state,self.page_bytes,self.max_bytes)
+  except ValueError as exc:raise StoreUnavailable(str(exc)) from None
+  entries=[]
+  for name,raw in sorted(files.items()):
+   blob=self.git('hash-object','-w','--stdin',data=raw).stdout.decode().strip()
+   entries.append(f'100644 blob {blob}\t{name}\n')
+  tree=self.git('mktree',data=''.join(entries).encode()).stdout.decode().strip()
   args=['-c','user.name=JARVIS source state','-c','user.email=jarvis-source@users.noreply.github.com','commit-tree',tree]
   if revision:args+=['-p',revision]
   message=('Checkpoint source coordination state '+uuid.uuid4().hex+' [skip ci]\n').encode()
