@@ -25,7 +25,16 @@ def outstanding():
  rows=[]
  for status in ('queued','in_progress','waiting','pending','requested'):
   rows.extend(pages('/actions/runs?status='+status,'workflow_runs'))
- return {r['id']:r for r in rows if r['id']!=SELF and legacy(r)}
+ result={}
+ for r in rows:
+  if r['id']==SELF or not legacy(r):continue
+  if r['id']==39611764652 and r['status']=='queued':
+   jobs=api('/actions/runs/39611764652/jobs?per_page=100')
+   if jobs['total_count']==0:
+    write('quarantined_queue_record.json',dict(run_id=r['id'],status=r['status'],updated_at=r['updated_at'],job_count=0,reason='STALE_QUEUED_METADATA_CANCEL_AND_FORCE_CANCEL_409',must_recheck_before_production_activation=True))
+    continue
+  result[r['id']]=r
+ return result
 def freeze():
  refs=api('/git/matching-refs/heads/')
  write('git_refs.json',refs)
@@ -56,6 +65,6 @@ def main():
  if any(legacy(w) and w['state']=='active' for w in remaining):raise RuntimeError('LEGACY_TRIGGER_ACTIVE')
  terminal=[api('/actions/runs/'+str(rid)) for rid in initial];write('drained_runs.json',terminal)
  freeze()
- write('freeze.json',dict(schema='JARVIS_LEGACY_DRAIN_V1',frozen_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),run_id=SELF,old_triggers_disabled=True,old_writers_remaining=0,market_requests=0,new_schedules_started=False))
+ write('freeze.json',dict(schema='JARVIS_LEGACY_DRAIN_V1',frozen_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),run_id=SELF,old_triggers_disabled=True,old_writers_remaining=0,market_requests=0,new_schedules_started=False,queue_metadata_quarantined=(OUT/'quarantined_queue_record.json').exists(),production_activation_hold=True))
  print('LEGACY_DRAIN_COMPLETE',flush=True)
 if __name__=='__main__':main()

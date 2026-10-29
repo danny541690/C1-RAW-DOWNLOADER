@@ -9,7 +9,7 @@ permissions:
   actions: write
 concurrency:
   group: jarvis-legacy-handoff
-  cancel-in-progress: false
+  cancel-in-progress: true # Supersede only the pause controller, never RAW writers.
 jobs:
   freeze:
     runs-on: ubuntu-latest
