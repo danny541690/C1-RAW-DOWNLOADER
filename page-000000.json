@@ -1,0 +1,1 @@
+{"publication-probe.json":{"bytes":153,"sha256":"cb7abe063258a3420a92dda55604ae9e4fd988d32bfeb1e7340a9743371b826e","text":"{\"schema\": \"JARVIS_PUBLICATION_PROBE_V1\", \"purpose\": \"RECORD_TRANSPORT_TEST_ONLY\", \"source_requests\": 0, \"raw_writes\": 0, \"production_activation\": false}"}}
