@@ -23,7 +23,7 @@ jobs:
       - name: Wait for old writers and test actual frozen ledger import
         env:
           GH_TOKEN: ${{ github.token }}
-          PAUSE_RUN_ID: '40805024891'
+          PAUSE_RUN_ID: '40806889627'
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
