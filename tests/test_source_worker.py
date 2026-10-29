@@ -30,3 +30,18 @@ class WorkerTests(unittest.TestCase):
   with self.assertRaises(OSError):Executor(self.c,a).one('DESC','old')
   a.crash=False;a.fetch=lambda:(_ for _ in ()).throw(AssertionError('must not refetch'))
   r=run_batch(self.c,lambda t,s:a,'DESC','new');self.assertEqual(r['task_status_counts'],dict(RAW_BASIC_VERIFIED=1));self.assertTrue(r['outcomes'][0]['recovered'])
+ def test_failed_save_recovery_does_not_loop_or_block_next_ready_task(self):
+  from scripts.v093_source_executor import Executor
+  a=DiskAdapter(self.root);a.crash=True
+  with self.assertRaises(OSError):Executor(self.c,a).one('DESC','old')
+  def factory(ticket,task):
+   adapter=DiskAdapter(self.root)
+   if ticket['key']=='z-bad':adapter.read=lambda ref:(_ for _ in ()).throw(OSError('temporary storage outage'))
+   return adapter
+  r=run_batch(self.c,factory,'DESC','new')
+  self.assertEqual(r['processed'],2);self.assertEqual(r['task_status_counts'],dict(RECONCILE=1,RAW_BASIC_VERIFIED=1))
+  self.assertEqual(self.c.store.read('TWSE')[1]['tasks']['z-bad']['attempts'],1)
+ def test_production_gate_rejects_before_any_git_or_source_access(self):
+  import subprocess,sys
+  p=subprocess.run([sys.executable,'-m','scripts.v093_source_worker','--source','TWSE','--direction','DESC','--mode','production','--namespace','must-not-start'],capture_output=True,text=True)
+  self.assertNotEqual(p.returncode,0);self.assertIn('PRODUCTION_RELEASE_BLOCKED',p.stderr)

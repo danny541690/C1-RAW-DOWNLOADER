@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R8",
+  "version": "20261029_R9",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -182,6 +182,15 @@
       "source_sha": "cc4587fc4d60994b9b4af7a66c60cff7f22b128a",
       "evidence": "reports/raw-acceptance/20261029_auto_publication/remote-results.json",
       "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40856240354"
+    },
+    {
+      "id": "T21",
+      "name": "十二組共用worker入口與自動紀錄整合",
+      "status": "PASS_TWELVE_GUARDED_ENTRY_COMBINATIONS_FIXTURE_SCOPE",
+      "scope": "24模擬任務，12預期成功+12隔離；12份Git/Drive自動讀回成功；正式下載未啟用",
+      "source_sha": "64f8a8262c69cb5cd0e755f833c78d6503ccc449",
+      "evidence": "reports/raw-acceptance/20261029_twelve_entry/remote-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40857674847"
     }
   ],
   "rules": [

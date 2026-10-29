@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R8",
+  "version": "20261029_R9",
   "folder_id": "1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "folder_url": "https://drive.google.com/drive/folders/1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "path": "C1_0.93/01_RAW/00_下載規則與問題清單",
@@ -52,6 +52,9 @@
     ],
     "production_twelve_entrypoints": false,
     "governance_summary_auto_update": false,
-    "pending_drive_background_retry": false
+    "pending_drive_background_retry": false,
+    "candidate_twelve_guarded_entries": true,
+    "shared_worker_workflow": "jarvis-seven-worker.yml",
+    "twelve_shared_entry_publications_real_verified": true
   }
 }
