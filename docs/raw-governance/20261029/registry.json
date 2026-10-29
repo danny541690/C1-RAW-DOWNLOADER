@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R12",
+  "version": "20261029_R13",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -236,6 +236,22 @@
       "source_sha": "04166290ec6d92a6667d12af0bbbf1050babb964",
       "evidence": "reports/raw-acceptance/20261029_admission_runtime/remote-runtime-result.json",
       "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40886009712"
+    },
+    {
+      "id": "T27",
+      "name": "合併全倉庫與十二入口驗收",
+      "status": "PASS_REGRESSION_NOT_PRODUCTION_RELEASE",
+      "source_sha": "1cff50c5087640261a6dea844db218044ae58192",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40898636769",
+      "whole_repository_tests": 1051,
+      "selected_overlapping_tests": 158,
+      "entry_count": 12,
+      "issue": "I25",
+      "source_requests": 0,
+      "formal_raw_writes": 0,
+      "repaired": 0,
+      "production_activation": false,
+      "drive_receipt_file_id": "1CgiK9VTdbq9_MjgSy5U6Lyc-5YcgEzYu"
     }
   ],
   "rules": [
