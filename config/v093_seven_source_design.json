@@ -237,5 +237,6 @@
       "lock": "jarvis-seven-finmind-desc",
       "state_branch": "jarvis-source-state/FinMind/DESC"
     }
-  ]
+  ],
+  "cutover_strategy": "ONE_TIME_SWITCH_NO_DUAL_OPERATION"
 }
