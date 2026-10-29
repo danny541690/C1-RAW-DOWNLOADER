@@ -34,6 +34,7 @@ class Coordinator:
   if direction not in ('ASC','DESC') or not owner:raise ValueError('OWNER_DIRECTION')
   now=self.clock()
   def change(state):
+   if state.get('hold'):return None
    for task in state['tasks'].values():
     if task.get('owner') and task['expires']<=now:
      task.update(owner=None,status='RECONCILE' if task['status'] in ('REQUEST_INTENT','STORED') else 'READY')
@@ -57,6 +58,7 @@ class Coordinator:
  def begin_request(self,ticket):
   def change(s):
    t=self.owned(s,ticket)
+   if s.get('hold'):raise ValueError('SOURCE_ON_HOLD')
    if t['status']!='LEASED' or t['attempts']>=4:raise ValueError('REQUEST_NOT_ADMITTED')
    t.update(status='REQUEST_INTENT',attempts=t['attempts']+1);return t['attempts']
   return self.update(change)

@@ -11,6 +11,11 @@ class SevenSourcePlanTests(unittest.TestCase):
   validate_config(self.c)
   c=copy.deepcopy(self.c);c['lanes'][1]['state_branch']=c['lanes'][0]['state_branch']
   with self.assertRaises(ValueError):validate_config(c)
+ def test_directions_share_runtime_authority_not_legacy_projections(self):
+  for slot in self.c['slots']:
+   self.assertEqual(slot['coordination_state_branch'],'jarvis-source-state/'+slot['source'])
+  c=copy.deepcopy(self.c);c['slots'][0]['coordination_state_branch']=c['slots'][0]['state_branch']
+  with self.assertRaisesRegex(ValueError,'SOURCE_COORDINATION_BRANCH'):validate_config(c)
  def test_no_preview_can_activate_or_reset_retry_budget(self):
   for field,value in [('activate_production',True),('direction','ASC')]:
    c=copy.deepcopy(self.c);c[field]=value

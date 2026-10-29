@@ -30,6 +30,9 @@ def validate_config(config):
         if len(selected)!=count or {x['direction'] for x in selected}!=({'DESC','ASC'} if count==2 else {'DESC'}):raise ValueError('SLOT_ALLOCATION')
     for field in ('workflow','lock','state_branch'):
         if len({x[field] for x in slots})!=12:raise ValueError('DUPLICATE_SLOT_'+field)
+    if config.get('state_contract',{}).get('authority')!='PER_SOURCE_SHARED_CAS':raise ValueError('STATE_AUTHORITY')
+    for slot in slots:
+        if slot.get('coordination_state_branch')!='jarvis-source-state/'+slot['source']:raise ValueError('SOURCE_COORDINATION_BRANCH')
     return config
 
 def eligible_gap(gap, as_of):

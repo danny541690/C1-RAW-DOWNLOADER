@@ -175,7 +175,8 @@
       "state_branch": "jarvis-source-state/TWSE/DESC",
       "schedule_number": "1-1",
       "display_name": "證交所排程一之一（1-1）",
-      "direction_label": "最新往舊"
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/TWSE"
     },
     {
       "source": "TWSE",
@@ -185,7 +186,8 @@
       "state_branch": "jarvis-source-state/TWSE/ASC",
       "schedule_number": "1-2",
       "display_name": "證交所排程一之二（1-2）",
-      "direction_label": "最舊往新"
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/TWSE"
     },
     {
       "source": "TPEx",
@@ -195,7 +197,8 @@
       "state_branch": "jarvis-source-state/TPEx/DESC",
       "schedule_number": "2-1",
       "display_name": "櫃買中心排程二之一（2-1）",
-      "direction_label": "最新往舊"
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/TPEx"
     },
     {
       "source": "TPEx",
@@ -205,7 +208,8 @@
       "state_branch": "jarvis-source-state/TPEx/ASC",
       "schedule_number": "2-2",
       "display_name": "櫃買中心排程二之二（2-2）",
-      "direction_label": "最舊往新"
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/TPEx"
     },
     {
       "source": "MOPS",
@@ -215,7 +219,8 @@
       "state_branch": "jarvis-source-state/MOPS/DESC",
       "schedule_number": "3-1",
       "display_name": "公開資訊觀測站排程三之一（3-1）",
-      "direction_label": "最新往舊"
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/MOPS"
     },
     {
       "source": "MOPS",
@@ -225,7 +230,8 @@
       "state_branch": "jarvis-source-state/MOPS/ASC",
       "schedule_number": "3-2",
       "display_name": "公開資訊觀測站排程三之二（3-2）",
-      "direction_label": "最舊往新"
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/MOPS"
     },
     {
       "source": "TDCC",
@@ -235,7 +241,8 @@
       "state_branch": "jarvis-source-state/TDCC/DESC",
       "schedule_number": "4-1",
       "display_name": "集保所排程四之一（4-1）",
-      "direction_label": "最新往舊"
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/TDCC"
     },
     {
       "source": "TDCC",
@@ -245,7 +252,8 @@
       "state_branch": "jarvis-source-state/TDCC/ASC",
       "schedule_number": "4-2",
       "display_name": "集保所排程四之二（4-2）",
-      "direction_label": "最舊往新"
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/TDCC"
     },
     {
       "source": "TAIFEX",
@@ -255,7 +263,8 @@
       "state_branch": "jarvis-source-state/TAIFEX/DESC",
       "schedule_number": "5-1",
       "display_name": "期交所排程五之一（5-1）",
-      "direction_label": "最新往舊"
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/TAIFEX"
     },
     {
       "source": "TAIFEX",
@@ -265,7 +274,8 @@
       "state_branch": "jarvis-source-state/TAIFEX/ASC",
       "schedule_number": "5-2",
       "display_name": "期交所排程五之二（5-2）",
-      "direction_label": "最舊往新"
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/TAIFEX"
     },
     {
       "source": "NDC",
@@ -275,7 +285,8 @@
       "state_branch": "jarvis-source-state/NDC/DESC",
       "schedule_number": "6-1",
       "display_name": "國發會排程六之一（6-1）",
-      "direction_label": "最新往舊"
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/NDC"
     },
     {
       "source": "FinMind",
@@ -285,8 +296,14 @@
       "state_branch": "jarvis-source-state/FinMind/DESC",
       "schedule_number": "7-1",
       "display_name": "FinMind補缺排程七之一（7-1）",
-      "direction_label": "最新往舊"
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/FinMind"
     }
   ],
-  "cutover_strategy": "ONE_TIME_SWITCH_NO_DUAL_OPERATION"
+  "cutover_strategy": "ONE_TIME_SWITCH_NO_DUAL_OPERATION",
+  "state_contract": {
+    "authority": "PER_SOURCE_SHARED_CAS",
+    "slot_state_role": "LEGACY_PROJECTION_ONLY_NOT_OWNERSHIP",
+    "direction_role": "WORKER_AND_CURSOR_ONLY"
+  }
 }

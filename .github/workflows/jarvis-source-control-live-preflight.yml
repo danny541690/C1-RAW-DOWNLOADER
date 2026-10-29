@@ -1,6 +1,9 @@
 name: JARVIS twelve-slot real Git control preflight
 on:
   workflow_dispatch:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-source-control-live-preflight.yml]
 permissions:
   contents: write
 concurrency:

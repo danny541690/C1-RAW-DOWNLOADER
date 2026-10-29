@@ -23,6 +23,15 @@ class CoordinationTests(unittest.TestCase):
   self.path=Path(self.tmp.name)/'state.db';self.store=SQLiteCAS(self.path);self.now=[1000]
   self.c=Coordinator(self.store,'TWSE',clock=lambda:self.now[0],ttl=20)
  def add(self,n=1):self.c.add([dict(source='TWSE',key=str(i),slot='DESC',period=f'2026-10-{i+1:02d}') for i in range(n)])
+ def test_source_hold_blocks_both_directions_and_previously_leased_request(self):
+  self.add();ticket=self.c.claim('DESC','old')
+  self.c.add([dict(source='TWSE',key='asc',slot='ASC',period='2000-01')])
+  self.c.update(lambda s:s.update(hold='RATE_LIMIT'))
+  self.assertIsNone(self.c.claim('ASC','new','ASC'))
+  with self.assertRaisesRegex(ValueError,'SOURCE_ON_HOLD'):self.c.begin_request(ticket)
+  self.assertEqual(self.store.read('TWSE')[1]['tasks']['0']['attempts'],0)
+  self.c.update(lambda s:s.pop('hold'))
+  self.assertEqual(self.c.begin_request(ticket),1)
  def test_twelve_simultaneous_workers_never_duplicate_or_cross_sources(self):
   jobs=[];seen=[];lock=threading.Lock()
   for source,count in COUNTS.items():
