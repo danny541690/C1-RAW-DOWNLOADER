@@ -1,0 +1,25 @@
+[
+  {
+    "run_id": 40822041631,
+    "conclusion": "success",
+    "phase": "verify",
+    "parent_run": "40822023305",
+    "receiver_run": "40822041631",
+    "real_dispatch_verified": true,
+    "continued_from_saved_state": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false
+  },
+  {
+    "run_id": 40822023305,
+    "conclusion": "success",
+    "phase": "start",
+    "parent_run": "40822023305",
+    "dispatch_after_durable_save": true,
+    "duplicate_suppressed": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false
+  }
+]

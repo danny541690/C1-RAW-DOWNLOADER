@@ -43,6 +43,7 @@ def normalize(document,path,default_source=None,origin=None):
     status=entry.get('status','UNKNOWN'),attempts=attempts,period_basis=period_basis,content_period=entry.get('content_period'),bytes=entry.get('bytes'),raw_reference=entry.get('evidence_file') or entry.get('file_id'),
     sha256=entry.get('sha256'),archive_sha256=entry.get('archive_sha256'),
     retry_after_epoch=entry.get('retry_after_epoch',entry.get('next_retry_at')),request_phase=entry.get('request_phase'),
+    earliest_available_date=entry.get('earliest_available_date'),availability_evidence=entry.get('availability_evidence'),
     prior_numeric_claim=entry.get('numeric_verified'),prior_pit_claim=entry.get('pit_verified'),
     numeric_verified=False,pit_verified=False,full_acceptance=False))
  return rows,issues
@@ -60,6 +61,7 @@ def inspect(rows):
   elif any(r.get('raw_reference') for r in versions):action='VERIFY_RETAINED_RAW_FIRST'
   elif statuses & {'REQUEST_INTENT','FINMIND_REQUEST_INTENT','RAW_SAVED','PROCESSING'}:action='RECONCILE_INTERRUPTED_REQUEST'
   elif attempts>=4:action='RETRY_EXHAUSTED_REVIEW'
+  elif any(r['status']=='OFFICIAL_PERIOD_NOT_PROVIDED' and r.get('earliest_available_date') and r.get('availability_evidence') and r['period']<r['earliest_available_date'] for r in versions):action='SOURCE_AVAILABILITY_HOLD'
   else:action='CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE'
   result[key]=dict(task_key=key,source=versions[0]['source'],attempts=attempts,action=action,
    retry_budget_reset=False,provenance=versions,full_acceptance=False,download_authorized=False)

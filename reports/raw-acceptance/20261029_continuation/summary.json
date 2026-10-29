@@ -1,9 +1,9 @@
 {
   "schema": "JARVIS_TWELVE_PREFLIGHT_V1",
-  "checked_at_taipei": "2026-10-29T13:11:11.498768+08:00",
+  "checked_at_taipei": "2026-10-29T13:12:20.271430+08:00",
   "implemented_tests_passed": true,
   "tests": {
-    "run": 108,
+    "run": 109,
     "failures": 0,
     "errors": 0,
     "skipped": 0
@@ -21,7 +21,7 @@
   "market_requests": 0,
   "production_writes": 0,
   "source_environment": "Fake official HTTP; native TDCC parser; real local files, bare Git and transactional SQLite shared by threads and separate processes; not live Drive or GitHub distributed CAS",
-  "elapsed_seconds": 1.672,
+  "elapsed_seconds": 1.821,
   "cutover_strategy": "ONE_TIME_SWITCH_NO_DUAL_OPERATION",
   "existing_online_schedules_changed": false,
   "input_sha256": {
@@ -38,7 +38,7 @@
     "scripts/v093_tdcc_scope.py": "c094ffc56fbad6caf8fab0b05331c7dfbe539767c63fd9804a6f355be04cfacb",
     "tests/test_acceptance_scheduler.py": "652bd6ea91ef61e9e55d79f5cfcc0da3acfa0ca6adf7305806a282c32a0886dd",
     "tests/test_acceptance_state.py": "90a20e16d97bd3549d940561e9b5a2ff082ff6468c616bd3874cad533eb33c66",
-    "tests/test_legacy_handoff.py": "6e391e2dc5c10fc8f72af11c264fa852a3a5fe9cef5e3910afd23fcd16bd685b",
+    "tests/test_legacy_handoff.py": "7e46775e76fd6d5cfd26f2f30b23e5fad8b70c44eaf51d4cdd73765e06cc0788",
     "tests/test_retained_stream_verify.py": "c09e0942b88d97c05c3f2812cf04f94133f98e5413dab9434fbc09d1eebeaadb",
     "tests/test_seven_source_plan.py": "5413679381a7cbc14fafe3d03d668e601da6b4bfd868a07c9be85ddc60fccda0",
     "tests/test_source_closed_loop_preflight.py": "7846f0f14da1673f0ae0496639b849cb5323b7d533989184e1232ae77a84d6b6",

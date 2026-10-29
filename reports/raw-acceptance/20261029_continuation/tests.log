@@ -16,6 +16,7 @@ test_official_member_reference_and_register_identity_preserved (test_legacy_hand
 test_snapshot_capture_does_not_claim_content_period (test_legacy_handoff.HandoffTests.test_snapshot_capture_does_not_claim_content_period) ... ok
 test_tdcc_history_sidecar_is_not_lost_and_duplicate_receipts_do_not_reset (test_legacy_handoff.HandoffTests.test_tdcc_history_sidecar_is_not_lost_and_duplicate_receipts_do_not_reset) ... ok
 test_unknown_period_is_not_guessed_from_current_date (test_legacy_handoff.HandoffTests.test_unknown_period_is_not_guessed_from_current_date) ... ok
+test_unsupported_period_requires_evidence_and_is_not_a_download_order (test_legacy_handoff.HandoffTests.test_unsupported_period_requires_evidence_and_is_not_a_download_order) ... ok
 test_bidirectional_slots_only_for_large_sources (test_seven_source_plan.SevenSourcePlanTests.test_bidirectional_slots_only_for_large_sources) ... ok
 test_directions_share_runtime_authority_not_legacy_projections (test_seven_source_plan.SevenSourcePlanTests.test_directions_share_runtime_authority_not_legacy_projections) ... ok
 test_exact_sources_and_exclusive_state_ownership (test_seven_source_plan.SevenSourcePlanTests.test_exact_sources_and_exclusive_state_ownership) ... ok
@@ -108,6 +109,6 @@ test_timeout_retry_preserves_cap_and_records_phase (test_tdcc_download_v4.Timeou
 test_transport_release_does_not_restart_history_frontiers (test_tdcc_download_v4.TimeoutResumeTests.test_transport_release_does_not_restart_history_frontiers) ... ok
 
 ----------------------------------------------------------------------
-Ran 108 tests in 1.604s
+Ran 109 tests in 1.757s
 
 OK

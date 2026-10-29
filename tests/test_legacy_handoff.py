@@ -1,6 +1,12 @@
 import unittest
 from scripts.v093_legacy_handoff import normalize,inspect
 class HandoffTests(unittest.TestCase):
+ def test_unsupported_period_requires_evidence_and_is_not_a_download_order(self):
+  doc={'units':{'x':dict(source='TWSE',category='institutional',period='2007-05-02',status='OFFICIAL_PERIOD_NOT_PROVIDED',earliest_available_date='2012-05-02',availability_evidence='official response retained')}}
+  rows,_=normalize(doc,'LIVE/RAW/2007-05/MONTH_STATE.json')
+  item=next(iter(inspect(rows)['tasks'].values()));self.assertEqual(item['action'],'SOURCE_AVAILABILITY_HOLD');self.assertFalse(item['download_authorized'])
+  doc['units']['x'].pop('availability_evidence');rows,_=normalize(doc,'LIVE/RAW/2007-05/MONTH_STATE.json')
+  self.assertEqual(next(iter(inspect(rows)['tasks'].values()))['action'],'CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE')
  def test_native_tdcc_eight_digit_date_is_not_lost(self):
   rows,issues=normalize({'history_receipts':{'20251031|2330':dict(date='20251031',status='SAVED_BASIC_VERIFIED',attempts=1)}},'TDCC/HISTORY_20251031.json','TDCC')
   self.assertEqual(issues,[]);self.assertEqual(rows[0]['period'],'2025-10-31')
