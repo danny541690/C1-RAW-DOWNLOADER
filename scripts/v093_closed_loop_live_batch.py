@@ -1,16 +1,23 @@
 """One bounded missing TWSE task through real HTTP, isolated Drive and cold resume."""
-import argparse,datetime,gzip,hashlib,json,os,urllib.parse
+import argparse,datetime,gzip,hashlib,json,os,urllib.parse,io,zipfile
 from pathlib import Path
 from scripts.v093_source_coordination import Coordinator
 from scripts.v093_source_git_store import GitCAS
 from scripts.v093_source_executor import Executor
 class Adapter:
  download_authorized=True
- def __init__(self,drive,folder,job):self.d=drive;self.folder=folder;self.job=job;self.crash=False;self.requests=0
- def find(self,key):return None
+ def __init__(self,drive,folder,job):self.d=drive;self.folder=folder;self.job=job;self.crash=False;self.requests=0;self.existing_reference=None
+ def find(self,key):return self.existing_reference
  def find_locator(self,name):
   f=self.d.find(self.folder,name);return f['id'] if f else None
- def read(self,ref):return self.d.call(lambda:self.d.api.files().get_media(fileId=ref))
+ def read(self,ref):
+  fid,sep,member=ref.partition('/')
+  raw=self.d.call(lambda:self.d.api.files().get_media(fileId=fid))
+  if sep:
+   with zipfile.ZipFile(io.BytesIO(raw)) as z:
+    if z.getinfo(member).file_size>32000000:raise ValueError('MEMBER_SIZE_LIMIT')
+    raw=z.read(member)
+  return raw
  def locator(self,key,sha):return sha+'.raw'
  def fetch(self):
   from scripts.v093_three_year_repair import request
@@ -55,7 +62,12 @@ def select():
    route=routes[month].get((r['category'],period))
    if not route or urllib.parse.urlparse(route['url']).hostname!='www.twse.com.tw':continue
    candidates.append(dict(r,**{k:route[k] for k in ('url','month')},key=task,missing_evidence='NO_KNOWN_RAW_REFERENCE_IN_FROZEN_REVIEW',trading_date_evidence='SAVED_TWSE_PRICE_RECEIPT'))
- if not candidates:raise RuntimeError('NO_PROVEN_NATIVE_MISSING_PRICE_CANDIDATE')
+ if not candidates:
+  for f,obj in primary:
+   for key,r in obj.get('units',{}).items():
+    if r.get('source')=='TWSE' and r.get('category') in ('prices','prices_indices') and r.get('status')=='SAVED_BASIC_VERIFIED' and r.get('evidence_file'):
+     return dict(r,key='retained-'+r.get('unit_id',key),test_mode='RETAINED_REUSE_ONLY_MISSING_CASE_NOT_AVAILABLE')
+  raise RuntimeError('NO_ADMISSIBLE_MISSING_OR_RETAINED_CASE')
  return sorted(candidates,key=lambda r:r['period'],reverse=True)[0]
 def main():
  from scripts.annual_actual_firstpass import Drive,service
@@ -65,6 +77,11 @@ def main():
   job=select();folder=d.folder('1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit','JARVIS_TWELVE_E2E_QA_'+a.namespace)
   metadata=dict(job=job,folder=folder,namespace=a.namespace);(out/'case.json').write_text(json.dumps(metadata))
   c.add([dict(source='TWSE',key=job['key'],slot='DESC',period=job['period'])]);adapter=Adapter(d,folder,job);adapter.crash=True
+  if job.get('test_mode'):
+   adapter.crash=False;adapter.existing_reference=job['evidence_file']
+   evidence=Executor(c,adapter).one('DESC','retained-reuse')
+   result=dict(mode=job['test_mode'],evidence=evidence,source_requests=0,production_writes=0,required_missing_download_test='NOT_EXECUTED_NO_ELIGIBLE_CASE',ready_for_production=False)
+   (out/'start.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result,ensure_ascii=False),flush=True);return
   try:Executor(c,adapter).one('DESC','live-first')
   except OSError as exc:
    if str(exc)!='QA_FAULT_AFTER_ACTUAL_DRIVE_SAVE':raise
@@ -74,6 +91,12 @@ def main():
   result=dict(mode='START_FAULT_INJECTED',source_requests=adapter.requests,production_writes=0,qa_drive_folder=folder)
  else:
   meta=json.loads(Path('expected/case.json').read_text());adapter=Adapter(d,meta['folder'],meta['job'])
+  if meta['job'].get('test_mode'):
+   raw=adapter.read(meta['job']['evidence_file']);stats=adapter.validate(raw)
+   _,state=store.read('TWSE');task=state['tasks'][meta['job']['key']]
+   if task['status']!='RAW_BASIC_VERIFIED' or task['attempts']!=0 or adapter.requests:raise RuntimeError('REUSE_COLD_RESTORE_INVARIANT')
+   result=dict(mode='REAL_RETAINED_REUSE_AND_COLD_REVALIDATION_PASS',source_requests=0,attempts=0,stats=stats,required_missing_download_test='NOT_EXECUTED_NO_ELIGIBLE_CASE',ready_for_production=False,full_data_acceptance=False)
+   (out/'resume.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result,ensure_ascii=False),flush=True);return
   evidence=Executor(c,adapter).resume('DESC','fresh-runner')
   _,state=store.read('TWSE');task=state['tasks'][meta['job']['key']]
   if task['status']!='RAW_BASIC_VERIFIED' or task['attempts']!=1 or adapter.requests:raise RuntimeError('RESUME_INVARIANT')
