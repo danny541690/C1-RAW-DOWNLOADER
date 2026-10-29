@@ -1,0 +1,8 @@
+{
+  "schema": "JARVIS_PINNED_HANDOFF_OVERLAYS_V1",
+  "states": [
+    {"source":"TDCC","prefix":"jarvis-source-preflight/tdcc-missing-40853248163-1","commit":"67c8fdd894e214afef1cfda1d007424815c732c7","resolved_references":{"TDCC|2026-09|20260911|6912":"1CcWmSimRC2QfCI_paDpfyS57wovWFLKO"}},
+    {"source":"TDCC","prefix":"jarvis-source-preflight/native-positive-40910020200-1","commit":"890da9541aeb64a61ad966ab845a03d9dcadd154"},
+    {"source":"TAIFEX","prefix":"jarvis-source-preflight/adapter-40870505597-1","commit":"8c5211236b9d7d1429a15ac9bcd3e968f4a9364c"}
+  ]
+}

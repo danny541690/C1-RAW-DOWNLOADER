@@ -29,9 +29,14 @@ def bound_row(source,item,case,slot):
  return prepare_row(source,slot,item['task_key'],row)
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--namespace',required=True);a=p.parse_args();root=Path.cwd();out=Path('results');out.mkdir(exist_ok=True)
+ p=argparse.ArgumentParser();p.add_argument('--namespace',required=True);p.add_argument('--overlay-manifest');a=p.parse_args();root=Path.cwd();out=Path('results');out.mkdir(exist_ok=True)
  reviews={s:json.loads(gzip.decompress(Path('frozen',s+'.review.json.gz').read_bytes()))['tasks'] for s in COUNTS}
  contracts={s:{} for s in COUNTS};errors=collections.Counter();ledger_count=0
+ overrides={};later_held=set();overlay_events=[]
+ if a.overlay_manifest:
+  from scripts.v093_handoff_overlays import apply_manifest
+  from scripts.annual_actual_firstpass import Drive,service
+  overrides,later_held,overlay_events=apply_manifest(root,reviews,a.overlay_manifest,Drive(service()))
  for f in json.loads(Path('original/ledger_manifest.json').read_text()):
   raw=gzip.decompress(Path('original',f['local']).read_bytes())
   if hashlib.sha256(raw).hexdigest()!=f['sha256']:raise ValueError('FROZEN_LEDGER_SHA')
@@ -59,7 +64,9 @@ def main():
      case=min((prior,case),key=lambda x:(x['reference'],x['sha256']))
     contracts[source][row['task_key']]=case
   if ledger_count%100==0:print(json.dumps(dict(checkpoint_ledgers=ledger_count,contracts={s:len(v) for s,v in contracts.items()})),flush=True)
- summaries={};pins={};selected_ndc=[]
+ for (source,key),case in overrides.items():contracts[source][key]=case
+ for source,key in later_held:contracts[source].pop(key,None)
+ summaries={};pins={};selected_ndc=[];slot_cases={}
  for source,items in reviews.items():
   eligible=sorted(contracts[source].values(),key=lambda c:(c['period'],c['key']))
   # Retained candidates only; frozen unresolved/missing cases are not download authority.
@@ -68,6 +75,7 @@ def main():
   pins[source]={};counts={}
   for slot,cases in partitions.items():
    rows=[bound_row(source,items[c['key']],c,slot) for c in cases]
+   slot_cases[source+'|'+slot]=[rows[0] if slot=='ASC' else rows[-1]] if rows else []
    state=catalog_state(source,slot,rows,'2026-10-29')
    store=GitCAS(root,'jarvis-source-preflight/catalog-'+a.namespace+'-'+slot)
    if store.remote_head(source)!=0:raise ValueError('CANDIDATE_CATALOG_NAMESPACE_EXISTS')
@@ -81,8 +89,9 @@ def main():
   summaries[source]=dict(frozen_review_tasks=len(items),retained_candidates=len(eligible),held_not_admitted=len(items)-len(eligible),direction_counts=counts,held_action_counts=dict(collections.Counter(i['action'] for k,i in items.items() if k not in contracts[source])))
   if source=='NDC':selected_ndc=[bound_row(source,items[c['key']],c,'DESC') for c in eligible[-2:]]
   print(json.dumps(dict(source=source,candidate_summary=summaries[source])),flush=True)
- result=dict(schema='JARVIS_OVERNIGHT_CANDIDATE_CATALOG_V1',ledger_count=ledger_count,total_frozen_review_tasks=sum(len(v) for v in reviews.values()),sources=summaries,catalogs=pins,contract_rejections=dict(errors),catalog_entries=sum(len(v) for v in pins.values()),source_requests=0,formal_raw_writes=0,production_approved=False,missing_download_authority=False,scope='Retained-only candidate catalogs; held and missing scope remains in immutable frozen review, not discarded')
+ result=dict(schema='JARVIS_OVERNIGHT_CANDIDATE_CATALOG_V1',later_qa_overlays=overlay_events,ledger_count=ledger_count,total_frozen_review_tasks=sum(len(v) for v in reviews.values()),sources=summaries,catalogs=pins,contract_rejections=dict(errors),catalog_entries=sum(len(v) for v in pins.values()),source_requests=0,formal_raw_writes=0,production_approved=False,missing_download_authority=False,scope='Retained-only candidate catalogs; held and missing scope remains in immutable frozen review, not discarded')
  (out/'candidate-catalogs.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+ (out/'slot-cases.json').write_text(json.dumps(slot_cases,ensure_ascii=False,indent=2)+'\n')
  # Tiny input for a real consecutive-chunk smoke test, not the production campaign.
  (out/'ndc-two-cases.json').write_text(json.dumps(selected_ndc,ensure_ascii=False,indent=2)+'\n')
  print(json.dumps(dict(summary_file='results/candidate-catalogs.json',source_summary=summaries,catalog_entries=result['catalog_entries'])),flush=True)
