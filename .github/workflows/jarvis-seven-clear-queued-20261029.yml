@@ -1,0 +1,55 @@
+name: JARVIS clear stale queued legacy run
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/jarvis-seven-clear-queued-20261029.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+jobs:
+  clear:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clear unstarted legacy queue and record old trigger status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os,json,urllib.request,urllib.error,subprocess
+          from pathlib import Path
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          def api(p,m='GET'):
+              req=urllib.request.Request(base+p,method=m,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              with urllib.request.urlopen(req,timeout=40) as r:
+                  raw=r.read();return json.loads(raw) if raw else {}
+          rid=39611764652
+          r=api('/actions/runs/'+str(rid))
+          action='ALREADY_TERMINAL_OR_RUNNING_NOT_TOUCHED'
+          if r['status'] in ('queued','waiting','pending','requested'):
+              try:api('/actions/runs/'+str(rid)+'/force-cancel','POST');action='FORCE_CANCEL_UNSTARTED_REQUESTED'
+              except urllib.error.HTTPError as e:
+                  if e.code not in (409,422):raise
+                  action='CANCEL_CONFLICT_'+str(e.code)
+          workflows=[]
+          for page in range(1,10):
+              rows=api('/actions/workflows?per_page=100&page='+str(page))['workflows'];workflows+=rows
+              if len(rows)<100:break
+          oldnames={'v093-official-four-lane-repair.yml','v093-tdcc-independent.yml','v093-tdcc-independent-asc.yml','v093-taifex-independent.yml','v093-taifex-independent-asc.yml','v093-ndc-independent.yml','jarvis-acceptance-scheduled.yml','v093-v2-01-raw.yml'}
+          status=[dict(id=w['id'],path=w['path'],state=w['state']) for w in workflows if w['path'].split('/')[-1] in oldnames]
+          result=dict(schema='JARVIS_PAUSE_STATUS_V1',queued_run=rid,queue_action=action,workflows=status,new_downloaders_started=False)
+          Path('queue-status.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result),flush=True)
+          def git(*a,input=None):return subprocess.check_output(['git',*a],input=input).decode().strip()
+          blob=git('hash-object','-w','--stdin',input=Path('queue-status.json').read_bytes())
+          tree=git('mktree',input=('100644 blob '+blob+'\tqueue-status.json\n').encode())
+          sha=git('-c','user.name=JARVIS handoff','-c','user.email=jarvis-handoff@users.noreply.github.com','commit-tree',tree,input=b'Queue and paused trigger status [skip ci]\n')
+          git('push','origin',sha+':refs/heads/jarvis-handoff-status/20261029-'+os.environ['GITHUB_RUN_ID'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: legacy-queue-status
+          path: queue-status.json
+          retention-days: 90
