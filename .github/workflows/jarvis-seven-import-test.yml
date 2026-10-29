@@ -1,0 +1,78 @@
+name: JARVIS seven-source merged handoff import acceptance
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-import-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-seven-import-test
+  cancel-in-progress: false
+jobs:
+  save:
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore frozen reviewed queues
+        run: |
+          mkdir frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen-review
+          git archive refs/remotes/origin/frozen-review | tar -x -C frozen
+      - run: python -m scripts.v093_import_live_preflight save --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: import-save-${{ matrix.source }}
+          path: results
+          retention-days: 90
+  verify:
+    needs: save
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: import-save-${{ matrix.source }}
+          path: expected
+      - name: Restore frozen reviewed queues
+        run: |
+          mkdir frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen-review
+          git archive refs/remotes/origin/frozen-review | tar -x -C frozen
+      - run: python -m scripts.v093_import_live_preflight verify --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}
+      - name: Verify independent readback matches saved digest
+        env:
+          SOURCE: ${{ matrix.source }}
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          source=os.environ['SOURCE']
+          saved=json.loads((Path('expected')/(source+'-save.json')).read_text())
+          restored=json.loads((Path('results')/(source+'-verify.json')).read_text())
+          for field in ('tasks','sha256','commit','statuses'):
+              if saved[field]!=restored[field]:raise ValueError('COLD_RESTORE_'+field)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: import-verify-${{ matrix.source }}
+          path: results
+          retention-days: 90
