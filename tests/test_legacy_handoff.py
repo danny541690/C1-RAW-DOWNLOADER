@@ -1,6 +1,16 @@
 import unittest
 from scripts.v093_legacy_handoff import normalize,inspect
 class HandoffTests(unittest.TestCase):
+ def test_native_tdcc_eight_digit_date_is_not_lost(self):
+  rows,issues=normalize({'history_receipts':{'20251031|2330':dict(date='20251031',status='SAVED_BASIC_VERIFIED',attempts=1)}},'TDCC/HISTORY_20251031.json','TDCC')
+  self.assertEqual(issues,[]);self.assertEqual(rows[0]['period'],'2025-10-31')
+ def test_snapshot_capture_does_not_claim_content_period(self):
+  rows,issues=normalize({'receipts':{'2026-10-23|/v1/opendata/2-12':dict(date=None,status='SAVED_BASIC_VERIFIED',content_period={'min':None,'max':None})}},'TDCC/CURSOR.json','TDCC')
+  self.assertEqual(issues,[]);self.assertEqual(rows[0]['period_basis'],'SNAPSHOT_CAPTURE_DATE_ONLY')
+  self.assertIsNone(rows[0]['content_period']['min'])
+ def test_derived_layer_kept_out_of_raw_source_queue(self):
+  rows,issues=normalize({'units':{'derived':dict(stage='CHIP',raw_sha256='a'*64,status='SUPERSEDED_PROVENANCE_REVISION')}},'LIVE/CHIP/2026-10/MONTH_STATE.json')
+  self.assertEqual(rows,[]);self.assertEqual(issues[0]['reason'],'EXCLUDED_DERIVED_RECORD')
  def test_embedded_finmind_gap_receipts_and_unknown_inflight_are_preserved(self):
   rows,issues=normalize({'finmind_units':{'gap':dict(source='TWSE',start_date='2026-10-01',status='FINMIND_REQUEST_INTENT',attempts=2,next_retry_at=1234)}},'LIVE/RAW/2026-10/MONTH_STATE.json')
   self.assertEqual(issues,[]);self.assertEqual(rows[0]['source'],'FinMind')

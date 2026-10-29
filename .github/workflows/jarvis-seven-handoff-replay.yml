@@ -24,7 +24,14 @@ jobs:
           mkdir frozen
           git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/legacy-freeze
           git archive refs/remotes/origin/legacy-freeze | tar -x -C frozen
-      - run: python -m scripts.v093_legacy_handoff_replay
+      - run: pip install -r requirements-qa.lock
+      - name: Reconcile all frozen ledgers and stream-check retained TDCC sample
+        env:
+          VERIFY_TDCC_STREAM: '1'
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_legacy_handoff_replay
       - name: Persist frozen ledgers and candidate review pages
         if: always()
         run: |
