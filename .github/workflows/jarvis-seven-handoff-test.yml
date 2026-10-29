@@ -9,7 +9,7 @@ permissions:
   actions: read
 concurrency:
   group: jarvis-real-legacy-import-test
-  cancel-in-progress: false
+  cancel-in-progress: true # Only superseded read-only import rehearsals; never production writers.
 jobs:
   import:
     runs-on: ubuntu-latest

@@ -1,7 +1,7 @@
 """Normalize frozen native ledgers without promoting old QA flags to acceptance."""
 import hashlib,json,re
 SOURCES={'TWSE','TPEx','MOPS','TDCC','TAIFEX','NDC','FinMind'}
-BUCKETS=('units','financial_units','receipts','history_receipts','supplement_receipts')
+BUCKETS=('units','financial_units','receipts','history_receipts','supplement_receipts','finmind_units')
 def normalize(document,path,default_source=None,origin=None):
  rows=[];issues=[]
  match=re.search(r'(?:^|/)(20\d\d-\d\d)(?:/|$)',path)
@@ -11,9 +11,9 @@ def normalize(document,path,default_source=None,origin=None):
   if not isinstance(entries,dict):issues.append(dict(reason='BUCKET_SCHEMA',bucket=bucket));continue
   for key,entry in entries.items():
    if not isinstance(entry,dict):issues.append(dict(reason='RECEIPT_SCHEMA',key=key));continue
-   source=entry.get('source',default_source)
+   source='FinMind' if bucket=='finmind_units' else entry.get('source',default_source)
    if source not in SOURCES:issues.append(dict(reason='SOURCE_UNKNOWN',key=key));continue
-   period=entry.get('period') or entry.get('request',{}).get('start') or entry.get('date') or (key if re.match(r'^20\d\d-\d\d$',key) else None) or month
+   period=entry.get('period') or entry.get('start_date') or entry.get('request',{}).get('start') or entry.get('date') or (key if re.match(r'^20\d\d-\d\d$',key) else None) or month
    # TDCC HISTORY files carry the date in each native key, not a month field.
    if not period and re.match(r'^20\d{6}\|',key):period=key[:4]+'-'+key[4:6]+'-'+key[6:8]
    if not period and re.match(r'^HISTORY_20\d{6}',path.rsplit('/',1)[-1]):
@@ -32,7 +32,7 @@ def normalize(document,path,default_source=None,origin=None):
     legacy_unit_id=str(unit),legacy_bucket=bucket,ledger_path=path,ledger_origin=origin,period=period,month=scope_month,
     status=entry.get('status','UNKNOWN'),attempts=attempts,raw_reference=entry.get('evidence_file') or entry.get('file_id'),
     sha256=entry.get('sha256'),archive_sha256=entry.get('archive_sha256'),
-    retry_after_epoch=entry.get('retry_after_epoch'),request_phase=entry.get('request_phase'),
+    retry_after_epoch=entry.get('retry_after_epoch',entry.get('next_retry_at')),request_phase=entry.get('request_phase'),
     prior_numeric_claim=entry.get('numeric_verified'),prior_pit_claim=entry.get('pit_verified'),
     numeric_verified=False,pit_verified=False,full_acceptance=False))
  return rows,issues
@@ -48,7 +48,7 @@ def inspect(rows):
   statuses={r['status'] for r in versions}
   if len(digests)>1:action='VERSION_CONFLICT_REVIEW';conflicts.append(key)
   elif any(r.get('raw_reference') for r in versions):action='VERIFY_RETAINED_RAW_FIRST'
-  elif 'REQUEST_INTENT' in statuses or 'RAW_SAVED' in statuses:action='RECONCILE_INTERRUPTED_REQUEST'
+  elif statuses & {'REQUEST_INTENT','FINMIND_REQUEST_INTENT','RAW_SAVED','PROCESSING'}:action='RECONCILE_INTERRUPTED_REQUEST'
   elif attempts>=4:action='RETRY_EXHAUSTED_REVIEW'
   else:action='CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE'
   result[key]=dict(task_key=key,source=versions[0]['source'],attempts=attempts,action=action,

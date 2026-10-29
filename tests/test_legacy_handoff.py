@@ -1,6 +1,11 @@
 import unittest
 from scripts.v093_legacy_handoff import normalize,inspect
 class HandoffTests(unittest.TestCase):
+ def test_embedded_finmind_gap_receipts_and_unknown_inflight_are_preserved(self):
+  rows,issues=normalize({'finmind_units':{'gap':dict(source='TWSE',start_date='2026-10-01',status='FINMIND_REQUEST_INTENT',attempts=2,next_retry_at=1234)}},'LIVE/RAW/2026-10/MONTH_STATE.json')
+  self.assertEqual(issues,[]);self.assertEqual(rows[0]['source'],'FinMind')
+  self.assertEqual(rows[0]['retry_after_epoch'],1234)
+  self.assertEqual(next(iter(inspect(rows)['tasks'].values()))['action'],'RECONCILE_INTERRUPTED_REQUEST')
  def test_official_member_reference_and_register_identity_preserved(self):
   rows,issues=normalize({'units':{'old':dict(source='TWSE',period='2026-10-01',unit_id='u',evidence_file='file/member.json',sha256='a'*64,attempts=3,status='SAVED_BASIC_VERIFIED')}},'LIVE/RAW/2026-10/MONTH_STATE.json')
   self.assertEqual(issues,[]);self.assertEqual(rows[0]['task_key'],'TWSE|2026-10|u')

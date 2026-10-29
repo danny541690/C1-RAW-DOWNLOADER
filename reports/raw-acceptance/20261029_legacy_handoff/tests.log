@@ -1,3 +1,4 @@
+test_embedded_finmind_gap_receipts_and_unknown_inflight_are_preserved (test_legacy_handoff.HandoffTests.test_embedded_finmind_gap_receipts_and_unknown_inflight_are_preserved) ... ok
 test_ndc_native_month_and_conflicts_are_quarantined (test_legacy_handoff.HandoffTests.test_ndc_native_month_and_conflicts_are_quarantined) ... ok
 test_official_member_reference_and_register_identity_preserved (test_legacy_handoff.HandoffTests.test_official_member_reference_and_register_identity_preserved) ... ok
 test_tdcc_history_sidecar_is_not_lost_and_duplicate_receipts_do_not_reset (test_legacy_handoff.HandoffTests.test_tdcc_history_sidecar_is_not_lost_and_duplicate_receipts_do_not_reset) ... ok
@@ -93,6 +94,6 @@ test_timeout_retry_preserves_cap_and_records_phase (test_tdcc_download_v4.Timeou
 test_transport_release_does_not_restart_history_frontiers (test_tdcc_download_v4.TimeoutResumeTests.test_transport_release_does_not_restart_history_frontiers) ... ok
 
 ----------------------------------------------------------------------
-Ran 93 tests in 2.186s
+Ran 94 tests in 2.141s
 
 OK

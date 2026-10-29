@@ -5,7 +5,7 @@ from scripts.v093_legacy_handoff import normalize,inspect
 from scripts.v093_source_receipt_migration import migrate
 REPORT='1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit'
 ROOT_NAMES={'LIVE_FIVE_STAGE_202610_TO_200001_V1':None,'TDCC_INDEPENDENT_STAGE05':'TDCC','TDCC_INDEPENDENT_STAGE05_ASC':'TDCC','TAIFEX_INDEPENDENT_STAGE06':'TAIFEX','TAIFEX_INDEPENDENT_STAGE06_ASC':'TAIFEX','NDC_INDEPENDENT_STAGE07':'NDC'}
-NAMES={'CURSOR.json','STATUS.json','MONTH_STATE.json','OFFICIAL_REPAIR_STATE.json','RETRY_MONTHS.json','FINMIND_SUPPLEMENT_STATE.json'}
+NAMES={'CURSOR.json','STATUS.json','MONTH_STATE.json','OFFICIAL_REPAIR_STATE.json','RETRY_MONTHS.json','FINMIND_SUPPLEMENT_STATE.json','FINMIND_GAPFILL_STATUS.json'}
 def encode(v):return json.dumps(v,ensure_ascii=False,sort_keys=True).encode()
 def put(path,value):path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(encode(value))
 def wait_drain():
