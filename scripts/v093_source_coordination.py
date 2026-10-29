@@ -69,6 +69,32 @@ class Coordinator:
    if t['status']!='REQUEST_INTENT':raise ValueError('NO_REQUEST_INTENT')
    t.update(status='STORED',raw_sha256=raw_sha)
   self.update(change)
+ def retained(self,ticket,raw_sha,reference):
+  if not re.fullmatch('[0-9a-f]{64}',raw_sha) or not reference:raise ValueError('RETAINED_REFERENCE')
+  def change(s):
+   t=self.owned(s,ticket)
+   if t['status']!='LEASED':raise ValueError('NOT_LEASED')
+   t.update(status='STORED',raw_sha256=raw_sha,raw_reference=reference,reused_existing=True)
+  self.update(change)
+ def prepare_save(self,ticket,raw_sha,locator):
+  if not re.fullmatch('[0-9a-f]{64}',raw_sha) or not locator:raise ValueError('SAVE_INTENT')
+  def change(s):
+   t=self.owned(s,ticket)
+   if t['status']!='REQUEST_INTENT':raise ValueError('NO_REQUEST_INTENT')
+   t.update(save_intent=dict(sha256=raw_sha,locator=locator))
+  self.update(change)
+ def recover(self,slot,owner):
+  now=self.clock()
+  def change(s):
+   for key,t in s['tasks'].items():
+    if t['definition']['slot']!=slot:continue
+    if t.get('owner') and t.get('expires',0)>now:continue
+    if t['status'] not in ('REQUEST_INTENT','STORED','RECONCILE'):continue
+    if not t.get('save_intent'):continue
+    s['fence']+=1;t.update(owner=owner,fence=s['fence'],expires=now+self.ttl,status='REQUEST_INTENT')
+    return dict(source=self.source,key=key,owner=owner,fence=t['fence'])
+   return None
+  return self.update(change)
  def verified(self,ticket,readback_sha,basic_qa):
   def change(s):
    t=self.owned(s,ticket)
