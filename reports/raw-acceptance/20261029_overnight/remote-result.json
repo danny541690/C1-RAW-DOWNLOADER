@@ -1,0 +1,250 @@
+{
+  "source_sha": "7c7db39e5dfed18d835aabe02d14943ff9a18b24",
+  "run_id": 40903920061,
+  "catalog_summary": {
+    "summary_file": "results/candidate-catalogs.json",
+    "source_summary": {
+      "TWSE": {
+        "frozen_review_tasks": 47042,
+        "retained_candidates": 6370,
+        "held_not_admitted": 40672,
+        "direction_counts": {
+          "ASC": 3185,
+          "DESC": 3185
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 10776,
+          "VERIFY_RETAINED_RAW_FIRST": 29887,
+          "RETRY_EXHAUSTED_REVIEW": 1,
+          "VERSION_CONFLICT_REVIEW": 8
+        }
+      },
+      "TPEx": {
+        "frozen_review_tasks": 62814,
+        "retained_candidates": 7302,
+        "held_not_admitted": 55512,
+        "direction_counts": {
+          "ASC": 3651,
+          "DESC": 3651
+        },
+        "held_action_counts": {
+          "VERIFY_RETAINED_RAW_FIRST": 52872,
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2636,
+          "VERSION_CONFLICT_REVIEW": 4
+        }
+      },
+      "MOPS": {
+        "frozen_review_tasks": 23512,
+        "retained_candidates": 771,
+        "held_not_admitted": 22741,
+        "direction_counts": {
+          "ASC": 385,
+          "DESC": 386
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 15328,
+          "VERIFY_RETAINED_RAW_FIRST": 7403,
+          "RETRY_EXHAUSTED_REVIEW": 10
+        }
+      },
+      "TAIFEX": {
+        "frozen_review_tasks": 5061,
+        "retained_candidates": 2365,
+        "held_not_admitted": 2696,
+        "direction_counts": {
+          "ASC": 1182,
+          "DESC": 1183
+        },
+        "held_action_counts": {
+          "VERIFY_RETAINED_RAW_FIRST": 851,
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 1845
+        }
+      },
+      "TDCC": {
+        "frozen_review_tasks": 48059,
+        "retained_candidates": 45120,
+        "held_not_admitted": 2939,
+        "direction_counts": {
+          "ASC": 22560,
+          "DESC": 22560
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2169,
+          "VERIFY_RETAINED_RAW_FIRST": 770
+        }
+      },
+      "NDC": {
+        "frozen_review_tasks": 322,
+        "retained_candidates": 320,
+        "held_not_admitted": 2,
+        "direction_counts": {
+          "DESC": 320
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2
+        }
+      },
+      "FinMind": {
+        "frozen_review_tasks": 2711,
+        "retained_candidates": 2316,
+        "held_not_admitted": 395,
+        "direction_counts": {
+          "DESC": 2316
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 395
+        }
+      }
+    },
+    "catalog_entries": 12
+  },
+  "real_continuous": {
+    "schema": "JARVIS_OVERNIGHT_REAL_CONTINUOUS_V1",
+    "first": {
+      "source": "NDC",
+      "slot": "DESC",
+      "processed": 1,
+      "outcomes": [
+        {
+          "key": "NDC|2026-07|2026-07",
+          "outcome": "BASIC_VERIFIED",
+          "recovered": false,
+          "evidence": {
+            "task_key": "NDC|2026-07|2026-07",
+            "sha256": "f1e71de850cbae49ee2ac933e839fda528c38531db0d6c9da2546c9f09117650",
+            "reference": "1EU-eGqYc9kekNPkUn5qfoPubaiY2i-qY",
+            "stats": {
+              "basic_verified": true,
+              "native": {
+                "tables": 5,
+                "cells": 34,
+                "source_archive_sha256": "c035dc5bbd3fe91ca80a620fd84828a54e8c49885a1b3aa51db5e42857772c83",
+                "source_cells_reconstructed": true,
+                "gaps": 0
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            },
+            "numeric_verified": false,
+            "pit_verified": false,
+            "full_acceptance": false
+          }
+        }
+      ],
+      "task_status_counts": {
+        "RAW_BASIC_VERIFIED": 1
+      },
+      "task_scope": 1,
+      "denominator_is_database_universe": false,
+      "elapsed_seconds": 19.082,
+      "full_acceptance": false,
+      "ready_remaining": 0,
+      "source_hold": null,
+      "cooldown_until": null,
+      "admission_cursor": {
+        "active_keys": [],
+        "archived_status_counts": {
+          "RAW_BASIC_VERIFIED": 2
+        },
+        "catalog_id": "f25636e09c7a92666c3fb4c529e6f71dc088eaf81d8c03687e135da5140dd77b",
+        "chunk_number": 2,
+        "finished": true,
+        "last_archive": {
+          "branch": "refs/heads/jarvis-source-preflight/continuous-archive-overnight-40903920061-1-1/NDC",
+          "commit": "1733619b8e1f62500ade0a02f10bc483d38c4644",
+          "readback_verified": true,
+          "sha256": "a21d1ffc02a533692e34f6ccd88b5b6a6da5ca24bb1cd74ddde9412854a2d137"
+        },
+        "offset": 0,
+        "page": 1,
+        "signature": "b28918dc2ce13ce0b7f71522119f86530f40b804969115a9d1d0a0a165908359"
+      },
+      "chunk_archived": true,
+      "catalog_finished": true,
+      "catalog_more": false,
+      "active_source_tasks": 0,
+      "batches": 2,
+      "total_processed": 2,
+      "stop_reason": "CATALOG_FINISHED",
+      "elapsed_campaign_seconds": 68.141,
+      "production_activation": false
+    },
+    "cold_restart": {
+      "source": "NDC",
+      "slot": "DESC",
+      "processed": 0,
+      "outcomes": [],
+      "task_status_counts": {},
+      "task_scope": 0,
+      "denominator_is_database_universe": false,
+      "elapsed_seconds": 3.795,
+      "full_acceptance": false,
+      "ready_remaining": 0,
+      "source_hold": null,
+      "cooldown_until": null,
+      "admission_cursor": {
+        "active_keys": [],
+        "archived_status_counts": {
+          "RAW_BASIC_VERIFIED": 2
+        },
+        "catalog_id": "f25636e09c7a92666c3fb4c529e6f71dc088eaf81d8c03687e135da5140dd77b",
+        "chunk_number": 2,
+        "finished": true,
+        "last_archive": {
+          "branch": "refs/heads/jarvis-source-preflight/continuous-archive-overnight-40903920061-1-1/NDC",
+          "commit": "1733619b8e1f62500ade0a02f10bc483d38c4644",
+          "readback_verified": true,
+          "sha256": "a21d1ffc02a533692e34f6ccd88b5b6a6da5ca24bb1cd74ddde9412854a2d137"
+        },
+        "more_after_chunk": false,
+        "next_position": {
+          "offset": 0,
+          "page": 1
+        },
+        "offset": 0,
+        "page": 1,
+        "signature": "b28918dc2ce13ce0b7f71522119f86530f40b804969115a9d1d0a0a165908359"
+      },
+      "chunk_archived": false,
+      "catalog_finished": true,
+      "catalog_more": false,
+      "active_source_tasks": 0,
+      "batches": 1,
+      "total_processed": 0,
+      "stop_reason": "CATALOG_FINISHED",
+      "elapsed_campaign_seconds": 10.12,
+      "production_activation": false
+    },
+    "periods": [
+      "2026-07",
+      "2026-08"
+    ],
+    "source_requests": 0,
+    "formal_raw_writes": 0,
+    "data_repaired": 0,
+    "verified_exceptions": 0,
+    "numeric_verified": false,
+    "pit_verified": false,
+    "full_acceptance": false,
+    "production_activation": false
+  },
+  "publication": {
+    "record_sha256": "530161c153faf3367ae7e87ae7a03187bc2f3e095c6c2153a6414ccd59b88fc9",
+    "files": 3,
+    "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+    "drive_receipt": {
+      "file_id": "1HGYe1Jw03usnIYCZlD5tccU2tnOXNBgu",
+      "folder_id": "1wGU9AQggQaUQiqccu2_CuoCpQ1VV9A7p",
+      "sha256": "530161c153faf3367ae7e87ae7a03187bc2f3e095c6c2153a6414ccd59b88fc9",
+      "readback_verified": true
+    },
+    "source_requests": 0,
+    "production_activation": false,
+    "git_state_branch": "jarvis-source-preflight/record-40903920061-1-overnight-catalogs/NDC",
+    "job_status": "success"
+  },
+  "full_repository_tests": 1059,
+  "entry_fixtures_passed": 12,
+  "production_activation": false
+}

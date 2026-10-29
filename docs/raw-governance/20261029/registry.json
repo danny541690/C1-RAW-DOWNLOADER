@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R13",
+  "version": "20261029_R14",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -252,6 +252,40 @@
       "repaired": 0,
       "production_activation": false,
       "drive_receipt_file_id": "1CgiK9VTdbq9_MjgSy5U6Lyc-5YcgEzYu"
+    },
+    {
+      "id": "T28",
+      "name": "無人值守上線前整批驗收",
+      "status": "PASS_IMPLEMENTED_BATCH_PRODUCTION_STILL_BLOCKED",
+      "source_sha": "7c7db39e5dfed18d835aabe02d14943ff9a18b24",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40903920061",
+      "whole_repository_tests": 1059,
+      "issues": [
+        "I26",
+        "I27"
+      ],
+      "old_writer_audit": {
+        "checked_at_taipei": "2026-10-29T23:41:31.175184+08:00",
+        "workflows_checked": 160,
+        "active_old_triggers": 0,
+        "old_writers": 0,
+        "ghost_queued_job_count": 0
+      },
+      "data_repaired": 0,
+      "production_activation": false,
+      "completion_evidence": "Final summary independently read back from Git; Git and Drive publication SHA425d83a6e1424f634cc416e8dcb774763fa18c79ef9e193d9ac711c9fc6a17b8",
+      "entry_fixture_count": 12,
+      "candidate_contract_count": 64564,
+      "held_not_admitted": 124957,
+      "real_retained_units": 2,
+      "real_periods": [
+        "2026-07",
+        "2026-08"
+      ],
+      "source_requests": 0,
+      "formal_raw_writes": 0,
+      "confirmed_historical_exceptions": 0,
+      "drive_final_receipt_file_id": "1yJEz-ZYbNspWf7BpSGSu-jf210BMe4wB"
     }
   ],
   "rules": [
@@ -1323,5 +1357,6 @@
       "status": "RELEASE_REQUIRED",
       "item": "After G1-G3 pass, merge pinned candidate, recheck old writers/ghost queue and validate the initial formal batch"
     }
-  ]
+  ],
+  "latest_tested_sha": "7c7db39e5dfed18d835aabe02d14943ff9a18b24"
 }

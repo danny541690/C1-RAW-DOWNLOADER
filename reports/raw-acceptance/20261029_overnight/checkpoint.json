@@ -1,0 +1,21 @@
+{
+  "run_id": 40903920061,
+  "source_sha": "7c7db39e5dfed18d835aabe02d14943ff9a18b24",
+  "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40903920061",
+  "status": "COMPLETED_IMPLEMENTED_BATCH_PRODUCTION_BLOCKED",
+  "production_activation": false,
+  "scheduled_morning_report": {
+    "date": "2026-10-30",
+    "approximate_time": "08:00",
+    "timezone": "Asia/Taipei"
+  },
+  "scope": [
+    "whole_repository",
+    "twelve_guarded_entries_fixture_only",
+    "frozen_handoff_candidate_catalogs_retained_only",
+    "two_real_retained_NDC_chunks_and_cold_restart",
+    "fresh_old_trigger_and_writer_audit",
+    "automatic_git_and_drive_results"
+  ],
+  "final_drive_receipt_file_id": "1yJEz-ZYbNspWf7BpSGSu-jf210BMe4wB"
+}

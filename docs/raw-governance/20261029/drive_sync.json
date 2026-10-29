@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R13",
+  "version": "20261029_R14",
   "folder_id": "1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "folder_url": "https://drive.google.com/drive/folders/1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "path": "C1_0.93/01_RAW/00_下載規則與問題清單",
@@ -59,6 +59,7 @@
     "adapter_quota_and_quarantine_workflows": true,
     "consolidated_final_bundle": true,
     "admission_runtime_qa": true,
-    "merged_release_regression": true
+    "merged_release_regression": true,
+    "unattended_prelaunch_batch": true
   }
 }
