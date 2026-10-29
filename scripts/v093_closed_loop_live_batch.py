@@ -19,8 +19,8 @@ class Adapter:
   from scripts.v093_three_year_repair import validate
   from scripts.v093_independent_raw import price_checks
   stats=validate(raw,'TWSE',self.job['category'],self.job['period'])
-  checks=price_checks(raw,'TWSE',self.job['period'])
-  if checks['ohlc_violations']:raise ValueError('OHLC_VIOLATION')
+  checks=price_checks(raw,'TWSE',self.job['period']) if self.job['category'] in ('prices','prices_indices') else None
+  if checks and checks['ohlc_violations']:raise ValueError('OHLC_VIOLATION')
   return dict(basic_verified=True,native=stats,price_checks=checks)
  def put(self,name,raw):
   self.d.direct_readback=True;self.d.put(self.folder,name,raw,'application/octet-stream',overwrite=False)
@@ -30,18 +30,31 @@ class Adapter:
 def select():
  review=json.loads(gzip.decompress(Path('frozen/TWSE.review.json.gz').read_bytes()))
  manifest=json.loads(Path('original/ledger_manifest.json').read_text());candidates=[]
+ from scripts import v093_three_year_repair as native
+ from scripts.v093_official_firstpass import LOWER_BOUNDS
+ routes={};trading_dates=set()
+ primary=[]
  for f in manifest:
-  if '/RAW/' not in f['path'] or '/RECONCILE_REPAIR/' in f['path'] or f['name']!='MONTH_STATE.json':continue
-  obj=json.loads(gzip.decompress((Path('original')/f['local']).read_bytes()))
+  if '/RAW/' in f['path'] and '/RECONCILE_REPAIR/' not in f['path'] and f['name']=='MONTH_STATE.json':
+   obj=json.loads(gzip.decompress((Path('original')/f['local']).read_bytes()));primary.append((f,obj))
+   for r in obj.get('units',{}).values():
+    if r.get('source')=='TWSE' and r.get('category') in ('prices','prices_indices') and r.get('status')=='SAVED_BASIC_VERIFIED':trading_dates.add(r.get('period'))
+ for f,obj in primary:
   for key,r in obj.get('units',{}).items():
-   if r.get('source')!='TWSE' or r.get('category') not in ('prices','prices_indices') or r.get('evidence_file'):continue
+   if r.get('source')!='TWSE' or r.get('category') not in {x[0] for x in native.DAILY['TWSE']} or r.get('evidence_file'):continue
    period=r.get('period','');task='TWSE|'+f['path'].split('/RAW/')[1][:7]+'|'+r.get('unit_id',key)
    item=review['tasks'].get(task)
    if not item or item['action']!='CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE':continue
-   if not ('2004-02-11'<=period<='2026-10-28') or len(period)!=10:continue
+   if period not in trading_dates:continue
+   earliest=LOWER_BOUNDS.get(('TWSE',r['category']))
+   if not earliest:continue
+   if not (earliest<=period<='2026-10-28') or len(period)!=10:continue
    if datetime.date.fromisoformat(period).weekday()>4:continue
-   if urllib.parse.urlparse(r.get('url','')).hostname!='www.twse.com.tw':continue
-   candidates.append(dict(r,key=task))
+   month=period[:7]
+   if month not in routes:routes[month]={(j['category'],j['period']):j for j in native.Audit.jobs(object.__new__(native.Audit),month,set()) if j['source']=='TWSE'}
+   route=routes[month].get((r['category'],period))
+   if not route or urllib.parse.urlparse(route['url']).hostname!='www.twse.com.tw':continue
+   candidates.append(dict(r,**{k:route[k] for k in ('url','month')},key=task,missing_evidence='NO_KNOWN_RAW_REFERENCE_IN_FROZEN_REVIEW',trading_date_evidence='SAVED_TWSE_PRICE_RECEIPT'))
  if not candidates:raise RuntimeError('NO_PROVEN_NATIVE_MISSING_PRICE_CANDIDATE')
  return sorted(candidates,key=lambda r:r['period'],reverse=True)[0]
 def main():

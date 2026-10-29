@@ -26,7 +26,7 @@ jobs:
           git archive refs/remotes/origin/original | tar -x -C original
           git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen
           git archive refs/remotes/origin/frozen | tar -x -C frozen
-      - name: Real native download and crash after isolated Drive save
+      - name: Real missing daily dataset download and crash after isolated Drive save
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
