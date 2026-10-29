@@ -112,3 +112,11 @@ TWSE、TPEx、MOPS、TDCC各兩槽（DESC與ASC），TAIFEX、NDC、FinMind各�
 本機測試使用真實交易式SQLite作CAS替身，十一個thread分別持有store instance共同處理44項唯一任務；另以兩個獨立Python程序競爭一項任務，只有一個owner。這是隔離測試共享狀態，不是可給不同GitHub runner各自放一份SQLite就運作；正式遠端CAS adapter仍未接入。RAW下載及GitHub dispatch都是測試回呼。
 
 合併預檢81項通過、十一份YAML解析通過，報告在reports/raw-acceptance/20261029_eleven_slot_preflight_v3。仍保留來源executor、真正跨runner遠端狀態接線、真實Drive閉環、一次停舊切新及流量測試為BLOCKED／NOT_RUN。線上排程本輪未更動。
+
+## 13. V4：Git分支CAS後端與真實雲端協調預檢
+
+新增v093_source_git_store.py，使用隔離來源分支與普通fast-forward push實作CAS，禁止force push；不同更新即使內容相同也使用唯一commit，避免舊revision相同內容被誤認為CAS成功。讀取不依賴共享FETCH_HEAD，操作不切換工作樹。網路／認證失敗與真正競爭拒絕分開，保存失敗不能繼續來源請求。狀態目前上限32MiB，正式全量佇列仍須分頁／分日期桶，不能直接裝入全部20萬候選。
+
+新增一次性jarvis-source-control-live-preflight.yml：seed七個專用QA分支，十一個獨立GitHub worker寫入各自測試槽，再由另一個全新runner讀回全部來源。這項驗證使用真實GitHub保存／競爭／讀回，payload是合成控制資料，沒有市場HTTP、Google Drive或正式資料庫寫入。它不是第十二條正式來源排程，沒有cron。
+
+本機合併87項與十一預覽YAML通過；正式遠端驗證結果以該workflow實際run為準，不提前宣稱成功。來源executor、真實Drive資料閉環、自動續派送的GitHub API接線、一次停舊切新與流量工期仍待驗收。

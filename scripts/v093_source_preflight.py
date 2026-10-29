@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 
 PATTERNS=('test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
-          'test_source_closed_loop_preflight.py','test_source_coordination.py','test_acceptance_scheduler.py','test_acceptance_state.py','test_tdcc_download_v4.py')
+          'test_source_closed_loop_preflight.py','test_source_coordination.py','test_source_git_store.py','test_acceptance_scheduler.py','test_acceptance_state.py','test_tdcc_download_v4.py')
 BLOCKERS={
  'source_executors':'BLOCKED_NOT_INTEGRATED',
  'distributed_fencing_and_immediate_continuation':'BLOCKED_NOT_INTEGRATED',
@@ -31,7 +31,7 @@ def main():
  a.out.mkdir(parents=True,exist_ok=True)
  test_result=dict(run=result.testsRun,failures=len(result.failures),errors=len(result.errors),skipped=len(result.skipped))
  passed=result.wasSuccessful() and not errors
- report=dict(schema='JARVIS_ELEVEN_PREFLIGHT_V3',checked_at_taipei=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),
+ report=dict(schema='JARVIS_ELEVEN_PREFLIGHT_V4',checked_at_taipei=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),
   implemented_tests_passed=passed,tests=test_result,yaml_files=len(files),yaml_errors=errors,
   readiness=BLOCKERS,deployment_ready=False,market_requests=0,production_writes=0,
   source_environment='Fake official HTTP; native TDCC parser; real local files, bare Git and transactional SQLite shared by threads and separate processes; not live Drive or GitHub distributed CAS',

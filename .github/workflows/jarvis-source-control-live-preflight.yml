@@ -1,0 +1,85 @@
+name: JARVIS eleven-slot real Git control preflight
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-source-control-live-preflight.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-new-source-control-preflight
+  cancel-in-progress: false
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m scripts.v093_source_git_live_preflight seed --namespace "${{ github.run_id }}-${{ github.run_attempt }}" --out results/seed.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: source-control-seed-${{ github.run_id }}
+          path: results/seed.json
+          overwrite: true
+          retention-days: 30
+  workers:
+    needs: seed
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    strategy:
+      fail-fast: false
+      max-parallel: 11
+      matrix:
+        include:
+          - {source: TWSE, slot: DESC}
+          - {source: TWSE, slot: ASC}
+          - {source: TPEx, slot: DESC}
+          - {source: TPEx, slot: ASC}
+          - {source: MOPS, slot: DESC}
+          - {source: MOPS, slot: ASC}
+          - {source: TAIFEX, slot: DESC}
+          - {source: TDCC, slot: DESC}
+          - {source: TDCC, slot: ASC}
+          - {source: NDC, slot: DESC}
+          - {source: FinMind, slot: DESC}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m scripts.v093_source_git_live_preflight work --namespace "${{ github.run_id }}-${{ github.run_attempt }}" --source "${{ matrix.source }}" --slot "${{ matrix.slot }}" --out results/worker.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: source-control-${{ matrix.source }}-${{ matrix.slot }}-${{ github.run_id }}
+          path: results/worker.json
+          overwrite: true
+          retention-days: 30
+  verify:
+    needs: [seed, workers]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore all seven saved sources in a fresh runner
+        env:
+          SEED_RESULT: ${{ needs.seed.result }}
+          WORKERS_RESULT: ${{ needs.workers.result }}
+        run: |
+          python -m scripts.v093_source_git_live_preflight verify --namespace "${{ github.run_id }}-${{ github.run_attempt }}" --out results/verified.json
+          test "$SEED_RESULT" = success && test "$WORKERS_RESULT" = success
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: source-control-verified-${{ github.run_id }}
+          path: results/verified.json
+          overwrite: true
+          retention-days: 30
