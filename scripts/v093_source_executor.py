@@ -1,6 +1,7 @@
 """Closed-loop executor; expected receipt binding and durable failure classification."""
 import hashlib,math,re,urllib.error
 from email.utils import parsedate_to_datetime
+from scripts.v093_source_rate import RequestDeferred,SourcePaused
 class ApplicabilityUnproven(ValueError):
  """Source answered without sufficient evidence for this task; never absence proof."""
 
@@ -34,6 +35,9 @@ class Executor:
   return 60
  def record_error(self,ticket,phase,exc):
   code=type(exc).__name__ # No URL, token, response body or exception text persisted.
+  if isinstance(exc,RequestDeferred):self.c.defer(ticket,exc.seconds);return
+  if isinstance(exc,SourcePaused):self.c.error(ticket,'SOURCE_HOLD',phase,code,source_hold=True);return
+  if isinstance(exc,ApplicabilityUnproven):self.c.error(ticket,'APPLICABILITY_HOLD',phase,code);return
   if phase=='FETCH':
    status=getattr(exc,'code',None)
    if isinstance(status,int):code+='_'+str(status)
@@ -64,6 +68,9 @@ class Executor:
     phase='READBACK';return self.finish(t,raw,found)
    phase='AUTHORIZE'
    if self.a.download_authorized is not True:raise ValueError('DOWNLOAD_NOT_AUTHORIZED')
+   phase='REQUEST_ADMISSION'
+   admission=getattr(self.a,'before_request',None)
+   if callable(admission):admission(t)
    self.c.begin_request(t);phase='FETCH';raw=self.a.fetch();sha=hashlib.sha256(raw).hexdigest()
    phase='VALIDATE';self.a.validate(raw)
    phase='PREPARE_SAVE';locator=self.a.locator(t['key'],sha);self.c.prepare_save(t,sha,locator)

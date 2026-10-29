@@ -35,6 +35,10 @@ def run_batch(coordinator,adapter_factory,slot,owner,max_units=20,seconds=2700,m
  coordinator.update(lambda s:s.setdefault('last_batches',{}).update({slot:result}))
  return result
 
+def run_native_batch(coordinator,drive,slot,owner,target_root,max_units=20,seconds=2700):
+ from scripts.v093_source_adapters import factory
+ return run_batch(coordinator,factory(coordinator,drive,target_root),slot,owner,max_units,seconds)
+
 class EntryFixture:
  """Explicit validation-only local payload; never used in production mode."""
  download_authorized=True

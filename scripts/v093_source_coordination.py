@@ -57,6 +57,13 @@ class Coordinator:
  def heartbeat(self,ticket):
   def change(s):self.owned(s,ticket)['expires']=self.clock()+self.ttl
   self.update(change)
+ def defer(self,ticket,seconds,code='SOURCE_REQUEST_BUDGET'):
+  if seconds<0:raise ValueError('DEFER_DELAY')
+  def change(s):
+   t=self.owned(s,ticket)
+   if t['status']!='LEASED':raise ValueError('DEFER_ONLY_UNSENT_TASK')
+   t.update(status='RETRY_WAIT',owner=None,next_at=self.clock()+seconds,error=dict(phase='REQUEST_ADMISSION',code=code))
+  self.update(change)
  def begin_request(self,ticket):
   def change(s):
    t=self.owned(s,ticket)
