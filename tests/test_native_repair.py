@@ -11,7 +11,7 @@ class FakeDrive:
  def find(self,folder,name):
   key=hashlib.sha256((folder+'/'+name).encode()).hexdigest();return {'id':key} if key in self.data else None
  def put(self,folder,name,raw,*args,**kw):
-  if name.endswith('.receipt.json') and self.sidecar_fail:raise OSError('fixture sidecar interruption')
+  if '.receipt' in name and self.sidecar_fail:raise OSError('fixture sidecar interruption')
   key=hashlib.sha256((folder+'/'+name).encode()).hexdigest()
   if key in self.data and self.data[key]!=raw:raise ValueError('IMMUTABLE_CONFLICT')
   self.data[key]=raw
@@ -59,6 +59,15 @@ class NativeRepairTests(unittest.TestCase):
   a=self.adapter();a.ensure_receipt=lambda *args:dict(reference='sidecar',sha256='a'*64,raw_reference='other',raw_sha256='b'*64,readback_verified=True)
   with self.assertRaisesRegex(ValueError,'RECEIPT_NOT_VERIFIED'):Executor(self.c,a).one('DESC','worker')
   self.assertNotEqual(self.c.store.read('TWSE')[1]['tasks']['repair-one']['status'],'RAW_BASIC_VERIFIED')
+
+class ReceiptHistoryTests(unittest.TestCase):
+ setUp=NativeRepairTests.setUp
+ adapter=NativeRepairTests.adapter
+ def test_receipt_lineage_changes_create_new_immutable_receipt(self):
+  a=self.adapter();result=Executor(self.c,a).one('DESC','worker');task=self.c.store.read('TWSE')[1]['tasks']['repair-one'];old=dict(task['storage_receipt']);old_bytes=self.d.data[old['reference']]
+  a.case['repair_evidence']['official_evidence_id']='EXPLICIT_TEST_SECOND_REVIEW'
+  new=a.ensure_receipt('repair-one',result['sha256'],result['reference'],result['stats'])
+  self.assertNotEqual(new['reference'],old['reference']);self.assertEqual(self.d.data[old['reference']],old_bytes)
 
 class NativeHistoryTests(unittest.TestCase):
  def test_history_excludes_saved_and_interrupted_tasks_without_reset(self):

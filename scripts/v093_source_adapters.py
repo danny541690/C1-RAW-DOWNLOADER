@@ -148,7 +148,7 @@ class NativeAdapter(Retained):
   if key!=self.case['key'] or not re.fullmatch('[0-9a-f]{64}',sha):raise ValueError('NATIVE_SIDECAR_BINDING')
   proof=self.case.get('repair_evidence',{})
   receipt=dict(schema='JARVIS_NATIVE_RAW_RECEIPT_V1',source=self.case['source'],task_key=key,period=self.case['period'],raw_reference=reference,raw_sha256=sha,mode=self.case['mode'],previous_reference=proof.get('reference'),previous_sha256=proof.get('sha256'),evidence_id=proof.get('official_evidence_id') or self.case.get('missing_evidence',{}).get('official_evidence_id'),basic_verified=True,numeric_verified=False,pit_verified=False,full_acceptance=False,units='AS_PUBLISHED_NO_CONVERSION')
-  raw=json.dumps(receipt,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode();name=self.locator(key,sha)+'.receipt.json'
+  raw=json.dumps(receipt,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode();name=self.locator(key,sha)+'.receipt_'+hashlib.sha256(raw).hexdigest()+'.json'
   self.d.direct_readback=True;self.d.put(self.storage_folder(),name,raw,'application/json',overwrite=False)
   found=self.d.find(self.storage_folder(),name)
   if not found:raise ValueError('NATIVE_SIDECAR_REFERENCE_MISSING')

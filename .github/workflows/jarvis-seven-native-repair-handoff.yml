@@ -52,3 +52,5 @@ jobs:
 
 
 # R2: recover the saved QA repair after bounded stable-version rereads; no provider download.
+
+# R3: idempotent cold verification; provenance receipts use their own content hash.
