@@ -76,7 +76,7 @@ def prepare_row(source,slot,key,row):
  if status in ('READY','READY_CHECK'):
   if old.get('action')=='VERSION_CONFLICT_REVIEW' or {p.get('period') for p in old.get('provenance',[])}!={definition.get('period')}:raise ValueError('ADMISSION_UNRESOLVED_PERIOD_OR_VERSION')
   contract=row.get('execution_contract',{})
-  if contract.get('mode')!=('RETAINED' if status=='READY_CHECK' else 'MISSING'):raise ValueError('ADMISSION_TASK_MODE')
+  if contract.get('mode') not in (('RETAINED',) if status=='READY_CHECK' else ('MISSING','REPAIR')):raise ValueError('ADMISSION_TASK_MODE')
   NativeAdapter(None,None,dict(source=source,key=key),row)
   if status=='READY' and attempts>=4:status='BLOCKED'
  return dict(definition=definition,attempts=attempts,status=status,fence=0,owner=None,legacy_review=old,execution_contract=row.get('execution_contract'),check_only=status=='READY_CHECK',full_acceptance=False,numeric_verified=False,pit_verified=False)

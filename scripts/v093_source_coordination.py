@@ -135,13 +135,15 @@ class Coordinator:
     return dict(source=self.source,key=key,owner=owner,fence=t['fence'])
    return None
   return self.update(change)
- def verified(self,ticket,readback_sha,basic_qa,reference=None):
+ def verified(self,ticket,readback_sha,basic_qa,reference=None,storage_receipt=None):
   if reference is not None and (not isinstance(reference,str) or not reference):raise ValueError('INVALID_RAW_REFERENCE')
+  if storage_receipt is not None and (storage_receipt.get('readback_verified') is not True or storage_receipt.get('raw_reference')!=reference or storage_receipt.get('raw_sha256')!=readback_sha or not storage_receipt.get('reference') or not re.fullmatch('[0-9a-f]{64}',storage_receipt.get('sha256') or '')):raise ValueError('NATIVE_RECEIPT_NOT_VERIFIED')
   def change(s):
    t=self.owned(s,ticket)
    if t['status']!='STORED' or readback_sha!=t['raw_sha256'] or basic_qa is not True:raise ValueError('READBACK_OR_QA_NOT_VERIFIED')
    t.update(status='RAW_BASIC_VERIFIED',owner=None,numeric_verified=False,pit_verified=False,full_acceptance=False)
    if reference is not None:t['raw_reference']=reference
+   if storage_receipt is not None:t['storage_receipt']=dict(storage_receipt)
   self.update(change)
  def failed(self,ticket,retry_after=0,source_cooldown=False,error_code=None):
   if retry_after<0:raise ValueError('RETRY_AFTER')

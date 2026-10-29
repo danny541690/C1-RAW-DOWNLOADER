@@ -21,7 +21,9 @@ class Executor:
   if hashlib.sha256(readback).hexdigest()!=expected:raise ValueError('REMOTE_RAW_SHA_MISMATCH')
   stats=self.a.validate(readback)
   if not isinstance(stats,dict) or stats.get('basic_verified') is not True:raise ValueError('CONTENT_VALIDATION_NOT_PASSED')
-  self.c.verified(ticket,expected,True,reference=reference)
+  saver=getattr(self.a,'ensure_receipt',None)
+  receipt=saver(ticket['key'],expected,reference,stats) if callable(saver) else None
+  self.c.verified(ticket,expected,True,reference=reference,storage_receipt=receipt)
   return dict(task_key=ticket['key'],sha256=expected,reference=reference,stats=stats,numeric_verified=False,pit_verified=False,full_acceptance=False)
  def retry_delay(self,exc):
   header=getattr(exc,'headers',None);value=header.get('Retry-After') if header else None
