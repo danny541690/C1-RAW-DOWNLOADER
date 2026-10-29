@@ -1,0 +1,147 @@
+{
+  "run": 40886009712,
+  "source_sha": "04166290ec6d92a6667d12af0bbbf1050babb964",
+  "whole_repository_tests": 1049,
+  "result": {
+    "schema": "JARVIS_PINNED_ADMISSION_NATIVE_QA_V1",
+    "catalog_entry": {
+      "commit": "85e6c539c48b91196eb89147068ac54801753765",
+      "index_sha256": "57edf4c1b5bce44d172b4e0ff29003a57baeff5feb09895f2b27cd56080ba5c7"
+    },
+    "result": {
+      "source": "NDC",
+      "slot": "DESC",
+      "processed": 1,
+      "outcomes": [
+        {
+          "key": "NDC|2026-08|2026-08",
+          "outcome": "BASIC_VERIFIED",
+          "recovered": false,
+          "evidence": {
+            "task_key": "NDC|2026-08|2026-08",
+            "sha256": "a18c0c5901296a51d5f7a011ded97b140422da898e0d3b11109147ef53c952ff",
+            "reference": "1MqpGGgB7t1EYSHDDpBw-k3Z1e8zmLUSz",
+            "stats": {
+              "basic_verified": true,
+              "native": {
+                "tables": 5,
+                "cells": 34,
+                "source_archive_sha256": "c035dc5bbd3fe91ca80a620fd84828a54e8c49885a1b3aa51db5e42857772c83",
+                "source_cells_reconstructed": true,
+                "gaps": 8
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            },
+            "numeric_verified": false,
+            "pit_verified": false,
+            "full_acceptance": false
+          }
+        }
+      ],
+      "task_status_counts": {
+        "RAW_BASIC_VERIFIED": 1
+      },
+      "task_scope": 1,
+      "denominator_is_database_universe": false,
+      "elapsed_seconds": 15.107,
+      "full_acceptance": false,
+      "ready_remaining": 0,
+      "source_hold": null,
+      "cooldown_until": null,
+      "admission_cursor": {
+        "active_keys": [],
+        "archived_status_counts": {
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "catalog_id": "f69f6519cae459bfbbd2ca1848ff08f11176d35c9209105b1f0775d1a450db0a",
+        "chunk_number": 1,
+        "finished": true,
+        "last_archive": {
+          "branch": "refs/heads/jarvis-source-preflight/archive-admitted-40886009712-1-0/NDC",
+          "commit": "d43ad1e66e07eeafd504d6f53b3cdc683f6d3c10",
+          "readback_verified": true,
+          "sha256": "4ea9e84bcdf217b6dd94966fa6275ad16eb3af020d13bde67e103fb92789ca32"
+        },
+        "offset": 0,
+        "page": 1,
+        "signature": "615d79f0ca0dd3f32c94927c1db596ed585a6afb84306e722667ff61c9e4f02b"
+      },
+      "chunk_archived": true,
+      "catalog_finished": true,
+      "catalog_more": false,
+      "active_source_tasks": 0
+    },
+    "cold_restart": {
+      "source": "NDC",
+      "slot": "DESC",
+      "processed": 0,
+      "outcomes": [],
+      "task_status_counts": {},
+      "task_scope": 0,
+      "denominator_is_database_universe": false,
+      "elapsed_seconds": 5.3,
+      "full_acceptance": false,
+      "ready_remaining": 0,
+      "source_hold": null,
+      "cooldown_until": null,
+      "admission_cursor": {
+        "active_keys": [],
+        "archived_status_counts": {
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "catalog_id": "f69f6519cae459bfbbd2ca1848ff08f11176d35c9209105b1f0775d1a450db0a",
+        "chunk_number": 1,
+        "finished": true,
+        "last_archive": {
+          "branch": "refs/heads/jarvis-source-preflight/archive-admitted-40886009712-1-0/NDC",
+          "commit": "d43ad1e66e07eeafd504d6f53b3cdc683f6d3c10",
+          "readback_verified": true,
+          "sha256": "4ea9e84bcdf217b6dd94966fa6275ad16eb3af020d13bde67e103fb92789ca32"
+        },
+        "more_after_chunk": false,
+        "next_position": {
+          "offset": 0,
+          "page": 1
+        },
+        "offset": 0,
+        "page": 1,
+        "signature": "615d79f0ca0dd3f32c94927c1db596ed585a6afb84306e722667ff61c9e4f02b"
+      },
+      "chunk_archived": false,
+      "catalog_finished": true,
+      "catalog_more": false,
+      "active_source_tasks": 0
+    },
+    "archive_receipt": {
+      "branch": "refs/heads/jarvis-source-preflight/archive-admitted-40886009712-1-0/NDC",
+      "commit": "d43ad1e66e07eeafd504d6f53b3cdc683f6d3c10",
+      "readback_verified": true,
+      "sha256": "4ea9e84bcdf217b6dd94966fa6275ad16eb3af020d13bde67e103fb92789ca32"
+    },
+    "old_attempts_preserved": true,
+    "legacy_provenance_preserved": true,
+    "source_requests": 0,
+    "formal_raw_writes": 0,
+    "production_enabled": false,
+    "code_manifest_sha256": "c76384f41211f293ae40d147a20ade47d768ea93f8799919d9f9d7fe7bffa759",
+    "limitation": "One retained NDC case through new admission runtime; seven production catalogs not approved"
+  },
+  "publication": {
+    "record_sha256": "4eaf957fb4d466188f4cb78a571d2fef3da814b3408720e0272e7de217069dfc",
+    "files": 4,
+    "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+    "drive_receipt": {
+      "file_id": "1Pz5PUO_3cdutavvwZe1xSOrIWS2xS_5l",
+      "folder_id": "1JGci_e6UPJQmxgn7s_4T2uBRtCRaIlGY",
+      "sha256": "4eaf957fb4d466188f4cb78a571d2fef3da814b3408720e0272e7de217069dfc",
+      "readback_verified": true
+    },
+    "source_requests": 0,
+    "production_activation": false,
+    "git_state_branch": "jarvis-source-preflight/record-40886009712-1-admitted-native/NDC",
+    "job_status": "success"
+  },
+  "prior_failed_run": 40885433447
+}
