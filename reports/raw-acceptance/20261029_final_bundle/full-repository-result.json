@@ -1,0 +1,147 @@
+{
+  "run": 40880721668,
+  "code_sha": "9955cd7df2323a3fc67ca5f5a76ed6876057922d",
+  "repository_offline": {
+    "schema": "JARVIS_FULL_REPOSITORY_OFFLINE_RESULT_V1",
+    "tests": 1039,
+    "exit_code": 0,
+    "passed": true,
+    "source_environment": "REPOSITORY_OFFLINE_TESTS",
+    "production_activation": false
+  },
+  "release_checks": {
+    "schema": "JARVIS_FINAL_PRELAUNCH_BUNDLE_V1",
+    "regression": {
+      "run": 146,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "entry_yaml_passed": 12,
+    "production_entry_probes": [
+      {
+        "source": "TWSE",
+        "direction": "DESC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "TWSE",
+        "direction": "ASC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "TPEx",
+        "direction": "DESC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "TPEx",
+        "direction": "ASC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "MOPS",
+        "direction": "DESC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "MOPS",
+        "direction": "ASC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "TDCC",
+        "direction": "DESC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "TDCC",
+        "direction": "ASC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "TAIFEX",
+        "direction": "DESC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "TAIFEX",
+        "direction": "ASC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "NDC",
+        "direction": "DESC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      },
+      {
+        "source": "FinMind",
+        "direction": "DESC",
+        "production_mode": "BLOCKED_BEFORE_IO"
+      }
+    ],
+    "deployment_ready": false,
+    "source_requests": 0,
+    "formal_raw_writes": 0,
+    "required_release_work": [
+      {
+        "id": "G1",
+        "status": "IMPLEMENTATION_REQUIRED",
+        "item": "Production CLI currently rejects every run; wire admitted native tasks, bounded active queues and old-progress import"
+      },
+      {
+        "id": "G2",
+        "status": "PARTIAL_TYPES_AND_LIVE_ACCEPTANCE",
+        "item": "Complete required source contract types and positive download/save/revalidation cases; keep unknown history held"
+      },
+      {
+        "id": "G3",
+        "status": "INTEGRATION_AND_LIVE_LOAD_REQUIRED",
+        "item": "Wire durable continuation/watchdog and measure provider quotas, lease heartbeat and storage throughput on the actual worker"
+      },
+      {
+        "id": "G4",
+        "status": "RELEASE_REQUIRED",
+        "item": "After G1-G3 pass, merge pinned candidate, recheck old writers/ghost queue and validate the initial formal batch"
+      }
+    ],
+    "nonblocking_backlog": "1602 historical empty-response tasks remain source-coverage review; they do not have to all be resolved before a safe admitted-task worker can start",
+    "evidence_scope": "Local/isolated readiness checks, not a production smoke pass",
+    "rejected_evidence_storage_probe": {
+      "fixture_only": true,
+      "first": {
+        "reference": "1vMt-QBrzmE0-srjgKTJXI_dNWqv7LTUM",
+        "raw_sha256": "c7f2dc8e74303d27c87c0374e8316f0da913a48d569135b03ce6014c00625229",
+        "stored_sha256": "47f37f7eb7d4eb3c6399dc9e3e7e38d9866a4daedabc3f1f9017956f130b69a9",
+        "encoding": "gzip",
+        "raw_bytes": 53,
+        "readback_verified": true,
+        "accepted_as_raw": false
+      },
+      "repeated": {
+        "reference": "1vMt-QBrzmE0-srjgKTJXI_dNWqv7LTUM",
+        "raw_sha256": "c7f2dc8e74303d27c87c0374e8316f0da913a48d569135b03ce6014c00625229",
+        "stored_sha256": "47f37f7eb7d4eb3c6399dc9e3e7e38d9866a4daedabc3f1f9017956f130b69a9",
+        "encoding": "gzip",
+        "raw_bytes": 53,
+        "readback_verified": true,
+        "accepted_as_raw": false
+      }
+    }
+  },
+  "publication": {
+    "record_sha256": "72480463de3d513f2568bd56648ae0f2e2a4d0c3dd9453748b6adae06f646dba",
+    "files": 7,
+    "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+    "drive_receipt": {
+      "file_id": "1lWhnELDOMGJxw9USICIT-pm0_qugz8ID",
+      "folder_id": "1JBgGYCgxBmhNBXkBZxKFYDqMg5NoPZvm",
+      "sha256": "72480463de3d513f2568bd56648ae0f2e2a4d0c3dd9453748b6adae06f646dba",
+      "readback_verified": true
+    },
+    "source_requests": 0,
+    "production_activation": false,
+    "git_state_branch": "jarvis-source-preflight/record-40880721668-1-final-prelaunch/TWSE",
+    "job_status": "success"
+  }
+}

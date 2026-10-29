@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R10",
+  "version": "20261029_R11",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -218,6 +218,15 @@
       "source_sha": "125c64e55b74f34b490e22ad4b667035865b3176",
       "evidence": "reports/raw-acceptance/20261029_adapter_rate/quarantine-recheck-results.json",
       "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40875609531"
+    },
+    {
+      "id": "T25",
+      "name": "整倉庫離線＋正式門檻＋拒絕回應存證合併檢查",
+      "status": "PASS_CHECK_EXECUTION_RELEASE_BLOCKED",
+      "scope": "1039離線測試，worker146重疊不相加；12production拒絕；真正Drive存證fixture通過",
+      "source_sha": "9955cd7df2323a3fc67ca5f5a76ed6876057922d",
+      "evidence": "reports/raw-acceptance/20261029_final_bundle/full-repository-result.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40880721668"
     }
   ],
   "rules": [
@@ -459,6 +468,12 @@
       "status": "OPEN_SOURCE_COVERAGE_REVIEW",
       "name": "Retained official empty responses are not historical-absence proofs",
       "evidence_test_id": "T24"
+    },
+    {
+      "id": "I23",
+      "status": "FIXED_FUTURE_NATIVE_EVIDENCE_CORE_REAL_STORAGE_TESTED",
+      "name": "Preserve future rejected native response bytes and verified receipts",
+      "evidence_test_id": "T25"
     }
   ],
   "evidence_files": [
@@ -1253,5 +1268,29 @@
       "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_twelve_slot_names/tests.log"
     }
   ],
-  "reviewed_sha": "099922c7af4a0276b4905234339284c7051e9521"
+  "reviewed_sha": "099922c7af4a0276b4905234339284c7051e9521",
+  "latest_checked_code_sha": "9955cd7df2323a3fc67ca5f5a76ed6876057922d",
+  "latest_deployment_ready": false,
+  "required_release_work": [
+    {
+      "id": "G1",
+      "status": "IMPLEMENTATION_REQUIRED",
+      "item": "Production CLI currently rejects every run; wire admitted native tasks, bounded active queues and old-progress import"
+    },
+    {
+      "id": "G2",
+      "status": "PARTIAL_TYPES_AND_LIVE_ACCEPTANCE",
+      "item": "Complete required source contract types and positive download/save/revalidation cases; keep unknown history held"
+    },
+    {
+      "id": "G3",
+      "status": "INTEGRATION_AND_LIVE_LOAD_REQUIRED",
+      "item": "Wire durable continuation/watchdog and measure provider quotas, lease heartbeat and storage throughput on the actual worker"
+    },
+    {
+      "id": "G4",
+      "status": "RELEASE_REQUIRED",
+      "item": "After G1-G3 pass, merge pinned candidate, recheck old writers/ghost queue and validate the initial formal batch"
+    }
+  ]
 }
