@@ -1,1 +1,1 @@
-{"NDC|2026-08|2026-08":{"attempts":0,"definition":{"key":"NDC|2026-08|2026-08","period":"2026-08","slot":"DESC","source":"NDC"},"fence":0,"status":"READY"}}
+{"NDC|2026-08|2026-08":{"attempts":1,"definition":{"key":"NDC|2026-08|2026-08","period":"2026-08","slot":"DESC","source":"NDC"},"fence":0,"status":"READY"}}
