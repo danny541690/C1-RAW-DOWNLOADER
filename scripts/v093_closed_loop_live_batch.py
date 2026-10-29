@@ -7,6 +7,7 @@ from scripts.v093_source_executor import Executor
 class Adapter:
  download_authorized=True
  def __init__(self,drive,folder,job):self.d=drive;self.folder=folder;self.job=job;self.crash=False;self.requests=0;self.existing_reference=None
+ def expected_receipt(self,key):return dict(source='TWSE',task_key=key,period=self.job['period'],reference=self.job.get('evidence_file'),sha256=self.job.get('sha256'))
  def find(self,key):return self.existing_reference
  def find_locator(self,name):
   f=self.d.find(self.folder,name);return f['id'] if f else None
@@ -74,13 +75,21 @@ def main():
  p=argparse.ArgumentParser();p.add_argument('mode',choices=['start','resume']);p.add_argument('--namespace',required=True);a=p.parse_args()
  out=Path('results');out.mkdir(exist_ok=True);d=Drive(service());store=GitCAS(Path.cwd(),'jarvis-source-preflight/'+a.namespace);c=Coordinator(store,'TWSE',ttl=3600)
  if a.mode=='start':
-  job=select();folder=d.folder('1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit','JARVIS_TWELVE_E2E_QA_'+a.namespace)
+  job=select();folder=None if job.get('test_mode') else d.folder('1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit','JARVIS_TWELVE_E2E_QA_'+a.namespace)
   metadata=dict(job=job,folder=folder,namespace=a.namespace);(out/'case.json').write_text(json.dumps(metadata))
   c.add([dict(source='TWSE',key=job['key'],slot='DESC',period=job['period'])]);adapter=Adapter(d,folder,job);adapter.crash=True
   if job.get('test_mode'):
    adapter.crash=False;adapter.existing_reference=job['evidence_file']
    evidence=Executor(c,adapter).one('DESC','retained-reuse')
-   result=dict(mode=job['test_mode'],evidence=evidence,source_requests=0,production_writes=0,required_missing_download_test='NOT_EXECUTED_NO_ELIGIBLE_CASE',ready_for_production=False)
+   badkey=job['key']+'-sha-probe';c.add([dict(source='TWSE',key=badkey,slot='DESC',period=job['period'])])
+   bad=Adapter(d,folder,dict(job,sha256='0'*64));bad.existing_reference=job['evidence_file']
+   try:Executor(c,bad).one('DESC','wrong-sha-probe')
+   except ValueError as exc:
+    if str(exc)!='RETAINED_EXPECTED_SHA_MISMATCH':raise
+   else:raise RuntimeError('WRONG_EXPECTED_SHA_NOT_BLOCKED')
+   _,check=store.read('TWSE')
+   if check['tasks'][badkey]['status']!='CONTENT_BLOCKED' or check['tasks'][badkey]['attempts']!=0:raise RuntimeError('HASH_HOLD_NOT_DURABLE')
+   result=dict(mode=job['test_mode'],expected_sha_bound=True,wrong_expected_sha_blocked=True,evidence=evidence,source_requests=0,production_writes=0,required_missing_download_test='NOT_EXECUTED_NO_ELIGIBLE_CASE',ready_for_production=False)
    (out/'start.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result,ensure_ascii=False),flush=True);return
   try:Executor(c,adapter).one('DESC','live-first')
   except OSError as exc:
@@ -95,7 +104,9 @@ def main():
    raw=adapter.read(meta['job']['evidence_file']);stats=adapter.validate(raw)
    _,state=store.read('TWSE');task=state['tasks'][meta['job']['key']]
    if task['status']!='RAW_BASIC_VERIFIED' or task['attempts']!=0 or adapter.requests:raise RuntimeError('REUSE_COLD_RESTORE_INVARIANT')
-   result=dict(mode='REAL_RETAINED_REUSE_AND_COLD_REVALIDATION_PASS',source_requests=0,attempts=0,stats=stats,required_missing_download_test='NOT_EXECUTED_NO_ELIGIBLE_CASE',ready_for_production=False,full_data_acceptance=False)
+   bad=state['tasks'][meta['job']['key']+'-sha-probe']
+   if bad['status']!='CONTENT_BLOCKED' or bad['attempts']!=0:raise RuntimeError('HASH_HOLD_LOST_ON_RESTART')
+   result=dict(mode='REAL_RETAINED_REUSE_AND_COLD_REVALIDATION_PASS',expected_sha_bound=True,wrong_expected_sha_hold_restored=True,source_requests=0,attempts=0,stats=stats,required_missing_download_test='NOT_EXECUTED_NO_ELIGIBLE_CASE',ready_for_production=False,full_data_acceptance=False)
    (out/'resume.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result,ensure_ascii=False),flush=True);return
   evidence=Executor(c,adapter).resume('DESC','fresh-runner')
   _,state=store.read('TWSE');task=state['tasks'][meta['job']['key']]
