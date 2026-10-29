@@ -1,1 +1,1 @@
-{"TAIFEX|2026-10|TICK|delta/chinese/Delta_20261028.csv":{"attempts":1,"definition":{"key":"TAIFEX|2026-10|TICK|delta/chinese/Delta_20261028.csv","period":"2026-10-28","slot":"DESC","source":"TAIFEX"},"fence":0,"status":"READY"}}
+{"TAIFEX|2026-10|TICK|delta/chinese/Delta_20261028.csv":{"attempts":1,"definition":{"key":"TAIFEX|2026-10|TICK|delta/chinese/Delta_20261028.csv","period":"2026-10-28","slot":"DESC","source":"TAIFEX"},"expires":1793270270.895021,"fence":1,"owner":"native-start","status":"LEASED"}}
