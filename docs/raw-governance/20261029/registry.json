@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R6",
+  "version": "20261029_R7",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -164,6 +164,15 @@
       "evidence": "reports/raw-acceptance/20261029_tdcc_missing/remote-result.json",
       "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40853662597",
       "prior_failed_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40853248163"
+    },
+    {
+      "id": "T19",
+      "name": "五來源原生格式、舊RAW重用與獨立程序讀回",
+      "status": "PASS_FIVE_RETAINED_NATIVE_CASES",
+      "scope": "TPEx/MOPS/TAIFEX/NDC/FinMind 5案例；NDC官方源檔重建比對；未執行新下載",
+      "source_sha": "e9665218665073898636d4d143f5a4001894497d",
+      "evidence": "reports/raw-acceptance/20261029_five_native/remote-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40854960470"
     }
   ],
   "rules": [
