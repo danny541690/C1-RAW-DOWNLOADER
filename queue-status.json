@@ -1,0 +1,48 @@
+{
+  "schema": "JARVIS_PAUSE_STATUS_V1",
+  "queued_run": 39611764652,
+  "queue_action": "CANCEL_CONFLICT_409",
+  "workflows": [
+    {
+      "id": 399561416,
+      "path": ".github/workflows/jarvis-acceptance-scheduled.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "id": 394255149,
+      "path": ".github/workflows/v093-ndc-independent.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "id": 394904073,
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "id": 394842279,
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "id": 394231455,
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "id": 394849391,
+      "path": ".github/workflows/v093-tdcc-independent-asc.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "id": 394199526,
+      "path": ".github/workflows/v093-tdcc-independent.yml",
+      "state": "disabled_manually"
+    },
+    {
+      "id": 391305920,
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "state": "disabled_manually"
+    }
+  ],
+  "new_downloaders_started": false
+}
