@@ -22,3 +22,13 @@ class OverlayTests(unittest.TestCase):
    if conflict=='period':reviews['TDCC'][key]['provenance'][0]['period']='2025-11-01'
    else:reviews['TDCC'][key]['provenance'][0].update(raw_reference='old',sha256='c'*64)
    with self.assertRaises(ValueError):apply_task(reviews,'TDCC',key,task,{})
+
+class EmptyClassificationTests(unittest.TestCase):
+ def test_known_empty_does_not_become_confirmed_historical_absence(self):
+  from scripts.v093_source_adapters import unconfirmed_empty
+  self.assertTrue(unconfirmed_empty('TWSE',ValueError('SOURCE_STATUS:很抱歉，沒有符合條件的資料!')))
+  self.assertTrue(unconfirmed_empty('TPEx',ValueError('EMPTY_RESPONSE_NOT_COVERAGE')))
+ def test_throttle_malformed_and_wrong_date_are_not_relabelled_empty(self):
+  from scripts.v093_source_adapters import unconfirmed_empty
+  for code in ('SOURCE_STATUS:too many requests','ROW_FIELD_WIDTH_MISMATCH','RESPONSE_DATE_MISMATCH:2000-01-01'):
+   self.assertFalse(unconfirmed_empty('TWSE',ValueError(code)))

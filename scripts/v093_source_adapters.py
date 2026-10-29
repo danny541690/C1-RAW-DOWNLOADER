@@ -9,6 +9,14 @@ from scripts.v093_source_executor import ApplicabilityUnproven
 from scripts.v093_source_rate import reserve,SourcePaused
 RAW_ROOT='1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn'
 
+def unconfirmed_empty(source,error):
+ if source not in ('TWSE','TPEx'):return False
+ message=str(error)
+ if message=='EMPTY_RESPONSE_NOT_COVERAGE':return True
+ if not message.startswith('SOURCE_STATUS:'):return False
+ status=message.removeprefix('SOURCE_STATUS:').strip().rstrip('!！。')
+ return status in {'很抱歉，沒有符合條件的資料','查無資料','沒有資料','查無符合條件資料'}
+
 class NativeAdapter(Retained):
  def __init__(self,coordinator,drive,ticket,task,target_root=RAW_ROOT):
   case=task.get('execution_contract')
@@ -123,7 +131,10 @@ class NativeAdapter(Retained):
   source=self.case['source']
   if source=='TWSE':
    from scripts.v093_three_year_repair import validate
-   stats=validate(raw,source,self.case['category'],self.case['period'])
+   try:stats=validate(raw,source,self.case['category'],self.case['period'])
+   except ValueError as exc:
+    if unconfirmed_empty(source,exc):raise ApplicabilityUnproven('OFFICIAL_EMPTY_UNCONFIRMED') from None
+    raise
    return dict(basic_verified=True,native=stats)
   if source=='TDCC':
    from scripts.v093_tdcc_independent import validate_history,SourceEmpty
@@ -132,6 +143,7 @@ class NativeAdapter(Retained):
    return dict(basic_verified=True,rows=rows)
   try:return super().validate(raw)
   except Exception as exc:
+   if unconfirmed_empty(source,exc):raise ApplicabilityUnproven('OFFICIAL_EMPTY_UNCONFIRMED') from None
    if source=='TAIFEX':
     from scripts.v093_taifex_independent import OfficialEmpty
     if isinstance(exc,OfficialEmpty):raise ApplicabilityUnproven('OFFICIAL_EMPTY_UNCONFIRMED') from None
