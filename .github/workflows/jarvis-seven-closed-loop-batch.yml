@@ -2,7 +2,7 @@ name: JARVIS bounded real closed-loop combined batch
 on:
   push:
     branches: [codex/seven-source-closed-loop-design-20261029]
-    paths: [.github/workflows/jarvis-seven-closed-loop-batch.yml]
+    paths: [scripts/v093_closed_loop_live_batch.py]
   workflow_dispatch:
 permissions:
   contents: write
@@ -33,6 +33,13 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python -m scripts.v093_closed_loop_live_batch start --namespace combined-${{ github.run_id }}
+      - name: Automatically preserve acceptance evidence in Git and Drive
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source 'TWSE' --job 'start' --status '${{ job.status }}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -59,6 +66,13 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python -m scripts.v093_closed_loop_live_batch resume --namespace combined-${{ github.run_id }}
+      - name: Automatically preserve acceptance evidence in Git and Drive
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source 'TWSE' --job 'resume' --status '${{ job.status }}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:

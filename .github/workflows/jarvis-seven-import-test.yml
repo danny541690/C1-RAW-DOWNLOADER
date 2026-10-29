@@ -2,7 +2,7 @@ name: JARVIS seven-source merged handoff import acceptance
 on:
   push:
     branches: [codex/seven-source-closed-loop-design-20261029]
-    paths: [.github/workflows/jarvis-seven-import-test.yml]
+    paths: [scripts/v093_import_live_preflight.py]
   workflow_dispatch:
 permissions:
   contents: write
@@ -28,6 +28,13 @@ jobs:
           git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen-review
           git archive refs/remotes/origin/frozen-review | tar -x -C frozen
       - run: python -m scripts.v093_import_live_preflight save --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Automatically preserve acceptance evidence in Git and Drive
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job 'save-${{ matrix.source }}' --status '${{ job.status }}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -70,6 +77,13 @@ jobs:
           for field in ('tasks','sha256','commit','statuses'):
               if saved[field]!=restored[field]:raise ValueError('COLD_RESTORE_'+field)
           PY
+      - name: Automatically preserve acceptance evidence in Git and Drive
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job 'verify-${{ matrix.source }}' --status '${{ job.status }}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:

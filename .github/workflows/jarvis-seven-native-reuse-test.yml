@@ -2,7 +2,7 @@ name: JARVIS five-source native content and retained RAW merged acceptance
 on:
   push:
     branches: [codex/seven-source-closed-loop-design-20261029]
-    paths: [.github/workflows/jarvis-seven-native-reuse-test.yml]
+    paths: [scripts/v093_native_reuse_batch.py]
   workflow_dispatch:
 permissions:
   contents: write
@@ -42,6 +42,13 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python -m scripts.v093_native_reuse_batch verify --source '${{ matrix.source }}' --namespace native-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Automatically preserve acceptance evidence in Git and Drive
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job 'native-${{ matrix.source }}' --status '${{ job.status }}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
