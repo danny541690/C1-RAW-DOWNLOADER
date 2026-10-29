@@ -54,3 +54,5 @@ jobs:
           name: admission-runtime
           path: results
           retention-days: 90
+
+# R2: archive lookup handles the first-start empty source state.

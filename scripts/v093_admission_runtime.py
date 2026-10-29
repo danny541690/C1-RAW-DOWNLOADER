@@ -98,7 +98,9 @@ def stage(coordinator,catalog,limit=32):
  coordinator.update(change);return bool(prepared)
 
 def archive_completed(coordinator,slot,save_archive):
- _,state=coordinator.store.read(coordinator.source);cursor=state.get('admission',{}).get(slot,{})
+ _,state=coordinator.store.read(coordinator.source)
+ if not state:return False
+ cursor=state.get('admission',{}).get(slot,{})
  keys=cursor.get('active_keys',[])
  if not keys:return False
  rows={key:state['tasks'][key] for key in keys}

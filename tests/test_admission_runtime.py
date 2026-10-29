@@ -49,3 +49,7 @@ class AdmissionTests(unittest.TestCase):
  def test_unreviewed_existing_progress_cannot_be_overwritten(self):
   self.c.add([dict(source='TWSE',key='other',slot='DESC',period='2026-09-01')])
   with self.assertRaisesRegex(ValueError,'EXISTING_PROGRESS'):stage(self.c,FakeCatalog({'k':self.row()}))
+
+ def test_first_start_has_no_archive_before_any_progress_exists(self):
+  self.assertFalse(archive_completed(self.c,'DESC',self.archive))
+  self.assertIsNone(self.c.store.read('TWSE')[1])
