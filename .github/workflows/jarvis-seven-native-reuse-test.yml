@@ -1,0 +1,50 @@
+name: JARVIS five-source native content and retained RAW merged acceptance
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-native-reuse-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-native-reuse-qa
+  cancel-in-progress: false
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TPEx, MOPS, TAIFEX, NDC, FinMind]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Restore frozen original and review ledgers
+        run: |
+          mkdir original frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/original
+          git archive refs/remotes/origin/original | tar -x -C original
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen
+          git archive refs/remotes/origin/frozen | tar -x -C frozen
+      - name: Validate retained native RAW through shared executor
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_native_reuse_batch start --source '${{ matrix.source }}' --namespace native-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Independently reread Git state and Drive RAW in a new process
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_native_reuse_batch verify --source '${{ matrix.source }}' --namespace native-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-${{ matrix.source }}
+          path: results
+          retention-days: 90
