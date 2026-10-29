@@ -60,6 +60,21 @@ class NativeRepairTests(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,'RECEIPT_NOT_VERIFIED'):Executor(self.c,a).one('DESC','worker')
   self.assertNotEqual(self.c.store.read('TWSE')[1]['tasks']['repair-one']['status'],'RAW_BASIC_VERIFIED')
 
+class NativeHistoryTests(unittest.TestCase):
+ def test_history_excludes_saved_and_interrupted_tasks_without_reset(self):
+  from unittest.mock import Mock,patch
+  from scripts.v093_native_missing_batch import later_qa_progress
+  control=Mock();control.git.return_value.stdout=('a'*40+' refs/heads/jarvis-source-preflight/native-positive-123-1/TDCC\n').encode()
+  store=Mock();store.read.return_value=('a'*40,dict(tasks={'k':dict(definition=dict(source='TDCC',key='k',period='2026-09-11'),status='RECONCILE',attempts=3,save_intent={'sha256':'b'*64})}))
+  with patch('scripts.v093_native_missing_batch.GitCAS',side_effect=[control,store]):tasks,refs=later_qa_progress(Path('.'))
+  self.assertEqual(tasks['k']['attempts'],3);self.assertTrue(tasks['k']['has_save_intent']);self.assertEqual(len(refs),1)
+ def test_cached_replacement_is_hashed_without_new_source_http(self):
+  from unittest.mock import Mock
+  a=object.__new__(NativeAdapter);a.case=dict(mode='REPAIR',source='TDCC',repair_evidence=dict(replacement_reference='good',replacement_sha256=hashlib.sha256(b'good').hexdigest()));a.read=Mock(return_value=b'good');a.validate=Mock();a.source_requests=0
+  self.assertEqual(a.fetch(),b'good');self.assertEqual(a.source_requests,0)
+  a.read.return_value=b'changed'
+  with self.assertRaisesRegex(ValueError,'REPLACEMENT_SHA'):a.fetch()
+
 class QueryProofTests(unittest.TestCase):
  def row(self):
   case=dict(source='TDCC',key='k',period='2026-09-11',mode='MISSING',date='20260911',code='6911',missing_evidence=dict(source='TDCC',key='k',period='2026-09-11',availability_verified=False,query_applicability_verified=True,official_evidence_id='fixture-menu-receipt',official_menu=dict(url='https://www.tdcc.com.tw/portal/zh/smWeb/qryStock',sha256='a'*64,offered_dates=['20260911'])))

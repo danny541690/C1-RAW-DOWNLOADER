@@ -52,6 +52,7 @@ class NativeAdapter(Retained):
   if any(proof.get(k)!=case[k] for k in ('source','key','period')) or proof.get('download_approved') is not True or proof.get('reason')!='NATIVE_CONTENT_REJECTED' or not proof.get('official_evidence_id'):raise ValueError('REPAIR_APPROVAL_BINDING')
   if case.get('reference') or old.get('source')!=case['source'] or old.get('task_key')!=case['key'] or old.get('action')=='VERSION_CONFLICT_REVIEW' or old.get('attempts',0)>task['attempts']:raise ValueError('REPAIR_LEGACY_SCOPE')
   if not isinstance(proof.get('reference'),str) or not re.fullmatch('[0-9a-f]{64}',proof.get('sha256') or '') or not any(v.get('raw_reference')==proof['reference'] and v.get('sha256')==proof['sha256'] and v.get('period')==case['period'] for v in old.get('provenance',[])):raise ValueError('REPAIR_OLD_RECEIPT_BINDING')
+  if proof.get('replacement_reference') and (not re.fullmatch('[0-9a-f]{64}',proof.get('replacement_sha256') or '') or proof.get('replacement_verified') is not True):raise ValueError('REPAIR_REPLACEMENT_RECEIPT')
  def verify_repair_needed(self):
   proof=self.case['repair_evidence'];raw=self.read(proof['reference'])
   if hashlib.sha256(raw).hexdigest()!=proof['sha256']:raise ApplicabilityUnproven('REPAIR_EVIDENCE_CHANGED_REVIEW_REQUIRED')
@@ -68,6 +69,7 @@ class NativeAdapter(Retained):
  def before_request(self,ticket):
   if self.case['mode']=='REPAIR':self.verify_repair_needed()
   source=self.case['source'];cost=2 if source=='TDCC' else 0 if source=='NDC' else 1
+  if self.case['mode']=='REPAIR' and self.case['repair_evidence'].get('replacement_reference'):cost=0
   reserve(self.c,ticket,cost=cost,limit=200 if source=='FinMind' else 30,window=3600 if source=='FinMind' else 60,spacing=2)
  def http(self,url,params=None,headers=None):
   source=self.case['source'];allowed={'TWSE':{'www.twse.com.tw'},'TPEx':{'www.tpex.org.tw'},'MOPS':{'mopsov.twse.com.tw','mops.twse.com.tw','mopsfin.twse.com.tw'},'TAIFEX':{'www.taifex.com.tw','openapi.taifex.com.tw'},'FinMind':{'api.finmindtrade.com'}}
@@ -86,6 +88,10 @@ class NativeAdapter(Retained):
   return raw
  def fetch(self):
   case=self.case;source=case['source']
+  if case['mode']=='REPAIR' and case['repair_evidence'].get('replacement_reference'):
+   proof=case['repair_evidence'];raw=self.read(proof['replacement_reference'])
+   if hashlib.sha256(raw).hexdigest()!=proof['replacement_sha256']:raise ValueError('REPAIR_REPLACEMENT_SHA_CHANGED')
+   self.validate(raw);return raw
   if source in ('TWSE','TPEx','MOPS'):
    from scripts.v093_three_year_repair import Audit
    jobs=[j for j in Audit.jobs(object.__new__(Audit),case['period'][:7],set()) if j['source']==source and j['period']==case['period'] and j['category']==case['category']]

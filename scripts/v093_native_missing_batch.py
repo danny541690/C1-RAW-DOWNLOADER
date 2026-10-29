@@ -14,13 +14,36 @@ from scripts.v093_source_executor import Executor,ApplicabilityUnproven
 from scripts.v093_source_git_store import GitCAS
 from scripts.v093_admission_runtime import prepare_row
 
+def later_qa_progress(root):
+ """Never select a task already attempted by an earlier native QA run."""
+ control=GitCAS(root,'jarvis-source-preflight/native-positive-history')
+ raw=control.git('ls-remote','--heads','origin','refs/heads/jarvis-source-preflight/native-positive-*/TDCC').stdout.decode()
+ refs=[]
+ for line in raw.splitlines():
+  commit,ref=line.split()
+  if not re.fullmatch('[0-9a-f]{40}',commit) or not re.fullmatch(r'refs/heads/jarvis-source-preflight/native-positive-[0-9]+-[0-9]+/TDCC',ref):raise ValueError('NATIVE_QA_HISTORY_REF_SCOPE')
+  refs.append((commit,ref))
+ if len(refs)>64:raise ValueError('NATIVE_QA_HISTORY_REQUIRES_COMPACTION')
+ tasks={};receipts=[]
+ for expected,ref in sorted(refs):
+  store=GitCAS(root,ref.removeprefix('refs/heads/').removesuffix('/TDCC'));commit,state=store.read('TDCC')
+  if not state:raise ValueError('NATIVE_QA_HISTORY_STATE_MISSING')
+  receipts.append(dict(ref=ref,commit=commit,observed_commit=expected))
+  for key,task in state.get('tasks',{}).items():
+   definition=task.get('definition',{})
+   if definition.get('key')!=key or definition.get('source')!='TDCC' or type(task.get('attempts')) is not int:raise ValueError('NATIVE_QA_HISTORY_TASK_SCOPE')
+   previous=tasks.get(key)
+   if previous is None or task['attempts']>=previous['attempts']:tasks[key]=dict(status=task['status'],attempts=task['attempts'],has_save_intent=bool(task.get('save_intent')),period=definition['period'],ref=ref,commit=commit,raw_reference=task.get('raw_reference'),raw_sha256=task.get('raw_sha256'))
+ return tasks,receipts
+
 def main():
  from scripts.annual_actual_firstpass import Drive,service
  p=argparse.ArgumentParser();p.add_argument('mode',choices=('capture','resume'));p.add_argument('--namespace',required=True);a=p.parse_args();root=Path.cwd();out=Path('results');out.mkdir(exist_ok=True)
  c=Coordinator(GitCAS(root,'jarvis-source-preflight/'+a.namespace),'TDCC',ttl=600);d=Drive(service())
  if a.mode=='capture':
   if c.store.remote_head('TDCC')!=0:raise ValueError('FRESH_NATIVE_MISSING_NAMESPACE_REQUIRED')
-  review=json.loads(gzip.decompress(Path('frozen/TDCC.review.json.gz').read_bytes()));excluded={}
+  review=json.loads(gzip.decompress(Path('frozen/TDCC.review.json.gz').read_bytes()));excluded,qa_history=later_qa_progress(root)
+  for key in excluded:review['tasks'].pop(key,None)
   # Preserve successful 6912 and held 8042 outcomes from the prior real download.
   _,prior=GitCAS(root,'jarvis-source-preflight/tdcc-missing-40853248163-1').read('TDCC')
   if not prior:raise ValueError('LATER_QA_HANDOFF_MISSING')
@@ -36,7 +59,7 @@ def main():
    job=selected[0];candidates.append(job);review['tasks'].pop(job['key'])
   if not candidates:raise ValueError('NO_UNATTEMPTED_PROVEN_MISSING_CANDIDATE')
   folder=d.folder('1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit','NATIVE_MISSING_'+a.namespace);menu_sha=hashlib.sha256(page).hexdigest();menu_name='official_menu_'+menu_sha+'.html';d.direct_readback=True;d.put(folder,menu_name,page,'text/html',overwrite=False);menu_ref=d.find(folder,menu_name)['id']
-  c.update(lambda s:s.update(qa_root=folder,excluded_later_qa=excluded,initial_menu_source_requests=1))
+  c.update(lambda s:s.update(qa_root=folder,excluded_later_qa=excluded,qa_history=qa_history,initial_menu_source_requests=1))
   outcomes=[];saved=False;source_requests=1
   for job in candidates:
    proof=dict(source='TDCC',key=job['key'],period=job['period'],availability_verified=False,query_applicability_verified=True,official_evidence_id=menu_ref,official_menu=dict(url=native.QUERY,sha256=menu_sha,offered_dates=dates))
@@ -62,7 +85,7 @@ def main():
    source_requests+=adapter.source_requests;outcomes.append(dict(key=job['key'],period=job['period'],code=job['code'],status=outcome,prior_attempts=job['attempts'],attempts=task['attempts'],source_requests=adapter.source_requests,rejected_evidence=task.get('rejected_evidence')))
    c.update(lambda s:s.update(qa_capture_outcomes=outcomes,source_requests_total=source_requests))
    if saved:break
-  result=dict(schema='JARVIS_NATIVE_MISSING_CAPTURE_V1',outcomes=outcomes,excluded_later_qa=excluded,source_requests=source_requests,qa_only=True,formal_raw_writes=0,production_activation=False,positive_saved=saved)
+  result=dict(schema='JARVIS_NATIVE_MISSING_CAPTURE_V1',outcomes=outcomes,excluded_later_qa=excluded,qa_history=qa_history,source_requests=source_requests,qa_only=True,formal_raw_writes=0,production_activation=False,positive_saved=saved)
   (out/'native-missing-capture.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(json.dumps(result),flush=True)
   if not saved:raise ValueError('NO_POSITIVE_MISSING_RESULT_ACCEPTED')
  else:

@@ -1,9 +1,9 @@
 name: JARVIS native missing save correction controls and independent recovery
 on:
-  push:
-    branches: [codex/seven-source-closed-loop-design-20261029]
-    paths: [.github/workflows/jarvis-seven-native-positive-batch.yml]
   workflow_dispatch:
+concurrency:
+  group: jarvis-native-positive-TDCC
+  cancel-in-progress: false
 permissions:
   contents: write
   actions: read
