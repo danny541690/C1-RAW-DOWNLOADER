@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R1",
+  "version": "20261029_R2",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -333,6 +333,22 @@
       "problem": "來源提供期間限制須帶證據分類",
       "resolution": "已補程式與本機測試；全部凍結清單尚未依新分類重建。",
       "evidence_test_id": "T10",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I17",
+      "status": "BLOCKING_CODE_REVIEW",
+      "problem": "來源fetch/validate例外與無save_intent中斷尚未接分類恢復",
+      "resolution": "補來源/內容/存放錯誤分流、持久原因及恢復路徑；尚未修正",
+      "evidence_review": "04_上線前待辦複核.md",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I18",
+      "status": "BLOCKING_CODE_REVIEW",
+      "problem": "正式executor原件重用未明確要求舊expected SHA契約",
+      "resolution": "綁定舊SHA/來源/期間/任務與參照，不符隔離；尚未修正",
+      "evidence_review": "04_上線前待辦複核.md",
       "updated_date_taipei": "2026-10-29"
     }
   ],
@@ -1127,5 +1143,6 @@
       "git_blob_sha": "a12d07bdbb4b38f87cd57a1e028662756950fd73",
       "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_twelve_slot_names/tests.log"
     }
-  ]
+  ],
+  "reviewed_sha": "099922c7af4a0276b4905234339284c7051e9521"
 }
