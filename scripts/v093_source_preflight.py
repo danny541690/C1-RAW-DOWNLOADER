@@ -3,7 +3,7 @@ import argparse,contextlib,datetime,hashlib,io,json,time,unittest
 from pathlib import Path
 import yaml
 
-PATTERNS=('test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
+PATTERNS=('test_legacy_handoff.py','test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
           'test_source_closed_loop_preflight.py','test_source_coordination.py','test_source_git_store.py','test_acceptance_scheduler.py','test_acceptance_state.py','test_tdcc_download_v4.py')
 BLOCKERS={
  'source_executors':'BLOCKED_NOT_INTEGRATED',

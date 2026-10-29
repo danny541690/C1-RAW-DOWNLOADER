@@ -1,0 +1,48 @@
+{
+  "schema": "JARVIS_TWELVE_PREFLIGHT_V1",
+  "checked_at_taipei": "2026-10-29T10:15:20.821698+08:00",
+  "implemented_tests_passed": true,
+  "tests": {
+    "run": 93,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "yaml_files": 12,
+  "yaml_errors": [],
+  "readiness": {
+    "source_executors": "BLOCKED_NOT_INTEGRATED",
+    "distributed_fencing_and_immediate_continuation": "BLOCKED_NOT_INTEGRATED",
+    "live_twelve_slot_fetch_save_reverify": "NOT_RUN",
+    "one_time_legacy_shutdown_and_state_migration": "NOT_RUN",
+    "real_rate_limits_and_three_day_throughput": "NOT_RUN"
+  },
+  "deployment_ready": false,
+  "market_requests": 0,
+  "production_writes": 0,
+  "source_environment": "Fake official HTTP; native TDCC parser; real local files, bare Git and transactional SQLite shared by threads and separate processes; not live Drive or GitHub distributed CAS",
+  "elapsed_seconds": 2.33,
+  "cutover_strategy": "ONE_TIME_SWITCH_NO_DUAL_OPERATION",
+  "existing_online_schedules_changed": false,
+  "input_sha256": {
+    "config/v093_seven_source_design.json": "32f125633bac22b18232252565f5c257f7ae8a5839b6d729bb528a8879228770",
+    "scripts/v093_source_coordination.py": "cede372ef0ed5375ba96972b725d41a4f0ac425e434ded3ac1e1a98f82388ddb",
+    "scripts/v093_source_git_live_preflight.py": "d5378954673ded8454a04dbd6953d8e6580bc8d24653546ff19e4a52a0b46b43",
+    "scripts/v093_source_git_store.py": "f0d508975bd5a94f2dc0890cc7735e9ddf0ecdc30595c7fac8a21eccba5c29e7",
+    "scripts/v093_source_partition.py": "177b8bd8005e4ad6249aed811c4f07438f6a9a9fef8d896104d3d234e440cd88",
+    "scripts/v093_source_preflight.py": "9a471250a421010d543e252f67aaf2c87d09ba610119c6533a0ac4997a318cf7",
+    "scripts/v093_source_receipt_migration.py": "bb2522bf7b4091cbc4109dc15de2e668cfd4b0f58d746c6ccadfce01ad346589",
+    "scripts/v093_tdcc_independent.py": "6e2f96b28004e50000afcda336e156d77bf6d611af884b927ae8844e5b8f6c3b",
+    "scripts/v093_tdcc_scope.py": "c094ffc56fbad6caf8fab0b05331c7dfbe539767c63fd9804a6f355be04cfacb",
+    "tests/test_acceptance_scheduler.py": "652bd6ea91ef61e9e55d79f5cfcc0da3acfa0ca6adf7305806a282c32a0886dd",
+    "tests/test_acceptance_state.py": "90a20e16d97bd3549d940561e9b5a2ff082ff6468c616bd3874cad533eb33c66",
+    "tests/test_legacy_handoff.py": "b9eeba02447cba8cb94762037f6af9412fcc775b44113510e2d72f0614b412e7",
+    "tests/test_seven_source_plan.py": "5413679381a7cbc14fafe3d03d668e601da6b4bfd868a07c9be85ddc60fccda0",
+    "tests/test_source_closed_loop_preflight.py": "7846f0f14da1673f0ae0496639b849cb5323b7d533989184e1232ae77a84d6b6",
+    "tests/test_source_coordination.py": "e6d255cbff22bc285f2a38f1026b4695416d3a572b3be4bdb51afba1875dd374",
+    "tests/test_source_git_store.py": "ca9efce3b578c57929eb9f1e213eaceb9ab085fd947ab5da2bdf962ddccd5a9a",
+    "tests/test_source_migration_and_scope.py": "3f828801f13dbbfd43dfd29613b84b4c8f2637a4af79d2e57746542419296c4a",
+    "tests/test_source_partition.py": "a293919373acd6c9c0c102c59750c5a2f68ac5860cdff4721f9746a12f7415da",
+    "tests/test_tdcc_download_v4.py": "128bed77a01311d00f26a27295bb381ac398abe2f058020f55967a1bd2002a99"
+  }
+}

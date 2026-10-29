@@ -1,0 +1,55 @@
+name: JARVIS real legacy ledger handoff rehearsal
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-handoff-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: jarvis-real-legacy-import-test
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Wait for old writers and test actual frozen ledger import
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAUSE_RUN_ID: '40805024891'
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_legacy_handoff_live
+      - name: Persist frozen ledgers and candidate review pages
+        if: always()
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          def git(*a,input=None):return subprocess.check_output(['git',*a],input=input).decode().strip()
+          def tree(root):
+              rows=[]
+              for p in sorted(root.iterdir()):
+                  if p.is_dir():rows.append('040000 tree '+tree(p)+'\t'+p.name+'\n')
+                  else:rows.append('100644 blob '+git('hash-object','-w','--stdin',input=p.read_bytes())+'\t'+p.name+'\n')
+              return git('mktree',input=''.join(rows).encode())
+          root=Path('handoff-import')
+          if not root.exists():raise RuntimeError('NO_IMPORT_EVIDENCE')
+          sha=git('-c','user.name=JARVIS handoff','-c','user.email=jarvis-handoff@users.noreply.github.com','commit-tree',tree(root),input=b'Frozen old ledger import rehearsal [skip ci]\n')
+          git('push','origin',sha+':refs/heads/jarvis-handoff-import/20261029-'+os.environ['GITHUB_RUN_ID'])
+          print('DURABLE_IMPORT_COMMIT',sha)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvis-real-handoff-import-${{ github.run_id }}
+          path: handoff-import
+          retention-days: 90
