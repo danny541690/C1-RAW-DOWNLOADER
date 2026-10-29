@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R5",
+  "version": "20261029_R6",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -154,6 +154,16 @@
       "source_sha": "e1546c6c7ae8c2270664ac8771ababc83d1bccd0",
       "evidence": "reports/raw-acceptance/20261029_import_handoff/remote-verify.json",
       "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40845175656"
+    },
+    {
+      "id": "T18",
+      "name": "TDCC真實缺件下載、Drive保存與中斷恢復",
+      "status": "PASS_ONE_REAL_MISSING_CASE_ONE_APPLICABILITY_HOLD",
+      "scope": "1筆隔離QA基本驗證，1筆官方空回覆待查；正式補正0",
+      "source_sha": "b69f462d5e9775e5cc434adf46fbcba954681277",
+      "evidence": "reports/raw-acceptance/20261029_tdcc_missing/remote-result.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40853662597",
+      "prior_failed_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40853248163"
     }
   ],
   "rules": [
@@ -376,6 +386,13 @@
       "name": "Legacy task period conflicts",
       "evidence_test_id": "T17",
       "remaining": "Native content and period classification pending; conflicting records isolated"
+    },
+    {
+      "id": "I20",
+      "status": "FIXED_CORE_AND_REAL_COLD_RECOVERY",
+      "name": "Official empty stopped batch and blocked saved-task recovery",
+      "evidence_test_id": "T18",
+      "remaining": "First-run total HTTP count unknown; empty-response raw not retained; pending source applicability"
     }
   ],
   "evidence_files": [

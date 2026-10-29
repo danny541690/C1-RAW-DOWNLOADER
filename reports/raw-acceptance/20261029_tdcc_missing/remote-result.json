@@ -1,0 +1,40 @@
+{
+  "mode": "REAL_MISSING_TDCC_COLD_RESUME_PASS",
+  "tasks": [
+    {
+      "key": "TDCC|2026-09|20260911|6912",
+      "slot": "DESC",
+      "date": "20260911",
+      "code": "6912",
+      "prior_attempts": 1,
+      "attempts": 2,
+      "evidence": {
+        "task_key": "TDCC|2026-09|20260911|6912",
+        "sha256": "4cc9c75b8b4a74bb7825be00449e35182d36c85cb56fa37a18909f9b006b76e5",
+        "reference": "1CcWmSimRC2QfCI_paDpfyS57wovWFLKO",
+        "stats": {
+          "basic_verified": true,
+          "rows": 16,
+          "source": "TDCC",
+          "date": "20260911",
+          "code": "6912"
+        },
+        "numeric_verified": false,
+        "pit_verified": false,
+        "full_acceptance": false
+      }
+    }
+  ],
+  "held": [
+    {
+      "key": "TDCC|2025-12|20251205|8042",
+      "reason": "OFFICIAL_EMPTY_UNCONFIRMED",
+      "attempts": 2
+    }
+  ],
+  "source_requests_this_job": 0,
+  "total_source_requests": null,
+  "production_activation": false,
+  "full_data_acceptance": false,
+  "limitation": "Bounded missing TDCC weekly tasks only; seven-source production integration not complete"
+}
