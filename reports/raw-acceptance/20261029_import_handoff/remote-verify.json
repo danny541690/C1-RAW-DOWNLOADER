@@ -1,0 +1,126 @@
+[
+  {
+    "schema": "JARVIS_FORMAL_SHAPED_IMPORT_QA_V1",
+    "mode": "verify",
+    "source": "TPEx",
+    "tasks": 62814,
+    "sha256": "f860481a47343d0e7df6465f97832f4b284b03e40f5e6ce9d60b6bdf1e127dd4",
+    "commit": "584af39b20f978eb6a39ef4457312fa2778e9216",
+    "statuses": {
+      "APPLICABILITY_HOLD": 62768,
+      "BLOCKED": 42,
+      "CONTENT_BLOCKED": 4
+    },
+    "attempts_and_provenance_preserved": true,
+    "replay_idempotent": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false,
+    "limitation": "Isolated QA coordinator schema; production migration and source adapters not activated"
+  },
+  {
+    "schema": "JARVIS_FORMAL_SHAPED_IMPORT_QA_V1",
+    "mode": "verify",
+    "source": "TAIFEX",
+    "tasks": 5061,
+    "sha256": "73f60a78eb918cdd14cf7f2660126ac53dcb325d43a63f01ead1a3eebbb70929",
+    "commit": "8b47d5788857504d1bd4aa9ac94768d823c4697a",
+    "statuses": {
+      "APPLICABILITY_HOLD": 5061
+    },
+    "attempts_and_provenance_preserved": true,
+    "replay_idempotent": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false,
+    "limitation": "Isolated QA coordinator schema; production migration and source adapters not activated"
+  },
+  {
+    "schema": "JARVIS_FORMAL_SHAPED_IMPORT_QA_V1",
+    "mode": "verify",
+    "source": "TDCC",
+    "tasks": 48059,
+    "sha256": "c24fdfac0192928b3be9da2bb8157c63073c63b8be66ab9817c866e0d2211af2",
+    "commit": "d14ef1c71e97bc6be3e1f8b121882de2e4cb5daf",
+    "statuses": {
+      "APPLICABILITY_HOLD": 48059
+    },
+    "attempts_and_provenance_preserved": true,
+    "replay_idempotent": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false,
+    "limitation": "Isolated QA coordinator schema; production migration and source adapters not activated"
+  },
+  {
+    "schema": "JARVIS_FORMAL_SHAPED_IMPORT_QA_V1",
+    "mode": "verify",
+    "source": "NDC",
+    "tasks": 322,
+    "sha256": "dbc3984e6fce606c1c0ebb4a7793cb8b1889136b1e3f9ceb7b0eacf111ce13d8",
+    "commit": "1c1ff56cb7263a5c865817e8cc6774dfd63b54ab",
+    "statuses": {
+      "APPLICABILITY_HOLD": 322
+    },
+    "attempts_and_provenance_preserved": true,
+    "replay_idempotent": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false,
+    "limitation": "Isolated QA coordinator schema; production migration and source adapters not activated"
+  },
+  {
+    "schema": "JARVIS_FORMAL_SHAPED_IMPORT_QA_V1",
+    "mode": "verify",
+    "source": "TWSE",
+    "tasks": 47042,
+    "sha256": "f16d911cc2139b9d46159dfdea3e6021201fe0a8b16a6cc46648cf01358b51ed",
+    "commit": "67cbd33b2225f4a7efaf69002d369380480c9b46",
+    "statuses": {
+      "APPLICABILITY_HOLD": 47027,
+      "BLOCKED": 7,
+      "CONTENT_BLOCKED": 8
+    },
+    "attempts_and_provenance_preserved": true,
+    "replay_idempotent": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false,
+    "limitation": "Isolated QA coordinator schema; production migration and source adapters not activated"
+  },
+  {
+    "schema": "JARVIS_FORMAL_SHAPED_IMPORT_QA_V1",
+    "mode": "verify",
+    "source": "MOPS",
+    "tasks": 23512,
+    "sha256": "9dbcd67b27898b4663f841a625bae9ec2dded9755f3501476d34e21b78c1e928",
+    "commit": "1de73827529f66aa1a853570e6452f8dda6413aa",
+    "statuses": {
+      "APPLICABILITY_HOLD": 23502,
+      "BLOCKED": 10
+    },
+    "attempts_and_provenance_preserved": true,
+    "replay_idempotent": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false,
+    "limitation": "Isolated QA coordinator schema; production migration and source adapters not activated"
+  },
+  {
+    "schema": "JARVIS_FORMAL_SHAPED_IMPORT_QA_V1",
+    "mode": "verify",
+    "source": "FinMind",
+    "tasks": 2711,
+    "sha256": "04707362b50fe3ba32199062add5a38c688a4dc568ba6b3ec78c014e9a678910",
+    "commit": "ccba2a623da5eaa57c83d9ee3daf1bf44ee59438",
+    "statuses": {
+      "APPLICABILITY_HOLD": 2711
+    },
+    "attempts_and_provenance_preserved": true,
+    "replay_idempotent": true,
+    "market_requests": 0,
+    "drive_writes": 0,
+    "production_activation": false,
+    "limitation": "Isolated QA coordinator schema; production migration and source adapters not activated"
+  }
+]

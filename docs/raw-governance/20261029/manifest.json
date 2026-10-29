@@ -1,33 +1,33 @@
 {
-  "version": "20261029_R4",
+  "version": "20261029_R5",
   "files": {
     "01_測試結果總彙整.md": {
-      "sha256": "fbfa1289c27c34b5ed93ef46670938a297b927b6168665f9ecb352d28242dc75",
-      "bytes": 7269
+      "sha256": "b06a3fa154a7724b2047d15f5be8d6017bf105479fc3e2d98d9c6efce18f09d8",
+      "bytes": 7408
     },
     "02_有效下載規則.md": {
       "sha256": "4ac33bd22bb0ad94a1107b77fd8cf1eccfc04d29de90059b42a7e16c84bc97e3",
       "bytes": 2738
     },
     "03_問題追蹤表.md": {
-      "sha256": "633a9042b6f780ad02a2f748c7ac04d018ddd175aa4657e8beea356f3ac3f6d2",
-      "bytes": 3000
+      "sha256": "c9d43faff3b2a5bad65d35328e2c78abd972257d319134197a5d35ab7ef1a11d",
+      "bytes": 3199
     },
     "04_上線前待辦複核.md": {
-      "sha256": "ee02995a29e864ce5e796e2304fa659e2a92deef5f008f9164836f125d1e042e",
-      "bytes": 2430
+      "sha256": "e2909c2eae3b68fbfd917f8c331c10ca0353b2b11032e27b22d93fa46b7e1210",
+      "bytes": 4846
     },
     "05_I17_I18修正結果.md": {
       "sha256": "e59d458f248aa8c52df6bf49275eb5c4e6c7e2597a07909d21115bda8c6662fc",
       "bytes": 2340
     },
     "drive_sync.json": {
-      "sha256": "431601376efcf8937ade0a73248587b2ba5761c6318fc32f71e77e11349f11ab",
+      "sha256": "ed5f4014b9ab9d31e9e1e868e8e18bb720958a0224028c359012e0ee9f36fdf0",
       "bytes": 1762
     },
     "registry.json": {
-      "sha256": "6e1698177b0f581909ce43c3b086280c342e2fdf7a55775214d4a3592da51266",
-      "bytes": 68498
+      "sha256": "8b36bbb380a9ceb570ff341b293298f203797eb35551e600ec1fe9958475a8c7",
+      "bytes": 69228
     }
   }
 }

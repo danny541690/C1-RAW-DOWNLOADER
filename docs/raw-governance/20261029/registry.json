@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R3",
+  "version": "20261029_R5",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -145,6 +145,15 @@
       "scope": "116項本機；真實Drive SHA核對與錯誤SHA隔離，市場請求0",
       "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40832464478",
       "evidence_review": "05_I17_I18修正結果.md"
+    },
+    {
+      "id": "T17",
+      "name": "七來源完整清單Coordinator形狀匯入與獨立讀回",
+      "status": "PASS_ISOLATED_REMOTE_IMPORT",
+      "scope": "189521舊任務，7保存+7讀回；正式上線false",
+      "source_sha": "e1546c6c7ae8c2270664ac8771ababc83d1bccd0",
+      "evidence": "reports/raw-acceptance/20261029_import_handoff/remote-verify.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40845175656"
     }
   ],
   "rules": [
@@ -360,6 +369,13 @@
       "evidence_review": "04_上線前待辦複核.md",
       "updated_date_taipei": "2026-10-29",
       "evidence_test_id": "T16"
+    },
+    {
+      "id": "I19",
+      "status": "FIXED_IMPORT_QA_REAL_TESTED",
+      "name": "Legacy task period conflicts",
+      "evidence_test_id": "T17",
+      "remaining": "Native content and period classification pending; conflicting records isolated"
     }
   ],
   "evidence_files": [
