@@ -1,0 +1,13 @@
+{
+  "run_id": 40802230135,
+  "status": "completed",
+  "conclusion": "success",
+  "head_sha": "aabba451d8f4e0c1d3c121c7419df8fe6067c437",
+  "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40802230135",
+  "workers": 12,
+  "fresh_runner_readback": "PASS",
+  "market_requests": 0,
+  "production_drive_writes": 0,
+  "payload": "synthetic task SHA; actual GitHub CAS branches",
+  "full_data_acceptance": false
+}
