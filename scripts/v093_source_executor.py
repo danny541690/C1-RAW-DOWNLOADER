@@ -48,6 +48,9 @@ class Executor:
  def one(self,slot,owner):
   t=self.c.claim(slot,owner,slot)
   if not t:return None
+  return self.execute(t)
+ def execute(self,t):
+  _,state=self.c.store.read(self.c.source);self.c.owned(state,t)
   phase='LOOKUP'
   try:
    found=self.a.find(t['key'])
@@ -71,6 +74,9 @@ class Executor:
  def resume(self,slot,owner):
   t=self.c.recover(slot,owner)
   if not t:return None
+  return self.resume_ticket(t)
+ def resume_ticket(self,t):
+  _,state=self.c.store.read(self.c.source);self.c.owned(state,t)
   phase='LOOKUP'
   try:
    _,state=self.c.store.read(self.c.source);item=state['tasks'][t['key']];intent=item['save_intent']

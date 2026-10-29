@@ -1,25 +1,22 @@
-name: 集保所排程四之二（4-2）｜最舊往新｜候選預覽
+name: 集保所排程四之二（4-2）｜最舊往新｜候選執行入口（正式未啟用）
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Entry validation uses fixtures; production remains blocked
+        type: choice
+        options: [entry-validation, production]
+        default: entry-validation
 permissions:
-  contents: read
+  contents: write
 concurrency:
-  group: jarvis-seven-preview-tdcc-asc
+  group: jarvis-seven-entry-tdcc-asc
   cancel-in-progress: false
 jobs:
-  preview:
-    runs-on: ubuntu-latest
-    timeout-minutes: 3
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Validate source and direction
-        run: python -m scripts.v093_seven_source_plan --source TDCC --direction ASC --as-of 2026-10-29 --out results/TDCC-ASC-design.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: source-4-2-preview-${{ github.run_id }}
-          path: results/TDCC-ASC-design.json
-          retention-days: 30
+  worker:
+    uses: ./.github/workflows/jarvis-seven-worker.yml
+    with:
+      source: TDCC
+      direction: ASC
+      mode: ${{ inputs.mode }}
+    secrets: inherit

@@ -1,0 +1,49 @@
+name: JARVIS shared guarded source worker
+on:
+  workflow_call:
+    inputs:
+      source:
+        required: true
+        type: string
+      direction:
+        required: true
+        type: string
+      mode:
+        required: true
+        type: string
+permissions:
+  contents: write
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Run guarded admitted-task worker entry validation
+        env:
+          SOURCE: ${{ inputs.source }}
+          DIRECTION: ${{ inputs.direction }}
+          MODE: ${{ inputs.mode }}
+        run: python -m scripts.v093_source_worker --source "$SOURCE" --direction "$DIRECTION" --mode "$MODE" --namespace "entry-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Automatically save worker evidence
+        if: always()
+        env:
+          SOURCE: ${{ inputs.source }}
+          DIRECTION: ${{ inputs.direction }}
+          JOB_RESULT: ${{ job.status }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source "$SOURCE" --job "entry-${SOURCE}-${DIRECTION}" --status "$JOB_RESULT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: worker-${{ inputs.source }}-${{ inputs.direction }}
+          path: |
+            results
+            publication
+          retention-days: 90

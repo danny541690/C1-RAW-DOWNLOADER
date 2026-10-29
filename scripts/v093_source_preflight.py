@@ -3,10 +3,10 @@ import argparse,contextlib,datetime,hashlib,io,json,time,unittest
 from pathlib import Path
 import yaml
 
-PATTERNS=('test_acceptance_publish.py','test_native_reuse_batch.py','test_tdcc_missing_live.py','test_review_import.py','test_workflow_dispatch.py','test_source_executor.py','test_source_state_pages.py','test_retained_stream_verify.py','test_legacy_handoff.py','test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
+PATTERNS=('test_source_worker.py','test_acceptance_publish.py','test_native_reuse_batch.py','test_tdcc_missing_live.py','test_review_import.py','test_workflow_dispatch.py','test_source_executor.py','test_source_state_pages.py','test_retained_stream_verify.py','test_legacy_handoff.py','test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
           'test_source_closed_loop_preflight.py','test_source_coordination.py','test_source_git_store.py','test_acceptance_scheduler.py','test_acceptance_state.py','test_tdcc_download_v4.py')
 BLOCKERS={
- 'source_executors':'BLOCKED_NOT_INTEGRATED',
+ 'source_executors':'COMMON_ADMITTED_WORKER_AND_TWELVE_GUARDED_ENTRIES_WIRED_SOURCE_ADAPTER_ROLLOUT_PENDING',
  'distributed_fencing_and_immediate_continuation':'QA_PASSED_PRODUCTION_ENTRYPOINT_NOT_CONNECTED',
  'live_twelve_slot_fetch_save_reverify':'NOT_RUN',
  'one_time_legacy_shutdown_and_state_migration':'LEGACY_STOPPED_REVIEW_CAPTURED_FORMAL_IMPORT_NOT_EXECUTED',
@@ -23,9 +23,13 @@ def main():
   files.append(path.name)
   try:
    doc=yaml.load(path.read_text(),Loader=yaml.BaseLoader)
-   if set(doc['on'])!={'workflow_dispatch'} or doc['permissions']!={'contents':'read'}:
+   if set(doc['on'])!={'workflow_dispatch'} or doc['permissions']!={'contents':'write'}:
     raise ValueError('PREVIEW_EXECUTION_BOUNDARY')
-   if 'secrets.' in path.read_text():raise ValueError('UNEXPECTED_PREVIEW_SOURCE_SECRET')
+   job=doc['jobs']['worker']
+   if job['uses']!='./.github/workflows/jarvis-seven-worker.yml' or job.get('secrets')!='inherit':raise ValueError('SHARED_WORKER_REQUIRED')
+   slot=next(x for x in json.loads((root/'config/v093_seven_source_design.json').read_text())['slots'] if x['workflow']==path.name)
+   if job['with']['source']!=slot['source'] or job['with']['direction']!=slot['direction']:raise ValueError('ENTRY_SOURCE_DIRECTION_BINDING')
+   if doc['on']['workflow_dispatch']['inputs']['mode']['default']!='entry-validation':raise ValueError('ENTRY_DEFAULT_MUST_NOT_BE_PRODUCTION')
   except Exception as exc:errors.append(dict(file=path.name,error=type(exc).__name__))
  if len(files)!=12:errors.append(dict(error='EXPECTED_TWELVE_PREVIEWS'))
  a.out.mkdir(parents=True,exist_ok=True)

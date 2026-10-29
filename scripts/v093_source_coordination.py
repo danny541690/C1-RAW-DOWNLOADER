@@ -30,7 +30,7 @@ class Coordinator:
     if old and old['definition']!=definition:raise ValueError('TASK_REASSIGNMENT_REQUIRES_MIGRATION')
     if not old:state['tasks'][key]=dict(definition=definition,status='READY',attempts=0,fence=0)
   self.update(change)
- def claim(self,slot,owner,direction='DESC'):
+ def claim(self,slot,owner,direction='DESC',exclude=()):
   if direction not in ('ASC','DESC') or not owner:raise ValueError('OWNER_DIRECTION')
   now=self.clock()
   def change(state):
@@ -40,7 +40,7 @@ class Coordinator:
      uncertain=task['status'] in ('REQUEST_INTENT','STORED','RETAINED_CHECK')
      task.update(owner=None,status='RECONCILE' if uncertain else 'READY')
      if uncertain:task['next_action']='VERIFY_SAVE_INTENT' if task.get('save_intent') else 'RECONCILE_SOURCE_AND_STORAGE'
-   available=[(key,t) for key,t in state['tasks'].items() if t['definition']['slot']==slot
+   available=[(key,t) for key,t in state['tasks'].items() if key not in exclude and t['definition']['slot']==slot
     and (t['status']=='READY' or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now)]
    available.sort(key=lambda x:(x[1]['definition']['period'],x[0]),reverse=direction=='DESC')
    for key,task in available:
@@ -108,11 +108,11 @@ class Coordinator:
    if t['status']!='REQUEST_INTENT':raise ValueError('NO_REQUEST_INTENT')
    t.update(save_intent=dict(sha256=raw_sha,locator=locator))
   self.update(change)
- def recover(self,slot,owner):
+ def recover(self,slot,owner,exclude=()):
   now=self.clock()
   def change(s):
    for key,t in s['tasks'].items():
-    if t['definition']['slot']!=slot:continue
+    if key in exclude or t['definition']['slot']!=slot:continue
     if t.get('owner') and t.get('expires',0)>now:continue
     if t['status'] not in ('REQUEST_INTENT','STORED','RECONCILE','RETAINED_CHECK'):continue
     if not t.get('save_intent'):continue

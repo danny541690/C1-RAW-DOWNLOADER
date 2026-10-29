@@ -1,0 +1,32 @@
+import tempfile,unittest
+from pathlib import Path
+from test_source_coordination import SQLiteCAS
+from test_source_executor import DiskAdapter
+from scripts.v093_source_coordination import Coordinator
+from scripts.v093_source_worker import run_batch
+class WorkerTests(unittest.TestCase):
+ def setUp(self):
+  self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.root=Path(self.tmp.name);self.c=Coordinator(SQLiteCAS(self.root/'state'),'TWSE')
+  self.c.add([dict(source='TWSE',key=key,slot='DESC',period='2026-10-29') for key in ('z-bad','a-good')])
+ def test_bad_first_task_does_not_stop_following_good_task(self):
+  def factory(ticket,task):
+   a=DiskAdapter(self.root)
+   if ticket['key']=='z-bad':a.validate=lambda raw:(_ for _ in ()).throw(ValueError('bad'))
+   return a
+  r=run_batch(self.c,factory,'DESC','worker')
+  self.assertEqual(r['task_status_counts'],dict(CONTENT_BLOCKED=1,RAW_BASIC_VERIFIED=1));self.assertEqual(r['processed'],2)
+ def test_invalid_adapter_is_held_without_spending_attempt_and_next_continues(self):
+  def factory(ticket,task):
+   if ticket['key']=='z-bad':raise ValueError('missing native contract')
+   return DiskAdapter(self.root)
+  r=run_batch(self.c,factory,'DESC','worker');self.assertEqual(r['task_status_counts'],dict(APPLICABILITY_HOLD=1,RAW_BASIC_VERIFIED=1));self.assertEqual(self.c.store.read('TWSE')[1]['tasks']['z-bad']['attempts'],0)
+ def test_unit_budget_keeps_ready_work_for_next_batch(self):
+  r=run_batch(self.c,lambda t,s:DiskAdapter(self.root),'DESC','worker',max_units=1)
+  self.assertEqual(r['processed'],1);self.assertEqual(r['ready_remaining'],1)
+ def test_interrupted_save_is_recovered_without_fetch_and_failure_not_looped(self):
+  self.c.update(lambda s:s['tasks'].pop('z-bad'))
+  a=DiskAdapter(self.root);a.crash=True
+  from scripts.v093_source_executor import Executor
+  with self.assertRaises(OSError):Executor(self.c,a).one('DESC','old')
+  a.crash=False;a.fetch=lambda:(_ for _ in ()).throw(AssertionError('must not refetch'))
+  r=run_batch(self.c,lambda t,s:a,'DESC','new');self.assertEqual(r['task_status_counts'],dict(RAW_BASIC_VERIFIED=1));self.assertTrue(r['outcomes'][0]['recovered'])

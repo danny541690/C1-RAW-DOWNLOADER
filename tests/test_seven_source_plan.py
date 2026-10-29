@@ -44,4 +44,4 @@ class SevenSourcePlanTests(unittest.TestCase):
   paths=list(Path('.github/workflows').glob('jarvis-seven-*-preview.yml'));self.assertEqual(len(paths),12)
   for p in paths:
    s=p.read_text();self.assertIn('workflow_dispatch:',s);self.assertNotIn('schedule:',s)
-   self.assertNotIn('secrets.',s);self.assertIn('v093_seven_source_plan',s)
+   self.assertNotIn('secrets.',s);self.assertIn('uses: ./.github/workflows/jarvis-seven-worker.yml',s);self.assertIn('default: entry-validation',s)

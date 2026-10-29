@@ -1,25 +1,22 @@
-name: 公開資訊觀測站排程三之二（3-2）｜最舊往新｜候選預覽
+name: 公開資訊觀測站排程三之二（3-2）｜最舊往新｜候選執行入口（正式未啟用）
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Entry validation uses fixtures; production remains blocked
+        type: choice
+        options: [entry-validation, production]
+        default: entry-validation
 permissions:
-  contents: read
+  contents: write
 concurrency:
-  group: jarvis-seven-preview-mops-asc
+  group: jarvis-seven-entry-mops-asc
   cancel-in-progress: false
 jobs:
-  preview:
-    runs-on: ubuntu-latest
-    timeout-minutes: 3
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Validate source and direction
-        run: python -m scripts.v093_seven_source_plan --source MOPS --direction ASC --as-of 2026-10-29 --out results/MOPS-ASC-design.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: source-3-2-preview-${{ github.run_id }}
-          path: results/MOPS-ASC-design.json
-          retention-days: 30
+  worker:
+    uses: ./.github/workflows/jarvis-seven-worker.yml
+    with:
+      source: MOPS
+      direction: ASC
+      mode: ${{ inputs.mode }}
+    secrets: inherit
