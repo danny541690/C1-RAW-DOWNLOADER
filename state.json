@@ -1,1 +1,1 @@
-{"pages":[{"count":1,"name":"page-000000.json","sha256":"356b38792edf746ff2c29e0c9d6785e034962bb36923b3b3e5b8fb97c1c20b97"}],"schema":"JARVIS_GITCAS_PAGED_V1","state":{"fence":1,"outbox":{},"source":"TWSE"},"task_count":1,"tasks_present":true}
+{"pages":[{"count":1,"name":"page-000000.json","sha256":"11be85f83ee2774c6cc241c1e56fa1b5c1ce3c287d5c4c558b156bf6d8b671d3"}],"schema":"JARVIS_GITCAS_PAGED_V1","state":{"fence":1,"outbox":{},"source":"TWSE"},"task_count":1,"tasks_present":true}
