@@ -1,0 +1,140 @@
+{
+  "schema": "JARVIS_FROZEN_HANDOFF_REPLAY_V1",
+  "frozen_run": 40806985547,
+  "ledger_files": 2389,
+  "input_receipts": 520703,
+  "normalized_receipts": 383461,
+  "issues": 137242,
+  "issues_by_reason": {
+    "EXCLUDED_DERIVED_RECORD": 137242
+  },
+  "sources": {
+    "FinMind": {
+      "receipts": 2711,
+      "unique_tasks": 2711,
+      "actions": {
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 395,
+        "VERIFY_RETAINED_RAW_FIRST": 2316
+      }
+    },
+    "MOPS": {
+      "receipts": 44130,
+      "unique_tasks": 23512,
+      "actions": {
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 15328,
+        "VERIFY_RETAINED_RAW_FIRST": 8174,
+        "RETRY_EXHAUSTED_REVIEW": 10
+      }
+    },
+    "NDC": {
+      "receipts": 322,
+      "unique_tasks": 322,
+      "actions": {
+        "VERIFY_RETAINED_RAW_FIRST": 320,
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2
+      }
+    },
+    "TAIFEX": {
+      "receipts": 9546,
+      "unique_tasks": 5061,
+      "actions": {
+        "VERIFY_RETAINED_RAW_FIRST": 3216,
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 1845
+      }
+    },
+    "TDCC": {
+      "receipts": 48829,
+      "unique_tasks": 48059,
+      "actions": {
+        "VERIFY_RETAINED_RAW_FIRST": 45890,
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2169
+      }
+    },
+    "TPEx": {
+      "receipts": 155971,
+      "unique_tasks": 62814,
+      "actions": {
+        "VERIFY_RETAINED_RAW_FIRST": 60174,
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2636,
+        "VERSION_CONFLICT_REVIEW": 4
+      }
+    },
+    "TWSE": {
+      "receipts": 121952,
+      "unique_tasks": 47042,
+      "actions": {
+        "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 10776,
+        "VERIFY_RETAINED_RAW_FIRST": 36257,
+        "RETRY_EXHAUSTED_REVIEW": 1,
+        "VERSION_CONFLICT_REVIEW": 8
+      }
+    }
+  },
+  "market_requests": 0,
+  "drive_requests": "TARGETED_STREAM_READBACK",
+  "production_writes": 0,
+  "twelve_review_slots": [
+    {
+      "source": "FinMind",
+      "direction": "DESC",
+      "tasks": 2711
+    },
+    {
+      "source": "MOPS",
+      "direction": "ASC",
+      "tasks": 11756
+    },
+    {
+      "source": "MOPS",
+      "direction": "DESC",
+      "tasks": 11756
+    },
+    {
+      "source": "NDC",
+      "direction": "DESC",
+      "tasks": 322
+    },
+    {
+      "source": "TAIFEX",
+      "direction": "ASC",
+      "tasks": 2530
+    },
+    {
+      "source": "TAIFEX",
+      "direction": "DESC",
+      "tasks": 2531
+    },
+    {
+      "source": "TDCC",
+      "direction": "ASC",
+      "tasks": 24029
+    },
+    {
+      "source": "TDCC",
+      "direction": "DESC",
+      "tasks": 24030
+    },
+    {
+      "source": "TPEx",
+      "direction": "ASC",
+      "tasks": 31407
+    },
+    {
+      "source": "TPEx",
+      "direction": "DESC",
+      "tasks": 31407
+    },
+    {
+      "source": "TWSE",
+      "direction": "ASC",
+      "tasks": 23521
+    },
+    {
+      "source": "TWSE",
+      "direction": "DESC",
+      "tasks": 23521
+    }
+  ],
+  "ready_for_production_cutover": false
+}
+
