@@ -1,5 +1,5 @@
 {
-  "version": "20261030_R15",
+  "version": "20261030_R16",
   "folder_id": "1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "folder_url": "https://drive.google.com/drive/folders/1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "path": "C1_0.93/01_RAW/00_下載規則與問題清單",
@@ -61,6 +61,7 @@
     "admission_runtime_qa": true,
     "merged_release_regression": true,
     "unattended_prelaunch_batch": true,
-    "native_positive_and_repair_qa": true
+    "native_positive_and_repair_qa": true,
+    "twelve_native_handoff_and_finalization": true
   }
 }

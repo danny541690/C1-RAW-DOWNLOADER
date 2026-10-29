@@ -1,0 +1,77 @@
+{
+  "schema": "JARVIS_NATIVE_RELEASE_V1",
+  "enabled": false,
+  "tested_code_sha256": "e88814580329df3d9dcbcb5fa836c4a84bfa3718d834058928f6a275eadb5409",
+  "approved_checks": {
+    "source_contracts": false,
+    "continuation_and_quota": false,
+    "cutover": false
+  },
+  "catalogs": {
+    "TWSE": {
+      "ASC": {
+        "commit": "d5fda5810f74f9270892d5e6a1e55a092cb8b7a1",
+        "index_sha256": "a83aefcdfb45d33454766b013ce94b312dfc7673d33030a4f173a2ca668fa3f9"
+      },
+      "DESC": {
+        "commit": "84134f97d2894cdb38483529afe57f055d0d0d76",
+        "index_sha256": "111734e6bce38c60d220e1ad8a615068268449ff2c03f69db21ef934d0a70d05"
+      }
+    },
+    "TPEx": {
+      "ASC": {
+        "commit": "4fd8f3008520bbffb3e12eabbd2e65b040704405",
+        "index_sha256": "86357fc0e94a29e2cb0b128c9a8cf6d454408177bf674c3bb505c0ba85541505"
+      },
+      "DESC": {
+        "commit": "e8e564e70ef904ec4e036b49fcf4e3f60ef9af04",
+        "index_sha256": "1ace6882447536a16c7e68ac15a52ec1469f8febb7ec60bcd53bc262192ed967"
+      }
+    },
+    "MOPS": {
+      "ASC": {
+        "commit": "2fab700381e74db15093929223e8c9c3f9cbcad3",
+        "index_sha256": "6b0d718b0f94cca6ed992c11e5c3e908d5aeccc5e7230c199419ea2c06f335fc"
+      },
+      "DESC": {
+        "commit": "0fd21d80e9a2e54bf38aa0aac7f22139de9327fb",
+        "index_sha256": "e8ea33913db65ff675820adb7509b681cf0fe3076daf7fe19745b967e3602a08"
+      }
+    },
+    "TAIFEX": {
+      "ASC": {
+        "commit": "bc512090d01c84f0d8b8c5c844c9772c1a2fe0f4",
+        "index_sha256": "87c0576e3b341c94945658770f55cff68ab95002e4e8457ba2a7f11ab8ec00dd"
+      },
+      "DESC": {
+        "commit": "0e84a329cae705a0bf963009c70a36cf063db466",
+        "index_sha256": "cf892047cc21dbfb5706de899833b7c22b3d225f18575030e3156807b6652700"
+      }
+    },
+    "TDCC": {
+      "ASC": {
+        "commit": "ea236b0fb9886c2749df6e90ddccac41aba542bb",
+        "index_sha256": "8c161f2220951901338519aca57d01a9a7462e9d9c0ec8e6f05500b8a7847487"
+      },
+      "DESC": {
+        "commit": "c1c37415625cabe28ecc7d60444cf2ee29572b72",
+        "index_sha256": "da82d0b2b5669e08511b51a3c7db5af2c762ab8149683369aa8d52245657892f"
+      }
+    },
+    "NDC": {
+      "DESC": {
+        "commit": "99a8e044e0276f51223e62af13986c5f4ebd83b0",
+        "index_sha256": "02703facaab1b1613c6afb54fa2cb8a75748f50b5365f1c74912c69bddc472a6"
+      }
+    },
+    "FinMind": {
+      "DESC": {
+        "commit": "492ce560447a7887b0627ce2c9d358b0fbaf1ede",
+        "index_sha256": "365419f45305d06c0d7c22d674a84ca29779978065cb3143b49e74089bd346c6"
+      }
+    }
+  },
+  "raw_root": "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn",
+  "candidate_scope": "RETAINED_NATIVE_CHECKS_ONLY",
+  "missing_download_authority": false
+}

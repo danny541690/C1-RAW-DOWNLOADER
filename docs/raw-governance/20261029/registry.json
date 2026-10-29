@@ -1,5 +1,5 @@
 {
-  "version": "20261030_R15",
+  "version": "20261030_R16",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -324,6 +324,50 @@
       "five_source_native_recheck_run": 40911890612,
       "drive_receipt_file_id": "117RmYkp09eyLEakHp-msDR7YWLMuYHgx",
       "production_activation": false
+    },
+    {
+      "id": "T31",
+      "name": "固定後續QA進度與十二份候選重編",
+      "status": "PASS_OVERLAY_AND_CATALOGS_NATIVE_OLDEST_TWO_FAILED",
+      "source_sha": "f4edf37793478429a6aab1ffa010c1e12cf4dc29",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40968961523",
+      "later_qa_tasks": 4,
+      "candidate_count_before_negative_exclusions": 64566,
+      "native_initial_passed_slots": 10,
+      "native_initial_failed_slots": 2,
+      "production_activation": false
+    },
+    {
+      "id": "T32",
+      "name": "兩個最舊端隔離後續跑與十份通過證據沿用",
+      "status": "PASS_PROCESSING_AND_ISOLATION_NOT_ALL_DATA_ACCEPTED",
+      "source_sha": "e2382db79bfdb5f7ef092591c984a4f0ebf0ee4b",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40970854358",
+      "real_units_basic_verified": 12,
+      "held_units": 2,
+      "confirmed_historical_absence": 0,
+      "quota_fixture_winners": 7,
+      "quota_fixture_deferred": 5,
+      "source_requests": 0,
+      "formal_data_repaired": 0,
+      "production_activation": false
+    },
+    {
+      "id": "T33",
+      "name": "十二份最後交接候選與陰性排除冷讀",
+      "status": "PASS_GUARDED_RETAINED_ONLY_HANDOFF_PROPOSAL",
+      "source_sha": "ed6e3c3ab8b6a50b8d0ea58a070a2ff035ad8b77",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40971896108",
+      "whole_repository_tests": 1082,
+      "catalog_count": 12,
+      "retained_candidates": 64564,
+      "held_exclusions": 2,
+      "frozen_pending_tasks": 124957,
+      "missing_download_authority": false,
+      "source_requests": 0,
+      "formal_data_repaired": 0,
+      "production_activation": false,
+      "drive_receipt_file_id": "1TkveHkDJlUSf1CF0FfNt4vvxPTjou3S-"
     }
   ],
   "rules": [
@@ -1396,5 +1440,5 @@
       "item": "After G1-G3 pass, merge pinned candidate, recheck old writers/ghost queue and validate the initial formal batch"
     }
   ],
-  "latest_tested_sha": "f5e5df3fd4db8aaeb5d5da06bb8f93ee37aba7d5"
+  "latest_tested_sha": "ed6e3c3ab8b6a50b8d0ea58a070a2ff035ad8b77"
 }
