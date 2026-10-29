@@ -53,7 +53,16 @@ class Executor:
   t=self.c.claim(slot,owner,slot)
   if not t:return None
   return self.execute(t)
+ def preserve_failure(self,ticket,phase,raw):
+  saver=getattr(self.a,'preserve_rejected',None)
+  if phase!='VALIDATE' or not isinstance(raw,bytes) or not callable(saver):return
+  try:
+   receipt=saver(raw)
+   if receipt.get('raw_sha256')!=hashlib.sha256(raw).hexdigest() or receipt.get('readback_verified') is not True or receipt.get('accepted_as_raw') is not False:raise ValueError('REJECTION_RECEIPT_NOT_VERIFIED')
+   self.c.attach_rejected(ticket,receipt=receipt)
+  except Exception as exc:self.c.attach_rejected(ticket,error=type(exc).__name__)
  def execute(self,t):
+  raw=None
   _,state=self.c.store.read(self.c.source);self.c.owned(state,t)
   phase='LOOKUP'
   try:
@@ -77,7 +86,7 @@ class Executor:
    self.c.heartbeat(t);phase='STORE';reference=self.a.put(locator,raw);self.c.saved(t,sha)
    phase='READBACK';return self.finish(t,raw,reference)
   except Exception as exc:
-   self.record_error(t,phase,exc);raise
+   self.record_error(t,phase,exc);self.preserve_failure(t,phase,raw);raise
  def resume(self,slot,owner):
   t=self.c.recover(slot,owner)
   if not t:return None

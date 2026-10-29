@@ -105,3 +105,14 @@ class ExecutorTests(unittest.TestCase):
   self.assertNotIn('save_intent',self.task())
   self.c.add([dict(source='TWSE',key='next',slot='DESC',period='2026-10-02')])
   self.assertIsNotNone(self.c.claim('DESC','next-worker'))
+
+ def test_rejected_source_bytes_receipt_survives_without_acceptance(self):
+  self.a.validate=lambda raw:(_ for _ in ()).throw(ApplicabilityUnproven('official empty'))
+  self.a.preserve_rejected=lambda raw:dict(reference='quarantine',raw_sha256=hashlib.sha256(raw).hexdigest(),readback_verified=True,accepted_as_raw=False)
+  with self.assertRaises(ApplicabilityUnproven):Executor(self.c,self.a).one('DESC','one')
+  t=self.task();self.assertEqual(t['status'],'APPLICABILITY_HOLD');self.assertEqual(t['attempts'],1);self.assertEqual(t['rejected_evidence']['reference'],'quarantine')
+ def test_rejected_evidence_storage_failure_preserves_original_hold(self):
+  self.a.validate=lambda raw:(_ for _ in ()).throw(ValueError('invalid format'))
+  self.a.preserve_rejected=lambda raw:(_ for _ in ()).throw(OSError('secret must not be copied'))
+  with self.assertRaises(ValueError):Executor(self.c,self.a).one('DESC','one')
+  t=self.task();self.assertEqual(t['status'],'CONTENT_BLOCKED');self.assertEqual(t['rejected_evidence_error'],'OSError');self.assertNotIn('rejected_evidence',t)

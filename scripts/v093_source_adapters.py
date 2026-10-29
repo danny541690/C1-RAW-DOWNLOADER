@@ -113,6 +113,9 @@ class NativeAdapter(Retained):
     from scripts.v093_stage07_finmind import ProviderPause
     if isinstance(exc,ProviderPause):raise SourcePaused('FINMIND_PROVIDER_REVIEW') from None
    raise
+ def preserve_rejected(self,raw):
+  from scripts.v093_rejected_evidence import preserve
+  return preserve(self.d,self.case['source'],raw,qa=self.target_root!=RAW_ROOT)
  def locator(self,key,sha):return hashlib.sha256(key.encode()).hexdigest()+'_'+sha+'.raw'
  def storage_folder(self):
   if not self.folder:self.folder=self.d.folder(self.d.folder(self.d.folder(self.target_root,self.case['period'][:4]),self.case['source']),self.case['period'][:7])

@@ -92,6 +92,14 @@ class Coordinator:
    if t['status']!='LEASED':raise ValueError('NOT_LEASED')
    t.update(status='RETAINED_CHECK',raw_reference=reference,reused_existing=True,save_intent=dict(sha256=raw_sha,locator=reference))
   self.update(change)
+ def attach_rejected(self,ticket,receipt=None,error=None):
+  if ticket['source']!=self.source:raise StaleOwner('SOURCE_SCOPE')
+  def change(s):
+   t=s['tasks'][ticket['key']]
+   if t.get('owner') or t['fence']!=ticket['fence'] or t['status'] not in ('CONTENT_BLOCKED','APPLICABILITY_HOLD','SOURCE_HOLD'):raise StaleOwner('REJECTED_EVIDENCE_TASK_CHANGED')
+   if receipt:t['rejected_evidence']=dict(receipt)
+   if error:t['rejected_evidence_error']=error
+  self.update(change)
  def error(self,ticket,status,phase,code,source_hold=False):
   if status not in ('RECONCILE','CONTENT_BLOCKED','APPLICABILITY_HOLD','SOURCE_HOLD','STORAGE_HOLD'):raise ValueError('ERROR_STATUS')
   def change(s):

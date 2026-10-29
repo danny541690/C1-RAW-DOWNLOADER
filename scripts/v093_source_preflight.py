@@ -41,7 +41,7 @@ def main():
   source_environment='Fake official HTTP; native TDCC parser; real local files, bare Git and transactional SQLite shared by threads and separate processes; not live Drive or GitHub distributed CAS',
   elapsed_seconds=round(time.monotonic()-start,3),cutover_strategy='ONE_TIME_SWITCH_NO_DUAL_OPERATION',
   existing_online_schedules_changed=False,
-  input_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(set((root/'scripts').glob('v093_source_*.py'))|set((root/'scripts').glob('v093_tdcc*.py'))|{root/'config/v093_seven_source_design.json'}|{root/'tests'/name for name in PATTERNS}|{root/'scripts/v093_review_import.py',root/'scripts/v093_native_reuse_batch.py',root/'scripts/v093_tdcc_missing_live.py',root/'scripts/v093_acceptance_publish.py'})})
+  input_sha256={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(set((root/'scripts').glob('v093_source_*.py'))|set((root/'scripts').glob('v093_tdcc*.py'))|{root/'config/v093_seven_source_design.json'}|{root/'tests'/name for name in PATTERNS}|{root/'scripts/v093_review_import.py',root/'scripts/v093_native_reuse_batch.py',root/'scripts/v093_tdcc_missing_live.py',root/'scripts/v093_acceptance_publish.py',root/'scripts/v093_rejected_evidence.py',root/'scripts/v093_final_prelaunch_bundle.py'})})
  (a.out/'summary.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
  (a.out/'tests.log').write_text(log.getvalue())
  (a.out/'README.md').write_text('# 十二工作槽合併測試\n\n'+f"已實作測試 {'PASS' if passed else 'FAIL'}：{test_result}。十二份受控候選入口YAML驗證錯誤 {len(errors)}。\n\n"+
