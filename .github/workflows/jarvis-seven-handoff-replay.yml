@@ -22,7 +22,7 @@ jobs:
       - name: Restore immutable frozen ledgers
         run: |
           mkdir frozen
-          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40806985547:refs/remotes/origin/legacy-freeze
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/legacy-freeze
           git archive refs/remotes/origin/legacy-freeze | tar -x -C frozen
       - run: python -m scripts.v093_legacy_handoff_replay
       - name: Persist frozen ledgers and candidate review pages
