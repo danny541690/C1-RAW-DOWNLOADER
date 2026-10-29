@@ -1,0 +1,44 @@
+name: JARVIS explicit continuation real dispatch test
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/jarvis-seven-continuation-test.yml]
+  workflow_dispatch:
+    inputs:
+      phase:
+        type: choice
+        options: [start, verify]
+        default: start
+      namespace:
+        type: string
+        default: ''
+      continuation_id:
+        type: string
+        default: ''
+permissions:
+  contents: write
+  actions: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: e17b6180ff0083794443b61e5db88fe5b02be72d
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Save checkpoint, dispatch once, or verify in an independent run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PHASE: ${{ inputs.phase || 'start' }}
+          NAMESPACE: ${{ inputs.namespace }}
+          CONTINUATION_ID: ${{ inputs.continuation_id }}
+        run: python -m scripts.v093_continuation_live_test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: continuation-${{ github.run_id }}
+          path: results
+          retention-days: 90
