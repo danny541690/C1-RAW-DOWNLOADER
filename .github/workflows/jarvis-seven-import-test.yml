@@ -27,7 +27,7 @@ jobs:
           mkdir frozen
           git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen-review
           git archive refs/remotes/origin/frozen-review | tar -x -C frozen
-      - run: python -m scripts.v093_import_live_preflight save --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}
+      - run: python -m scripts.v093_import_live_preflight save --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}-${{ github.run_attempt }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -56,7 +56,7 @@ jobs:
           mkdir frozen
           git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen-review
           git archive refs/remotes/origin/frozen-review | tar -x -C frozen
-      - run: python -m scripts.v093_import_live_preflight verify --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}
+      - run: python -m scripts.v093_import_live_preflight verify --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Verify independent readback matches saved digest
         env:
           SOURCE: ${{ matrix.source }}
@@ -76,3 +76,5 @@ jobs:
           name: import-verify-${{ matrix.source }}
           path: results
           retention-days: 90
+
+# R2: quarantine conflicting legacy periods instead of blocking all source tasks.

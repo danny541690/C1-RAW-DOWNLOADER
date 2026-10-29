@@ -31,3 +31,10 @@ class ImportTests(unittest.TestCase):
   self.r['tasks']['k']['source']='NDC'
   with self.assertRaises(ValueError):install(self.c,self.r,{'k':'DESC'},'g')
   self.assertIsNone(self.store.state)
+
+ def test_conflicting_periods_quarantined_without_losing_versions(self):
+  self.r['tasks']['k']['provenance'].append(dict(period='2026-09',attempts=1))
+  install(self.c,self.r,{'k':'DESC'},'g')
+  t=self.store.state['tasks']['k']
+  self.assertEqual(t['status'],'CONTENT_BLOCKED');self.assertEqual(t['migration_issues'],['PERIOD_CONFLICT'])
+  self.assertEqual(t['legacy_review'],self.r['tasks']['k']);self.assertIsNone(self.c.claim('DESC','runner'))
