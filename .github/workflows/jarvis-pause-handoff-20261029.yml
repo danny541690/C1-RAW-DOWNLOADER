@@ -1,0 +1,46 @@
+name: JARVIS pause legacy and freeze handoff 20261029
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/jarvis-pause-handoff-20261029.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: jarvis-legacy-handoff
+  cancel-in-progress: false
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pause old triggers and drain writers without force cancellation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python handoff_ops/pause.py
+      - name: Persist pause and freeze evidence
+        if: always()
+        run: |
+          python - <<'PY'
+          import subprocess,os
+          from pathlib import Path
+          def git(*args,input=None):return subprocess.check_output(['git',*args],input=input).decode().strip()
+          rows=[]
+          for p in sorted(Path('handoff').glob('*.json')):
+              blob=git('hash-object','-w','--stdin',input=p.read_bytes());rows.append('100644 blob '+blob+'\t'+p.name+'\n')
+          tree=git('mktree',input=''.join(rows).encode())
+          commit=git('-c','user.name=JARVIS handoff','-c','user.email=jarvis-handoff@users.noreply.github.com','commit-tree',tree,input=b'Frozen legacy pause evidence [skip ci]\n')
+          git('push','origin',commit+':refs/heads/jarvis-handoff/20261029-'+os.environ['GITHUB_RUN_ID'])
+          print('DURABLE_HANDOFF_COMMIT',commit)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvis-legacy-handoff-${{ github.run_id }}
+          path: handoff
+          retention-days: 90
