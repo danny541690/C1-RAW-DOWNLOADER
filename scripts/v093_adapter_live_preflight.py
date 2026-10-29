@@ -23,18 +23,19 @@ def choose_taifex(audit_only=False):
    form=obj.get('catalog',{}).get(action,{})
    reason=('RETRY_BUDGET_REQUIRES_REVIEW' if item['attempts']>=3 else
            'EXISTING_RAW_REUSE_FIRST' if any(v.get('raw_reference') for v in item['provenance']) else
+           'PRIOR_VERSION_SOURCE_EMPTY_REQUIRES_REVIEW' if any(v.get('status') in ('SKIPPED_SOURCE_EMPTY','SKIPPED_NOT_PUBLISHED') for v in item['provenance']) else
            'LEGACY_STATUS_'+str(entry.get('status','UNKNOWN')) if entry.get('status')!='UNRESOLVED' else
            'RETAINED_QUARANTINE_RECHECK_FIRST' if entry.get('response_sha256') or entry.get('quarantine_file') else
            'INTERRUPTED_REQUEST_RECONCILIATION_FIRST' if entry.get('interrupted_request') else
            'NO_SUPPORTED_CSV_HISTORY_ROUTE' if job.get('kind')!='csv' or not action else
-           'OFFICIAL_FORM_BOUNDARY_UNPROVEN' if not form.get('boundary_confirmed') else
-           'OUTSIDE_CONFIRMED_FORM_RANGE' if not (form['first']<=job['start']<=job['end']<=form['last']) else
+           'OFFICIAL_DATE_FILTER_NOT_PROVEN' if not {'queryStartDate','queryEndDate'}<=set(form.get('fields',{})) or not form.get('source_page','').startswith('https://www.taifex.com.tw/cht/3/') else
+           'OUTSIDE_CONFIRMED_FORM_RANGE' if form.get('boundary_confirmed') and not (form['first']<=job['start']<=job['end']<=form['last']) else
            'OFFICIAL_ROUTE_BINDING_MISMATCH' if job.get('url')!='https://www.taifex.com.tw/cht/3/'+action else 'ELIGIBLE')
    reasons.setdefault(row['task_key'],set()).add(reason)
    sample=dict(key=row['task_key'],legacy_status=entry.get('status'),kind=job.get('kind'),attempts=item['attempts'],action=action)
    if len(examples.setdefault(reason,[]))<3:examples[reason].append(sample)
    if reason!='ELIGIBLE':continue
-   proof=dict(source='TAIFEX',key=row['task_key'],period=row['period'],availability_verified=True,official_evidence_id=f['id'],frozen_ledger_sha256=f['sha256'],source_form=form.get('source_page'),confirmed_query_bounds=dict(first=form['first'],last=form['last']),availability_semantics='PUBLISHED_FORM_QUERY_RANGE_NOT_PROOF_ROWS_EXIST')
+   proof=dict(source='TAIFEX',key=row['task_key'],period=row['period'],availability_verified=bool(form.get('boundary_confirmed')),query_applicability_verified=True,official_form=form,official_evidence_id=f['id'],frozen_ledger_sha256=f['sha256'],source_form=form.get('source_page'),confirmed_query_bounds=dict(first=form['first'],last=form['last']),availability_semantics='PUBLISHED_DATE_FILTER_QUERY_SUPPORTED_EARLIEST_UNKNOWN_WHEN_NOT_CONFIRMED_ROWS_NOT_PROVEN')
    case=dict(source='TAIFEX',key=row['task_key'],period=row['period'],mode='MISSING',native_job=job,missing_evidence=proof)
    choices.append(dict(case=case,review=item))
  from collections import Counter

@@ -42,3 +42,12 @@ class AdapterBindingTests(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,'FINMIND_GAP'):NativeAdapter(None,None,dict(source=source,key='k'),task)
   task['execution_contract']['reference']='already-saved'
   with self.assertRaisesRegex(ValueError,'LEGACY_PROOF'):NativeAdapter(None,None,dict(source=source,key='k'),task)
+
+ def test_published_taifex_date_filter_does_not_require_invented_earliest_date(self):
+  source='TAIFEX';key='k';period='2026-09';job=dict(kind='csv',start='2026-09-01',end='2026-09-30',url='https://www.taifex.com.tw/cht/3/reportDown',fields=dict(queryStartDate='2026/09/01',queryEndDate='2026/09/30'))
+  form=dict(action='reportDown',source_page='https://www.taifex.com.tw/cht/3/reportView',fields=dict(queryStartDate='',queryEndDate=''),boundary_confirmed=False)
+  proof=dict(source=source,key=key,period=period,availability_verified=False,query_applicability_verified=True,official_form=form,official_evidence_id='frozen')
+  task=dict(definition=dict(source=source,key=key,period=period,slot='DESC'),attempts=1,legacy_review=dict(source=source,task_key=key,attempts=1,provenance=[dict(status='UNRESOLVED')]),execution_contract=dict(source=source,key=key,period=period,mode='MISSING',native_job=job,missing_evidence=proof))
+  a=NativeAdapter(None,None,dict(source=source,key=key),task);self.assertTrue(a.download_authorized);self.assertFalse(a.case['missing_evidence']['availability_verified'])
+  job['fields']['queryEndDate']='2026/10/01'
+  with self.assertRaisesRegex(ValueError,'QUERY_DATE_BINDING'):NativeAdapter(None,None,dict(source=source,key=key),task)

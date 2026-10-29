@@ -27,9 +27,17 @@ class NativeAdapter(Retained):
  def check_missing(self,task):
   case=self.case;proof=case.get('missing_evidence',{});old=task.get('legacy_review',{})
   if case.get('reference') or case.get('sha256') or old.get('source')!=case['source'] or old.get('task_key')!=case['key'] or not old.get('provenance'):raise ValueError('MISSING_LEGACY_PROOF')
-  if any(v.get('raw_reference') or v.get('status') in ('SAVED_BASIC_VERIFIED','SAVED_RAW_ROWS_READBACK_VERIFIED','PROCESSING','REQUEST_INTENT','FINMIND_REQUEST_INTENT') for v in old['provenance']):raise ValueError('REUSE_OR_RECONCILIATION_REQUIRED')
+  if any(v.get('raw_reference') or v.get('status') in ('SAVED_BASIC_VERIFIED','SAVED_RAW_ROWS_READBACK_VERIFIED','PROCESSING','REQUEST_INTENT','FINMIND_REQUEST_INTENT','SKIPPED_SOURCE_EMPTY','SKIPPED_NOT_PUBLISHED') for v in old['provenance']):raise ValueError('REUSE_OR_RECONCILIATION_REQUIRED')
   if any(proof.get(k)!=case[k] for k in ('source','key','period')):raise ValueError('MISSING_EVIDENCE_BINDING')
-  if old.get('attempts',0)>task['attempts'] or proof.get('availability_verified') is not True or not proof.get('official_evidence_id'):raise ValueError('MISSING_AVAILABILITY_OR_ATTEMPTS')
+  applicable=proof.get('availability_verified') is True
+  if case['source']=='TAIFEX' and proof.get('query_applicability_verified') is True:
+   form=proof.get('official_form',{});job=case.get('native_job',{});fields=job.get('fields',{})
+   if not {'queryStartDate','queryEndDate'}<=set(form.get('fields',{})) or urllib.parse.urlsplit(form.get('source_page','')).hostname!='www.taifex.com.tw' or job.get('url')!='https://www.taifex.com.tw/cht/3/'+str(form.get('action')):raise ValueError('QUERY_FORM_FILTER_PROOF_REQUIRED')
+   for name,expected in [('queryStartDate',job['start']),('queryEndDate',job['end'])]:
+    if dt.date.fromisoformat(str(fields.get(name,'')).replace('/','-')).isoformat()!=expected:raise ValueError('QUERY_DATE_BINDING')
+   if not job['start']<=case['period']<=job['end'] and not job['start'].startswith(case['period']):raise ValueError('QUERY_TASK_PERIOD_BINDING')
+   applicable=True
+  if old.get('attempts',0)>task['attempts'] or not applicable or not proof.get('official_evidence_id'):raise ValueError('MISSING_AVAILABILITY_OR_ATTEMPTS')
   if case['source']=='FinMind' and (proof.get('official_source') not in ('TWSE','TPEx','MOPS') or not all(proof.get(k) is True for k in ('confirmed_gap','identity_period_market_verified','definition_unit_frequency_verified','cross_source_alignment_approved'))):raise ValueError('FINMIND_GAP_NOT_APPROVED')
  def find(self,key):
   if key!=self.case['key']:raise ValueError('ADAPTER_TASK_MISMATCH')
