@@ -1,0 +1,62 @@
+{
+  "run_id": 40814834525,
+  "conclusion": "success",
+  "schema": "JARVIS_FULL_PAGED_STATE_PREFLIGHT_V1",
+  "mode": "verify",
+  "sources": {
+    "FinMind": {
+      "tasks": 2711,
+      "sha256": "8dbb27ee4f0bd1ca3144b1659a812edf3d302b9f3026a84e32ddcf504c83a51d",
+      "commit": "e1166df6474d3b80f67eb98f749da0feb36776f0",
+      "page_files": 4,
+      "bytes": 3395506
+    },
+    "MOPS": {
+      "tasks": 23512,
+      "sha256": "161136f653638c1293f85882730a8f2f92373b92066a6f4d46ec5a27409ec89c",
+      "commit": "09f2cb425c9667bf3acdae667bcfe5db8f6b549c",
+      "page_files": 43,
+      "bytes": 44862017
+    },
+    "NDC": {
+      "tasks": 322,
+      "sha256": "14aa1eb702fb2a2589c129605ca4766041053dbed2d519231fd26b57df532268",
+      "commit": "fe8bcf2fcbfcc15c8bbd4cb1a44aaa27beb3cfa6",
+      "page_files": 1,
+      "bytes": 340959
+    },
+    "TAIFEX": {
+      "tasks": 5061,
+      "sha256": "dfa6e5d59c504c386eca90a8bd26d20d1d19ea9f64f3c54c1c0478a12552dc85",
+      "commit": "36846d6bd244d62e75bd35c70b90c3ee7d616a39",
+      "page_files": 10,
+      "bytes": 9974524
+    },
+    "TDCC": {
+      "tasks": 48059,
+      "sha256": "e6fc9eb2c52de591c81a77f1972a41f4c623bd0a4bdf0f62fa209acaf65690e0",
+      "commit": "7b711addd3858fd224fce066d4d2888dc67f50b1",
+      "page_files": 54,
+      "bytes": 56150002
+    },
+    "TPEx": {
+      "tasks": 62814,
+      "sha256": "e00ec7677108e3089289091c5e37dd93efcc18704b86f7076479111c20e4d553",
+      "commit": "2b05e5ee0e713243049f0144003a2332edeeab7f",
+      "page_files": 152,
+      "bytes": 158994695
+    },
+    "TWSE": {
+      "tasks": 47042,
+      "sha256": "4edf43084a90d26e60870013d3ba33eb0a7911a51659bd9bab3a8d15d7178f87",
+      "commit": "91f6bd1081f92b95668762cb351f625130ea8e44",
+      "page_files": 117,
+      "bytes": 121939089
+    }
+  },
+  "total_tasks": 189521,
+  "full_scope_restore_verified": true,
+  "market_requests": 0,
+  "drive_writes": 0,
+  "production_activation": false
+}
