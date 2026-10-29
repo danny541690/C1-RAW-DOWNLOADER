@@ -128,7 +128,7 @@
       "source_requests_limit_per_batch": null,
       "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
       "readiness_blockers": [
-        "CURRENT_BIDIRECTIONAL_OWNERSHIP_MUST_BE_MIGRATED_TO_FULL_DESC",
+        "CURRENT_BIDIRECTIONAL_OWNERSHIP_MUST_BE_MIGRATED_TO_SHARED_SOURCE_COORDINATOR",
         "UNIFY_REPAIR_REVERIFY_RECEIPTS_AND_RETRY_LIMIT"
       ],
       "display_name": "期交所"
