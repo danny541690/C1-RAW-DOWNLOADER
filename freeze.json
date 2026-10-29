@@ -1,0 +1,11 @@
+{
+  "schema": "JARVIS_LEGACY_DRAIN_V1",
+  "frozen_utc": "2026-10-29T02:39:31.323440+00:00",
+  "run_id": 40806889627,
+  "old_triggers_disabled": true,
+  "old_writers_remaining": 0,
+  "market_requests": 0,
+  "new_schedules_started": false,
+  "queue_metadata_quarantined": true,
+  "production_activation_hold": true
+}
