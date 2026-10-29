@@ -1,1 +1,1 @@
-{"EXPLICIT_QUOTA_FIXTURE_DESC":{"attempts":0,"definition":{"key":"EXPLICIT_QUOTA_FIXTURE_DESC","period":"2026-10-30","slot":"DESC","source":"NDC"},"fence":0,"status":"READY"}}
+{"EXPLICIT_QUOTA_FIXTURE_DESC":{"attempts":0,"check_only":false,"definition":{"key":"EXPLICIT_QUOTA_FIXTURE_DESC","period":"2026-10-30","slot":"DESC","source":"NDC"},"expires":1793315158.92205,"fence":2,"owner":"quota-DESC","status":"LEASED"}}
