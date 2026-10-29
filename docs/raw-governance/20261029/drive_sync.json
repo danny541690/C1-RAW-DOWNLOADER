@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R7",
+  "version": "20261029_R8",
   "folder_id": "1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "folder_url": "https://drive.google.com/drive/folders/1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "path": "C1_0.93/01_RAW/00_下載規則與問題清單",
@@ -41,5 +41,17 @@
     }
   ],
   "readback_verified": true,
-  "automatic_future_sync_installed": false
+  "automatic_future_sync_installed": true,
+  "automatic_future_sync_scope": {
+    "branch": "codex/seven-source-closed-loop-design-20261029",
+    "workflows": [
+      "jarvis-seven-native-reuse-test.yml",
+      "jarvis-seven-import-test.yml",
+      "jarvis-seven-closed-loop-batch.yml",
+      "jarvis-seven-tdcc-missing-test.yml"
+    ],
+    "production_twelve_entrypoints": false,
+    "governance_summary_auto_update": false,
+    "pending_drive_background_retry": false
+  }
 }

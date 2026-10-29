@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R7",
+  "version": "20261029_R8",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -173,6 +173,15 @@
       "source_sha": "e9665218665073898636d4d143f5a4001894497d",
       "evidence": "reports/raw-acceptance/20261029_five_native/remote-results.json",
       "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40854960470"
+    },
+    {
+      "id": "T20",
+      "name": "Git優先、Drive讀回與同內容重送自動保存",
+      "status": "PASS_REAL_PUBLICATION_AND_IDEMPOTENCE",
+      "scope": "發布模組實際遠端通過；四份候選QA流程已接線但未各自重跑；正式12入口未接",
+      "source_sha": "cc4587fc4d60994b9b4af7a66c60cff7f22b128a",
+      "evidence": "reports/raw-acceptance/20261029_auto_publication/remote-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40856240354"
     }
   ],
   "rules": [
