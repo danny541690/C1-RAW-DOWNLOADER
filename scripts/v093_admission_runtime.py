@@ -3,7 +3,7 @@
 Catalogs use the existing checksummed GitCAS page format. Immutable page archives
 retain outcomes and provenance while the active source state stays bounded.
 """
-import copy,hashlib,json,re
+import copy,hashlib,json,re,time
 from pathlib import Path
 from scripts.v093_source_coordination import Coordinator
 from scripts.v093_source_state_pages import encode,SCHEMA
@@ -141,6 +141,26 @@ def run_catalog(coordinator,drive,catalog,slot,owner,target_root,archive,max_uni
  result.update(admission_cursor=cursor,chunk_archived=archived,catalog_finished=cursor.get('finished',False),catalog_more=not cursor.get('finished',False),active_source_tasks=len(state['tasks']))
  return result
 
+def run_until_budget(coordinator,drive,catalog,slot,owner,target_root,archive,seconds=2700,chunk_limit=32,monotonic=time.monotonic):
+ """Process successive saved chunks immediately; defer only holds, cooldowns or no progress.
+
+ The outer deadline covers catalog/archive IO as well as the native batch. The
+ worker handles at most 20 units per checkpoint, so memory remains bounded.
+ """
+ if not 0<seconds<=2700:raise ValueError('CAMPAIGN_TIME_BUDGET')
+ started=monotonic();batches=0;processed=0;last=None;stop='TIME_BUDGET'
+ while seconds-(monotonic()-started)>5:
+  remaining=seconds-(monotonic()-started)
+  last=run_catalog(coordinator,drive,catalog,slot,owner,target_root,archive,max_units=20,seconds=min(2700,remaining),chunk_limit=chunk_limit)
+  batches+=1;processed+=last['processed']
+  if last.get('catalog_finished'):stop='CATALOG_FINISHED';break
+  if last.get('source_hold'):stop='SOURCE_HOLD';break
+  if (last.get('cooldown_until') or 0)>coordinator.clock():stop='SOURCE_COOLDOWN';break
+  if not last['processed'] and not last.get('chunk_archived'):stop='NO_IMMEDIATE_WORK';break
+ result=dict(last or {},batches=batches,total_processed=processed,stop_reason=stop,elapsed_campaign_seconds=round(monotonic()-started,3),production_activation=False)
+ # Each batch has already saved its state. This summary must not replace it.
+ return result
+
 def production(root,source,slot,namespace):
  release=json.loads((root/'config/v093_source_release.json').read_text())
  if release.get('enabled') is not True:raise ValueError('PRODUCTION_RELEASE_BLOCKED_RELEASE_NOT_APPROVED')
@@ -153,4 +173,6 @@ def production(root,source,slot,namespace):
  store=GitCAS(root);catalog=Catalog(store,release['catalogs'][source][slot],source,slot)
  c=Coordinator(store,source,ttl=600)
  archive=GitArchive(lambda snap:GitCAS(root,'jarvis-source-archive/'+snap['catalog_id']+'/'+slot+'/'+str(snap['chunk_number']).zfill(6)))
- return run_catalog(c,Drive(service()),catalog,slot,'run-'+__import__('os').environ['GITHUB_RUN_ID'],release['raw_root'],archive,chunk_limit=32)
+ result=run_until_budget(c,Drive(service()),catalog,slot,'run-'+__import__('os').environ['GITHUB_RUN_ID'],release['raw_root'],archive,chunk_limit=32)
+ result['production_activation']=True
+ return result

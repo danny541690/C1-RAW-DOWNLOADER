@@ -53,3 +53,44 @@ class AdmissionTests(unittest.TestCase):
  def test_first_start_has_no_archive_before_any_progress_exists(self):
   self.assertFalse(archive_completed(self.c,'DESC',self.archive))
   self.assertIsNone(self.c.store.read('TWSE')[1])
+
+class ContinuousBudgetTests(unittest.TestCase):
+ def test_advances_chunks_without_waiting_between_batches(self):
+  from unittest.mock import patch,Mock
+  from scripts.v093_admission_runtime import run_until_budget
+  c=Mock();c.clock.return_value=10
+  outputs=[dict(processed=20,chunk_archived=True,catalog_finished=False),dict(processed=3,chunk_archived=True,catalog_finished=True)]
+  with patch('scripts.v093_admission_runtime.run_catalog',side_effect=outputs) as run:
+   r=run_until_budget(c,None,None,'DESC','owner','root',None,monotonic=lambda:0)
+  self.assertEqual(run.call_count,2);self.assertEqual(r['total_processed'],23);self.assertEqual(r['stop_reason'],'CATALOG_FINISHED')
+ def test_unready_catalog_does_not_spin_on_future_retry_or_other_owner(self):
+  from unittest.mock import patch,Mock
+  from scripts.v093_admission_runtime import run_until_budget
+  for extra,expected in [({},'NO_IMMEDIATE_WORK'),({'source_hold':'AUTH'},'SOURCE_HOLD'),({'cooldown_until':50},'SOURCE_COOLDOWN')]:
+   c=Mock();c.clock.return_value=10
+   value=dict(processed=0,chunk_archived=False,catalog_finished=False,**extra)
+   with patch('scripts.v093_admission_runtime.run_catalog',return_value=value) as run:
+    r=run_until_budget(c,None,None,'DESC','owner','root',None,monotonic=lambda:0)
+   self.assertEqual(run.call_count,1);self.assertEqual(r['stop_reason'],expected)
+ def test_archive_only_chunk_immediately_advances(self):
+  from unittest.mock import patch,Mock
+  from scripts.v093_admission_runtime import run_until_budget
+  c=Mock();c.clock.return_value=10
+  outputs=[dict(processed=0,chunk_archived=True,catalog_finished=False),dict(processed=1,chunk_archived=True,catalog_finished=True)]
+  with patch('scripts.v093_admission_runtime.run_catalog',side_effect=outputs):
+   r=run_until_budget(c,None,None,'DESC','owner','root',None,monotonic=lambda:0)
+  self.assertEqual(r['batches'],2)
+ def test_campaign_budget_covers_between_batch_work(self):
+  from unittest.mock import patch,Mock
+  from scripts.v093_admission_runtime import run_until_budget
+  c=Mock();c.clock.return_value=10
+  ticks=iter([0,0,0,40,40,61,61])
+  with patch('scripts.v093_admission_runtime.run_catalog',return_value=dict(processed=20,chunk_archived=True,catalog_finished=False)) as run:
+   r=run_until_budget(c,None,None,'DESC','owner','root',None,seconds=60,monotonic=lambda:next(ticks))
+  self.assertEqual(run.call_count,2);self.assertEqual(r['total_processed'],40);self.assertEqual(r['stop_reason'],'TIME_BUDGET')
+ def test_shared_worker_carries_drive_credentials_to_execution_step(self):
+  import yaml
+  doc=yaml.load(Path('.github/workflows/jarvis-seven-worker.yml').read_text(),Loader=yaml.BaseLoader)
+  step=next(x for x in doc['jobs']['worker']['steps'] if x.get('name')=='Run guarded source worker')
+  for name in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'):
+   self.assertEqual(step['env'][name],'${{ secrets.'+name+' }}')

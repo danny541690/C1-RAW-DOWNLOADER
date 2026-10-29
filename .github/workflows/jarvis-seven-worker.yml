@@ -15,6 +15,9 @@ permissions:
   contents: write
 jobs:
   worker:
+    concurrency:
+      group: jarvis-v093-${{ inputs.mode }}-${{ inputs.source }}-${{ inputs.direction }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -28,6 +31,10 @@ jobs:
           SOURCE: ${{ inputs.source }}
           DIRECTION: ${{ inputs.direction }}
           MODE: ${{ inputs.mode }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
         run: |
           WORKER_NAMESPACE="entry-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           if [ "$MODE" = "production" ]; then
