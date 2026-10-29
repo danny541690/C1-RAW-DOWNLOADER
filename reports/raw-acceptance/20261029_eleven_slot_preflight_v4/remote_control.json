@@ -1,0 +1,44 @@
+{
+  "schema": "JARVIS_REAL_GIT_CONTROL_PREFLIGHT_V1",
+  "mode": "verify",
+  "namespace": "40796907530-1",
+  "market_requests": 0,
+  "drive_writes": 0,
+  "formal_acceptance": false,
+  "control_plane_verified": true,
+  "verified_slots": 11,
+  "sources": {
+    "TWSE": {
+      "commit": "4fead24aa4c6a67adaac138b79901ff182bd1500",
+      "slots": 2
+    },
+    "TPEx": {
+      "commit": "ea997f82b44ea34fcb6793783bfa08ec207a07e7",
+      "slots": 2
+    },
+    "MOPS": {
+      "commit": "ddef107548509ecd4bfe8691768b29e406c94a47",
+      "slots": 2
+    },
+    "TAIFEX": {
+      "commit": "fb67cf93a0dbd08764e57885edc8d21c0b87fc65",
+      "slots": 1
+    },
+    "TDCC": {
+      "commit": "753fe2f58551c56e9e6e46bc38f8eda1c372417a",
+      "slots": 2
+    },
+    "NDC": {
+      "commit": "0cdcd55e8bc65392b15618342ef2249181de3bc5",
+      "slots": 1
+    },
+    "FinMind": {
+      "commit": "a65f892cd1018fe1df85aadc6dd32fc1d79bb770",
+      "slots": 1
+    }
+  },
+  "limitation": "Real remote Git CAS across runners; all payloads synthetic; source HTTP, Drive and production continuation not exercised",
+  "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40796907530",
+  "runtime_commit": "a356662b9d8b1ad9e2da43fa1f6ffea754a993b1",
+  "regression_run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40796915722"
+}
