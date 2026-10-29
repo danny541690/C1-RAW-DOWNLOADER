@@ -116,6 +116,6 @@ test_timeout_retry_preserves_cap_and_records_phase (test_tdcc_download_v4.Timeou
 test_transport_release_does_not_restart_history_frontiers (test_tdcc_download_v4.TimeoutResumeTests.test_transport_release_does_not_restart_history_frontiers) ... ok
 
 ----------------------------------------------------------------------
-Ran 116 tests in 2.173s
+Ran 116 tests in 1.811s
 
 OK

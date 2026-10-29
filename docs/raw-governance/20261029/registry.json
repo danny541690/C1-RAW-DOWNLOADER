@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R2",
+  "version": "20261029_R3",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -7,7 +7,7 @@
       "id": "T01",
       "name": "本機合併測試",
       "status": "PASS_LOCAL_SCOPE",
-      "scope": "109項（歷次數量不相加）",
+      "scope": "116項（歷次數量不相加）",
       "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
       "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/summary.json",
       "run_url": null
@@ -137,6 +137,14 @@
       "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
       "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_closed_loop_batch/RESULT.md",
       "run_url": null
+    },
+    {
+      "id": "T16",
+      "name": "I17/I18核心與真實舊SHA正反案例",
+      "status": "PASS_COMPONENT_NOT_DEPLOYMENT",
+      "scope": "116項本機；真實Drive SHA核對與錯誤SHA隔離，市場請求0",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40832464478",
+      "evidence_review": "05_I17_I18修正結果.md"
     }
   ],
   "rules": [
@@ -337,19 +345,21 @@
     },
     {
       "id": "I17",
-      "status": "BLOCKING_CODE_REVIEW",
+      "status": "FIXED_CORE_LOCAL_TESTED",
       "problem": "來源fetch/validate例外與無save_intent中斷尚未接分類恢復",
-      "resolution": "補來源/內容/存放錯誤分流、持久原因及恢復路徑；尚未修正",
+      "resolution": "錯誤分類、共享冷卻與無save_intent證據對帳恢復已補，正式來源adapter接線仍待；詳見05",
       "evidence_review": "04_上線前待辦複核.md",
-      "updated_date_taipei": "2026-10-29"
+      "updated_date_taipei": "2026-10-29",
+      "evidence_test_id": "T16"
     },
     {
       "id": "I18",
-      "status": "BLOCKING_CODE_REVIEW",
+      "status": "FIXED_CORE_AND_REAL_READBACK_TESTED",
       "problem": "正式executor原件重用未明確要求舊expected SHA契約",
-      "resolution": "綁定舊SHA/來源/期間/任務與參照，不符隔離；尚未修正",
+      "resolution": "重用強制舊SHA及身分綁定；真實Drive正/錯SHA與冷啟動隔離通過，詳見05",
       "evidence_review": "04_上線前待辦複核.md",
-      "updated_date_taipei": "2026-10-29"
+      "updated_date_taipei": "2026-10-29",
+      "evidence_test_id": "T16"
     }
   ],
   "evidence_files": [

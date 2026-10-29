@@ -32,6 +32,7 @@ class ExecutorTests(unittest.TestCase):
   self.a.fetch=fetch
   with self.assertRaises(TimeoutError):Executor(self.c,self.a).one('DESC','first')
   self.assertEqual(self.task()['status'],'RETRY_WAIT');self.assertEqual(self.task()['attempts'],1)
+  self.assertEqual(self.task()['error'],dict(phase='FETCH',code='TimeoutError'))
   self.assertIsNone(self.c.claim('DESC','early'))
   self.now[0]+=61
   self.assertEqual(self.c.begin_request(self.c.claim('DESC','later')),2)

@@ -126,12 +126,13 @@ class Coordinator:
    if t['status']!='STORED' or readback_sha!=t['raw_sha256'] or basic_qa is not True:raise ValueError('READBACK_OR_QA_NOT_VERIFIED')
    t.update(status='RAW_BASIC_VERIFIED',owner=None,numeric_verified=False,pit_verified=False,full_acceptance=False)
   self.update(change)
- def failed(self,ticket,retry_after=0,source_cooldown=False):
+ def failed(self,ticket,retry_after=0,source_cooldown=False,error_code=None):
   if retry_after<0:raise ValueError('RETRY_AFTER')
   def change(s):
    t=self.owned(s,ticket)
    if t['status']!='REQUEST_INTENT':raise ValueError('NO_IN_FLIGHT_REQUEST')
    t.update(status='BLOCKED' if t['attempts']>=4 else 'RETRY_WAIT',owner=None,next_at=self.clock()+retry_after)
+   if error_code:t['error']=dict(phase='FETCH',code=error_code)
    if source_cooldown:s['cooldown_until']=max(s.get('cooldown_until',0),self.clock()+retry_after)
   self.update(change)
  def dispatch_after_save(self,slot,run_id,dispatch):

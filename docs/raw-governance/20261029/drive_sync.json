@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R2",
+  "version": "20261029_R3",
   "folder_id": "1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "folder_url": "https://drive.google.com/drive/folders/1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
   "path": "C1_0.93/01_RAW/00_下載規則與問題清單",
@@ -33,6 +33,11 @@
       "name": "04_上線前待辦複核.md",
       "file_id": "1_uI-saEZb8VlF3I_GmGCRFHqr4qBeUjG",
       "url": "https://drive.google.com/file/d/1_uI-saEZb8VlF3I_GmGCRFHqr4qBeUjG/view?usp=drivesdk"
+    },
+    {
+      "name": "05_I17_I18修正結果.md",
+      "file_id": "1OGyjDeCLQEkDhnQ2C7DvEPzEHhe3etk1",
+      "url": "https://drive.google.com/file/d/1OGyjDeCLQEkDhnQ2C7DvEPzEHhe3etk1/view?usp=drivesdk"
     }
   ],
   "readback_verified": true,
