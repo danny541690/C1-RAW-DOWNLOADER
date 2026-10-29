@@ -1,0 +1,1 @@
+{"quota-a":{"attempts":0,"definition":{"key":"quota-a","period":"2026-10-29","slot":"DESC","source":"FinMind"},"fence":0,"status":"READY"},"quota-b":{"attempts":0,"definition":{"key":"quota-b","period":"2026-10-29","slot":"DESC","source":"FinMind"},"fence":0,"status":"READY"}}
