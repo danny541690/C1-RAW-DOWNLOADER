@@ -14,7 +14,7 @@ from scripts.v093_acceptance_publish import publish,DriveArchive,encode
 
 def main():
  from scripts.annual_actual_firstpass import Drive,service
- p=argparse.ArgumentParser();p.add_argument('--namespace',required=True);a=p.parse_args();root=Path.cwd();out=Path('results');out.mkdir(exist_ok=True);d=Drive(service())
+ p=argparse.ArgumentParser();p.add_argument('--namespace',required=True);p.add_argument('--resume-namespace');a=p.parse_args();root=Path.cwd();out=Path('results');out.mkdir(exist_ok=True);d=Drive(service())
  history,pins=later_qa_progress(root);known='TDCC|2025-12|20251205|8401'
  if known not in history or history[known]['attempts']!=2 or history[known]['status']!='RAW_BASIC_VERIFIED':raise ValueError('LATEST_NATIVE_PROGRESS_NOT_PRESERVED')
  baseline=GitCAS(root,'jarvis-source-preflight/native-positive-40910020200-1');_,saved=baseline.read('TDCC');good=saved['tasks'][known];case=good['execution_contract']
@@ -22,17 +22,33 @@ def main():
  if hashlib.sha256(raw).hexdigest()!=good['raw_sha256']:raise ValueError('VERIFIED_SOURCE_RAW_CHANGED')
  adapter.validate(raw);bad=raw.replace(b'</form>',b'</broken-form>')
  if bad==raw:raise ValueError('FAULT_COPY_NOT_CREATED')
- folder=d.folder('1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit','EXPLICIT_FAULT_COPY_REPAIR_'+a.namespace);bad_sha=hashlib.sha256(bad).hexdigest();name='EXPLICIT_CORRUPTED_QA_COPY_'+bad_sha+'.html';d.direct_readback=True;d.put(folder,name,bad,'text/html',overwrite=False);bad_ref=d.find(folder,name)['id']
- key=known+'|EXPLICIT_QA_COPY';repair=copy.deepcopy(case);repair.update(key=key,mode='REPAIR');repair.pop('missing_evidence',None)
- repair['repair_evidence']=dict(source='TDCC',key=key,period=case['period'],reference=bad_ref,sha256=bad_sha,download_approved=True,reason='NATIVE_CONTENT_REJECTED',official_evidence_id='VERIFIED_NATIVE_QA_STATE:'+good['raw_reference'],replacement_reference=good['raw_reference'],replacement_sha256=good['raw_sha256'],replacement_verified=True,fixture_only=True)
- c=Coordinator(GitCAS(root,'jarvis-source-preflight/'+a.namespace),'TDCC',ttl=600)
- if c.store.remote_head('TDCC')!=0:raise ValueError('FRESH_REPAIR_QA_NAMESPACE')
- legacy=dict(source='TDCC',task_key=key,attempts=good['attempts'],action='VERIFY_RETAINED_RAW_FIRST',provenance=[dict(source='TDCC',period=case['period'],raw_reference=bad_ref,sha256=bad_sha,fixture_only=True)])
- c.add([dict(source='TDCC',key=key,period=case['period'],slot='DESC')]);c.update(lambda s:s['tasks'][key].update(attempts=good['attempts'],legacy_review=legacy,execution_contract=repair))
- _,state=c.store.read('TDCC');adapter=NativeAdapter(c,d,dict(source='TDCC',key=key),state['tasks'][key],target_root=folder);result=Executor(c,adapter).one('DESC','native-qa-repair')
+ if a.resume_namespace:
+  folder=d.folder('1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit','EXPLICIT_FAULT_COPY_REPAIR_'+a.resume_namespace)
+  c=Coordinator(GitCAS(root,'jarvis-source-preflight/'+a.resume_namespace),'TDCC',ttl=600);_,state=c.store.read('TDCC')
+  if not state or len(state['tasks'])!=1:raise ValueError('EXPECTED_SINGLE_INTERRUPTED_QA_REPAIR')
+  key,task=next(iter(state['tasks'].items()));proof=task['execution_contract']['repair_evidence'];bad_ref=proof['reference'];bad_sha=proof['sha256']
+  adapter=NativeAdapter(c,d,dict(source='TDCC',key=key),task,target_root=folder)
+  if adapter.read(bad_ref)!=bad or task.get('owner') or task['status']!='CONTENT_BLOCKED' or task.get('error')!=dict(phase='READBACK',code='ValueError'):raise ValueError('QA_REPAIR_RECONCILIATION_SCOPE')
+  ref=adapter.find_locator(task['save_intent']['locator']);recovered=adapter.read(ref)
+  if hashlib.sha256(recovered).hexdigest()!=task['save_intent']['sha256']:raise ValueError('QA_REPAIR_RECOVERY_SHA')
+  adapter.validate(recovered)
+  def reconcile(s):
+   current=s['tasks'][key]
+   if current!=task:raise ValueError('QA_REPAIR_CHANGED_DURING_RECONCILIATION')
+   current.update(status='RECONCILE',reconciliation=dict(evidence_id='INDEPENDENT_STABLE_VERSION_AND_EXPECTED_SHA',readback_verified=True,sha256=task['save_intent']['sha256']))
+  c.update(reconcile);result=Executor(c,adapter).resume('DESC','native-qa-cold-repair')
+ else:
+  folder=d.folder('1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit','EXPLICIT_FAULT_COPY_REPAIR_'+a.namespace);bad_sha=hashlib.sha256(bad).hexdigest();name='EXPLICIT_CORRUPTED_QA_COPY_'+bad_sha+'.html';d.direct_readback=True;d.put(folder,name,bad,'text/html',overwrite=False);bad_ref=d.find(folder,name)['id']
+  key=known+'|EXPLICIT_QA_COPY';repair=copy.deepcopy(case);repair.update(key=key,mode='REPAIR');repair.pop('missing_evidence',None)
+  repair['repair_evidence']=dict(source='TDCC',key=key,period=case['period'],reference=bad_ref,sha256=bad_sha,download_approved=True,reason='NATIVE_CONTENT_REJECTED',official_evidence_id='VERIFIED_NATIVE_QA_STATE:'+good['raw_reference'],replacement_reference=good['raw_reference'],replacement_sha256=good['raw_sha256'],replacement_verified=True,fixture_only=True)
+  c=Coordinator(GitCAS(root,'jarvis-source-preflight/'+a.namespace),'TDCC',ttl=600)
+  if c.store.remote_head('TDCC')!=0:raise ValueError('FRESH_REPAIR_QA_NAMESPACE')
+  legacy=dict(source='TDCC',task_key=key,attempts=good['attempts'],action='VERIFY_RETAINED_RAW_FIRST',provenance=[dict(source='TDCC',period=case['period'],raw_reference=bad_ref,sha256=bad_sha,fixture_only=True)])
+  c.add([dict(source='TDCC',key=key,period=case['period'],slot='DESC')]);c.update(lambda s:s['tasks'][key].update(attempts=good['attempts'],legacy_review=legacy,execution_contract=repair))
+  _,state=c.store.read('TDCC');adapter=NativeAdapter(c,d,dict(source='TDCC',key=key),state['tasks'][key],target_root=folder);result=Executor(c,adapter).one('DESC','native-qa-repair')
  _,state=c.store.read('TDCC');task=state['tasks'][key]
  if task['status']!='RAW_BASIC_VERIFIED' or adapter.source_requests or adapter.read(bad_ref)!=bad or adapter.read(good['raw_reference'])!=raw or task['raw_reference'] in (bad_ref,good['raw_reference']):raise ValueError('QA_IMMUTABLE_REPAIR_INVARIANT')
- report=dict(schema='JARVIS_FAULT_COPY_NATIVE_REPAIR_V1',source='TDCC',period=case['period'],code=case['code'],explicit_fault_injected_copy=True,qa_copy_repaired=1,real_market_invalid_file_repaired=0,formal_raw_writes=0,formal_data_repaired=0,source_requests=0,old_qa_reference=bad_ref,old_qa_sha256=bad_sha,verified_replacement_reference=good['raw_reference'],verified_replacement_sha256=good['raw_sha256'],result=result,storage_receipt=task['storage_receipt'],latest_native_history=history,history_pins=pins,production_activation=False,full_acceptance=False)
+ report=dict(schema='JARVIS_FAULT_COPY_NATIVE_REPAIR_V1',source='TDCC',period=case['period'],code=case['code'],explicit_fault_injected_copy=True,cold_recovered=bool(a.resume_namespace),qa_copy_repaired=1,real_market_invalid_file_repaired=0,formal_raw_writes=0,formal_data_repaired=0,source_requests=0,old_qa_reference=bad_ref,old_qa_sha256=bad_sha,verified_replacement_reference=good['raw_reference'],verified_replacement_sha256=good['raw_sha256'],result=result,storage_receipt=task['storage_receipt'],latest_native_history=history,history_pins=pins,production_activation=False,full_acceptance=False)
  (out/'native-repair-real-storage.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
  # Repair the original final publisher outbox without hiding its first failure.
  prefix='jarvis-source-preflight/record-40910020200-1-native-positive-summary';coordinator=Coordinator(GitCAS(root,prefix),'TDCC');_,pending=coordinator.store.read('TDCC')

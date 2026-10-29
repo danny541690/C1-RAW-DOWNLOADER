@@ -67,11 +67,13 @@ class Adapter:
  def find(self,key):return self.case['reference']
  def read(self,reference):
   fid,sep,member=reference.partition('/')
-  meta=self.d.call(lambda:self.d.api.files().get(fileId=fid,fields='size,version'))
-  if int(meta.get('size',0))>150_000_000:raise ValueError('RETAINED_SIZE_LIMIT')
-  raw=self.d.call(lambda:self.d.api.files().get_media(fileId=fid))
-  after=self.d.call(lambda:self.d.api.files().get(fileId=fid,fields='version'))
-  if after['version']!=meta['version']:raise ValueError('RAW_CHANGED_DURING_READ')
+  for attempt in range(3):
+   meta=self.d.call(lambda:self.d.api.files().get(fileId=fid,fields='size,version'))
+   if int(meta.get('size',0))>150_000_000:raise ValueError('RETAINED_SIZE_LIMIT')
+   raw=self.d.call(lambda:self.d.api.files().get_media(fileId=fid))
+   after=self.d.call(lambda:self.d.api.files().get(fileId=fid,fields='version'))
+   if after['version']==meta['version']:break
+  else:raise ValueError('RAW_CHANGED_DURING_READ')
   if sep:
    with zipfile.ZipFile(io.BytesIO(raw)) as z:
     if z.getinfo(member).file_size>32_000_000:raise ValueError('MEMBER_SIZE_LIMIT')

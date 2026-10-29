@@ -35,7 +35,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_native_repair_live --namespace repair-handoff-${{ github.run_id }}-${{ github.run_attempt }}
+        run: python -m scripts.v093_native_repair_live --namespace repair-handoff-${{ github.run_id }}-${{ github.run_attempt }} --resume-namespace repair-handoff-40911231116-1
       - name: Automatically preserve admission results
         if: always()
         env:
@@ -50,3 +50,5 @@ jobs:
           path: results
           retention-days: 90
 
+
+# R2: recover the saved QA repair after bounded stable-version rereads; no provider download.

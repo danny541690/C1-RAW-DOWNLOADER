@@ -88,3 +88,17 @@ class QueryProofTests(unittest.TestCase):
    if change=='date':row['execution_contract']['missing_evidence']['official_menu']['offered_dates']=[]
    else:row['execution_contract']['date']='20260912';row['execution_contract']['missing_evidence']['official_menu']['offered_dates']=['20260912']
    with self.assertRaises(ValueError):NativeAdapter(None,None,dict(source='TDCC',key='k'),row)
+
+class StableReadTests(unittest.TestCase):
+ def test_one_version_change_retries_read_without_relaxing_hash_contract(self):
+  from scripts.v093_native_reuse_batch import Adapter
+  d=FakeDrive();d.data['old']=b'fixture content';versions=iter(['1','2','2','2']);calls=[]
+  def get(fileId,fields):calls.append(fields);return dict(size=15,version=next(versions))
+  d.get=get;self.assertEqual(Adapter(d,{}).read('old'),b'fixture content');self.assertEqual(len(calls),4)
+ def test_continuously_changing_version_is_still_rejected(self):
+  from scripts.v093_native_reuse_batch import Adapter
+  d=FakeDrive();d.data['old']=b'fixture content';versions=iter(map(str,range(6)));calls=[]
+  def get(fileId,fields):calls.append(fields);return dict(size=15,version=next(versions))
+  d.get=get
+  with self.assertRaisesRegex(ValueError,'RAW_CHANGED'):Adapter(d,{}).read('old')
+  self.assertEqual(len(calls),6)
