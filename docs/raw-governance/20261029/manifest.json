@@ -1,0 +1,21 @@
+{
+  "version": "20261029_R1",
+  "files": {
+    "registry.json": {
+      "sha256": "2e2afd5087e85db1d664f9fda333fea4a2cd879549f88475e5e6e48a29ab2e17",
+      "bytes": 67210
+    },
+    "03_問題追蹤表.md": {
+      "sha256": "a1ef62bc728d82b2f948466080316e3d5ca03771cbdc752ec17ab0644d55c5e1",
+      "bytes": 2612
+    },
+    "01_測試結果總彙整.md": {
+      "sha256": "66a529dca1aad0bc47be14532dfae7ba210a8df401039c5c43f11226eb628c54",
+      "bytes": 6650
+    },
+    "02_有效下載規則.md": {
+      "sha256": "4ac33bd22bb0ad94a1107b77fd8cf1eccfc04d29de90059b42a7e16c84bc97e3",
+      "bytes": 2738
+    }
+  }
+}

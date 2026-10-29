@@ -1,0 +1,35 @@
+{
+  "version": "20261029_R1",
+  "folder_id": "1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
+  "folder_url": "https://drive.google.com/drive/folders/1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
+  "path": "C1_0.93/01_RAW/00_下載規則與問題清單",
+  "files": [
+    {
+      "name": "01_測試結果總彙整.md",
+      "file_id": "1oyqkqFUWWIx3dmfUV68KuzOWpgg3FFTW",
+      "url": "https://drive.google.com/file/d/1oyqkqFUWWIx3dmfUV68KuzOWpgg3FFTW/view?usp=drivesdk"
+    },
+    {
+      "name": "02_有效下載規則.md",
+      "file_id": "1UXyDqJNU8sV_NIPObCrTFrND6pqw8vN9",
+      "url": "https://drive.google.com/file/d/1UXyDqJNU8sV_NIPObCrTFrND6pqw8vN9/view?usp=drivesdk"
+    },
+    {
+      "name": "03_問題追蹤表.md",
+      "file_id": "1g9FxCFrp_fmc6wcpDH5jb-JC4wZATvLE",
+      "url": "https://drive.google.com/file/d/1g9FxCFrp_fmc6wcpDH5jb-JC4wZATvLE/view?usp=drivesdk"
+    },
+    {
+      "name": "registry.json",
+      "file_id": "1M0HjxhCPe9E-WmOOizPSWk8nIGcfc-IQ",
+      "url": "https://drive.google.com/file/d/1M0HjxhCPe9E-WmOOizPSWk8nIGcfc-IQ/view?usp=drivesdk"
+    },
+    {
+      "name": "manifest.json",
+      "file_id": "1Q92y2j2UGi7Y6ni__DbWrax2RhQPHfgw",
+      "url": "https://drive.google.com/file/d/1Q92y2j2UGi7Y6ni__DbWrax2RhQPHfgw/view?usp=drivesdk"
+    }
+  ],
+  "readback_verified": true,
+  "automatic_future_sync_installed": false
+}
