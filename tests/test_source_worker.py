@@ -45,3 +45,19 @@ class WorkerTests(unittest.TestCase):
   import subprocess,sys
   p=subprocess.run([sys.executable,'-m','scripts.v093_source_worker','--source','TWSE','--direction','DESC','--mode','production','--namespace','must-not-start'],capture_output=True,text=True)
   self.assertNotEqual(p.returncode,0);self.assertIn('PRODUCTION_RELEASE_BLOCKED',p.stderr)
+
+ def test_read_only_work_is_counted_after_batch_budget_exhausted(self):
+  def mark(state):
+   for task in state['tasks'].values():task.update(status='READY_CHECK',check_only=True,attempts=4)
+  self.c.update(mark)
+  def factory(ticket,task):
+   adapter=DiskAdapter(self.root)
+   # Binding failure isolates one task; the second remains available to continue.
+   raise ValueError('contract awaiting approval')
+  result=run_batch(self.c,factory,'DESC','worker',max_units=1)
+  self.assertEqual(result['ready_remaining'],1)
+  self.assertEqual(sum(t['attempts'] for t in self.c.store.read('TWSE')[1]['tasks'].values()),8)
+ def test_future_retry_is_not_reported_as_immediately_ready(self):
+  self.c.update(lambda state:[t.update(status='RETRY_WAIT',next_at=self.c.clock()+3600) for t in state['tasks'].values()])
+  result=run_batch(self.c,lambda t,s:DiskAdapter(self.root),'DESC','worker')
+  self.assertEqual(result['processed'],0);self.assertEqual(result['ready_remaining'],0)

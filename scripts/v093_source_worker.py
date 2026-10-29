@@ -31,7 +31,7 @@ def run_batch(coordinator,adapter_factory,slot,owner,max_units=20,seconds=2700,m
   except Exception as exc:outcomes.append(dict(key=key,outcome='ISOLATED_ERROR',error=type(exc).__name__))
  _,state=coordinator.store.read(coordinator.source);tasks=[t for t in state['tasks'].values() if t['definition']['slot']==slot]
  counts=dict(collections.Counter(t['status'] for t in tasks))
- result=dict(source=coordinator.source,slot=slot,processed=len(seen),outcomes=outcomes,task_status_counts=counts,task_scope=len(tasks),denominator_is_database_universe=False,elapsed_seconds=round(monotonic()-started,3),full_acceptance=False,ready_remaining=sum(t['status']=='READY' or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=coordinator.clock() for t in tasks),source_hold=state.get('hold'),cooldown_until=state.get('cooldown_until'))
+ result=dict(source=coordinator.source,slot=slot,processed=len(seen),outcomes=outcomes,task_status_counts=counts,task_scope=len(tasks),denominator_is_database_universe=False,elapsed_seconds=round(monotonic()-started,3),full_acceptance=False,ready_remaining=sum(t['status'] in ('READY','READY_CHECK') or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=coordinator.clock() for t in tasks),source_hold=state.get('hold'),cooldown_until=state.get('cooldown_until'))
  checkpoint=dict(result)
  checkpoint['outcomes']=[{k:v for k,v in item.items() if k!='evidence'} | (dict(evidence={k:item['evidence'][k] for k in ('sha256','reference') if k in item['evidence']}) if item.get('evidence') else {}) for item in outcomes]
  coordinator.update(lambda s:s.setdefault('last_batches',{}).update({slot:checkpoint}))

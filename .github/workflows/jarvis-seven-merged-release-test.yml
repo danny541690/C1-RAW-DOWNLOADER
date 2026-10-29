@@ -1,0 +1,46 @@
+name: JARVIS merged release regression and twelve entry gate audit
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-merged-release-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  admission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Whole repository regression
+        run: |
+          mkdir -p results
+          python - <<'PY'
+          import json,re,subprocess,sys
+          from pathlib import Path
+          p=subprocess.run([sys.executable,'-m','unittest','discover','-s','tests','-p','test_*.py','-v'],capture_output=True,text=True)
+          log=p.stdout+p.stderr
+          for i in range(0,len(log),100000):Path('results/full-repo-'+str(i//100000)+'.log').write_text(log[i:i+100000])
+          m=re.search(r'Ran (\d+) tests?',log);result=dict(tests=int(m[1]) if m else None,passed=p.returncode==0)
+          Path('results/full-repo-summary.json').write_text(json.dumps(result));print(json.dumps(result));print('\n'.join(log.splitlines()[-8:]));raise SystemExit(p.returncode)
+          PY
+      - name: Twelve entry bindings and combined preflight
+        run: python -m scripts.v093_source_preflight --out results/preflight
+      - name: Automatically preserve admission results
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source NDC --job merged-release --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: merged-release
+          path: results
+          retention-days: 90
+
