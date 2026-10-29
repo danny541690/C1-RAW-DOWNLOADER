@@ -1,0 +1,122 @@
+{
+  "schema": "JARVIS_TAIFEX_MISSING_ADMISSION_AUDIT_V1",
+  "review_candidate_tasks": 1845,
+  "original_receipt_tasks_evaluated": 1845,
+  "reason_combinations": {
+    "LEGACY_STATUS_SKIPPED_SOURCE_EMPTY|OFFICIAL_FORM_BOUNDARY_UNPROVEN": 1020,
+    "LEGACY_STATUS_SKIPPED_SOURCE_EMPTY|RETAINED_QUARANTINE_RECHECK_FIRST": 243,
+    "RETRY_BUDGET_REQUIRES_REVIEW": 13,
+    "OFFICIAL_FORM_BOUNDARY_UNPROVEN": 109,
+    "LEGACY_STATUS_SKIPPED_SOURCE_EMPTY": 112,
+    "INTERRUPTED_REQUEST_RECONCILIATION_FIRST": 1,
+    "RETAINED_QUARANTINE_RECHECK_FIRST": 347
+  },
+  "examples": {
+    "LEGACY_STATUS_SKIPPED_SOURCE_EMPTY": [
+      {
+        "key": "TAIFEX|2000-01|HISTORY|bargainOrderDown|2000-01",
+        "legacy_status": "SKIPPED_SOURCE_EMPTY",
+        "kind": "csv",
+        "attempts": 1,
+        "action": "bargainOrderDown"
+      },
+      {
+        "key": "TAIFEX|2000-02|HISTORY|bargainOrderDown|2000-02",
+        "legacy_status": "SKIPPED_SOURCE_EMPTY",
+        "kind": "csv",
+        "attempts": 1,
+        "action": "bargainOrderDown"
+      },
+      {
+        "key": "TAIFEX|2000-03|HISTORY|bargainOrderDown|2000-03",
+        "legacy_status": "SKIPPED_SOURCE_EMPTY",
+        "kind": "csv",
+        "attempts": 1,
+        "action": "bargainOrderDown"
+      }
+    ],
+    "RETAINED_QUARANTINE_RECHECK_FIRST": [
+      {
+        "key": "TAIFEX|2008-06|HISTORY|bargainOrderDown|2008-06",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 1,
+        "action": "bargainOrderDown"
+      },
+      {
+        "key": "TAIFEX|2008-07|HISTORY|bargainOrderDown|2008-07",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 1,
+        "action": "bargainOrderDown"
+      },
+      {
+        "key": "TAIFEX|2008-08|HISTORY|bargainOrderDown|2008-08",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 1,
+        "action": "bargainOrderDown"
+      }
+    ],
+    "RETRY_BUDGET_REQUIRES_REVIEW": [
+      {
+        "key": "TAIFEX|2009-03|HISTORY|bargainOrderDown|2009-03",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 3,
+        "action": "bargainOrderDown"
+      },
+      {
+        "key": "TAIFEX|2010-06|HISTORY|bargainOrderDown|2010-06",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 3,
+        "action": "bargainOrderDown"
+      },
+      {
+        "key": "TAIFEX|2018-04|HISTORY|combinationOrderDown|2018-04",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 3,
+        "action": "combinationOrderDown"
+      }
+    ],
+    "OFFICIAL_FORM_BOUNDARY_UNPROVEN": [
+      {
+        "key": "TAIFEX|2013-01|HISTORY|bargainOrderDown|2013-01",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 1,
+        "action": "bargainOrderDown"
+      },
+      {
+        "key": "TAIFEX|2013-02|HISTORY|bargainOrderDown|2013-02",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 2,
+        "action": "bargainOrderDown"
+      },
+      {
+        "key": "TAIFEX|2013-03|HISTORY|bargainOrderDown|2013-03",
+        "legacy_status": "UNRESOLVED",
+        "kind": "csv",
+        "attempts": 1,
+        "action": "bargainOrderDown"
+      }
+    ],
+    "INTERRUPTED_REQUEST_RECONCILIATION_FIRST": [
+      {
+        "key": "TAIFEX|2026-10|API|2026-10-23|/BlockTradeContinuousMatchingSingleOrder",
+        "legacy_status": "UNRESOLVED",
+        "kind": "snapshot",
+        "attempts": 0,
+        "action": null
+      }
+    ]
+  },
+  "eligible_tasks": 0,
+  "source_requests": 0,
+  "formal_raw_writes": 0,
+  "production_activation": false,
+  "acceptance": "AUDIT_ONLY_NOT_MISSING_DOWNLOAD_PASS"
+}

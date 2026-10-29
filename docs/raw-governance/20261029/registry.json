@@ -1,5 +1,5 @@
 {
-  "version": "20261029_R9",
+  "version": "20261029_R10",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -191,6 +191,33 @@
       "source_sha": "64f8a8262c69cb5cd0e755f833c78d6503ccc449",
       "evidence": "reports/raw-acceptance/20261029_twelve_entry/remote-results.json",
       "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40857674847"
+    },
+    {
+      "id": "T22",
+      "name": "七來源共享HTTP預算遠端競爭",
+      "status": "PASS_REMOTE_CONTROL_ONLY",
+      "scope": "7來源各一准一延後，attempts0；未送源站HTTP",
+      "source_sha": "bdc5c983e835ccb7fc1fed50bf178b956baa1d73",
+      "evidence": "reports/raw-acceptance/20261029_adapter_rate/remote-quota-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40868944927"
+    },
+    {
+      "id": "T23",
+      "name": "修正日期查詢准入後的TAIFEX實際取件",
+      "status": "NOT_ACCEPTED_OFFICIAL_EMPTY_HOLD",
+      "scope": "1實際來源請求，0有效RAW；不能算下載成功",
+      "source_sha": "213bbb8ce4bb7e7ea7e4c6fb07eb418e12e494d4",
+      "evidence": "reports/raw-acceptance/20261029_adapter_rate/real-missing-result.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40870505597"
+    },
+    {
+      "id": "T24",
+      "name": "TAIFEX隔離回應全批SHA與原生重驗",
+      "status": "PASS_RECHECK_ALL_OFFICIAL_EMPTY_PENDING_COVERAGE",
+      "scope": "1606版本／1602任務，0正式修復，0來源下載；歷史是否不存在未確認",
+      "source_sha": "125c64e55b74f34b490e22ad4b667035865b3176",
+      "evidence": "reports/raw-acceptance/20261029_adapter_rate/quarantine-recheck-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40875609531"
     }
   ],
   "rules": [
@@ -420,6 +447,18 @@
       "name": "Official empty stopped batch and blocked saved-task recovery",
       "evidence_test_id": "T18",
       "remaining": "First-run total HTTP count unknown; empty-response raw not retained; pending source applicability"
+    },
+    {
+      "id": "I21",
+      "status": "FIXED_QUERY_ADMISSION_REAL_EMPTY_HOLD",
+      "name": "Unknown earliest date incorrectly blocked an official historical date filter",
+      "evidence_test_id": "T23"
+    },
+    {
+      "id": "I22",
+      "status": "OPEN_SOURCE_COVERAGE_REVIEW",
+      "name": "Retained official empty responses are not historical-absence proofs",
+      "evidence_test_id": "T24"
     }
   ],
   "evidence_files": [
