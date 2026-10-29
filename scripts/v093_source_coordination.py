@@ -38,14 +38,14 @@ class Coordinator:
    for task in state['tasks'].values():
     if task.get('owner') and task['expires']<=now:
      uncertain=task['status'] in ('REQUEST_INTENT','STORED','RETAINED_CHECK')
-     task.update(owner=None,status='RECONCILE' if uncertain else 'READY')
+     task.update(owner=None,status='RECONCILE' if uncertain else 'READY_CHECK' if task.get('check_only') else 'READY')
      if uncertain:task['next_action']='VERIFY_SAVE_INTENT' if task.get('save_intent') else 'RECONCILE_SOURCE_AND_STORAGE'
    available=[(key,t) for key,t in state['tasks'].items() if key not in exclude and t['definition']['slot']==slot
-    and (t['status']=='READY' or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now)]
+    and (t['status'] in ('READY','READY_CHECK') or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now)]
    available.sort(key=lambda x:(x[1]['definition']['period'],x[0]),reverse=direction=='DESC')
    for key,task in available:
-    if task['attempts']>=4:task['status']='BLOCKED';continue
-    state['fence']+=1;task.update(status='LEASED',owner=owner,fence=state['fence'],expires=now+self.ttl)
+    if task['attempts']>=4 and task['status']!='READY_CHECK':task['status']='BLOCKED';continue
+    state['fence']+=1;task.update(check_only=task.get('check_only',False) or task['status']=='READY_CHECK',status='LEASED',owner=owner,fence=state['fence'],expires=now+self.ttl)
     return dict(source=self.source,key=key,owner=owner,fence=task['fence'])
    return None
   return self.update(change)
@@ -68,7 +68,7 @@ class Coordinator:
   def change(s):
    t=self.owned(s,ticket)
    if s.get('hold') or s.get('cooldown_until',0)>self.clock():raise ValueError('SOURCE_ON_HOLD')
-   if t['status']!='LEASED' or t['attempts']>=4:raise ValueError('REQUEST_NOT_ADMITTED')
+   if t.get('check_only') or t['status']!='LEASED' or t['attempts']>=4:raise ValueError('REQUEST_NOT_ADMITTED')
    t.update(status='REQUEST_INTENT',attempts=t['attempts']+1);return t['attempts']
   return self.update(change)
  def saved(self,ticket,raw_sha):
@@ -135,11 +135,13 @@ class Coordinator:
     return dict(source=self.source,key=key,owner=owner,fence=t['fence'])
    return None
   return self.update(change)
- def verified(self,ticket,readback_sha,basic_qa):
+ def verified(self,ticket,readback_sha,basic_qa,reference=None):
+  if reference is not None and (not isinstance(reference,str) or not reference):raise ValueError('INVALID_RAW_REFERENCE')
   def change(s):
    t=self.owned(s,ticket)
    if t['status']!='STORED' or readback_sha!=t['raw_sha256'] or basic_qa is not True:raise ValueError('READBACK_OR_QA_NOT_VERIFIED')
    t.update(status='RAW_BASIC_VERIFIED',owner=None,numeric_verified=False,pit_verified=False,full_acceptance=False)
+   if reference is not None:t['raw_reference']=reference
   self.update(change)
  def failed(self,ticket,retry_after=0,source_cooldown=False,error_code=None):
   if retry_after<0:raise ValueError('RETRY_AFTER')
@@ -156,7 +158,7 @@ class Coordinator:
    if s.get('hold') or s.get('cooldown_until',0)>now or identity in s['outbox']:return False
    tasks=[t for t in s['tasks'].values() if t['definition']['slot']==slot]
    if any(t.get('owner') and t.get('expires',0)>now for t in tasks):return False
-   if not any(t['status']=='READY' or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now for t in tasks):return False
+   if not any(t['status'] in ('READY','READY_CHECK') or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now for t in tasks):return False
    s['outbox'][identity]=dict(status='INTENT',slot=slot,run_id=run_id);return True
   if not self.update(reserve):return False
   try:dispatch(identity)

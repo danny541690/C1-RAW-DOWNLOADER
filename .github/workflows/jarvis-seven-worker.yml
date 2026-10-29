@@ -16,19 +16,24 @@ permissions:
 jobs:
   worker:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: pip install -r requirements-qa.lock
-      - name: Run guarded admitted-task worker entry validation
+      - name: Run guarded source worker
         env:
           SOURCE: ${{ inputs.source }}
           DIRECTION: ${{ inputs.direction }}
           MODE: ${{ inputs.mode }}
-        run: python -m scripts.v093_source_worker --source "$SOURCE" --direction "$DIRECTION" --mode "$MODE" --namespace "entry-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+        run: |
+          WORKER_NAMESPACE="entry-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          if [ "$MODE" = "production" ]; then
+            WORKER_NAMESPACE=production
+          fi
+          python -m scripts.v093_source_worker --source "$SOURCE" --direction "$DIRECTION" --mode "$MODE" --namespace "$WORKER_NAMESPACE"
       - name: Automatically save worker evidence
         if: always()
         env:

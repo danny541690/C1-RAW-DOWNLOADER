@@ -116,3 +116,7 @@ class ExecutorTests(unittest.TestCase):
   self.a.preserve_rejected=lambda raw:(_ for _ in ()).throw(OSError('secret must not be copied'))
   with self.assertRaises(ValueError):Executor(self.c,self.a).one('DESC','one')
   t=self.task();self.assertEqual(t['status'],'CONTENT_BLOCKED');self.assertEqual(t['rejected_evidence_error'],'OSError');self.assertNotIn('rejected_evidence',t)
+
+ def test_verified_task_retains_direct_reference_for_immutable_archives(self):
+  evidence=Executor(self.c,self.a).one('DESC','one')
+  self.assertEqual(self.task()['raw_reference'],evidence['reference'])

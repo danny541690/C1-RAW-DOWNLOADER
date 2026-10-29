@@ -12,7 +12,7 @@ class StoreUnavailable(RuntimeError):pass
 class GitCAS:
  def __init__(self,repo,prefix='jarvis-source-state',max_bytes=512*1024*1024,page_bytes=1024*1024):
   self.repo=Path(repo);self.prefix=prefix;self.max_bytes=max_bytes;self.page_bytes=page_bytes
-  if prefix!='jarvis-source-state' and not re.fullmatch(r'jarvis-source-preflight/[0-9A-Za-z_-]+',prefix):raise ValueError('QA_BRANCH_NAMESPACE_ONLY')
+  if prefix!='jarvis-source-state' and not re.fullmatch(r'jarvis-source-preflight/[0-9A-Za-z_-]+',prefix) and not re.fullmatch(r'jarvis-source-archive/[0-9a-f]{64}/(?:ASC|DESC)/[0-9]{6}',prefix):raise ValueError('QA_BRANCH_NAMESPACE_ONLY')
  def git(self,*args,data=None,check=True):
   p=subprocess.run(['git',*args],cwd=self.repo,input=data,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   if check and p.returncode:raise StoreUnavailable('GIT_'+args[0].upper()+'_FAILED')

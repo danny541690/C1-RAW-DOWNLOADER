@@ -1,0 +1,8 @@
+{
+  "schema": "JARVIS_NATIVE_RELEASE_V1",
+  "enabled": false,
+  "tested_code_sha256": null,
+  "approved_checks": {"source_contracts": false, "continuation_and_quota": false, "cutover": false},
+  "catalogs": {},
+  "raw_root": "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn"
+}
