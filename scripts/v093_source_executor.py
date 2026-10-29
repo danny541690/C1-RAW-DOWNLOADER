@@ -31,8 +31,8 @@ class Executor:
  def resume(self,slot,owner):
   t=self.c.recover(slot,owner)
   if not t:return None
-  _,state=self.c.store.read(self.c.source);intent=state['tasks'][t['key']]['save_intent']
-  ref=self.a.find_locator(intent['locator'])
+  _,state=self.c.store.read(self.c.source);item=state['tasks'][t['key']];intent=item['save_intent']
+  ref=item['raw_reference'] if item.get('reused_existing') else self.a.find_locator(intent['locator'])
   if not ref:raise ValueError('INTERRUPTED_SAVE_NOT_FOUND_RECONCILIATION_REQUIRED')
   raw=self.a.read(ref)
   if hashlib.sha256(raw).hexdigest()!=intent['sha256']:raise ValueError('INTERRUPTED_SAVE_HASH_MISMATCH')

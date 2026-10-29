@@ -1,4 +1,5 @@
 test_crash_after_real_save_recovers_without_second_market_request (test_source_executor.ExecutorTests.test_crash_after_real_save_recovers_without_second_market_request) ... ok
+test_crash_during_retained_readback_recovers_reference_without_download (test_source_executor.ExecutorTests.test_crash_during_retained_readback_recovers_reference_without_download) ... ok
 test_retained_raw_is_reused_without_fetch_or_attempt_reset (test_source_executor.ExecutorTests.test_retained_raw_is_reused_without_fetch_or_attempt_reset) ... ok
 test_unapproved_missing_data_cannot_trigger_source_request (test_source_executor.ExecutorTests.test_unapproved_missing_data_cannot_trigger_source_request) ... ok
 test_multiple_pages_roundtrip_and_partial_page_update_preserves_others (test_source_state_pages.PageTests.test_multiple_pages_roundtrip_and_partial_page_update_preserves_others) ... ok
@@ -105,6 +106,6 @@ test_timeout_retry_preserves_cap_and_records_phase (test_tdcc_download_v4.Timeou
 test_transport_release_does_not_restart_history_frontiers (test_tdcc_download_v4.TimeoutResumeTests.test_transport_release_does_not_restart_history_frontiers) ... ok
 
 ----------------------------------------------------------------------
-Ran 105 tests in 1.901s
+Ran 106 tests in 1.623s
 
 OK

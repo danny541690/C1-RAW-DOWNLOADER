@@ -1,9 +1,9 @@
 {
   "schema": "JARVIS_TWELVE_PREFLIGHT_V1",
-  "checked_at_taipei": "2026-10-29T12:04:51.117960+08:00",
+  "checked_at_taipei": "2026-10-29T12:11:52.482660+08:00",
   "implemented_tests_passed": true,
   "tests": {
-    "run": 105,
+    "run": 106,
     "failures": 0,
     "errors": 0,
     "skipped": 0
@@ -21,13 +21,13 @@
   "market_requests": 0,
   "production_writes": 0,
   "source_environment": "Fake official HTTP; native TDCC parser; real local files, bare Git and transactional SQLite shared by threads and separate processes; not live Drive or GitHub distributed CAS",
-  "elapsed_seconds": 1.959,
+  "elapsed_seconds": 1.687,
   "cutover_strategy": "ONE_TIME_SWITCH_NO_DUAL_OPERATION",
   "existing_online_schedules_changed": false,
   "input_sha256": {
     "config/v093_seven_source_design.json": "32f125633bac22b18232252565f5c257f7ae8a5839b6d729bb528a8879228770",
-    "scripts/v093_source_coordination.py": "40bbe54cbe9ca61a9a03d98310d8b5c6840a300303894b57e127485123048238",
-    "scripts/v093_source_executor.py": "86b3d6d306d8aa85ba2dd0d74d8ee19a911b54fa7406d325090aef224a4e2c48",
+    "scripts/v093_source_coordination.py": "de4363c5a4c0cb88fa26c40084df15c80bb66349a9643200aedbe941c3d2d50c",
+    "scripts/v093_source_executor.py": "9bf8d298deb2b8ef3cdbb17c473fdac23223c9bad0f6042278fce582c2b50789",
     "scripts/v093_source_git_live_preflight.py": "d5378954673ded8454a04dbd6953d8e6580bc8d24653546ff19e4a52a0b46b43",
     "scripts/v093_source_git_store.py": "0757ee9d5cf6ae3d1f10b2221c24e504bbb608cc3b54eb13a6f94dfda11e872c",
     "scripts/v093_source_partition.py": "177b8bd8005e4ad6249aed811c4f07438f6a9a9fef8d896104d3d234e440cd88",
@@ -43,7 +43,7 @@
     "tests/test_seven_source_plan.py": "5413679381a7cbc14fafe3d03d668e601da6b4bfd868a07c9be85ddc60fccda0",
     "tests/test_source_closed_loop_preflight.py": "7846f0f14da1673f0ae0496639b849cb5323b7d533989184e1232ae77a84d6b6",
     "tests/test_source_coordination.py": "e6d255cbff22bc285f2a38f1026b4695416d3a572b3be4bdb51afba1875dd374",
-    "tests/test_source_executor.py": "c8d522e9dbc7fdc9c6c26ab0849393e37eba8613cfd62a05baa4b53e28c72858",
+    "tests/test_source_executor.py": "d42c1545ff9329adbf798e237d83987d7d79c46028f88dd625f296fa75efcccd",
     "tests/test_source_git_store.py": "d0143af3a7972ea306f4948171e38865e1a5eed6e17c81b9b947db3c30a4ae56",
     "tests/test_source_migration_and_scope.py": "3f828801f13dbbfd43dfd29613b84b4c8f2637a4af79d2e57746542419296c4a",
     "tests/test_source_partition.py": "a293919373acd6c9c0c102c59750c5a2f68ac5860cdff4721f9746a12f7415da",

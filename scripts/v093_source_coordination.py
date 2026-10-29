@@ -74,7 +74,7 @@ class Coordinator:
   def change(s):
    t=self.owned(s,ticket)
    if t['status']!='LEASED':raise ValueError('NOT_LEASED')
-   t.update(status='STORED',raw_sha256=raw_sha,raw_reference=reference,reused_existing=True)
+   t.update(status='STORED',raw_sha256=raw_sha,raw_reference=reference,reused_existing=True,save_intent=dict(sha256=raw_sha,locator=reference))
   self.update(change)
  def prepare_save(self,ticket,raw_sha,locator):
   if not re.fullmatch('[0-9a-f]{64}',raw_sha) or not locator:raise ValueError('SAVE_INTENT')

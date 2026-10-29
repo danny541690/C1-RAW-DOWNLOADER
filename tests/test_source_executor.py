@@ -40,3 +40,15 @@ class ExecutorTests(unittest.TestCase):
   self.a.download_authorized=False
   with self.assertRaisesRegex(ValueError,'NOT_AUTHORIZED'):Executor(self.c,self.a).one('DESC','held')
   self.assertEqual(self.a.fetches,0)
+ def test_crash_during_retained_readback_recovers_reference_without_download(self):
+  p=self.root/'existing';p.write_bytes(b'valid source response');self.a.find=lambda _:str(p)
+  original=self.a.read;calls=[0]
+  def read(ref):
+   calls[0]+=1
+   if calls[0]==2:raise OSError('readback interrupted')
+   return original(ref)
+  self.a.read=read
+  with self.assertRaises(OSError):Executor(self.c,self.a).one('DESC','reuse')
+  self.now[0]+=11;self.a.read=original
+  self.assertIsNotNone(Executor(self.c,self.a).resume('DESC','restart'))
+  self.assertEqual(self.a.fetches,0);self.assertEqual(self.c.store.read('TWSE')[1]['tasks']['one']['attempts'],0)

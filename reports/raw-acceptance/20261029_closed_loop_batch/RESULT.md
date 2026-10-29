@@ -1,0 +1,12 @@
+# 合併閉環驗收第一輪
+
+日期：2026-10-29（台北）。本機106項、12preview YAML通過。新增可注入來源/存放介面的執行核心，存檔前持久save_intent；存檔成功但回應丟失可憑確定locator與SHA恢復，不再請求市場；既有原件回讀中斷亦可恢復，嘗試次數不重設。中斷故障注入目前為實際本機磁碟/SQLite測試，不冒充七來源Drive故障驗收。
+
+真實雲端合併run40816238142 start及fresh-runner resume success。由原生TWSE解析器驗證既有2014-08-29原件，1012原生rows，852列價格關係查核無OHLC違反；2348有開高低收空值，保留MISSING_OR_NONTRADING_REQUIRES_REVIEW，不填0、不核准數值/PIT。零市場請求、零重抓、嘗試0；實際Drive原件讀取與Git持久狀態回讀。
+
+**重要未通過門檻**：已封存清單未找到同時符合已知無原件參照、已證實交易日、來源提供範圍與原生daily契約的TWSE缺件案例，因此缺件下載、隔離Drive新存檔後故障恢復分支未執行。前兩次40815823999、40816025354在選例前置檢查阻擋，沒有市場請求；未為讓測試變綠而重抓正確資料。最後一輪只驗證existing-RAW reuse與cold revalidation，required_missing_download_test=NOT_EXECUTED_NO_ELIGIBLE_CASE。新建隔離QA目錄未寫入RAW內容。
+
+後續可沿同一batch架構補齊七來源已核定的缺件/解析修復案例並只跑未通過部分；要先將舊缺件原因、來源適用性與原生請求欄位接成可執行契約，不能直接把CLASSIFY_APPLICABILITY清單當下載授權。真實workflow_dispatch續行尚未接入；本輪fresh-runner是同workflow的job依賴，不是workflow_dispatch。正式來源執行器、全面內容/單位/PIT契約、十二線真實負載與自動續跑仍未全部驗收。
+
+本輪合併測試結論：部分通過，production readiness仍false；不啟新十二線、不恢復舊排程，不宣稱全部上線測試完成。前輪189521任務全量分頁容量證據保持有效。
+
