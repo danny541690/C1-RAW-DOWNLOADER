@@ -1,6 +1,9 @@
 """Closed-loop executor; expected receipt binding and durable failure classification."""
 import hashlib,math,re,urllib.error
 from email.utils import parsedate_to_datetime
+class ApplicabilityUnproven(ValueError):
+ """Source answered without sufficient evidence for this task; never absence proof."""
+
 class Executor:
  def __init__(self,coordinator,adapter):self.c=coordinator;self.a=adapter
  def expected_retained(self,ticket,reference):
@@ -37,6 +40,7 @@ class Executor:
    if status in (408,429,500,502,503,504) or isinstance(exc,(TimeoutError,ConnectionError)) or isinstance(exc,OSError) and not isinstance(exc,urllib.error.HTTPError):
     self.c.failed(ticket,retry_after=self.retry_delay(exc),source_cooldown=status in (429,503),error_code=code);return
    self.c.error(ticket,'SOURCE_HOLD',phase,code,source_hold=status in (401,403) or status is None);return
+  if phase=='VALIDATE' and isinstance(exc,ApplicabilityUnproven):self.c.error(ticket,'APPLICABILITY_HOLD',phase,code);return
   if phase=='AUTHORIZE':self.c.error(ticket,'APPLICABILITY_HOLD',phase,code);return
   if phase in ('RECEIPT_BINDING','VALIDATE','HASH_CHECK') or phase=='READBACK' and isinstance(exc,ValueError):
    self.c.error(ticket,'CONTENT_BLOCKED',phase,code);return

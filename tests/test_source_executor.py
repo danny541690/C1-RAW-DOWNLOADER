@@ -2,7 +2,7 @@ import hashlib,tempfile,unittest,urllib.error
 from pathlib import Path
 from test_source_coordination import SQLiteCAS
 from scripts.v093_source_coordination import Coordinator
-from scripts.v093_source_executor import Executor
+from scripts.v093_source_executor import Executor,ApplicabilityUnproven
 class DiskAdapter:
  download_authorized=True
  def __init__(self,root):self.root=root;self.fetches=0;self.crash=False
@@ -97,3 +97,11 @@ class ExecutorTests(unittest.TestCase):
   self.now[0]+=11;self.a.read=original
   self.assertIsNotNone(Executor(self.c,self.a).resume('DESC','restart'))
   self.assertEqual(self.a.fetches,0);self.assertEqual(self.c.store.read('TWSE')[1]['tasks']['one']['attempts'],0)
+
+ def test_official_empty_is_applicability_hold_and_other_task_continues(self):
+  self.a.validate=lambda raw:(_ for _ in ()).throw(ApplicabilityUnproven('not absence proof'))
+  with self.assertRaises(ApplicabilityUnproven):Executor(self.c,self.a).one('DESC','empty')
+  self.assertEqual(self.task()['status'],'APPLICABILITY_HOLD');self.assertEqual(self.task()['attempts'],1)
+  self.assertNotIn('save_intent',self.task())
+  self.c.add([dict(source='TWSE',key='next',slot='DESC',period='2026-10-02')])
+  self.assertIsNotNone(self.c.claim('DESC','next-worker'))

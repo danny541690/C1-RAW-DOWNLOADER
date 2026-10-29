@@ -7,7 +7,7 @@ import argparse,datetime,gzip,hashlib,http.cookiejar,json,re,urllib.parse,urllib
 from pathlib import Path
 from scripts import v093_tdcc_independent as native
 from scripts.v093_source_coordination import Coordinator
-from scripts.v093_source_executor import Executor
+from scripts.v093_source_executor import Executor,ApplicabilityUnproven
 from scripts.v093_source_git_store import GitCAS
 
 
@@ -41,7 +41,10 @@ class Adapter:
   if self.worker is None or not self.form:raise ValueError('LIVE_FORM_REQUIRED')
   fields=native.query_fields(self.form,self.job['date'],self.job['code']);self.requests+=1
   return self.worker.request(native.QUERY,urllib.parse.urlencode(fields).encode())
- def validate(self,raw):return dict(basic_verified=True,rows=native.validate_history(raw,self.job['date'],self.job['code']),source='TDCC',date=self.job['date'],code=self.job['code'])
+ def validate(self,raw):
+  try:rows=native.validate_history(raw,self.job['date'],self.job['code'])
+  except native.SourceEmpty:raise ApplicabilityUnproven('OFFICIAL_EMPTY_NOT_ABSENCE_PROOF') from None
+  return dict(basic_verified=True,rows=rows,source='TDCC',date=self.job['date'],code=self.job['code'])
  def put(self,name,raw):
   self.d.direct_readback=True;self.d.put(self.folder,name,raw,'text/html',overwrite=False)
   ref=self.find_locator(name)
@@ -65,25 +68,40 @@ def main():
   c.add([dict(source='TDCC',key=j['key'],period=j['period'],slot=j['slot']) for j in jobs])
   def seed(s):
    for j in jobs:s['tasks'][j['key']].update(attempts=j['attempts'],legacy_review=j['legacy_review'],missing_evidence=j['missing_evidence'],official_menu_sha256=meta['menu_sha256'])
-  c.update(seed);outcomes=[]
+  c.update(seed);outcomes=[];completed=[];held=[]
   for job in jobs:
    adapter=Adapter(d,folder,job,worker,form);adapter.crash=True
    try:Executor(c,adapter).one(job['slot'],'live-'+job['slot'])
+   except ApplicabilityUnproven:
+    held.append(dict(key=job['key'],reason='OFFICIAL_EMPTY_UNCONFIRMED'));continue
    except OSError as exc:
     if str(exc)!='QA_FAULT_AFTER_DRIVE_SAVE':raise
    else:raise ValueError('SAVE_FAULT_NOT_EXERCISED')
    c.update(lambda s:s['tasks'][job['key']].update(expires=0))
+   completed.append(job);meta['completed_jobs']=completed;meta['held_jobs']=held;meta['source_requests']=worker.requests
+   (out/'case.json').write_text(json.dumps(meta,ensure_ascii=False))
    outcomes.append(dict(key=job['key'],slot=job['slot'],prior_attempts=job['attempts'],fetches=adapter.requests))
-  meta['source_requests']=worker.requests;(out/'case.json').write_text(json.dumps(meta,ensure_ascii=False))
+  meta['completed_jobs']=completed;meta['held_jobs']=held;meta['source_requests']=worker.requests;(out/'case.json').write_text(json.dumps(meta,ensure_ascii=False))
   result=dict(mode='REAL_MISSING_SAVE_FAULT_INJECTED',tasks=outcomes,source_requests=worker.requests,production_activation=False,qa_folder=folder)
  else:
   meta=json.loads(Path('expected/case.json').read_text());outcomes=[]
+  held=[]
   for job in meta['jobs']:
+   _,current=c.store.read('TDCC');prior=current['tasks'][job['key']]
+   if not prior.get('save_intent'):
+    if prior.get('status')=='CONTENT_BLOCKED' and prior.get('error')==dict(phase='VALIDATE',code='SourceEmpty'):
+     def reclassify(s):
+      task=s['tasks'][job['key']]
+      if task.get('owner') or task.get('save_intent') or task.get('error')!=dict(phase='VALIDATE',code='SourceEmpty'):raise ValueError('EMPTY_RECLASSIFICATION_CONFLICT')
+      task.update(status='APPLICABILITY_HOLD',next_action='VERIFY_SOURCE_APPLICABILITY_NOT_CERTIFIED_ABSENCE')
+     c.update(reclassify)
+    elif prior.get('status')!='APPLICABILITY_HOLD':raise ValueError('UNEXPECTED_UNSAVED_TASK')
+    held.append(dict(key=job['key'],reason='OFFICIAL_EMPTY_UNCONFIRMED',attempts=prior['attempts']));continue
    adapter=Adapter(d,meta['folder'],job);evidence=Executor(c,adapter).resume(job['slot'],'cold-'+job['slot'])
    _,state=c.store.read('TDCC');task=state['tasks'][job['key']]
    if not evidence or task['status']!='RAW_BASIC_VERIFIED' or task['attempts']!=job['attempts']+1 or adapter.requests:raise ValueError('COLD_RESUME_INVARIANT')
    if task['legacy_review']!=job['legacy_review']:raise ValueError('PROVENANCE_LOST')
    outcomes.append(dict(key=job['key'],slot=job['slot'],date=job['date'],code=job['code'],prior_attempts=job['attempts'],attempts=task['attempts'],evidence=evidence))
-  result=dict(mode='REAL_MISSING_TDCC_COLD_RESUME_PASS',tasks=outcomes,source_requests_this_job=0,total_source_requests=meta['source_requests'],production_activation=False,full_data_acceptance=False,limitation='Bounded missing TDCC weekly tasks only; seven-source production integration not complete')
+  result=dict(mode='REAL_MISSING_TDCC_COLD_RESUME_PASS' if outcomes else 'NO_MISSING_CASE_ACCEPTED',tasks=outcomes,held=held,source_requests_this_job=0,total_source_requests=meta.get('source_requests') or None,production_activation=False,full_data_acceptance=False,limitation='Bounded missing TDCC weekly tasks only; seven-source production integration not complete')
  (out/(a.mode+'.json')).write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result,ensure_ascii=False),flush=True)
 if __name__=='__main__':main()
