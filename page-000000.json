@@ -1,1 +1,1 @@
-{"FinMind|2026-09|b82b8aad065a90462abbb3d3":{"attempts":1,"definition":{"key":"FinMind|2026-09|b82b8aad065a90462abbb3d3","period":"2026-09","slot":"DESC","source":"FinMind"},"fence":0,"status":"READY"}}
+{"FinMind|2026-09|b82b8aad065a90462abbb3d3":{"attempts":1,"check_only":false,"definition":{"key":"FinMind|2026-09|b82b8aad065a90462abbb3d3","period":"2026-09","slot":"DESC","source":"FinMind"},"expires":1793293150.2918835,"fence":1,"owner":"native-start","status":"LEASED"}}
