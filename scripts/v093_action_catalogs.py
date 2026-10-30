@@ -41,6 +41,8 @@ def main():
  p=argparse.ArgumentParser();p.add_argument('--namespace',required=True);a=p.parse_args();root=Path.cwd();baseline=json.loads(Path('inputs/final-handoff-catalogs.json').read_text());d=Drive(service())
  reviews={s:json.loads(gzip.decompress(Path('frozen',s+'.review.json.gz').read_bytes()))['tasks'] for s in COUNTS}
  overrides,_,overlays=apply_manifest(root,reviews,'config/v093_handoff_overlays.json',d)
+ from scripts.v093_missing_rules import overlay_canary_history
+ rule_overrides,rule_events=overlay_canary_history(root,reviews,d);overrides.update(rule_overrides);overlays+=rule_events
  from scripts.v093_native_missing_batch import later_qa_progress
  _,history=later_qa_progress(root)
  static={e['prefix'] for e in json.loads(Path('config/v093_handoff_overlays.json').read_text())['states']}
@@ -63,7 +65,7 @@ def main():
  proof=copy.deepcopy(proof);offered=set(re.findall(r'<option\s+value="(20\d{6})"',menu_raw.decode('utf-8-sig')))
  proof['official_menu']['offered_dates']=sorted(offered & set(proof['official_menu']['offered_dates']))
  rows_by_source={s:[] for s in COUNTS};promoted=[]
- targets={e['key']:e['pin'] for e in overlays if e['contract_retained'] and e['source']=='TDCC'}
+ targets={e['key']:e['pin'] for e in overlays if e['contract_retained']}
  for source,directions in baseline['catalogs'].items():
   for slot,pin in directions.items():
    catalog=Catalog(GitCAS(root,'jarvis-source-preflight/action-catalog-reader'),pin,source,slot)
@@ -71,9 +73,9 @@ def main():
     for key,row in catalog.page(page):
      if key in targets:row=promotion_row(row,'PINNED_VERIFIED_QA:'+targets[key]);promoted.append(key)
      rows_by_source[source].append(row)
- existing_keys={r['definition']['key'] for r in rows_by_source['TDCC']}
+ existing_keys={r['definition']['key'] for rows in rows_by_source.values() for r in rows}
  for (source,key),case in overrides.items():
-  if source!='TDCC' or key in existing_keys:continue
+  if key in existing_keys:continue
   row=dict(definition=dict(source=source,key=key,period=case['period'],slot='DESC'),status='READY_CHECK',attempts=reviews[source][key]['attempts'],legacy_review=reviews[source][key],execution_contract=case)
   rows_by_source[source].append(promotion_row(row,'PINNED_VERIFIED_QA:'+targets[key]));promoted.append(key)
  known={(r['execution_contract'].get('date'),r['execution_contract'].get('code')) for r in rows_by_source['TDCC']}

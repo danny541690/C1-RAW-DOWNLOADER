@@ -119,6 +119,26 @@ def compile_rules(reviews,original=Path('original'),existing=(),drive=None):
   report['sources'][source]=dict(eligible_queries=sum(s==source for s,k in candidates),reason_combinations=dict(collections.Counter('|'.join(sorted(v)) for v in reasons[source].values())),unseen_review_tasks=sum((source,k) not in seen for k in reviews[source]),scope='Supported native contracts only; held tasks are not certified complete')
  return list(candidates.values()),report
 
+def overlay_canary_history(root,reviews,drive):
+ """Carry real canary outcomes into future queues without resetting attempts."""
+ from scripts.v093_source_git_store import GitCAS
+ from scripts.v093_handoff_overlays import apply_task
+ from scripts.v093_source_adapters import NativeAdapter
+ contracts={};events=[]
+ for source in RULES:
+  store=GitCAS(root,'jarvis-source-preflight/missing-rule-canary');commit,state=store.read(source)
+  if not state:continue
+  for key,task in state.get('tasks',{}).items():
+   case=apply_task(reviews,source,key,task,dict(prefix=store.prefix if hasattr(store,'prefix') else 'jarvis-source-preflight/missing-rule-canary',commit=commit))
+   if case:
+    row=dict(definition=dict(source=source,key=key,period=case['period'],slot='DESC'),attempts=reviews[source][key]['attempts'],legacy_review=reviews[source][key],execution_contract=case)
+    adapter=NativeAdapter(None,drive,dict(source=source,key=key),row);raw=adapter.read(case['reference'])
+    if hashlib.sha256(raw).hexdigest()!=case['sha256']:raise ValueError('RULE_CANARY_OVERLAY_RAW_CHANGED')
+    adapter.validate(raw);contracts[source,key]=case
+   events.append(dict(source=source,key=key,status=task['status'],attempts=task['attempts'],contract_retained=bool(case),pin=commit))
+  if store.remote_head(source)!=commit:raise ValueError('RULE_CANARY_HISTORY_CHANGED_RETRY')
+ return contracts,events
+
 def main():
  p=argparse.ArgumentParser();p.add_argument('--overlay-manifest');a=p.parse_args()
  drive=None
@@ -127,6 +147,7 @@ def main():
   from scripts.v093_handoff_overlays import apply_manifest
   from scripts.annual_actual_firstpass import Drive,service
   drive=Drive(service());apply_manifest(Path.cwd(),reviews,a.overlay_manifest,drive)
+  overlay_canary_history(Path.cwd(),reviews,drive)
  rows,report=compile_rules(reviews,drive=drive)
  Path('results').mkdir(exist_ok=True)
  Path('results/missing-rule-audit.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')

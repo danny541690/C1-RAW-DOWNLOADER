@@ -36,6 +36,17 @@ class ExecutorTests(unittest.TestCase):
   self.assertIsNone(self.c.claim('DESC','early'))
   self.now[0]+=61
   self.assertEqual(self.c.begin_request(self.c.claim('DESC','later')),2)
+ def test_truncated_http_is_bounded_retry_never_source_wide_permanent_hold(self):
+  import http.client
+  def fetch():raise http.client.IncompleteRead(b'partial-untrusted',42)
+  self.a.fetch=fetch
+  for attempt in range(1,5):
+   with self.assertRaises(http.client.IncompleteRead):Executor(self.c,self.a).one('DESC','reader')
+   task=self.task();self.assertEqual(task['attempts'],attempt)
+   self.assertEqual(task['status'],'BLOCKED' if attempt==4 else 'RETRY_WAIT')
+   self.assertFalse(self.c.store.read('TWSE')[1].get('hold'));self.assertFalse(task.get('save_intent'))
+   self.assertNotIn('partial-untrusted',str(task));self.now[0]+=61
+  self.assertIsNone(self.c.claim('DESC','fifth'))
  def test_rate_limit_cooldown_is_shared_with_opposite_direction(self):
   self.c.add([dict(source='TWSE',key='tail',slot='ASC',period='2000-01')])
   def fetch():raise urllib.error.HTTPError('https://example.invalid',429,'limited',{'Retry-After':'120'},None)

@@ -1,4 +1,4 @@
-name: JARVIS paged missing rules and bounded real provider closeout
+name: JARVIS guarded transport recovery and source missing rules closeout
 on:
   push:
     branches: [codex/seven-source-closed-loop-design-20261029]
@@ -35,6 +35,8 @@ jobs:
           git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/original refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen
           git archive refs/remotes/origin/original | tar -x -C original
           git archive refs/remotes/origin/frozen | tar -x -C frozen
+      - name: Reclassify only unsaved truncated QA transport as bounded retry
+        run: python -m scripts.v093_reclassify_truncation
       - name: Compile source rules with later verified and held QA overlaid
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
