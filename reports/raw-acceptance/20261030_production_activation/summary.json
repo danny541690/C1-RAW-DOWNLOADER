@@ -1,0 +1,278 @@
+{
+  "schema": "JARVIS_PRODUCTION_ACTIVATION_V1",
+  "as_of_taipei": "2026-10-30T12:34:48.793144+08:00",
+  "release_code_commit": "b696d4e8c33354390b2da70f801a7176e9bb59c5",
+  "activation_commit": "3d730e2c429529a1fbb874abea06fb21ca20bd57",
+  "release_enabled": true,
+  "watchdog_run": 41003045950,
+  "acceptance_run": 41002625767,
+  "native_two_phase_run": 41001539894,
+  "transport_sender_run": 41000295778,
+  "transport_receiver_run": 41000334610,
+  "regression_tests": 1118,
+  "accepted_scope": {
+    "total": 65238,
+    "held": 54,
+    "runnable_modes": {
+      "RETAINED": 64532,
+      "PROMOTE": 7,
+      "MISSING": 645
+    },
+    "basic": 90
+  },
+  "initial_live_status_totals": {
+    "CONTENT_BLOCKED": 25,
+    "RETAINED_CHECK": 3,
+    "READY_CHECK": 165,
+    "RAW_BASIC_VERIFIED": 90,
+    "APPLICABILITY_HOLD": 78,
+    "SOURCE_HOLD": 6,
+    "RETRY_WAIT": 5,
+    "LEASED": 3,
+    "READY": 9
+  },
+  "initial_live_sources": [
+    {
+      "source": "TWSE",
+      "commit": "2abd4388942212c7089234ecb84b9dc7cc0a07d5",
+      "hold": null,
+      "slots": {
+        "ASC": {
+          "statuses": {
+            "CONTENT_BLOCKED": 25,
+            "RETAINED_CHECK": 1,
+            "READY_CHECK": 6
+          },
+          "finished": false,
+          "chunk_number": 0
+        },
+        "DESC": {
+          "statuses": {
+            "READY_CHECK": 21,
+            "RAW_BASIC_VERIFIED": 8,
+            "APPLICABILITY_HOLD": 3
+          },
+          "finished": false,
+          "chunk_number": 0
+        }
+      },
+      "receivers": [
+        {
+          "slot": "ASC",
+          "status": "RECEIVED",
+          "run": "41003145943"
+        },
+        {
+          "slot": "DESC",
+          "status": "RECEIVED",
+          "run": "41003155756"
+        }
+      ]
+    },
+    {
+      "source": "TPEx",
+      "commit": "ecc3efdd0a681a7170e0e44651f578bc10a5f5ff",
+      "hold": null,
+      "slots": {
+        "ASC": {
+          "statuses": {
+            "APPLICABILITY_HOLD": 29,
+            "READY_CHECK": 3
+          },
+          "finished": false,
+          "chunk_number": 0
+        },
+        "DESC": {
+          "statuses": {
+            "READY_CHECK": 22,
+            "RETAINED_CHECK": 1,
+            "RAW_BASIC_VERIFIED": 6,
+            "APPLICABILITY_HOLD": 3
+          },
+          "finished": false,
+          "chunk_number": 0
+        }
+      },
+      "receivers": [
+        {
+          "slot": "ASC",
+          "status": "RECEIVED",
+          "run": "41003136259"
+        },
+        {
+          "slot": "DESC",
+          "status": "RECEIVED",
+          "run": "41003127847"
+        }
+      ]
+    },
+    {
+      "source": "MOPS",
+      "commit": "752b761e2484d8f03111c1231a13febed940c6f9",
+      "hold": null,
+      "slots": {
+        "ASC": {
+          "statuses": {
+            "SOURCE_HOLD": 6,
+            "APPLICABILITY_HOLD": 18,
+            "RETRY_WAIT": 4,
+            "LEASED": 1,
+            "READY": 3
+          },
+          "finished": false,
+          "chunk_number": 0
+        },
+        "DESC": {
+          "statuses": {
+            "READY_CHECK": 19,
+            "RETAINED_CHECK": 1,
+            "RAW_BASIC_VERIFIED": 12
+          },
+          "finished": false,
+          "chunk_number": 0
+        }
+      },
+      "receivers": [
+        {
+          "slot": "ASC",
+          "status": "RECEIVED",
+          "run": "41003110237"
+        },
+        {
+          "slot": "DESC",
+          "status": "RECEIVED",
+          "run": "41003118395"
+        }
+      ]
+    },
+    {
+      "source": "TDCC",
+      "commit": "44cffc5f19320470510ad37badb2bc3b4d2cdfa1",
+      "hold": null,
+      "slots": {
+        "ASC": {
+          "statuses": {
+            "RAW_BASIC_VERIFIED": 14,
+            "LEASED": 1,
+            "READY_CHECK": 17
+          },
+          "finished": false,
+          "chunk_number": 0
+        },
+        "DESC": {
+          "statuses": {
+            "READY_CHECK": 23,
+            "RAW_BASIC_VERIFIED": 9
+          },
+          "finished": false,
+          "chunk_number": 0
+        }
+      },
+      "receivers": [
+        {
+          "slot": "ASC",
+          "status": "RECEIVED",
+          "run": "41003081082"
+        },
+        {
+          "slot": "DESC",
+          "status": "RECEIVED",
+          "run": "41003072487"
+        }
+      ]
+    },
+    {
+      "source": "TAIFEX",
+      "commit": "657517d4de46edaccba0af9db6afc3274a3aafc0",
+      "hold": null,
+      "slots": {
+        "ASC": {
+          "statuses": {
+            "APPLICABILITY_HOLD": 25,
+            "RETRY_WAIT": 1,
+            "READY": 6
+          },
+          "finished": false,
+          "chunk_number": 0
+        },
+        "DESC": {
+          "statuses": {
+            "READY_CHECK": 24,
+            "RAW_BASIC_VERIFIED": 8
+          },
+          "finished": false,
+          "chunk_number": 0
+        }
+      },
+      "receivers": [
+        {
+          "slot": "ASC",
+          "status": "RECEIVED",
+          "run": "41003088869"
+        },
+        {
+          "slot": "DESC",
+          "status": "RECEIVED",
+          "run": "41003096941"
+        }
+      ]
+    },
+    {
+      "source": "NDC",
+      "commit": "3b0da194f503e857c682ef05fc589c597688af8b",
+      "hold": null,
+      "slots": {
+        "DESC": {
+          "statuses": {
+            "READY_CHECK": 15,
+            "RAW_BASIC_VERIFIED": 17
+          },
+          "finished": false,
+          "chunk_number": 0
+        }
+      },
+      "receivers": [
+        {
+          "slot": "DESC",
+          "status": "RECEIVED",
+          "run": "41003169631"
+        }
+      ]
+    },
+    {
+      "source": "FinMind",
+      "commit": "d0d54db991f2453e59d6b78c7406bb69dfb1b966",
+      "hold": null,
+      "slots": {
+        "DESC": {
+          "statuses": {
+            "READY_CHECK": 15,
+            "LEASED": 1,
+            "RAW_BASIC_VERIFIED": 16
+          },
+          "finished": false,
+          "chunk_number": 0
+        }
+      },
+      "receivers": [
+        {
+          "slot": "DESC",
+          "status": "RECEIVED",
+          "run": "41003178643"
+        }
+      ]
+    }
+  ],
+  "all_twelve_receivers_acknowledged": true,
+  "any_source_wide_hold": false,
+  "full_database_complete": false,
+  "numeric_verified": false,
+  "pit_verified": false,
+  "new_source_downloads_total": null,
+  "limitations": [
+    "Frozen admitted campaign only; unsupported and unproven history remains held.",
+    "Basic-verified count is not newly downloaded count; raw checks, missing downloads, and promotions are separate actions.",
+    "Native samples: 90 basic verified, 54 held; classified holds are not data passes.",
+    "Three failed report publications were reconciled without repeating source downloads; historical workflow failure remains preserved."
+  ]
+}
