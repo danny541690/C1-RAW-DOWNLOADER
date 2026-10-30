@@ -75,5 +75,10 @@
   "candidate_scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
-  "recovery_update": "TERMINAL_RECEIVER_EVIDENCE_AND_CAS_BACKOFF_20261030"
+  "recovery_update": "TERMINAL_RECEIVER_EVIDENCE_AND_CAS_BACKOFF_20261030",
+  "recovery_validation": {
+    "regression_tests": 1124,
+    "result": "PASS",
+    "scope": "TERMINAL_RECEIVER_RECONCILIATION_NO_TASK_RESET"
+  }
 }
