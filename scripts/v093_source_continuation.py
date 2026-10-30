@@ -9,6 +9,7 @@ from scripts.v093_source_coordination import Coordinator
 from scripts.v093_source_git_store import GitCAS
 from scripts.v093_admission_runtime import Catalog,stage,load_release
 from scripts.v093_workflow_dispatch import WorkflowDispatch
+from scripts.v093_dispatch_recovery import reconcile_pending
 
 def acknowledge(c,slot,identity,run_id):
  if not identity:return True # Explicit initial start remains guarded by release + leases.
