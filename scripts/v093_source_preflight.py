@@ -23,7 +23,7 @@ def main():
   files.append(path.name)
   try:
    doc=yaml.load(path.read_text(),Loader=yaml.BaseLoader)
-   if set(doc['on'])!={'workflow_dispatch'} or doc['permissions']!={'contents':'write'}:
+   if set(doc['on'])!={'workflow_dispatch'} or doc['permissions']!={'contents':'write','actions':'write'}:
     raise ValueError('PREVIEW_EXECUTION_BOUNDARY')
    job=doc['jobs']['worker']
    if job['uses']!='./.github/workflows/jarvis-seven-worker.yml' or job.get('secrets')!='inherit':raise ValueError('SHARED_WORKER_REQUIRED')

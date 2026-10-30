@@ -1,0 +1,35 @@
+name: JARVIS guarded twelve-source recovery watchdog
+on:
+  schedule:
+    - cron: '3,13,23,33,43,53 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: jarvis-seven-production-watchdog
+  cancel-in-progress: false
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release must be explicitly enabled before runtime setup
+        id: gate
+        run: |
+          python - <<'PY'
+          import json,os
+          release=json.load(open('config/v093_source_release.json'))
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('enabled='+str(release.get('enabled') is True).lower()+'\n')
+          PY
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.enabled == 'true'
+        with: {python-version: '3.11'}
+      - if: steps.gate.outputs.enabled == 'true'
+        run: pip install -r requirements-qa.lock
+      - name: Recover only eligible work after complete pinned release checks
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_source_continuation

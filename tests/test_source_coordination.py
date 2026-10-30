@@ -101,6 +101,12 @@ class CoordinationTests(unittest.TestCase):
    self.assertEqual(self.store.read('TWSE')[1]['outbox'][identity]['status'],'INTENT');called.append(identity)
   self.assertTrue(self.c.dispatch_after_save('DESC','run',dispatch))
   self.assertFalse(self.c.dispatch_after_save('DESC','run',dispatch));self.assertEqual(len(called),1)
+ def test_fast_receiver_ack_is_not_overwritten_by_sender_completion(self):
+  self.c.add([dict(source='TWSE',key='next',slot='DESC',period='2026-10-01')])
+  def receiver(identity):
+   self.c.update(lambda state:state['outbox'][identity].update(status='RECEIVED',received_run_id='next-run'))
+  self.assertTrue(self.c.dispatch_after_save('DESC','run',receiver))
+  self.assertEqual(next(iter(self.c.store.read('TWSE')[1]['outbox'].values()))['status'],'RECEIVED')
  def test_uncertain_dispatch_is_not_blindly_repeated(self):
   self.add()
   def fail(_):raise TimeoutError('dispatch fixture')

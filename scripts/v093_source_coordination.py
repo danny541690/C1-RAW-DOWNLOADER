@@ -176,7 +176,9 @@ class Coordinator:
   if not self.update(reserve):return False
   try:dispatch(identity)
   except Exception:
-   def unknown(s):s['outbox'][identity]['status']='UNKNOWN_RECONCILE_DISPATCH'
+   def unknown(s):
+    if s['outbox'][identity]['status']!='RECEIVED':s['outbox'][identity]['status']='UNKNOWN_RECONCILE_DISPATCH'
    self.update(unknown);raise
-  def sent(s):s['outbox'][identity]['status']='SENT'
+  def sent(s):
+   if s['outbox'][identity]['status']!='RECEIVED':s['outbox'][identity]['status']='SENT'
   self.update(sent);return True

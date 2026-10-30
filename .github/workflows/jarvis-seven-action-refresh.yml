@@ -1,4 +1,4 @@
-name: JARVIS refresh typed actions after verified missing download
+name: JARVIS refresh twelve queues with proven six-source missing rules and canary progress
 on:
   push:
     branches: [codex/seven-source-closed-loop-design-20261029]
@@ -83,7 +83,9 @@ jobs:
           path: inputs
       - name: Restore immutable complete source review
         run: |
-          mkdir frozen
+          mkdir original frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/original
+          git archive refs/remotes/origin/original | tar -x -C original
           git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen
           git archive refs/remotes/origin/frozen | tar -x -C frozen
       - name: Build proof-bound typed queues and preserve attempts

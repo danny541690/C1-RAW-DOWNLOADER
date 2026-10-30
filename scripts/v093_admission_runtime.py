@@ -171,19 +171,30 @@ def validate_catalog_manifest(catalogs):
   for pin in catalogs[source].values():
    if not isinstance(pin,dict) or not re.fullmatch('[0-9a-f]{40}',pin.get('commit') or '') or not re.fullmatch('[0-9a-f]{64}',pin.get('index_sha256') or ''):raise ValueError('PRODUCTION_RELEASE_BLOCKED_UNPINNED_CATALOG')
 
-def production(root,source,slot,namespace):
+def load_release(root):
  release=json.loads((root/'config/v093_source_release.json').read_text())
  if release.get('enabled') is not True:raise ValueError('PRODUCTION_RELEASE_BLOCKED_RELEASE_NOT_APPROVED')
- if namespace!='production' or release.get('schema')!='JARVIS_NATIVE_RELEASE_V1' or any(release.get('approved_checks',{}).get(x) is not True for x in ('source_contracts','continuation_and_quota','cutover')):raise ValueError('PRODUCTION_RELEASE_BLOCKED_REQUIRED_CHECKS')
+ if release.get('schema')!='JARVIS_NATIVE_RELEASE_V1' or any(release.get('approved_checks',{}).get(x) is not True for x in ('source_contracts','continuation_and_quota','cutover')):raise ValueError('PRODUCTION_RELEASE_BLOCKED_REQUIRED_CHECKS')
  if release.get('tested_code_sha256')!=code_digest(root):raise ValueError('PRODUCTION_RELEASE_BLOCKED_CODE_CHANGED')
  validate_catalog_manifest(release.get('catalogs'))
  from scripts.v093_source_adapters import RAW_ROOT
  if release.get('raw_root')!=RAW_ROOT:raise ValueError('PRODUCTION_RELEASE_BLOCKED_RAW_ROOT_CHANGED')
+ return release
+
+def production(root,source,slot,namespace):
+ release=load_release(root)
+ if namespace!='production':raise ValueError('PRODUCTION_RELEASE_BLOCKED_NAMESPACE')
+ import os
+ if not os.environ.get('GH_TOKEN'):raise ValueError('PRODUCTION_RELEASE_BLOCKED_CONTINUATION_TOKEN')
  from scripts.v093_source_git_store import GitCAS
  from scripts.annual_actual_firstpass import Drive,service
  store=GitCAS(root);catalog=Catalog(store,release['catalogs'][source][slot],source,slot)
  c=Coordinator(store,source,ttl=600)
+ from scripts.v093_source_continuation import acknowledge
+ if not acknowledge(c,slot,os.environ.get('CONTINUATION_ID',''),os.environ['GITHUB_RUN_ID']):return dict(production_activation=False,duplicate_continuation=True,source_requests=0)
  archive=GitArchive(lambda snap:GitCAS(root,'jarvis-source-archive/'+snap['catalog_id']+'/'+slot+'/'+str(snap['chunk_number']).zfill(6)))
  result=run_until_budget(c,Drive(service()),catalog,slot,'run-'+__import__('os').environ['GITHUB_RUN_ID'],release['raw_root'],archive,chunk_limit=32)
+ from scripts.v093_source_continuation import continue_slot,transport
+ result['continuation_sent']=continue_slot(root,c,catalog,slot,os.environ['GITHUB_RUN_ID'],transport(root,source,slot,os.environ['GH_TOKEN']))
  result['production_activation']=True
  return result

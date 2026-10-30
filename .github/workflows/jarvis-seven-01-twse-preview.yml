@@ -2,6 +2,10 @@ name: 證交所排程一之一（1-1）｜最新往舊｜候選執行入口（�
 on:
   workflow_dispatch:
     inputs:
+      continuation_id:
+        description: Durable continuation identity; empty for initial guarded start
+        type: string
+        required: false
       mode:
         description: Entry validation uses fixtures; production remains blocked
         type: choice
@@ -9,6 +13,7 @@ on:
         default: entry-validation
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: jarvis-seven-entry-twse-desc
   cancel-in-progress: false
@@ -19,4 +24,5 @@ jobs:
       source: TWSE
       direction: DESC
       mode: ${{ inputs.mode }}
+      continuation_id: ${{ inputs.continuation_id }}
     secrets: inherit

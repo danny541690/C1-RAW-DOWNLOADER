@@ -2,6 +2,10 @@ name: 櫃買中心排程二之二（2-2）｜最舊往新｜候選執行入口�
 on:
   workflow_dispatch:
     inputs:
+      continuation_id:
+        description: Durable continuation identity; empty for initial guarded start
+        type: string
+        required: false
       mode:
         description: Entry validation uses fixtures; production remains blocked
         type: choice
@@ -9,6 +13,7 @@ on:
         default: entry-validation
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: jarvis-seven-entry-tpex-asc
   cancel-in-progress: false
@@ -19,4 +24,5 @@ jobs:
       source: TPEx
       direction: ASC
       mode: ${{ inputs.mode }}
+      continuation_id: ${{ inputs.continuation_id }}
     secrets: inherit
