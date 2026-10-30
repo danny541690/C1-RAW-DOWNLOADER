@@ -81,3 +81,20 @@ class DispatchRecoveryTests(unittest.TestCase):
   def late_dispatch(identity):state['outbox'][identity]['status']='RESOLVED_TERMINAL'
   self.assertTrue(coordinator.dispatch_after_save('ASC','sender',late_dispatch))
   self.assertEqual(next(iter(state['outbox'].values()))['status'],'RESOLVED_TERMINAL')
+ def test_active_opposite_direction_defers_all_controller_writes(self):
+  from scripts.v093_source_continuation import recover_source
+  c=self.setup_state();api=Mock();api.runs.side_effect=[[],[dict(status='in_progress')]]
+  with patch('scripts.v093_source_continuation.reconcile_pending') as reconcile:
+   rows=recover_source(None,c,{'ASC':{},'DESC':{}},{'ASC':'asc','DESC':'desc'},api,'run','token')
+   reconcile.assert_not_called();c.update.assert_not_called()
+   self.assertTrue(all(r['recovery']=='ACTIVE_SOURCE_WORKER' for r in rows))
+ def test_normal_continuation_alternates_unfinished_direction(self):
+  from scripts.v093_source_continuation import continuation_target
+  state={'admission':{'ASC':{'finished':False},'DESC':{'finished':False}}}
+  self.assertEqual(continuation_target(state,{'ASC':{},'DESC':{}},'ASC'),'DESC')
+  self.assertEqual(continuation_target(state,{'ASC':{},'DESC':{}},'DESC'),'ASC')
+  state['admission']['ASC']['finished']=True
+  self.assertEqual(continuation_target(state,{'ASC':{},'DESC':{}},'DESC'),'DESC')
+ def test_single_source_direction_continues_itself(self):
+  from scripts.v093_source_continuation import continuation_target
+  self.assertEqual(continuation_target({}, {'DESC':{}},'DESC'),'DESC')

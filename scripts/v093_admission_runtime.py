@@ -194,7 +194,11 @@ def production(root,source,slot,namespace):
  if not acknowledge(c,slot,os.environ.get('CONTINUATION_ID',''),os.environ['GITHUB_RUN_ID']):return dict(production_activation=False,duplicate_continuation=True,source_requests=0)
  archive=GitArchive(lambda snap:GitCAS(root,'jarvis-source-archive/'+snap['catalog_id']+'/'+slot+'/'+str(snap['chunk_number']).zfill(6)))
  result=run_until_budget(c,Drive(service()),catalog,slot,'run-'+__import__('os').environ['GITHUB_RUN_ID'],release['raw_root'],archive,chunk_limit=32)
- from scripts.v093_source_continuation import continue_slot,transport
- result['continuation_sent']=continue_slot(root,c,catalog,slot,os.environ['GITHUB_RUN_ID'],transport(root,source,slot,os.environ['GH_TOKEN']))
+ from scripts.v093_source_continuation import continue_slot,transport,continuation_target
+ _,checkpoint=c.store.read(source)
+ next_slot=continuation_target(checkpoint,release['catalogs'][source],slot)
+ next_catalog=catalog if next_slot==slot else Catalog(store,release['catalogs'][source][next_slot],source,next_slot)
+ result['continuation_target']=next_slot
+ result['continuation_sent']=continue_slot(root,c,next_catalog,next_slot,os.environ['GITHUB_RUN_ID'],transport(root,source,next_slot,os.environ['GH_TOKEN']))
  result['production_activation']=True
  return result

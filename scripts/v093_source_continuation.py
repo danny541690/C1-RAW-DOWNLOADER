@@ -36,6 +36,27 @@ def transport(root,source,slot,token):
  if len(entries)!=1:raise ValueError('CONTINUATION_SLOT_BINDING')
  return WorkflowDispatch(os.environ['GITHUB_REPOSITORY'],entries[0]['workflow'],'main',token,dict(mode='production'))
 
+def continuation_target(state,directions,current):
+ for slot in directions:
+  if slot!=current and not state.get('admission',{}).get(slot,{}).get('finished',False):return slot
+ return current
+
+def recover_source(root,c,directions,workflows,api,run_id,token):
+ # A controller never competes with either direction's live source writer.
+ if any(any(r['status']!='completed' for r in api.runs(workflows[slot])) for slot in directions):
+  return [dict(source=c.source,slot=slot,recovery='ACTIVE_SOURCE_WORKER',continuation_sent=False) for slot in directions]
+ rows=[]
+ for slot in directions:
+  recovery=reconcile_pending(c,slot,workflows[slot],api)
+  rows.append(dict(source=c.source,slot=slot,recovery=recovery,continuation_sent=False))
+ # Reconcile both directions before waking one, giving failed receivers priority.
+ for row in sorted(rows,key=lambda r:r['recovery']!='RECONCILED_TERMINAL'):
+  if row['recovery'] not in ('CLEAR','RECONCILED_TERMINAL'):continue
+  slot=row['slot'];catalog=Catalog(c.store,directions[slot],c.source,slot)
+  row['continuation_sent']=continue_slot(root,c,catalog,slot,run_id,transport(root,c.source,slot,token))
+  if row['continuation_sent']:break
+ return rows
+
 def main():
  root=Path.cwd();release=load_release(root);token=os.environ['GH_TOKEN'];results=[]
  from scripts.v093_dispatch_recovery import ActionsEvidence,reconcile_pending
@@ -44,17 +65,12 @@ def main():
  api=ActionsEvidence(os.environ['GITHUB_REPOSITORY'],token,bindings,fence_unacknowledged=True)
  design=json.loads((root/'config/v093_seven_source_design.json').read_text())
  for source,directions in release['catalogs'].items():
-  for slot,pin in directions.items():
-   try:
-    c=Coordinator(GitCAS(root),source,ttl=600)
-    workflow=next(x['workflow'] for x in design['slots'] if x['source']==source and x['direction']==slot)
-    recovery=reconcile_pending(c,slot,workflow,api)
-    sent=False
-    if recovery in ('CLEAR','RECONCILED_TERMINAL'):
-     catalog=Catalog(c.store,pin,source,slot)
-     sent=continue_slot(root,c,catalog,slot,'watchdog-'+os.environ['GITHUB_RUN_ID'],transport(root,source,slot,token))
-    results.append(dict(source=source,slot=slot,recovery=recovery,continuation_sent=sent))
-   except Exception as exc:
+  try:
+   c=Coordinator(GitCAS(root),source,ttl=600)
+   workflows={slot:next(x['workflow'] for x in design['slots'] if x['source']==source and x['direction']==slot) for slot in directions}
+   results.extend(recover_source(root,c,directions,workflows,api,'watchdog-'+os.environ['GITHUB_RUN_ID'],token))
+  except Exception as exc:
+   for slot in directions:
     results.append(dict(source=source,slot=slot,error=type(exc).__name__+(':'+str(exc) if str(exc).startswith('ACTIONS_HTTP_') else ''),continuation_sent=False))
  Path('results').mkdir(exist_ok=True);Path('results/watchdog.json').write_text(json.dumps(dict(slots=results,source_requests=0))+'\n')
  print(json.dumps(dict(slots=results,source_requests=0)),flush=True)
