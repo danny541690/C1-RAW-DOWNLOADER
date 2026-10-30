@@ -15,7 +15,7 @@ concurrency:
 jobs:
   watchdog:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Release must be explicitly enabled before runtime setup
@@ -31,8 +31,18 @@ jobs:
         with: {python-version: '3.11'}
       - if: steps.gate.outputs.enabled == 'true'
         run: pip install -r requirements-qa.lock
+      - name: Validate changed recovery code before production dispatch
+        if: steps.gate.outputs.enabled == 'true' && github.event_name == 'push'
+        run: python -m unittest discover -s tests -p 'test_*.py'
       - name: Recover only eligible work after complete pinned release checks
         if: steps.gate.outputs.enabled == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.v093_source_continuation
+      - name: Preserve recovery decisions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovery-decisions
+          path: results/watchdog.json
+          if-no-files-found: warn

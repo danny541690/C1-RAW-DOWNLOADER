@@ -38,11 +38,22 @@ def transport(root,source,slot,token):
 
 def main():
  root=Path.cwd();release=load_release(root);token=os.environ['GH_TOKEN'];results=[]
+ from scripts.v093_dispatch_recovery import ActionsEvidence,reconcile_pending
+ api=ActionsEvidence(os.environ['GITHUB_REPOSITORY'],token)
+ design=json.loads((root/'config/v093_seven_source_design.json').read_text())
  for source,directions in release['catalogs'].items():
   for slot,pin in directions.items():
-   c=Coordinator(GitCAS(root),source,ttl=600);catalog=Catalog(c.store,pin,source,slot)
-   sent=continue_slot(root,c,catalog,slot,'watchdog-'+os.environ['GITHUB_RUN_ID'],transport(root,source,slot,token))
-   results.append(dict(source=source,slot=slot,continuation_sent=sent))
+   try:
+    c=Coordinator(GitCAS(root),source,ttl=600)
+    workflow=next(x['workflow'] for x in design['slots'] if x['source']==source and x['direction']==slot)
+    recovery=reconcile_pending(c,slot,workflow,api)
+    sent=False
+    if recovery in ('CLEAR','RECONCILED_TERMINAL'):
+     catalog=Catalog(c.store,pin,source,slot)
+     sent=continue_slot(root,c,catalog,slot,'watchdog-'+os.environ['GITHUB_RUN_ID'],transport(root,source,slot,token))
+    results.append(dict(source=source,slot=slot,recovery=recovery,continuation_sent=sent))
+   except Exception as exc:
+    results.append(dict(source=source,slot=slot,error=type(exc).__name__,continuation_sent=False))
  Path('results').mkdir(exist_ok=True);Path('results/watchdog.json').write_text(json.dumps(dict(slots=results,source_requests=0))+'\n')
  print(json.dumps(dict(slots=results,source_requests=0)),flush=True)
 if __name__=='__main__':main()

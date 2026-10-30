@@ -4,7 +4,7 @@ The store API is read(source)->(revision,state) and cas(source,revision,state)->
 The runtime adapter must provide globally shared durable CAS; a local store in
 separate GitHub runners is NOT sufficient. No HTTP or RAW writes occur here.
 """
-import copy,hashlib,re,time
+import copy,hashlib,re,time,random
 SOURCES={'TWSE','TPEx','MOPS','TAIFEX','TDCC','NDC','FinMind'}
 class Conflict(RuntimeError):pass
 class StaleOwner(RuntimeError):pass
@@ -14,12 +14,14 @@ class Coordinator:
   if source not in SOURCES or ttl<=0:raise ValueError('SOURCE_OR_LEASE')
   self.store=store;self.source=source;self.clock=clock;self.ttl=ttl
  def update(self,change):
-  for _ in range(100):
+  for attempt in range(100):
    revision,original=self.store.read(self.source)
    state=copy.deepcopy(original) if original else dict(source=self.source,tasks={},fence=0,outbox={})
    if state['source']!=self.source:raise ValueError('SOURCE_SCOPE')
    result=change(state)
+   if original is not None and state==original:return result
    if self.store.cas(self.source,revision,state):return result
+   time.sleep(random.uniform(0.05,min(2.0,0.1*(attempt+1))))
   raise Conflict('CAS_RETRY_EXHAUSTED')
  def add(self,rows):
   def change(state):
