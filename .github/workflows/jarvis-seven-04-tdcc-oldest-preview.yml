@@ -1,4 +1,5 @@
 name: 集保所排程四之二（4-2）｜最舊往新｜受控執行入口
+run-name: '${{ github.workflow }} | ${{ inputs.mode }} | ${{ inputs.continuation_id }}'
 on:
   workflow_dispatch:
     inputs:

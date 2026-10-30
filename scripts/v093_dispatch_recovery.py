@@ -7,10 +7,11 @@ import json, re, requests
 PENDING = ('INTENT', 'SENT', 'UNKNOWN_RECONCILE_DISPATCH')
 
 class ActionsEvidence:
- def __init__(self, repository, token):
+ def __init__(self, repository, token,bindings=None):
   if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+',repository):raise ValueError('REPOSITORY')
   self.base='https://api.github.com/repos/'+repository
   self.token=token
+  self.bindings=bindings or {}
  def get(self,path,text=False):
   response=requests.get(self.base+path,headers={'Authorization':'Bearer '+self.token,'Accept':'application/vnd.github+json'},timeout=30)
   if response.status_code>=400:raise RuntimeError('ACTIONS_HTTP_'+str(response.status_code)+'_'+('LOGS' if path.endswith('/logs') else 'METADATA'))
@@ -29,21 +30,27 @@ class ActionsEvidence:
   if any(r['status']!='completed' for r in runs):return None
   found={}
   if not identities:return found
+  legacy_scans=0
   for run in runs:
    if run.get('conclusion') not in ('failure','cancelled','timed_out'):continue
-   for page in range(1,4):
-    jobs=self.get('/actions/runs/'+str(run['id'])+'/jobs?per_page=100&page='+str(page))['jobs']
+   candidates=re.findall(r'production \| ([0-9a-f]{64})',run.get('display_title',''))
+   binding=self.bindings.get(str(run['id']),{})
+   if binding.get('workflow')==workflow and binding.get('verified_job_id'):
+    candidates.append(binding.get('identity',''))
+   if not candidates and legacy_scans<3:
+    legacy_scans+=1
+    jobs=self.get('/actions/runs/'+str(run['id'])+'/jobs?per_page=100&page=1')['jobs']
     for job in jobs:
      if job.get('conclusion') not in ('failure','cancelled','timed_out'):continue
-     log=self.get('/actions/jobs/'+str(job['id'])+'/logs',text=True)
-     for identity in re.findall(r'CONTINUATION_ID:\s*([0-9a-f]{64})',log):
-      if identity not in identities:continue
-      # Check the same receiver again immediately before granting terminal evidence.
-      current=self.get('/actions/runs/'+str(run['id']))
-      if current['status']!='completed':return None
-      if current.get('conclusion') not in ('failure','cancelled','timed_out'):continue
-      found[identity]=dict(run_id=str(run['id']),run_attempt=current.get('run_attempt',1),conclusion=current['conclusion'],workflow=workflow)
-    if len(jobs)<100:break
+     try:log=self.get('/actions/jobs/'+str(job['id'])+'/logs',text=True)
+     except (RuntimeError,requests.RequestException):continue # Missing logs are not evidence.
+     candidates.extend(re.findall(r'CONTINUATION_ID:\s*([0-9a-f]{64})',log))
+   for identity in candidates:
+    if identity not in identities:continue
+    current=self.get('/actions/runs/'+str(run['id']))
+    if current['status']!='completed':return None
+    if current.get('conclusion') not in ('failure','cancelled','timed_out'):continue
+    found[identity]=dict(run_id=str(run['id']),run_attempt=current.get('run_attempt',1),conclusion=current['conclusion'],workflow=workflow)
    if len(found)==len(identities):break
   return found
 

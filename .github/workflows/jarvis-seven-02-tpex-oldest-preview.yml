@@ -1,4 +1,5 @@
 name: 櫃買中心排程二之二（2-2）｜最舊往新｜受控執行入口
+run-name: '${{ github.workflow }} | ${{ inputs.mode }} | ${{ inputs.continuation_id }}'
 on:
   workflow_dispatch:
     inputs:
