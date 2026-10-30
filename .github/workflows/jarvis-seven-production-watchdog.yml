@@ -10,7 +10,7 @@ permissions:
   contents: write
   actions: write
 concurrency:
-  group: jarvis-seven-production-watchdog
+  group: jarvis-seven-production-watchdog-v2
   cancel-in-progress: false
 jobs:
   watchdog:
