@@ -1,5 +1,5 @@
 {
-  "version": "20261030_R17",
+  "version": "20261030_R18",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -425,6 +425,44 @@
         "15wQq03HZnMkMV0FJV4DZZdPsIYB1ZPdl",
         "1W6RX2MR21Aj_TcrvJFtlow3Sn11gKrJr"
       ]
+    },
+    {
+      "id": "T37",
+      "name": "完整十二方向清單守門與上線條件合併複核",
+      "status": "PASS_REGRESSION_RELEASE_STILL_BLOCKED",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40981399108",
+      "whole_repository_tests": 1094,
+      "source_requests": 0,
+      "formal_raw_writes": 0,
+      "deployment_ready": false,
+      "remaining": [
+        {
+          "item": "Automatic missing/correction scope",
+          "status": "INCOMPLETE",
+          "sources": [
+            "FinMind",
+            "MOPS",
+            "NDC",
+            "TAIFEX",
+            "TPEx",
+            "TWSE"
+          ]
+        },
+        {
+          "item": "Actual provider long-run limits and throughput",
+          "status": "NOT_RUN_FOR_FINAL_SCOPE"
+        },
+        {
+          "item": "Merge fixed release and activate twelve schedules",
+          "status": "NOT_DONE"
+        }
+      ],
+      "drive_receipt": {
+        "file_id": "1ol0Z5SDEcUR3QnbdzWSJ3mB1Sk7r65fn",
+        "folder_id": "16uy292jpDbmK7dvVvra8X_sN8T0ZcJNL",
+        "sha256": "ee58a4e2e6e89921d3768dbeb9779726438bdbabbed5f7bddc0f0aa5e218fc0c",
+        "readback_verified": true
+      }
     }
   ],
   "rules": [
@@ -1497,5 +1535,5 @@
       "item": "After G1-G3 pass, merge pinned candidate, recheck old writers/ghost queue and validate the initial formal batch"
     }
   ],
-  "latest_tested_sha": "4beec65c905b1d78f4ed8c309f8dd7c6c377c389"
+  "latest_tested_sha": "f4dcc82b684a807d87e5f88b2b54d24d6b7a78b7"
 }
