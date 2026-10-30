@@ -4,6 +4,15 @@ from unittest.mock import patch,Mock
 from scripts.v093_source_continuation import acknowledge,continue_slot
 from scripts.v093_admission_runtime import load_release
 class SourceContinuationTests(unittest.TestCase):
+ def test_completed_source_runs_wake_guarded_recovery_with_cron_fallback(self):
+  import yaml
+  workflow=yaml.load(Path('.github/workflows/jarvis-seven-production-watchdog.yml').read_text(),Loader=yaml.BaseLoader)
+  trigger=workflow['on']['workflow_run']
+  design=json.loads(Path('config/v093_seven_source_design.json').read_text())
+  expected={(Path('.github/workflows')/s['workflow']).read_text().splitlines()[0].split(': ',1)[1] for s in design['slots']}
+  self.assertEqual(set(trigger['workflows']),expected);self.assertEqual(len(trigger['workflows']),12)
+  self.assertEqual(trigger['types'],['completed']);self.assertEqual(trigger['branches'],['main'])
+  self.assertIn('schedule',workflow['on']);self.assertEqual(workflow['permissions']['actions'],'write')
  def coordinator(self,state):
   c=Mock();c.source='TWSE';c.clock.return_value=100;c.store.read.return_value=('commit',state);c.update.side_effect=lambda fn:fn(state);return c
  def test_disabled_release_blocks_before_catalog_or_dispatch(self):

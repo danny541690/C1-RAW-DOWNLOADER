@@ -1,4 +1,5 @@
 import concurrent.futures,json,subprocess,tempfile,unittest
+from unittest.mock import patch
 from pathlib import Path
 from scripts.v093_source_git_store import GitCAS,StoreUnavailable
 from scripts.v093_source_coordination import Coordinator
@@ -42,6 +43,56 @@ class GitStoreTests(unittest.TestCase):
   with self.assertRaises(ValueError):self.store(self.a).cas('TWSE',0,dict(source='MOPS'))
   with self.assertRaises(StoreUnavailable):GitCAS(self.a,'jarvis-source-preflight/small',max_bytes=1).cas('TWSE',0,dict(source='TWSE'))
   self.assertEqual(self.git('ls-remote','--heads',str(self.remote),'refs/heads/main').stdout,b'')
+ def test_lost_push_ack_reads_committed_transition_without_replaying(self):
+  store=self.store(self.a);real=store.git;pushes=[]
+  def transport(*args,**kwargs):
+   result=real(*args,**kwargs)
+   if args[0]=='push':
+    pushes.append(args);return subprocess.CompletedProcess(args,1,b'',b'connection reset after push')
+   return result
+  with patch.object(store,'git',side_effect=transport):
+   self.assertTrue(store.cas('TWSE',0,dict(source='TWSE',attempts=3)))
+  self.assertEqual(len(pushes),1);self.assertEqual(store.read('TWSE')[1]['attempts'],3)
+ def test_transient_push_retries_identical_commit_only(self):
+  store=self.store(self.a);real=store.git;pushes=[]
+  def transport(*args,**kwargs):
+   if args[0]=='push':
+    pushes.append(args)
+    if len(pushes)==1:return subprocess.CompletedProcess(args,1,b'',b'failed to connect')
+   return real(*args,**kwargs)
+  with patch.object(store,'git',side_effect=transport),patch('scripts.v093_source_git_store.time.sleep'):
+   self.assertTrue(store.cas('TWSE',0,dict(source='TWSE',attempts=3)))
+  self.assertEqual(len(pushes),2);self.assertEqual(pushes[0],pushes[1])
+ def test_lost_ack_with_later_writer_uses_commit_ancestry(self):
+  store=self.store(self.a);real=store.git
+  def transport(*args,**kwargs):
+   result=real(*args,**kwargs)
+   if args[0]=='push':
+    other=self.store(self.b);rev,state=other.read('TWSE');state['later_checkpoint']=True
+    self.assertTrue(other.cas('TWSE',rev,state))
+    return subprocess.CompletedProcess(args,1,b'',b'connection reset after acknowledgement lost')
+   return result
+  with patch.object(store,'git',side_effect=transport):
+   self.assertTrue(store.cas('TWSE',0,dict(source='TWSE',attempts=3)))
+  state=store.read('TWSE')[1];self.assertEqual(state['attempts'],3);self.assertTrue(state['later_checkpoint'])
+ def test_auth_failure_never_becomes_contention_or_transport_retry(self):
+  store=self.store(self.a);real=store.git;pushes=[]
+  def transport(*args,**kwargs):
+   if args[0]=='push':
+    pushes.append(args);return subprocess.CompletedProcess(args,1,b'',b'authentication failed')
+   return real(*args,**kwargs)
+  with patch.object(store,'git',side_effect=transport):
+   with self.assertRaisesRegex(StoreUnavailable,'DURABLE_PUSH_AUTH'):store.cas('TWSE',0,dict(source='TWSE'))
+  self.assertEqual(len(pushes),1);self.assertEqual(store.read('TWSE'),(0,None))
+ def test_transport_retry_is_bounded_without_changing_task_attempts(self):
+  store=self.store(self.a);real=store.git;pushes=[]
+  def transport(*args,**kwargs):
+   if args[0]=='push':
+    pushes.append(args);return subprocess.CompletedProcess(args,1,b'',b'connection reset')
+   return real(*args,**kwargs)
+  with patch.object(store,'git',side_effect=transport),patch('scripts.v093_source_git_store.time.sleep'):
+   with self.assertRaisesRegex(StoreUnavailable,'TRANSPORT_EXHAUSTED'):store.cas('TWSE',0,dict(source='TWSE',attempts=3))
+  self.assertEqual(len(pushes),3);self.assertEqual(len(set(a[2] for a in pushes)),1)
  def test_paged_commit_cold_restore_and_resume_never_resets_attempts(self):
   store=GitCAS(self.a,'jarvis-source-preflight/paged',page_bytes=1500)
   state=dict(source='TWSE',tasks={str(i):dict(status='RECONCILE',attempts=4,note='x'*100) for i in range(30)})
