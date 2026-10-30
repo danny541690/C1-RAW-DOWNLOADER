@@ -105,6 +105,7 @@ def main():
    mode=row['execution_contract']['mode'];total_modes[mode]=total_modes.get(mode,0)+1
    if mode=='PROMOTE':samples.setdefault('promotions',[]).append(assigned_by_key[row['definition']['key']])
   if source=='TDCC':samples['missing']=[assigned_by_key[r['definition']['key']] for r in sorted(missing,key=lambda r:(r['definition']['period'],r['definition']['key']),reverse=True)[:3]]
+ samples['all_promotions']=samples.get('promotions',[])
  samples['promotions']=samples.get('promotions',[])[:2]
  out=Path('results');out.mkdir(exist_ok=True)
  report=dict(schema='JARVIS_TYPED_ACTION_CATALOGS_V1',source_sha=__import__('os').environ['GITHUB_SHA'],catalogs=pins,counts=counts,total_modes=total_modes,promotion_keys=promoted,automatic_missing_sources=['TDCC'],other_source_missing_scope='Only typed approved actions; unsupported/unproven tasks remain held',source_requests=0,formal_raw_writes=0,production_activation=False)

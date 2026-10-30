@@ -43,3 +43,13 @@ class PromotionTests(unittest.TestCase):
   self.c.error(ticket,'RECONCILE','READ_LOCAL','TimeoutError')
   self.c.resolve_unsaved('one',dict(storage_checked=True,receipt_checked=True,outcome='NO_DURABLE_RESULT',evidence_id='explicit-local-check'))
   task=self.c.store.read('TWSE')[1]['tasks']['one'];self.assertEqual(task['status'],'RETRY_WAIT');self.assertEqual(task['attempts'],4);self.assertEqual(task['materializations'],1)
+
+class FormalScopeTests(unittest.TestCase):
+ def test_canary_requires_explicit_scope_and_excludes_any_provider_download(self):
+  from scripts.v093_action_live import formal_scope
+  row=dict(definition=dict(source='TDCC'),execution_contract=dict(mode='PROMOTE'))
+  formal_scope([row],'VERIFIED_TDCC_PROMOTION_CANARY')
+  with self.assertRaises(ValueError):formal_scope([row],None)
+  with self.assertRaises(ValueError):formal_scope([], 'VERIFIED_TDCC_PROMOTION_CANARY')
+  row['execution_contract']['mode']='MISSING'
+  with self.assertRaisesRegex(ValueError,'PROMOTION_ONLY'):formal_scope([row],'VERIFIED_TDCC_PROMOTION_CANARY')

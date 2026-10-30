@@ -2,11 +2,11 @@
 
 All destinations remain isolated REPORT folders. Never flips production flags.
 """
-import argparse,copy,json
+import argparse,copy,json,os
 from pathlib import Path
 from scripts.v093_source_coordination import Coordinator
 from scripts.v093_source_git_store import GitCAS
-from scripts.v093_source_adapters import NativeAdapter
+from scripts.v093_source_adapters import NativeAdapter,RAW_ROOT
 from scripts.v093_source_worker import run_batch
 from scripts.v093_admission_runtime import prepare_row
 REPORT='1p3Ij6ZGL4htYhhGKtEytU2MVOXW-wAit'
@@ -29,11 +29,23 @@ def run(c,d,root,rows,fault=False,limit=3):
  results=[]
  for slot in sorted({r['definition']['slot'] for r in rows}):results.append(run_batch(c,factory,slot,'action-'+slot,max_units=limit,seconds=600))
  return results,sum(a.source_requests for a in adapters)
+def formal_scope(rows,authorization):
+ if authorization!='VERIFIED_TDCC_PROMOTION_CANARY' or not 1<=len(rows)<=10:raise ValueError('FORMAL_CANARY_SCOPE')
+ if any(r['definition']['source']!='TDCC' or r['execution_contract']['mode']!='PROMOTE' for r in rows):raise ValueError('FORMAL_CANARY_PROMOTION_ONLY')
+
 def main():
  from scripts.annual_actual_firstpass import Drive,service
- p=argparse.ArgumentParser();p.add_argument('phase',choices=('capture','resume','missing'));p.add_argument('--namespace',required=True);a=p.parse_args();d=Drive(service());out=Path('results');out.mkdir(exist_ok=True);samples=json.loads(Path('inputs/action-samples.json').read_text());rows=samples['promotions']
- prefix=('native-positive-' if a.phase=='missing' else 'action-promotion-')+a.namespace;c=Coordinator(GitCAS(Path.cwd(),'jarvis-source-preflight/'+prefix),'TDCC',ttl=600)
- if a.phase=='capture':
+ p=argparse.ArgumentParser();p.add_argument('phase',choices=('capture','resume','missing','formal'));p.add_argument('--namespace',required=True);a=p.parse_args();d=Drive(service());out=Path('results');out.mkdir(exist_ok=True);samples=json.loads(Path('inputs/action-samples.json').read_text());rows=samples['promotions']
+ prefix=('native-positive-' if a.phase=='missing' else 'formal-handoff-' if a.phase=='formal' else 'action-promotion-')+a.namespace;c=Coordinator(GitCAS(Path.cwd(),'jarvis-source-preflight/'+prefix),'TDCC',ttl=600)
+ if a.phase=='formal':
+  rows=samples.get('all_promotions',rows);formal_scope(rows,os.environ.get('FORMAL_CANARY_AUTHORIZATION'))
+  if c.store.remote_head('TDCC')!=0:raise ValueError('FRESH_FORMAL_CANARY_NAMESPACE')
+  seed(c,rows);results,requests=run(c,d,RAW_ROOT,rows,limit=len(rows))
+  _,state=c.store.read('TDCC')
+  if requests or any(t['status']!='RAW_BASIC_VERIFIED' or t['attempts']!=t['legacy_review']['attempts'] or not t.get('storage_receipt',{}).get('readback_verified') for t in state['tasks'].values()):raise ValueError('FORMAL_PROMOTION_NOT_ALL_VERIFIED')
+  evidence=[dict(key=k,period=t['definition']['period'],reference=t['raw_reference'],sha256=t['raw_sha256'],attempts=t['attempts'],reused_existing=bool(t.get('reused_existing')),storage_receipt=t['storage_receipt']) for k,t in state['tasks'].items()]
+  report=dict(schema='JARVIS_VERIFIED_FORMAL_PROMOTION_CANARY_V1',destination_root=RAW_ROOT,units_verified=len(evidence),new_raw_files=sum(not e['reused_existing'] for e in evidence),existing_raw_reused=sum(e['reused_existing'] for e in evidence),evidence=evidence,source_requests=0,source_attempts_unchanged=True,qa_originals_retained=True,schedules_activated=False,production_activation=False,full_acceptance=False,results=results)
+ elif a.phase=='capture':
   if len(rows)!=2 or c.store.remote_head('TDCC')!=0:raise ValueError('TWO_FRESH_PROMOTION_ACTIONS_REQUIRED')
   folder=d.folder(REPORT,'ACTION_PROMOTION_QA_'+a.namespace);seed(c,rows);c.update(lambda s:s.update(qa_root=folder));results,requests=run(c,d,folder,rows,fault=True)
   _,state=c.store.read('TDCC')
