@@ -39,7 +39,9 @@ def transport(root,source,slot,token):
 def main():
  root=Path.cwd();release=load_release(root);token=os.environ['GH_TOKEN'];results=[]
  from scripts.v093_dispatch_recovery import ActionsEvidence,reconcile_pending
- api=ActionsEvidence(os.environ['GITHUB_REPOSITORY'],token)
+ bindings_path=root/'config/v093_legacy_receiver_bindings.json'
+ bindings=json.loads(bindings_path.read_text()) if bindings_path.exists() else {}
+ api=ActionsEvidence(os.environ['GITHUB_REPOSITORY'],token,bindings)
  design=json.loads((root/'config/v093_seven_source_design.json').read_text())
  for source,directions in release['catalogs'].items():
   for slot,pin in directions.items():

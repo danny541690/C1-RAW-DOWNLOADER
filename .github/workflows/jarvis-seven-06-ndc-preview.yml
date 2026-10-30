@@ -1,4 +1,5 @@
 name: 國發會排程六之一（6-1）｜最新往舊｜受控執行入口
+run-name: '${{ github.workflow }} | ${{ inputs.mode }} | ${{ inputs.continuation_id }}'
 on:
   workflow_dispatch:
     inputs:

@@ -45,3 +45,17 @@ class DispatchRecoveryTests(unittest.TestCase):
   api=ActionsEvidence('owner/repo','token');api.runs=Mock(return_value=[dict(id=42,status='completed',conclusion='failure')])
   api.get=Mock(side_effect=[{'jobs':[{'id':9,'conclusion':'failure'}]},'CONTINUATION_ID: '+'b'*64])
   self.assertEqual(api.terminal_receivers('workflow',{'a'*64}),{})
+ def test_metadata_identity_does_not_need_log_download(self):
+  key='a'*64;api=ActionsEvidence('owner/repo','token')
+  api.runs=Mock(return_value=[dict(id=42,status='completed',conclusion='failure',display_title='worker | production | '+key)])
+  api.get=Mock(return_value={'status':'completed','conclusion':'failure'})
+  self.assertEqual(api.terminal_receivers('workflow',{key})[key]['run_id'],'42')
+  api.get.assert_called_once_with('/actions/runs/42')
+ def test_reviewed_legacy_binding_still_requires_current_terminal_status(self):
+  key='a'*64;api=ActionsEvidence('owner/repo','token',{'42':dict(workflow='workflow',identity=key,verified_job_id=9)})
+  api.runs=Mock(return_value=[dict(id=42,status='completed',conclusion='failure')]);api.get=Mock(return_value={'status':'in_progress'})
+  self.assertIsNone(api.terminal_receivers('workflow',{key}))
+ def test_unavailable_logs_do_not_release_unknown_dispatch(self):
+  api=ActionsEvidence('owner/repo','token');api.runs=Mock(return_value=[dict(id=42,status='completed',conclusion='failure')])
+  api.get=Mock(side_effect=[{'jobs':[{'id':9,'conclusion':'failure'}]},RuntimeError('ACTIONS_HTTP_404_LOGS')])
+  self.assertEqual(api.terminal_receivers('workflow',{'a'*64}),{})

@@ -1,4 +1,5 @@
 name: 公開資訊觀測站排程三之二（3-2）｜最舊往新｜受控執行入口
+run-name: '${{ github.workflow }} | ${{ inputs.mode }} | ${{ inputs.continuation_id }}'
 on:
   workflow_dispatch:
     inputs:
