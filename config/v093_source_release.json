@@ -1,8 +1,78 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
-  "enabled": false,
-  "tested_code_sha256": null,
-  "approved_checks": {"source_contracts": false, "continuation_and_quota": false, "cutover": false},
-  "catalogs": {},
-  "raw_root": "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn"
+  "enabled": true,
+  "tested_code_sha256": "a8cd2562b24b890a9e20e8c076406db816bac59339897a7702d5d863e3437416",
+  "approved_checks": {
+    "source_contracts": true,
+    "continuation_and_quota": true,
+    "cutover": true
+  },
+  "catalogs": {
+    "TDCC": {
+      "DESC": {
+        "commit": "3a0a92afe710224c452418662f458c0893f26652",
+        "index_sha256": "592f05c916901979d40a8409d35923208732555cf279734757264d177dca02d0"
+      },
+      "ASC": {
+        "commit": "fddd078e752762918355ea071d9d5d7ba1996112",
+        "index_sha256": "0792dce21409d5d97c729ad55e6f7fbe8f275d494dc26aa07dff2b3331d6f704"
+      }
+    },
+    "TAIFEX": {
+      "ASC": {
+        "commit": "7c9b166ddd2c25cfd8dd8df2831a2868bc897f6d",
+        "index_sha256": "e3e9c8964366b445409aab8ac34679b3f30eb82509a4749121e053482b6ce978"
+      },
+      "DESC": {
+        "commit": "d311b6bb327da21520b298b3ada1fedd1006585f",
+        "index_sha256": "49b0f69c067cdea684b347309ad9d6d2a8917caf664ce456918009aed035dce2"
+      }
+    },
+    "MOPS": {
+      "ASC": {
+        "commit": "6620a51b63edff75305270a14d97194d142d21b4",
+        "index_sha256": "8e2e4e10ebd5630f0ce34aca6f999ed60e1ade91ab9b8dee6bf52c3d28417ed1"
+      },
+      "DESC": {
+        "commit": "410bb5d2577e2bf52c400e352c9a2bf4d0826a4d",
+        "index_sha256": "997977f53182e27f075a6569c8cbb5b0eee13ae2045d59d4e117f31509d26f0c"
+      }
+    },
+    "TPEx": {
+      "DESC": {
+        "commit": "1487a8345975736cc3db66c95399a6a266f77ada",
+        "index_sha256": "09cafad2ff1d14c9af142dda2a7477a63860e17824ddc12800bebb7062cf9ebf"
+      },
+      "ASC": {
+        "commit": "d147e55f53902e53ce0b370a8509b8adbcfcfe09",
+        "index_sha256": "8704b95736b489ad297e8df716f98f89fbbce045a6ae56feedc1bb920d1039f9"
+      }
+    },
+    "TWSE": {
+      "ASC": {
+        "commit": "673e807231d5b3e87b73580452f48137b24f4a89",
+        "index_sha256": "8d724798f7161e8c68d8522540542d92c369b7e50a07921a85af9d2072dd1dc9"
+      },
+      "DESC": {
+        "commit": "bb7cca4743b199089175fc0811f21e8c933557a2",
+        "index_sha256": "f4c1d7b8bcc0c8779b905d505e9ef6ea08854075c19ccaac4d89bc34c528fced"
+      }
+    },
+    "NDC": {
+      "DESC": {
+        "commit": "d8f31652b8422b54212daa6d448d3907e4dde0c5",
+        "index_sha256": "5988b6c71b48a56b588bacff39198559f983b0df750171d2154db246bb013ca5"
+      }
+    },
+    "FinMind": {
+      "DESC": {
+        "commit": "9fcdcdffd977d251e635d68529233fef6c13d7c3",
+        "index_sha256": "1cad4c8244d3bfadbb08bbf7b2e084550654816532bb6acf68fd54a569a30573"
+      }
+    }
+  },
+  "raw_root": "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn",
+  "candidate_scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
+  "missing_download_authority": true,
+  "activation_evidence_run": "41002625767"
 }
