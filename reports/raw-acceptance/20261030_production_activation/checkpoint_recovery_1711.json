@@ -1,0 +1,77 @@
+{
+  "as_of": "2026-10-30T17:11:01+08:00",
+  "code_commit": "0e2d958e06bef2cbf67011879b4eebe18c96597a",
+  "regression": {
+    "tests": 1139,
+    "result": "PASS",
+    "github_run": 41031412584,
+    "job": 123981777443,
+    "production_recovery_step": "SUCCESS"
+  },
+  "analysis": [
+    {
+      "problem": "CAS_RETRY_EXHAUSTED",
+      "finding": "Historical failed runners overlapped during migration from direction locks to source locks.",
+      "resolution": "Retain current per-source mutual exclusion, no controller writes during active source workers, alternate unfinished directions."
+    },
+    {
+      "problem": "DURABLE_PUSH_FAILED",
+      "finding": "Old exception did not distinguish transport, authentication or lost acknowledgement; exact historical transport cause remains unproven.",
+      "resolution": "Read back remote commit and ancestry before retry; at most three retries of the identical commit for classified transport failures; authentication failure stops immediately."
+    },
+    {
+      "problem": "RECOVERY_TRIGGER_DELAY",
+      "finding": "Ten-minute cron configuration is not a guarantee of exact execution timing.",
+      "resolution": "Add source-workflow completion event to wake guarded recovery; retain cron fallback.",
+      "validation": "Configuration test passed; first completion-event execution not yet observed at snapshot."
+    }
+  ],
+  "affected": [
+    {
+      "slot": "1-1",
+      "source": "TWSE",
+      "direction": "DESC",
+      "before": 621,
+      "verified_now": 623,
+      "current_run": 41031396843,
+      "status": "IN_PROGRESS"
+    },
+    {
+      "slot": "1-2",
+      "source": "TWSE",
+      "direction": "ASC",
+      "before": 138,
+      "verified_now": 304,
+      "recovered_run": 41026188470,
+      "status": "RECOVERY_RUN_SUCCESS_WAITING_ALTERNATION"
+    },
+    {
+      "slot": "2-1",
+      "source": "TPEx",
+      "direction": "DESC",
+      "before": 161,
+      "verified_now": 347,
+      "recovered_run": 41026162495,
+      "status": "RECOVERY_RUN_SUCCESS_WAITING_ALTERNATION"
+    },
+    {
+      "slot": "4-2",
+      "source": "TDCC",
+      "direction": "ASC",
+      "before": 322,
+      "verified_now": 542,
+      "recovered_run": 41026125947,
+      "status": "RECOVERY_RUN_SUCCESS_WAITING_ALTERNATION"
+    }
+  ],
+  "source_snapshots": {
+    "TWSE": "282879f2d2f5820bb17112f74cbfa638a39921c5",
+    "TPEx": "f605ca2b1fa2860d289b4264ccbe274c7f40eeb2",
+    "TDCC": "895b27c83c4978d77f50d08030e748e28e91c6e2"
+  },
+  "task_attempts_reset": false,
+  "successful_raw_redownloaded_by_this_repair": false,
+  "catalogs_changed": false,
+  "data_holds_released": false,
+  "full_database_acceptance": false
+}
