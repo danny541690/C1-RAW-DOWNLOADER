@@ -1,0 +1,32 @@
+[
+  {
+    "record_sha256": "75643658fdf4f54f863c7e8603352ece9e3a828bcfcfc675a5c404013b99daaf",
+    "files": 1,
+    "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+    "drive_receipt": {
+      "file_id": "10g8wKjI2L8pR5TARpGAruTb0CliQ5gLq",
+      "folder_id": "1rcqMntKgWu6lBGGU6PYpqI_NTwX-sU0R",
+      "sha256": "75643658fdf4f54f863c7e8603352ece9e3a828bcfcfc675a5c404013b99daaf",
+      "readback_verified": true
+    },
+    "source_requests": 0,
+    "production_activation": false,
+    "git_state_branch": "jarvis-source-preflight/record-40856240354-1-publication-probe/TWSE",
+    "job_status": "success"
+  },
+  {
+    "record_sha256": "75643658fdf4f54f863c7e8603352ece9e3a828bcfcfc675a5c404013b99daaf",
+    "files": 1,
+    "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+    "drive_receipt": {
+      "file_id": "10g8wKjI2L8pR5TARpGAruTb0CliQ5gLq",
+      "folder_id": "1rcqMntKgWu6lBGGU6PYpqI_NTwX-sU0R",
+      "sha256": "75643658fdf4f54f863c7e8603352ece9e3a828bcfcfc675a5c404013b99daaf",
+      "readback_verified": true
+    },
+    "source_requests": 0,
+    "production_activation": false,
+    "git_state_branch": "jarvis-source-preflight/record-40856240354-1-publication-probe/TWSE",
+    "job_status": "success"
+  }
+]

@@ -1,0 +1,138 @@
+{
+  "paths": [
+    {
+      "key": "TDCC|2025-12|20251205|8307",
+      "file_id": "1_An-mXnPD8AzQ2Cuo2PAEJwtuvz_N0ki",
+      "path": "C1_0.93/01_RAW/2025/TDCC/2025-12/3b8d223e9875b2283402b57038d48c1512e84756add617b01046b0aa07af5b87_5cc1178b1eab159ce3f0335d63c7f5fc9c3f5089dabdbbc825c2bb22204d54dd.raw",
+      "verified": true
+    },
+    {
+      "key": "TDCC|2025-12|20251205|8401",
+      "file_id": "15wQq03HZnMkMV0FJV4DZZdPsIYB1ZPdl",
+      "path": "C1_0.93/01_RAW/2025/TDCC/2025-12/5f2990134d6b101100ef23d977eb4f00e168d9c6960a63e024fcd8b91161939f_97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546.raw",
+      "verified": true
+    },
+    {
+      "key": "TDCC|2026-09|20260911|6912",
+      "file_id": "1W6RX2MR21Aj_TcrvJFtlow3Sn11gKrJr",
+      "path": "C1_0.93/01_RAW/2026/TDCC/2026-09/def5f0bb750d6444ba16e02484bcc1c9e83f2825c4ff1d9231bc65a0889e943d_4cc9c75b8b4a74bb7825be00449e35182d36c85cb56fa37a18909f9b006b76e5.raw",
+      "verified": true
+    }
+  ],
+  "ancestor_metadata": {
+    "1fwGdlemgpowO_IAr7_O22N4mKpr7dNfT": {
+      "id": "1fwGdlemgpowO_IAr7_O22N4mKpr7dNfT",
+      "title": "2025-12",
+      "mime_type": "application/vnd.google-apps.folder",
+      "size": null,
+      "url": null,
+      "file_or_folder": "folder",
+      "created_time": null,
+      "modified_time": null,
+      "parent_ids": [
+        "1IFfDDwwcBfPrbKSW3t0Zz_NopK13Jzur"
+      ],
+      "drive_id": null,
+      "current_user_can_share": null,
+      "has_augmented_permissions": null,
+      "shared": null,
+      "permissions": null,
+      "source_visibility_status": "access_not_verified"
+    },
+    "1mOKduUYq2-LGonelM4fiIV-IY3HXVtm-": {
+      "id": "1mOKduUYq2-LGonelM4fiIV-IY3HXVtm-",
+      "title": "2026-09",
+      "mime_type": "application/vnd.google-apps.folder",
+      "size": null,
+      "url": null,
+      "file_or_folder": "folder",
+      "created_time": null,
+      "modified_time": null,
+      "parent_ids": [
+        "1ANXWLCybB4UfqACWPQAXY_tnnDZpZ3Pn"
+      ],
+      "drive_id": null,
+      "current_user_can_share": null,
+      "has_augmented_permissions": null,
+      "shared": null,
+      "permissions": null,
+      "source_visibility_status": "access_not_verified"
+    },
+    "1IFfDDwwcBfPrbKSW3t0Zz_NopK13Jzur": {
+      "id": "1IFfDDwwcBfPrbKSW3t0Zz_NopK13Jzur",
+      "title": "TDCC",
+      "mime_type": "application/vnd.google-apps.folder",
+      "size": null,
+      "url": null,
+      "file_or_folder": "folder",
+      "created_time": null,
+      "modified_time": null,
+      "parent_ids": [
+        "1VB9s43UHEQeZbPbLHOCcFAQewUDfjBOm"
+      ],
+      "drive_id": null,
+      "current_user_can_share": null,
+      "has_augmented_permissions": null,
+      "shared": null,
+      "permissions": null,
+      "source_visibility_status": "access_not_verified"
+    },
+    "1ANXWLCybB4UfqACWPQAXY_tnnDZpZ3Pn": {
+      "id": "1ANXWLCybB4UfqACWPQAXY_tnnDZpZ3Pn",
+      "title": "TDCC",
+      "mime_type": "application/vnd.google-apps.folder",
+      "size": null,
+      "url": null,
+      "file_or_folder": "folder",
+      "created_time": null,
+      "modified_time": null,
+      "parent_ids": [
+        "1CAlRsbDEKTrb9BJlJ604SwYwQWRU3lpK"
+      ],
+      "drive_id": null,
+      "current_user_can_share": null,
+      "has_augmented_permissions": null,
+      "shared": null,
+      "permissions": null,
+      "source_visibility_status": "access_not_verified"
+    },
+    "1VB9s43UHEQeZbPbLHOCcFAQewUDfjBOm": {
+      "id": "1VB9s43UHEQeZbPbLHOCcFAQewUDfjBOm",
+      "title": "2025",
+      "mime_type": "application/vnd.google-apps.folder",
+      "size": null,
+      "url": null,
+      "file_or_folder": "folder",
+      "created_time": null,
+      "modified_time": null,
+      "parent_ids": [
+        "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn"
+      ],
+      "drive_id": null,
+      "current_user_can_share": null,
+      "has_augmented_permissions": null,
+      "shared": null,
+      "permissions": null,
+      "source_visibility_status": "access_not_verified"
+    },
+    "1CAlRsbDEKTrb9BJlJ604SwYwQWRU3lpK": {
+      "id": "1CAlRsbDEKTrb9BJlJ604SwYwQWRU3lpK",
+      "title": "2026",
+      "mime_type": "application/vnd.google-apps.folder",
+      "size": null,
+      "url": null,
+      "file_or_folder": "folder",
+      "created_time": null,
+      "modified_time": null,
+      "parent_ids": [
+        "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn"
+      ],
+      "drive_id": null,
+      "current_user_can_share": null,
+      "has_augmented_permissions": null,
+      "shared": null,
+      "permissions": null,
+      "source_visibility_status": "access_not_verified"
+    }
+  }
+}

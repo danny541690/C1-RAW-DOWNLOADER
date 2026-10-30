@@ -258,7 +258,7 @@ class Worker:
   if old.get('status')=='SAVED_BASIC_VERIFIED':self.skipped+=1;return True
   if old.get('status')=='SKIPPED_SOURCE_EMPTY':self.skipped+=1;return True
   if old.get('repair_revision')!=REPAIR_REVISION:
-   old=dict(old,prior_error=old.get('error'),prior_attempts=old.get('attempts'),attempts=0,repair_revision=REPAIR_REVISION)
+   old=dict(old,prior_error=old.get('error'),prior_attempts=old.get('attempts'),attempts=old.get('attempts',0),repair_revision=REPAIR_REVISION)
   if old.get('attempts',0)>=3:self.skipped+=1;return True
   if old.get('retry_after_epoch',0)>time.time():self.skipped+=1;return True
   for attempt in range(old.get('attempts',0),old.get('attempts',0)+1):

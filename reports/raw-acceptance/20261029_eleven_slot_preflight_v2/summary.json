@@ -1,0 +1,42 @@
+{
+  "schema": "JARVIS_ELEVEN_PREFLIGHT_V2",
+  "checked_at_taipei": "2026-10-29T08:36:37.308533+08:00",
+  "implemented_tests_passed": true,
+  "tests": {
+    "run": 69,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "yaml_files": 11,
+  "yaml_errors": [],
+  "readiness": {
+    "source_executors": "BLOCKED_NOT_INTEGRATED",
+    "distributed_fencing_and_immediate_continuation": "BLOCKED_NOT_INTEGRATED",
+    "live_eleven_slot_fetch_save_reverify": "NOT_RUN",
+    "one_time_legacy_shutdown_and_state_migration": "NOT_RUN",
+    "real_rate_limits_and_three_day_throughput": "NOT_RUN"
+  },
+  "deployment_ready": false,
+  "market_requests": 0,
+  "production_writes": 0,
+  "source_environment": "Fake official HTTP; real local storage/native TDCC parser and real local bare-Git remote; not live Drive",
+  "elapsed_seconds": 0.499,
+  "cutover_strategy": "ONE_TIME_SWITCH_NO_DUAL_OPERATION",
+  "existing_online_schedules_changed": false,
+  "input_sha256": {
+    "config/v093_seven_source_design.json": "78ec09a76dbc4fb792107ed5125fab6ef0535cb5d1f8b670d778cdfd8b137b9b",
+    "scripts/v093_source_partition.py": "9bac6ee78c8dc7021afc87fe08a62fb0e2cbe2850934c11b6f73cef416406739",
+    "scripts/v093_source_preflight.py": "c18c1c7676c2393f0dc4ccd11ec376a5a3593863da0839e0cab850c7b9a9382d",
+    "scripts/v093_source_receipt_migration.py": "bb2522bf7b4091cbc4109dc15de2e668cfd4b0f58d746c6ccadfce01ad346589",
+    "scripts/v093_tdcc_independent.py": "6e2f96b28004e50000afcda336e156d77bf6d611af884b927ae8844e5b8f6c3b",
+    "scripts/v093_tdcc_scope.py": "c094ffc56fbad6caf8fab0b05331c7dfbe539767c63fd9804a6f355be04cfacb",
+    "tests/test_acceptance_scheduler.py": "652bd6ea91ef61e9e55d79f5cfcc0da3acfa0ca6adf7305806a282c32a0886dd",
+    "tests/test_acceptance_state.py": "90a20e16d97bd3549d940561e9b5a2ff082ff6468c616bd3874cad533eb33c66",
+    "tests/test_seven_source_plan.py": "ad2070fe448f727f29d70fdf59af6a90d34f9323ed330e102ca6e1874ea67f5a",
+    "tests/test_source_closed_loop_preflight.py": "7846f0f14da1673f0ae0496639b849cb5323b7d533989184e1232ae77a84d6b6",
+    "tests/test_source_migration_and_scope.py": "3f828801f13dbbfd43dfd29613b84b4c8f2637a4af79d2e57746542419296c4a",
+    "tests/test_source_partition.py": "5c332d327b077d9f6308a203027f00b42fd0dc3a180492addc9a63fed93304d4",
+    "tests/test_tdcc_download_v4.py": "128bed77a01311d00f26a27295bb381ac398abe2f058020f55967a1bd2002a99"
+  }
+}

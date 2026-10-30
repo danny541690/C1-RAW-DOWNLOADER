@@ -1,0 +1,38 @@
+{
+  "run_id": 40832464478,
+  "conclusion": "success",
+  "mode": "REAL_RETAINED_REUSE_AND_COLD_REVALIDATION_PASS",
+  "expected_sha_bound": true,
+  "wrong_expected_sha_hold_restored": true,
+  "source_requests": 0,
+  "attempts": 0,
+  "stats": {
+    "basic_verified": true,
+    "native": {
+      "rows": 1012,
+      "period": "2014-08-29"
+    },
+    "price_checks": {
+      "checked_rows": 852,
+      "ohlc_violations": [],
+      "null_cells": [
+        {
+          "source": "TWSE",
+          "stock_id": "2348",
+          "date": "2014-08-29",
+          "fields": [
+            "open",
+            "max",
+            "min",
+            "close"
+          ],
+          "meaning": "MISSING_OR_NONTRADING_REQUIRES_REVIEW"
+        }
+      ],
+      "status": "BASIC_OHLC_CHECK_ONLY_NOT_FULL_NUMERIC_ACCEPTANCE"
+    }
+  },
+  "required_missing_download_test": "NOT_EXECUTED_NO_ELIGIBLE_CASE",
+  "ready_for_production": false,
+  "full_data_acceptance": false
+}

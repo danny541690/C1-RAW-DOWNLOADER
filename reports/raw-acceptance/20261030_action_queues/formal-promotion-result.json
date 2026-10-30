@@ -1,0 +1,164 @@
+{
+  "result": {
+    "schema": "JARVIS_VERIFIED_FORMAL_PROMOTION_CANARY_V1",
+    "destination_root": "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn",
+    "units_verified": 3,
+    "new_raw_files": 3,
+    "existing_raw_reused": 0,
+    "evidence": [
+      {
+        "key": "TDCC|2025-12|20251205|8307",
+        "period": "2025-12-05",
+        "reference": "1_An-mXnPD8AzQ2Cuo2PAEJwtuvz_N0ki",
+        "sha256": "5cc1178b1eab159ce3f0335d63c7f5fc9c3f5089dabdbbc825c2bb22204d54dd",
+        "attempts": 2,
+        "reused_existing": false,
+        "storage_receipt": {
+          "raw_reference": "1_An-mXnPD8AzQ2Cuo2PAEJwtuvz_N0ki",
+          "raw_sha256": "5cc1178b1eab159ce3f0335d63c7f5fc9c3f5089dabdbbc825c2bb22204d54dd",
+          "readback_verified": true,
+          "reference": "1u7P9zYzMHHXZm8rbjyZXQ-o9-uZ_zmry",
+          "sha256": "467fdbdcbb92baacff681b71bbf3a534ec999180338054bf75ee9c0dea279182"
+        }
+      },
+      {
+        "key": "TDCC|2025-12|20251205|8401",
+        "period": "2025-12-05",
+        "reference": "15wQq03HZnMkMV0FJV4DZZdPsIYB1ZPdl",
+        "sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546",
+        "attempts": 2,
+        "reused_existing": false,
+        "storage_receipt": {
+          "raw_reference": "15wQq03HZnMkMV0FJV4DZZdPsIYB1ZPdl",
+          "raw_sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546",
+          "readback_verified": true,
+          "reference": "18t4ijAZS2dysSidmPpb95-7X45zduG2a",
+          "sha256": "3a24c634257bc98ce944dd9b56775371d74d0d477d7206e25a186e9601a71e36"
+        }
+      },
+      {
+        "key": "TDCC|2026-09|20260911|6912",
+        "period": "2026-09-11",
+        "reference": "1W6RX2MR21Aj_TcrvJFtlow3Sn11gKrJr",
+        "sha256": "4cc9c75b8b4a74bb7825be00449e35182d36c85cb56fa37a18909f9b006b76e5",
+        "attempts": 2,
+        "reused_existing": false,
+        "storage_receipt": {
+          "raw_reference": "1W6RX2MR21Aj_TcrvJFtlow3Sn11gKrJr",
+          "raw_sha256": "4cc9c75b8b4a74bb7825be00449e35182d36c85cb56fa37a18909f9b006b76e5",
+          "readback_verified": true,
+          "reference": "1tB7WcLCVUkV8vMhhU66lcMnVNUTWScFb",
+          "sha256": "4fa014be12c1db96f45f8c277fda245ef66be766ab8a4ebc1c70d6bc7f290a73"
+        }
+      }
+    ],
+    "source_requests": 0,
+    "source_attempts_unchanged": true,
+    "qa_originals_retained": true,
+    "schedules_activated": false,
+    "production_activation": false,
+    "full_acceptance": false,
+    "results": [
+      {
+        "source": "TDCC",
+        "slot": "ASC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "TDCC|2025-12|20251205|8307",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "TDCC|2025-12|20251205|8307",
+              "sha256": "5cc1178b1eab159ce3f0335d63c7f5fc9c3f5089dabdbbc825c2bb22204d54dd",
+              "reference": "1_An-mXnPD8AzQ2Cuo2PAEJwtuvz_N0ki",
+              "stats": {
+                "basic_verified": true,
+                "rows": 16
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          },
+          {
+            "key": "TDCC|2025-12|20251205|8401",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "TDCC|2025-12|20251205|8401",
+              "sha256": "97f31fab99954791da102e40374354857e1f69bc8ab78fe21647d7796f5e2546",
+              "reference": "15wQq03HZnMkMV0FJV4DZZdPsIYB1ZPdl",
+              "stats": {
+                "basic_verified": true,
+                "rows": 16
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          }
+        ],
+        "task_status_counts": {
+          "RAW_BASIC_VERIFIED": 2
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 42.326,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null
+      },
+      {
+        "source": "TDCC",
+        "slot": "DESC",
+        "processed": 1,
+        "outcomes": [
+          {
+            "key": "TDCC|2026-09|20260911|6912",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "TDCC|2026-09|20260911|6912",
+              "sha256": "4cc9c75b8b4a74bb7825be00449e35182d36c85cb56fa37a18909f9b006b76e5",
+              "reference": "1W6RX2MR21Aj_TcrvJFtlow3Sn11gKrJr",
+              "stats": {
+                "basic_verified": true,
+                "rows": 16
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          }
+        ],
+        "task_status_counts": {
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 1,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 22.825,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null
+      }
+    ]
+  },
+  "publication": {
+    "record_sha256": "c00bc75667231b71227436f2f0491b934156a4c53bcc3f6c9d07dd6e4410adf1",
+    "files": 1,
+    "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+    "drive_receipt": {
+      "file_id": "1h_mlgiYo27N-At19ZHx1aJ96PB_i66ZB",
+      "folder_id": "1fJhB14xJlByRhep1aEWnXtle68Ntw2NE",
+      "sha256": "c00bc75667231b71227436f2f0491b934156a4c53bcc3f6c9d07dd6e4410adf1",
+      "readback_verified": true
+    },
+    "source_requests": 0,
+    "production_activation": false,
+    "git_state_branch": "jarvis-source-preflight/record-40979899200-1-formal-promotion-canary/TDCC",
+    "job_status": "success"
+  }
+}

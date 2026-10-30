@@ -1,0 +1,1539 @@
+{
+  "version": "20261030_R18",
+  "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+  "repository": "danny541690/C1-RAW-DOWNLOADER",
+  "test_results": [
+    {
+      "id": "T01",
+      "name": "本機合併測試",
+      "status": "PASS_LOCAL_SCOPE",
+      "scope": "116項（歷次數量不相加）",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/summary.json",
+      "run_url": null
+    },
+    {
+      "id": "T02",
+      "name": "12工作槽共同控制與新環境回讀",
+      "status": "PASS_CONTROL_ONLY",
+      "scope": "測試任務、實際遠端Git",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": null,
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40802230135"
+    },
+    {
+      "id": "T03",
+      "name": "舊排程停止與斷點封存",
+      "status": "PASS_DRAIN_WITH_QUEUE_HOLD",
+      "scope": "舊寫入者0；殘留queued另列",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": null,
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40806889627"
+    },
+    {
+      "id": "T04",
+      "name": "真實Drive帳本封存",
+      "status": "PASS_CAPTURE_ONLY",
+      "scope": "2389份帳本",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": null,
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40806985547"
+    },
+    {
+      "id": "T05",
+      "name": "真實帳本重播與12佇列",
+      "status": "PASS_IMPORT_REVIEW_ONLY",
+      "scope": "189521去重任務，不等已下載",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_handoff_replay/RESULT.md",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40812627597"
+    },
+    {
+      "id": "T06",
+      "name": "全量分頁保存及冷啟動恢復",
+      "status": "PASS_FULL_STATE_ONLY",
+      "scope": "189521任務、381頁",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_paged_state/RESULT.md",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40814834525"
+    },
+    {
+      "id": "T07",
+      "name": "真實原件重用及原生解析重驗",
+      "status": "PASS_BASIC_WITH_OPEN_CONTENT",
+      "scope": "TWSE 2014-08-29，2348空值未解",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_closed_loop_batch/RESULT.md",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40816238142"
+    },
+    {
+      "id": "T08",
+      "name": "真實補下載案例選例",
+      "status": "BLOCKED_BEFORE_MARKET_REQUEST",
+      "scope": "找不到符合證據條件的TWSE候選",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": null,
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40815823999"
+    },
+    {
+      "id": "T09",
+      "name": "擴充選例重驗",
+      "status": "BLOCKED_BEFORE_MARKET_REQUEST",
+      "scope": "無市場請求",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": null,
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40816025354"
+    },
+    {
+      "id": "T10",
+      "name": "TWSE缺件契約檢查",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "scope": "含期間限制及已滿嘗試；非全庫缺失數",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/missing_contract_audit.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40821834586"
+    },
+    {
+      "id": "T11",
+      "name": "保存後實際派送下一輪",
+      "status": "PASS_DISPATCH_QA_ONLY",
+      "scope": "獨立workflow_dispatch，去重抑制",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/remote_dispatch.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40822023305"
+    },
+    {
+      "id": "T12",
+      "name": "獨立派送接收端回讀",
+      "status": "PASS_RECEIVER_QA_ONLY",
+      "scope": "接收run40822041631",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/RESULT.md",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40822041631"
+    },
+    {
+      "id": "T13",
+      "name": "七來源真實補下載/補正完整閉環",
+      "status": "NOT_ACCEPTED",
+      "scope": "正式來源adapter及全流程案例未全接通",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": null,
+      "run_url": null
+    },
+    {
+      "id": "T14",
+      "name": "12正式來源配額/吞吐與三天目標",
+      "status": "NOT_RUN",
+      "scope": "未核定完成時間",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": null,
+      "run_url": null
+    },
+    {
+      "id": "T15",
+      "name": "中斷存檔恢復",
+      "status": "PASS_LOCAL_FAULT_INJECTION_ONLY",
+      "scope": "真實本機磁碟/SQLite；非七來源Drive故障驗收",
+      "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
+      "evidence": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_closed_loop_batch/RESULT.md",
+      "run_url": null
+    },
+    {
+      "id": "T16",
+      "name": "I17/I18核心與真實舊SHA正反案例",
+      "status": "PASS_COMPONENT_NOT_DEPLOYMENT",
+      "scope": "116項本機；真實Drive SHA核對與錯誤SHA隔離，市場請求0",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40832464478",
+      "evidence_review": "05_I17_I18修正結果.md"
+    },
+    {
+      "id": "T17",
+      "name": "七來源完整清單Coordinator形狀匯入與獨立讀回",
+      "status": "PASS_ISOLATED_REMOTE_IMPORT",
+      "scope": "189521舊任務，7保存+7讀回；正式上線false",
+      "source_sha": "e1546c6c7ae8c2270664ac8771ababc83d1bccd0",
+      "evidence": "reports/raw-acceptance/20261029_import_handoff/remote-verify.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40845175656"
+    },
+    {
+      "id": "T18",
+      "name": "TDCC真實缺件下載、Drive保存與中斷恢復",
+      "status": "PASS_ONE_REAL_MISSING_CASE_ONE_APPLICABILITY_HOLD",
+      "scope": "1筆隔離QA基本驗證，1筆官方空回覆待查；正式補正0",
+      "source_sha": "b69f462d5e9775e5cc434adf46fbcba954681277",
+      "evidence": "reports/raw-acceptance/20261029_tdcc_missing/remote-result.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40853662597",
+      "prior_failed_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40853248163"
+    },
+    {
+      "id": "T19",
+      "name": "五來源原生格式、舊RAW重用與獨立程序讀回",
+      "status": "PASS_FIVE_RETAINED_NATIVE_CASES",
+      "scope": "TPEx/MOPS/TAIFEX/NDC/FinMind 5案例；NDC官方源檔重建比對；未執行新下載",
+      "source_sha": "e9665218665073898636d4d143f5a4001894497d",
+      "evidence": "reports/raw-acceptance/20261029_five_native/remote-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40854960470"
+    },
+    {
+      "id": "T20",
+      "name": "Git優先、Drive讀回與同內容重送自動保存",
+      "status": "PASS_REAL_PUBLICATION_AND_IDEMPOTENCE",
+      "scope": "發布模組實際遠端通過；四份候選QA流程已接線但未各自重跑；正式12入口未接",
+      "source_sha": "cc4587fc4d60994b9b4af7a66c60cff7f22b128a",
+      "evidence": "reports/raw-acceptance/20261029_auto_publication/remote-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40856240354"
+    },
+    {
+      "id": "T21",
+      "name": "十二組共用worker入口與自動紀錄整合",
+      "status": "PASS_TWELVE_GUARDED_ENTRY_COMBINATIONS_FIXTURE_SCOPE",
+      "scope": "24模擬任務，12預期成功+12隔離；12份Git/Drive自動讀回成功；正式下載未啟用",
+      "source_sha": "64f8a8262c69cb5cd0e755f833c78d6503ccc449",
+      "evidence": "reports/raw-acceptance/20261029_twelve_entry/remote-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40857674847"
+    },
+    {
+      "id": "T22",
+      "name": "七來源共享HTTP預算遠端競爭",
+      "status": "PASS_REMOTE_CONTROL_ONLY",
+      "scope": "7來源各一准一延後，attempts0；未送源站HTTP",
+      "source_sha": "bdc5c983e835ccb7fc1fed50bf178b956baa1d73",
+      "evidence": "reports/raw-acceptance/20261029_adapter_rate/remote-quota-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40868944927"
+    },
+    {
+      "id": "T23",
+      "name": "修正日期查詢准入後的TAIFEX實際取件",
+      "status": "NOT_ACCEPTED_OFFICIAL_EMPTY_HOLD",
+      "scope": "1實際來源請求，0有效RAW；不能算下載成功",
+      "source_sha": "213bbb8ce4bb7e7ea7e4c6fb07eb418e12e494d4",
+      "evidence": "reports/raw-acceptance/20261029_adapter_rate/real-missing-result.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40870505597"
+    },
+    {
+      "id": "T24",
+      "name": "TAIFEX隔離回應全批SHA與原生重驗",
+      "status": "PASS_RECHECK_ALL_OFFICIAL_EMPTY_PENDING_COVERAGE",
+      "scope": "1606版本／1602任務，0正式修復，0來源下載；歷史是否不存在未確認",
+      "source_sha": "125c64e55b74f34b490e22ad4b667035865b3176",
+      "evidence": "reports/raw-acceptance/20261029_adapter_rate/quarantine-recheck-results.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40875609531"
+    },
+    {
+      "id": "T25",
+      "name": "整倉庫離線＋正式門檻＋拒絕回應存證合併檢查",
+      "status": "PASS_CHECK_EXECUTION_RELEASE_BLOCKED",
+      "scope": "1039離線測試，worker146重疊不相加；12production拒絕；真正Drive存證fixture通過",
+      "source_sha": "9955cd7df2323a3fc67ca5f5a76ed6876057922d",
+      "evidence": "reports/raw-acceptance/20261029_final_bundle/full-repository-result.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40880721668"
+    },
+    {
+      "id": "T26",
+      "name": "固定清單、分批接入、真實NDC歸檔與冷啟動",
+      "status": "PASS_REAL_RETAINED_ADMISSION_QA_RELEASE_DISABLED",
+      "scope": "1049項整倉庫測試；1個NDC既有單元，重啟後processed0；七來源正式清單尚未發布",
+      "source_sha": "04166290ec6d92a6667d12af0bbbf1050babb964",
+      "evidence": "reports/raw-acceptance/20261029_admission_runtime/remote-runtime-result.json",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40886009712"
+    },
+    {
+      "id": "T27",
+      "name": "合併全倉庫與十二入口驗收",
+      "status": "PASS_REGRESSION_NOT_PRODUCTION_RELEASE",
+      "source_sha": "1cff50c5087640261a6dea844db218044ae58192",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40898636769",
+      "whole_repository_tests": 1051,
+      "selected_overlapping_tests": 158,
+      "entry_count": 12,
+      "issue": "I25",
+      "source_requests": 0,
+      "formal_raw_writes": 0,
+      "repaired": 0,
+      "production_activation": false,
+      "drive_receipt_file_id": "1CgiK9VTdbq9_MjgSy5U6Lyc-5YcgEzYu"
+    },
+    {
+      "id": "T28",
+      "name": "無人值守上線前整批驗收",
+      "status": "PASS_IMPLEMENTED_BATCH_PRODUCTION_STILL_BLOCKED",
+      "source_sha": "7c7db39e5dfed18d835aabe02d14943ff9a18b24",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40903920061",
+      "whole_repository_tests": 1059,
+      "issues": [
+        "I26",
+        "I27"
+      ],
+      "old_writer_audit": {
+        "checked_at_taipei": "2026-10-29T23:41:31.175184+08:00",
+        "workflows_checked": 160,
+        "active_old_triggers": 0,
+        "old_writers": 0,
+        "ghost_queued_job_count": 0
+      },
+      "data_repaired": 0,
+      "production_activation": false,
+      "completion_evidence": "Final summary independently read back from Git; Git and Drive publication SHA425d83a6e1424f634cc416e8dcb774763fa18c79ef9e193d9ac711c9fc6a17b8",
+      "entry_fixture_count": 12,
+      "candidate_contract_count": 64564,
+      "held_not_admitted": 124957,
+      "real_retained_units": 2,
+      "real_periods": [
+        "2026-07",
+        "2026-08"
+      ],
+      "source_requests": 0,
+      "formal_raw_writes": 0,
+      "confirmed_historical_exceptions": 0,
+      "drive_final_receipt_file_id": "1yJEz-ZYbNspWf7BpSGSu-jf210BMe4wB"
+    },
+    {
+      "id": "T29",
+      "name": "TDCC真實Native缺件下載保存與獨立冷恢復",
+      "status": "PASS_REAL_MISSING_QA_NOT_FORMAL_RELEASE",
+      "source_sha": "cba3969025c9200277a5cfc99001d1721490319e",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40910020200",
+      "whole_repository_tests": 1067,
+      "source_requests": 3,
+      "cold_resume_source_requests": 0,
+      "period": "2025-12-05",
+      "code": "8401",
+      "rows": 16,
+      "prior_attempts": 1,
+      "attempts": 2,
+      "qa_downloaded": 1,
+      "formal_raw_writes": 0,
+      "formal_data_repaired": 0,
+      "drive_receipt_file_id": "1LI67k0uQcdt_6zkVCxH6NamkAVaxIKoq",
+      "production_activation": false,
+      "initial_publication_failure_preserved": true
+    },
+    {
+      "id": "T30",
+      "name": "原生補正核心、跨批次次數、穩定讀取及真實QA副本恢復",
+      "status": "PASS_IMPLEMENTED_CORE_AND_QA_PRODUCTION_STILL_BLOCKED",
+      "source_sha": "f5e5df3fd4db8aaeb5d5da06bb8f93ee37aba7d5",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40912120747",
+      "whole_repository_tests": 1072,
+      "qa_fault_copy_repaired": 1,
+      "new_qa_repairs_latest_verification": 0,
+      "formal_data_repaired": 0,
+      "source_requests": 0,
+      "initial_failure_run": 40911231116,
+      "cold_recovery_run": 40911890716,
+      "five_source_native_recheck_run": 40911890612,
+      "drive_receipt_file_id": "117RmYkp09eyLEakHp-msDR7YWLMuYHgx",
+      "production_activation": false
+    },
+    {
+      "id": "T31",
+      "name": "固定後續QA進度與十二份候選重編",
+      "status": "PASS_OVERLAY_AND_CATALOGS_NATIVE_OLDEST_TWO_FAILED",
+      "source_sha": "f4edf37793478429a6aab1ffa010c1e12cf4dc29",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40968961523",
+      "later_qa_tasks": 4,
+      "candidate_count_before_negative_exclusions": 64566,
+      "native_initial_passed_slots": 10,
+      "native_initial_failed_slots": 2,
+      "production_activation": false
+    },
+    {
+      "id": "T32",
+      "name": "兩個最舊端隔離後續跑與十份通過證據沿用",
+      "status": "PASS_PROCESSING_AND_ISOLATION_NOT_ALL_DATA_ACCEPTED",
+      "source_sha": "e2382db79bfdb5f7ef092591c984a4f0ebf0ee4b",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40970854358",
+      "real_units_basic_verified": 12,
+      "held_units": 2,
+      "confirmed_historical_absence": 0,
+      "quota_fixture_winners": 7,
+      "quota_fixture_deferred": 5,
+      "source_requests": 0,
+      "formal_data_repaired": 0,
+      "production_activation": false
+    },
+    {
+      "id": "T33",
+      "name": "十二份最後交接候選與陰性排除冷讀",
+      "status": "PASS_GUARDED_RETAINED_ONLY_HANDOFF_PROPOSAL",
+      "source_sha": "ed6e3c3ab8b6a50b8d0ea58a070a2ff035ad8b77",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40971896108",
+      "whole_repository_tests": 1082,
+      "catalog_count": 12,
+      "retained_candidates": 64564,
+      "held_exclusions": 2,
+      "frozen_pending_tasks": 124957,
+      "missing_download_authority": false,
+      "source_requests": 0,
+      "formal_data_repaired": 0,
+      "production_activation": false,
+      "drive_receipt_file_id": "1TkveHkDJlUSf1CF0FfNt4vvxPTjou3S-"
+    },
+    {
+      "id": "T34",
+      "name": "十二型別化動作清單與可查詢缺件生成",
+      "status": "PASS_TYPED_QUEUES_SCOPED_TDCC_AUTOMATIC_MISSING",
+      "source_sha": "2e7830884f9d54b5e701eb8b43e5e65a4fbd2c72",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40977540557",
+      "whole_repository_tests": 1091,
+      "initial_modes": {
+        "RETAINED": 64562,
+        "PROMOTE": 2,
+        "MISSING": 4
+      },
+      "automatic_missing_sources": [
+        "TDCC"
+      ],
+      "formal_schedules_activated": false
+    },
+    {
+      "id": "T35",
+      "name": "真實自動缺件與移交故障冷恢復及重用",
+      "status": "PASS_LIVE_QA_AND_RECEIPT_REFRESH",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40977540557",
+      "new_missing_downloaded": 1,
+      "period": "2025-12-05",
+      "code": "8307",
+      "source_requests": 2,
+      "qa_promotion_copies": 2,
+      "promotion_source_requests": 0,
+      "source_attempts_unchanged_on_promotion": true,
+      "refreshed_run": 40978702558,
+      "latest_modes": {
+        "RETAINED": 64562,
+        "PROMOTE": 3,
+        "MISSING": 3
+      },
+      "formal_schedules_activated": false
+    },
+    {
+      "id": "T36",
+      "name": "三件已驗證原件正式存檔移交及位置獨立核對",
+      "status": "PASS_LIMITED_FORMAL_RAW_CANARY_NOT_SCHEDULER_RELEASE",
+      "source_sha": "4beec65c905b1d78f4ed8c309f8dd7c6c377c389",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40979899200",
+      "whole_repository_tests": 1092,
+      "formal_originals_added": 3,
+      "formal_invalid_values_repaired": 0,
+      "source_requests": 0,
+      "original_qa_retained": true,
+      "independent_folder_ancestry_verified": true,
+      "formal_schedules_activated": false,
+      "drive_receipt_file_id": "1h_mlgiYo27N-At19ZHx1aJ96PB_i66ZB",
+      "raw_references": [
+        "1_An-mXnPD8AzQ2Cuo2PAEJwtuvz_N0ki",
+        "15wQq03HZnMkMV0FJV4DZZdPsIYB1ZPdl",
+        "1W6RX2MR21Aj_TcrvJFtlow3Sn11gKrJr"
+      ]
+    },
+    {
+      "id": "T37",
+      "name": "完整十二方向清單守門與上線條件合併複核",
+      "status": "PASS_REGRESSION_RELEASE_STILL_BLOCKED",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40981399108",
+      "whole_repository_tests": 1094,
+      "source_requests": 0,
+      "formal_raw_writes": 0,
+      "deployment_ready": false,
+      "remaining": [
+        {
+          "item": "Automatic missing/correction scope",
+          "status": "INCOMPLETE",
+          "sources": [
+            "FinMind",
+            "MOPS",
+            "NDC",
+            "TAIFEX",
+            "TPEx",
+            "TWSE"
+          ]
+        },
+        {
+          "item": "Actual provider long-run limits and throughput",
+          "status": "NOT_RUN_FOR_FINAL_SCOPE"
+        },
+        {
+          "item": "Merge fixed release and activate twelve schedules",
+          "status": "NOT_DONE"
+        }
+      ],
+      "drive_receipt": {
+        "file_id": "1ol0Z5SDEcUR3QnbdzWSJ3mB1Sk7r65fn",
+        "folder_id": "16uy292jpDbmK7dvVvra8X_sN8T0ZcJNL",
+        "sha256": "ee58a4e2e6e89921d3768dbeb9779726438bdbabbed5f7bddc0f0aa5e218fc0c",
+        "readback_verified": true
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "R01",
+      "name": "範圍與方向",
+      "rule": "2000-01至執行日實際公布資料；重來源頭尾向中間，不請求未來資料；來源最早可得不足者保留原因。"
+    },
+    {
+      "id": "R02",
+      "name": "原件與重用",
+      "rule": "保留來源原始bytes、單位、版本及SHA；有原件先回讀核對，成功資料不重抓。"
+    },
+    {
+      "id": "R03",
+      "name": "下載授權",
+      "rule": "缺失旗標/404/空白/游標走完都不是下載或完整證據。先核定來源、資料集、公司市場、期間、交易日及提供範圍。"
+    },
+    {
+      "id": "R04",
+      "name": "官方及補缺",
+      "rule": "官方優先；FinMind僅補已確認且語意相容缺口，保存官方缺口證據，不因此自動關閉官方缺口。"
+    },
+    {
+      "id": "R05",
+      "name": "重試與冷卻",
+      "rule": "初次1+追加3=最多4次，跨重啟與版本保留計數。尊重Retry-After及來源共用配額，源站錯誤與存放/授權錯誤分開。"
+    },
+    {
+      "id": "R06",
+      "name": "中斷與保存",
+      "rule": "請求與save_intent先持久保存；中斷不明先查原件和收據，核對locator/SHA後恢復，不盲目重送。"
+    },
+    {
+      "id": "R07",
+      "name": "資料語意",
+      "rule": "原生格式/欄位/日期/股票身分/單位與頻率需有契約；空值不填0。興櫃只保存、不納入上市櫃分析。"
+    },
+    {
+      "id": "R08",
+      "name": "時間與血緣",
+      "rule": "跨月回應保留父回應與分片血緣；快照抓取日不等於內容歷史日期或公告可得時間；PIT未證實維持待驗。"
+    },
+    {
+      "id": "R09",
+      "name": "狀態與完成",
+      "rule": "下載、SHA回讀、基本QA、數值、PIT、完整驗收分層。只有所有適用契約通過且無未解缺漏才算單元完成。"
+    },
+    {
+      "id": "R10",
+      "name": "分頁與共同狀態",
+      "rule": "每來源共用CAS所有權；方向是worker/游標。分頁SHA索引同Git commit提交；預設每頁1MiB，每來源總512MiB，超限阻擋。"
+    },
+    {
+      "id": "R11",
+      "name": "排程切換",
+      "rule": "保存舊斷點與收據，一次停舊切新；新12線未通過正式入口閉環前不啟動，保留單一寫入者。"
+    },
+    {
+      "id": "R12",
+      "name": "進度數字",
+      "rule": "以同一核定母體和task ID去重：應處理、已檢查、已下載、已修復且重驗、已確認例外、尚待處理、未知與阻擋。重疊欄位不相加。"
+    },
+    {
+      "id": "R13",
+      "name": "測試紀錄保存",
+      "rule": "每輪保存時間與時區、來源/方向/期間、case ID、規則/程式/契約SHA、run ID、請求/重用/修復數、錯誤、前後SHA、證據、下一斷點。失敗/取消/未執行也保留。"
+    }
+  ],
+  "issues": [
+    {
+      "id": "I01",
+      "status": "FIXED_CODE_AND_TESTED",
+      "problem": "舊期交所單向描述",
+      "resolution": "已改雙向5-1/5-2，來源/方向識別不重設。",
+      "evidence_test_id": "T01",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I02",
+      "status": "FIXED_CODE_AND_TESTED",
+      "problem": "頭尾狀態契約不一致",
+      "resolution": "明確每來源共用協調狀態；舊方向分支只作投影。",
+      "evidence_test_id": "T02",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I03",
+      "status": "FIXED_CODE_AND_TESTED",
+      "problem": "來源hold被已領取任務繞過",
+      "resolution": "claim與begin_request均攔截；未消耗新請求。",
+      "evidence_test_id": "T01",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I04",
+      "status": "FIXED_IMPORT_REPLAY",
+      "problem": "集保八碼日期/快照日期解析",
+      "resolution": "八碼轉日期；快照抓取日與內容日期分開。",
+      "evidence_test_id": "T05",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I05",
+      "status": "FIXED_CLASSIFICATION",
+      "problem": "下游轉換紀錄混入RAW",
+      "resolution": "137242筆保留封存但不作RAW缺件；383461筆RAW收據。",
+      "evidence_test_id": "T05",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I06",
+      "status": "FIXED_STREAM_READBACK",
+      "problem": "集保49.5MB原件被30MB測試上限擋住",
+      "resolution": "49535982 bytes串流SHA相符，不是已證實檔案損壞。",
+      "evidence_test_id": "T05",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I07",
+      "status": "FIXED_FULL_CAPACITY_TEST",
+      "problem": "單檔32MiB狀態不足",
+      "resolution": "分頁及189521任務遠端完整恢復通過。",
+      "evidence_test_id": "T06",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I08",
+      "status": "FIXED_TRANSPORT_QA_ONLY",
+      "problem": "自動續派送只有callback",
+      "resolution": "已完成真實dispatch/receiver驗證，正式來源入口仍待接線。",
+      "evidence_test_id": "T11",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I09",
+      "status": "OPEN_VERSION_REVIEW",
+      "problem": "12項版本差異",
+      "resolution": "TWSE8、TPEx4，原件與血緣全保留，不任選最新版。",
+      "evidence_test_id": "T05",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I10",
+      "status": "OPEN_QUEUED_METADATA",
+      "problem": "舊run39611764652殘留queued",
+      "resolution": "jobs=0，取消/強制取消409；正式啟動前重查，未刪紀錄。",
+      "evidence_test_id": "T03",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I11",
+      "status": "OPEN_CONTENT_REVIEW",
+      "problem": "TWSE2348於2014-08-29開高低收空值",
+      "resolution": "不填0，需查停牌/無交易/真缺漏，不核准完整數值。",
+      "evidence_test_id": "T07",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I12",
+      "status": "BLOCKING_INTEGRATION",
+      "problem": "七來源正式adapter與完整閉環未全接線",
+      "resolution": "需實際補下載/解析補正/Drive保存及內容重驗，來源適用性先核定。",
+      "evidence_test_id": "T13",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I13",
+      "status": "BLOCKING_TEST_COVERAGE",
+      "problem": "未找到符合條件TWSE真實缺件案例",
+      "resolution": "不能故意重抓正確資料充當補下載；可改選其他具完整證據來源案例。",
+      "evidence_test_id": "T08",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I14",
+      "status": "OPEN_UNIVERSE_CONTRACT",
+      "problem": "歷史母體/TDCC2000–2024及PIT契約",
+      "resolution": "未核定不算完整，也不能捏造應下載數。",
+      "evidence_test_id": "T13",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I15",
+      "status": "OPEN_OPERATIONAL_TEST",
+      "problem": "正式配額、吞吐、3天目標",
+      "resolution": "沒有實測不能承諾三天全庫完成。",
+      "evidence_test_id": "T14",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I16",
+      "status": "OPEN_POLICY_REBUILD",
+      "problem": "來源提供期間限制須帶證據分類",
+      "resolution": "已補程式與本機測試；全部凍結清單尚未依新分類重建。",
+      "evidence_test_id": "T10",
+      "updated_date_taipei": "2026-10-29"
+    },
+    {
+      "id": "I17",
+      "status": "FIXED_CORE_LOCAL_TESTED",
+      "problem": "來源fetch/validate例外與無save_intent中斷尚未接分類恢復",
+      "resolution": "錯誤分類、共享冷卻與無save_intent證據對帳恢復已補，正式來源adapter接線仍待；詳見05",
+      "evidence_review": "04_上線前待辦複核.md",
+      "updated_date_taipei": "2026-10-29",
+      "evidence_test_id": "T16"
+    },
+    {
+      "id": "I18",
+      "status": "FIXED_CORE_AND_REAL_READBACK_TESTED",
+      "problem": "正式executor原件重用未明確要求舊expected SHA契約",
+      "resolution": "重用強制舊SHA及身分綁定；真實Drive正/錯SHA與冷啟動隔離通過，詳見05",
+      "evidence_review": "04_上線前待辦複核.md",
+      "updated_date_taipei": "2026-10-29",
+      "evidence_test_id": "T16"
+    },
+    {
+      "id": "I19",
+      "status": "FIXED_IMPORT_QA_REAL_TESTED",
+      "name": "Legacy task period conflicts",
+      "evidence_test_id": "T17",
+      "remaining": "Native content and period classification pending; conflicting records isolated"
+    },
+    {
+      "id": "I20",
+      "status": "FIXED_CORE_AND_REAL_COLD_RECOVERY",
+      "name": "Official empty stopped batch and blocked saved-task recovery",
+      "evidence_test_id": "T18",
+      "remaining": "First-run total HTTP count unknown; empty-response raw not retained; pending source applicability"
+    },
+    {
+      "id": "I21",
+      "status": "FIXED_QUERY_ADMISSION_REAL_EMPTY_HOLD",
+      "name": "Unknown earliest date incorrectly blocked an official historical date filter",
+      "evidence_test_id": "T23"
+    },
+    {
+      "id": "I22",
+      "status": "OPEN_SOURCE_COVERAGE_REVIEW",
+      "name": "Retained official empty responses are not historical-absence proofs",
+      "evidence_test_id": "T24"
+    },
+    {
+      "id": "I23",
+      "status": "FIXED_FUTURE_NATIVE_EVIDENCE_CORE_REAL_STORAGE_TESTED",
+      "name": "Preserve future rejected native response bytes and verified receipts",
+      "evidence_test_id": "T25"
+    },
+    {
+      "id": "I24",
+      "status": "FIXED_REAL_ADMISSION_RESTART_TESTED",
+      "name": "First-start source state absent during archival lookup",
+      "evidence_test_id": "T26"
+    }
+  ],
+  "evidence_files": [
+    {
+      "path": "docs/V093_SCHEDULE_NAMES_20261029.md",
+      "git_blob_sha": "6eeb9b953fabdca6fd6736e78169cc219abce7c5",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/docs/V093_SCHEDULE_NAMES_20261029.md"
+    },
+    {
+      "path": "docs/V093_SEVEN_SOURCE_CLOSED_LOOP_20261029.md",
+      "git_blob_sha": "50171dda6819650ecac9b21ff928b532fae25dc0",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/docs/V093_SEVEN_SOURCE_CLOSED_LOOP_20261029.md"
+    },
+    {
+      "path": "docs/V093_TWELVE_SCHEDULE_REVIEW_20261029.md",
+      "git_blob_sha": "8bcaac19e44a6c34afe3cf90fc5304eda14e7272",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/docs/V093_TWELVE_SCHEDULE_REVIEW_20261029.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/JARVIS_七大來源錯誤處理與驗收規格表_20261027.xlsx",
+      "git_blob_sha": "ebdcbd2c49617f6e61ee645bab886becc054add3",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/JARVIS_七大來源錯誤處理與驗收規格表_20261027.xlsx"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/JARVIS_七大來源錯誤處理與驗收規範_20261027.md",
+      "git_blob_sha": "333c8aed5a6538bd5774f152c57c72151ebadfa6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/JARVIS_七大來源錯誤處理與驗收規範_20261027.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/JARVIS_七大來源驗收規範與複核證據_20261027.zip",
+      "git_blob_sha": "9b361662001bff7364462b2c3493605b0b391049",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/JARVIS_七大來源驗收規範與複核證據_20261027.zip"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/README.md",
+      "git_blob_sha": "6ff013142086e0e59d61d8cf00de041abec49097",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/acceptance_rules.json",
+      "git_blob_sha": "c9f4f67ba36ed7a5c17e7f8a1dee06774b374a09",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/acceptance_rules.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/finish_acceptance.py",
+      "git_blob_sha": "9e1df1ec3f5f47c99c302e7a6b28e91a8e59a02c",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/finish_acceptance.py"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/inspected_code_index.json",
+      "git_blob_sha": "6c1cd6cc9edc98f3d907d41f34a606aed0ee9835",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/inspected_code_index.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/make_acceptance.py",
+      "git_blob_sha": "9cd3f58986cbdf11acdac3d03ec1e45c234814a6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/make_acceptance.py"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/manifest.json",
+      "git_blob_sha": "47ad385b1d2c5ae9a0f4804f8959708e1bed0cd3",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/manifest.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/publication.json",
+      "git_blob_sha": "c8c1139b7a5df280e066afd25399f5028f9a0093",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/publication.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/review_evidence.json",
+      "git_blob_sha": "371db9764e9b4d5d4bea1f3641e04ce597dad5f0",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/review_evidence.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/review_scan.py",
+      "git_blob_sha": "aed991433c3d74053e6f81280f95167e20ad9388",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/review_scan.py"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/validation.json",
+      "git_blob_sha": "8c5000f6423b27a4b2614e0bf36c1b7d864e997c",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/validation.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/七大來源錯誤處理與驗收規格表.csv",
+      "git_blob_sha": "319d446e1a34f9b2787582d69ecbb457e9455287",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/七大來源錯誤處理與驗收規格表.csv"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/五個處理佇列與分流表.csv",
+      "git_blob_sha": "9453aa8d2a0152d57f4a2d8d728ebbf312cf4ea7",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/五個處理佇列與分流表.csv"
+    },
+    {
+      "path": "reports/raw-acceptance/20261027_v1/複核發現與待確認清單.csv",
+      "git_blob_sha": "01957f184d71ec23146a7a81618fc803a999aef6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261027_v1/複核發現與待確認清單.csv"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_acceleration_plan/README.md",
+      "git_blob_sha": "5a51662558e8479a65254942d5cda51f621b46ae",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_acceleration_plan/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_acceleration_plan/build_plan.py",
+      "git_blob_sha": "9c68d3522c2b3f781d19098be9edcad76a5395e5",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_acceleration_plan/build_plan.py"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_acceleration_plan/execution_plan.json",
+      "git_blob_sha": "836b2a8abed467424cf2720f0b4ea19764133aac",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_acceleration_plan/execution_plan.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_acceleration_plan/rule_ownership.md",
+      "git_blob_sha": "712fe3dce32f23ca5b28325c0496f5d008823d16",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_acceleration_plan/rule_ownership.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_actual_cross_source/JARVIS_cross_source_actual_20261028.md",
+      "git_blob_sha": "141b744a48a3be59cbad7ca85aeaf3aab02117ae",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_actual_cross_source/JARVIS_cross_source_actual_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_actual_cross_source/cross_round_summary.json",
+      "git_blob_sha": "cd107cf402a2dfd624eb28c1d50ec0d47221ad9b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_actual_cross_source/cross_round_summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_actual_cross_source/source_semantics_differences.json",
+      "git_blob_sha": "8eddb1b8f617f1f07fd741f6c6478f53cae8591c",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_actual_cross_source/source_semantics_differences.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_actual_cross_source/supplemental_inventory_reconciliation.json",
+      "git_blob_sha": "cd780750a23fa4821d25c24894979a2d9a2385df",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_actual_cross_source/supplemental_inventory_reconciliation.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_actual_cross_source/unmatched_key_triage.json",
+      "git_blob_sha": "6041544a19a27c937bb3084360ed944cc389d0b4",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_actual_cross_source/unmatched_key_triage.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_blocker_followup/README.md",
+      "git_blob_sha": "22509966a9ebab4327e5251e241787c71a044d3f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_blocker_followup/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_blocker_followup/summary.json",
+      "git_blob_sha": "774c88277a1745c700bf6a4853d63ea820235010",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_blocker_followup/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_consolidated/JARVIS_prelaunch_remaining_and_results_20261028.md",
+      "git_blob_sha": "954f5ee2108e2e12c956240757ca8fbbe7618e46",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_consolidated/JARVIS_prelaunch_remaining_and_results_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_consolidated/environment.json",
+      "git_blob_sha": "cfa04bed94fa85d1f221552aa5105c8bc4dbf137",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_consolidated/environment.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_consolidated/release_status.json",
+      "git_blob_sha": "b5ddfba694c2f4cd284bdad86085abdfcc0579c8",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_consolidated/release_status.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_eight_group_live/README.md",
+      "git_blob_sha": "8ba3c54da72ba415cf05b500017623345eb8d6a6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_eight_group_live/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_eight_group_live/sample_index.csv",
+      "git_blob_sha": "c5c01b70640d91b1b750b5004dcc106dcd14311f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_eight_group_live/sample_index.csv"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_eight_group_live/summary.json",
+      "git_blob_sha": "364ed78ce9fa7601ccea6cc793e4877888c3c778",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_eight_group_live/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_eight_group_progress/JARVIS_eight_group_progress_20261028.md",
+      "git_blob_sha": "3551ccfabfa1e999eda4cc39cd0dae5265cf7784",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_eight_group_progress/JARVIS_eight_group_progress_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_eight_group_progress/eight_group_progress_followup.json",
+      "git_blob_sha": "973e51fc23bc425dd10b3721f6b650aee71dd139",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_eight_group_progress/eight_group_progress_followup.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_eight_group_progress/finmind_price_contract_findings.json",
+      "git_blob_sha": "1eaff109e3c4752e0880a10d7744164a93dc717b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_eight_group_progress/finmind_price_contract_findings.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/1269.json",
+      "git_blob_sha": "305419ca99617d82f7350f166fd2b9769e7c02b5",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/1269.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/1271.json",
+      "git_blob_sha": "709395dc5fc9dd87e2f16a030498f79c0cecd26d",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/1271.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/1293.json",
+      "git_blob_sha": "c07a59225fd629270aa7b5c82ac5818f8ba850dc",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/1293.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/1343.json",
+      "git_blob_sha": "6558a5c24695948c615f26c4fbc0a5026dc6ed2b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/1343.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/1480.json",
+      "git_blob_sha": "ecdbe5ddf071ceafaefb5cbdbf206ecdaf498786",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/1480.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/1594.json",
+      "git_blob_sha": "93cf0825d1c9debe7e1dba36b5fd936971befe7f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/1594.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/README.md",
+      "git_blob_sha": "fe21e81faed9a738fcc0420fe65d38212ca1eb1e",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/results.json",
+      "git_blob_sha": "d447189d38f27673bcfcfb73ae753447ad680e09",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/results.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_44keys/verify.py",
+      "git_blob_sha": "c62b7b31a4abab56b9d4240a6223f25cfcef2590",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_44keys/verify.py"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1269_202608.json",
+      "git_blob_sha": "b20d7d787d4ece644e55d000eea157486d6a2097",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1269_202608.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1269_202609.json",
+      "git_blob_sha": "305419ca99617d82f7350f166fd2b9769e7c02b5",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1269_202609.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1271_202608.json",
+      "git_blob_sha": "bfbe7ccc498ef1a8d6e710e4caa8e75fd731beaa",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1271_202608.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1271_202609.json",
+      "git_blob_sha": "709395dc5fc9dd87e2f16a030498f79c0cecd26d",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1271_202609.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1293_202608.json",
+      "git_blob_sha": "2cc526fba3448e509cbea49f25f1370d704070e2",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1293_202608.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1293_202609.json",
+      "git_blob_sha": "c07a59225fd629270aa7b5c82ac5818f8ba850dc",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1293_202609.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1343_202608.json",
+      "git_blob_sha": "5ec3abce2326f59b3e188a36b8086e2e4ccd6a95",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1343_202608.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1343_202609.json",
+      "git_blob_sha": "6558a5c24695948c615f26c4fbc0a5026dc6ed2b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1343_202609.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1480_202608.json",
+      "git_blob_sha": "f3c5190ce45d193b5075d26a74011a7d286d6060",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1480_202608.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1480_202609.json",
+      "git_blob_sha": "ecdbe5ddf071ceafaefb5cbdbf206ecdaf498786",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1480_202609.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1594_202608.json",
+      "git_blob_sha": "7beeadae290f50242d89d5b56dc4d89bdfc3d21e",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1594_202608.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/1594_202609.json",
+      "git_blob_sha": "93cf0825d1c9debe7e1dba36b5fd936971befe7f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/1594_202609.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/README.md",
+      "git_blob_sha": "599ac933db6fa8f992f323b8ba4f1349a9865a70",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/august_manifest.json",
+      "git_blob_sha": "7a3040abb84d156f70e8bf59fbec02701faa08b1",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/august_manifest.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/batch_summary.json",
+      "git_blob_sha": "dd26ed6afe102a28b36e1f124a4a5d150dd4f600",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/batch_summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/code_sha256.json",
+      "git_blob_sha": "b5420c3e18c29c5c26edca6798ad8081938dc913",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/code_sha256.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/fetch_august.py",
+      "git_blob_sha": "90d8c991f08e787a81b411a9a7d22c411fb8f619",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/fetch_august.py"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/manifest.json",
+      "git_blob_sha": "2d41b133f1624d8b60761a569a778bb95fdbf3d2",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/manifest.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/open_followup.json",
+      "git_blob_sha": "3caafa1c1639c0bcd27948ae94afb5dce413874f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_esb_contract/open_followup.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_expanded_live/README.md",
+      "git_blob_sha": "fa8d6b0fa2306517560a1649634aeceba2dea597",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_expanded_live/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_expanded_live/summary.json",
+      "git_blob_sha": "b4b53b099cdbeae5b0349daf047b82c54c58246b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_expanded_live/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_expanded_live/summary_40705441295.json",
+      "git_blob_sha": "646294d0ff7cb9772da75fe348779e8ddf6d5a27",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_expanded_live/summary_40705441295.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_incremental_progress/README.md",
+      "git_blob_sha": "2496e6055dd91376b80385346a6a9a539964a085",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_incremental_progress/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_incremental_progress/progress_20261028_40708255709.json",
+      "git_blob_sha": "62fab9ff921721d0875abd22e1b885a821600eda",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_incremental_progress/progress_20261028_40708255709.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_incremental_progress/summary_40708255709.json",
+      "git_blob_sha": "13d86966615df9abfedb9a27943d65e13074b9a1",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_incremental_progress/summary_40708255709.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_integrated/README.md",
+      "git_blob_sha": "bb6ab20e4bce12c28be807a5f6a6c78d180a9c10",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_integrated/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_integrated/content_triage.json",
+      "git_blob_sha": "14f90dd1e20336a0ab6fc626323fb20d31ff1c66",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_integrated/content_triage.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_integrated/group_results.json",
+      "git_blob_sha": "83e16ad729df685a16c29ff04bba069c0a9deb1c",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_integrated/group_results.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_integrated/integrated_summary.json",
+      "git_blob_sha": "8f343e0b5821defcb4305091f0a3edb1b133607e",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_integrated/integrated_summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_integrated/rule_results.json",
+      "git_blob_sha": "fe0a39b7e9fe5efb95d99ccf12b11b087972af04",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_integrated/rule_results.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_integrated/software_results.json",
+      "git_blob_sha": "c2728bd84479cd620687d1c9a9c0611c8b2c763c",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_integrated/software_results.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_MOPS_combined_followup_20261028.md",
+      "git_blob_sha": "e77169bf907fa89e1540dae062428a3f245a76c9",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/JARVIS_MOPS_combined_followup_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_combined_content_gate_20261028.md",
+      "git_blob_sha": "3b339f4a722a008d70bdf4c85829c2b4228c2d49",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/JARVIS_combined_content_gate_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_combined_prelaunch_20261028.md",
+      "git_blob_sha": "50a1c8d00a49ff11fff87bce0b27e5fdb44f4528",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/JARVIS_combined_prelaunch_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_matrix_actual_20261028.md",
+      "git_blob_sha": "f584916687cc0e1e0192b861fa8a4768930450e4",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/JARVIS_matrix_actual_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_matrix_actual_v2_20261028.md",
+      "git_blob_sha": "0daa736824e94f2ac01423ae53d58ddc7bc6de5f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/JARVIS_matrix_actual_v2_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/combined_content_gate.json",
+      "git_blob_sha": "933f40f0f796e4f81bfeb34670f79a9ad25f04ff",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/combined_content_gate.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/combined_prelaunch_evidence.json",
+      "git_blob_sha": "b4e908e0e34ee163005b755ebe5f3e488655f388",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/combined_prelaunch_evidence.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/matrix_actual_results.json",
+      "git_blob_sha": "d2aa6f16855e25d006abe2fac57a60935a7550ca",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/matrix_actual_results.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/matrix_actual_results_v2.json",
+      "git_blob_sha": "f31c28cc54bbe5d78ab8b827a012de4f1c2188cf",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/matrix_actual_results_v2.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_live_batch/mops_combined_followup.json",
+      "git_blob_sha": "ddace10071b1e13f63f23d34c8ffb54a0dd22960",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_live_batch/mops_combined_followup.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_one_batch/JARVIS_one_batch_run1_20261028.md",
+      "git_blob_sha": "7924035de7c78c6dc66134847b24981bdfcfd583",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_one_batch/JARVIS_one_batch_run1_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_one_batch/summary.json",
+      "git_blob_sha": "db06d4c601719442fcb29abcc3c8e8f8bea5cc48",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_one_batch/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_one_batch_round2/JARVIS_one_batch_run2_20261028.md",
+      "git_blob_sha": "a7485e4dfcff472cd98dd2559d781bdf360c2074",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_one_batch_round2/JARVIS_one_batch_run2_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_one_batch_round2/round2_delta.json",
+      "git_blob_sha": "75f1715c4dabf65bf7ab944ec70f2842f8dabe21",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_one_batch_round2/round2_delta.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_one_batch_round2/summary.json",
+      "git_blob_sha": "5b5c61507ba428670995001f50af2a5879eb8777",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_one_batch_round2/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_one_batch_round2_followup/JARVIS_round2_followup_20261028.md",
+      "git_blob_sha": "30cd5b8599a03d08dec52c9fcb39c7ea5384ffc3",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_one_batch_round2_followup/JARVIS_round2_followup_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_one_batch_round2_followup/followup_summary.json",
+      "git_blob_sha": "3aa496ea1d999c9dafcc5c4726dbba93ebaf5e09",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_one_batch_round2_followup/followup_summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_prelaunch_final/README.md",
+      "git_blob_sha": "92d627f14acc9102a5008f3469cc410de98770ac",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_prelaunch_final/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_prelaunch_final/summary.json",
+      "git_blob_sha": "e2e97e881b50a992e92b90fad8f52d0a44ea6c2b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_prelaunch_final/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_progress_v2/JARVIS_37_rules_progress_20261028.md",
+      "git_blob_sha": "5016075b7bf5c2d493242598892bb68d87540f67",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_progress_v2/JARVIS_37_rules_progress_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_progress_v2/acceptance_progress.json",
+      "git_blob_sha": "d1c294873351944e534e1f5d43ae07bb0e427952",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_progress_v2/acceptance_progress.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_progress_v2/sha256.json",
+      "git_blob_sha": "460b3239075cdbb9cbb5d89ff8a5545b7ede4b36",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_progress_v2/sha256.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_round3/JARVIS_round3_prelaunch_20261028.md",
+      "git_blob_sha": "db95da131d4c042007f891bfeb160ed873157a18",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_round3/JARVIS_round3_prelaunch_20261028.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_round3/build_working_register.py",
+      "git_blob_sha": "3955949525c86375b1393aff7d25d42f58d569bc",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_round3/build_working_register.py"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_round3/compare_round3_prices.py",
+      "git_blob_sha": "0bad3e9dcff6d9cf713a862e68e3461e28526dd8",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_round3/compare_round3_prices.py"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_round3/isolated_price_relationships.json",
+      "git_blob_sha": "acf7a9204b6a55fef80f753f5ef45710ad2d64bb",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_round3/isolated_price_relationships.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_round3/round3_summary.json",
+      "git_blob_sha": "32be70c5b284ff9f665c63177b52aefd04edfb02",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_round3/round3_summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_round3/tpex_five_day_reconciliation.json",
+      "git_blob_sha": "7e2a3d7279fcc70f208a2820f69b51c7c162e6cc",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_round3/tpex_five_day_reconciliation.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_scheduler_live_readiness/README.md",
+      "git_blob_sha": "b9f1a3437d50090b41d05f569b2e55804f2859dc",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_scheduler_live_readiness/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_scheduler_live_readiness/blocked_units.csv",
+      "git_blob_sha": "07b7e6fc6380d6528b67c2051f821e1bd56a126e",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_scheduler_live_readiness/blocked_units.csv"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_scheduler_live_readiness/summary.json",
+      "git_blob_sha": "3b68dfa7fc68407032f6c2326909dbec50d0c15a",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261028_scheduler_live_readiness/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_closed_loop_batch/README.md",
+      "git_blob_sha": "38ea623bbbbf75c1040bc9759a037a0c71d35923",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_closed_loop_batch/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_closed_loop_batch/RESULT.md",
+      "git_blob_sha": "fe6ab154d132a31e621c2bf96ef0b046e35c3554",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_closed_loop_batch/RESULT.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_closed_loop_batch/remote_result.json",
+      "git_blob_sha": "aef95435d697a0f43bef6a4ca028824f30597552",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_closed_loop_batch/remote_result.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_closed_loop_batch/summary.json",
+      "git_blob_sha": "2865c21a321e769c6cb0a29d9b5ba0398fdf3e2c",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_closed_loop_batch/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_closed_loop_batch/tests.log",
+      "git_blob_sha": "d58920ad06a6b077e93528a4eab4fdef5bab12e1",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_closed_loop_batch/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_continuation/README.md",
+      "git_blob_sha": "ef4f8e58133bd5e7c0450e220fa2cfcd4b06e384",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_continuation/RESULT.md",
+      "git_blob_sha": "d790567bfe5f1e010e3af13d79c8569097879e9e",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/RESULT.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_continuation/missing_contract_audit.json",
+      "git_blob_sha": "0db1495d4d5ef08773a554474b5ec76ea333dea4",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/missing_contract_audit.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_continuation/remote_dispatch.json",
+      "git_blob_sha": "4c83b75fc57a8cacb69b341b0385709851ca2f28",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/remote_dispatch.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_continuation/summary.json",
+      "git_blob_sha": "47e306ebd4e261adba85ec734cc87372853b5c82",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_continuation/tests.log",
+      "git_blob_sha": "892fe5ef013f85ced2e8b4e3f2c41b98e92820dd",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_continuation/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_cross_review/README.md",
+      "git_blob_sha": "366f2ec5ae9a076bd5a3a0d7fb3a481ef31d239f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_cross_review/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_cross_review/summary.json",
+      "git_blob_sha": "c27077bb9d7d1dd0d168f4dbd30887952292cf40",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_cross_review/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_cross_review/tests.log",
+      "git_blob_sha": "47d5dbb339666e606264da41f38251b17e71e384",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_cross_review/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight/README.md",
+      "git_blob_sha": "62cdfffedf4d1149e3524371d14f6f73f5cec1f3",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight/summary.json",
+      "git_blob_sha": "700ed37636d45ac5b05558e3d8ee82d5958eb50f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v2/README.md",
+      "git_blob_sha": "3e90dd2b90c00d39cca5a7e42991eba905882b12",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v2/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v2/summary.json",
+      "git_blob_sha": "fed53c24e8597b5effea4147d61f76d1098191e1",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v2/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v2/tests.log",
+      "git_blob_sha": "a6e0b071d4ba3ec596809a7113c91daf56990baa",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v2/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v3/README.md",
+      "git_blob_sha": "3ba3e35d70ba44029e6900ce5de8c84ee6e358fd",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v3/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v3/summary.json",
+      "git_blob_sha": "c0104c51e85bdef9c2e425cf377e9838b864e946",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v3/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v3/tests.log",
+      "git_blob_sha": "0e2548ccd5abca8c3dc08d735a57b2b4aa294a75",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v3/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v4/README.md",
+      "git_blob_sha": "7f23a9e1be9d25a60292ce8a00b605fbc6ba6b8f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v4/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v4/remote_control.json",
+      "git_blob_sha": "9fd564a49bc0806286aa62aff670e066498382bf",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v4/remote_control.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v4/summary.json",
+      "git_blob_sha": "bffea66ed2868bcfd51eccefe6d91720a037ea7b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v4/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v4/tests.log",
+      "git_blob_sha": "44fd7c2ce93a0c70dbc5c298b7207ffe04656c37",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_eleven_slot_preflight_v4/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_handoff_replay/README.md",
+      "git_blob_sha": "f39faadcfdbb48145458967293fbc9723fd352f6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_handoff_replay/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_handoff_replay/RESULT.md",
+      "git_blob_sha": "cf93012e3f8fcace03d9ca1fe28c3a9343b3fa44",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_handoff_replay/RESULT.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_handoff_replay/TDCC_streaming_readback.json",
+      "git_blob_sha": "83cc8d6d9064c1b34bdc2fc4045b9db25e57f4d7",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_handoff_replay/TDCC_streaming_readback.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_handoff_replay/real_replay_summary.json",
+      "git_blob_sha": "ea78ca866dff52b264f518858dbf19c3f5c67155",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_handoff_replay/real_replay_summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_handoff_replay/summary.json",
+      "git_blob_sha": "5fd761e6809909fd185ec4217268ea1199311561",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_handoff_replay/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_handoff_replay/tests.log",
+      "git_blob_sha": "cfb50d61c93ba32185edbc3c032e14a869ddbadc",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_handoff_replay/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_legacy_handoff/README.md",
+      "git_blob_sha": "796ed7967e024ca9a7f6905760667d723e0f2c89",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_legacy_handoff/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_legacy_handoff/summary.json",
+      "git_blob_sha": "9f67c2089d054e8d662dc64545b23454c588f666",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_legacy_handoff/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_legacy_handoff/tests.log",
+      "git_blob_sha": "d9e13892542fe72cf4dce47d20ebddfeeb64f3c5",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_legacy_handoff/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_paged_state/README.md",
+      "git_blob_sha": "500252ecf2b792e2daf8c517cdd917c680b54f58",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_paged_state/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_paged_state/RESULT.md",
+      "git_blob_sha": "7f2b933778fe04b352487e0eb9d2a63ad941cee7",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_paged_state/RESULT.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_paged_state/remote_verified.json",
+      "git_blob_sha": "f930d5f9bfa6ac5605e0d6e71e56f9301c982b98",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_paged_state/remote_verified.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_paged_state/summary.json",
+      "git_blob_sha": "73fc02f9bd08e502ba196d9ed44feac9c85e0761",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_paged_state/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_paged_state/tests.log",
+      "git_blob_sha": "e95bbb1be295d642c8f8f39124791e9978d988e1",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_paged_state/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_shared_state_hold/FOLLOWUP.md",
+      "git_blob_sha": "cf3657666475aaa93c65c022adb0bdab6b20c64b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_shared_state_hold/FOLLOWUP.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_shared_state_hold/README.md",
+      "git_blob_sha": "1e5671b6800e83e497445378edd9ea4e82bc84c8",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_shared_state_hold/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_shared_state_hold/remote_control.json",
+      "git_blob_sha": "51b9caab83e8a67e756078a7dc02588db3e1f3db",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_shared_state_hold/remote_control.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_shared_state_hold/summary.json",
+      "git_blob_sha": "978b660c036f798cc816ab1592396cf9d547cbc1",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_shared_state_hold/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_shared_state_hold/tests.log",
+      "git_blob_sha": "99706108431bd61862512d6709c9c63af9d60ef7",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_shared_state_hold/tests.log"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_twelve_slot_names/README.md",
+      "git_blob_sha": "366f2ec5ae9a076bd5a3a0d7fb3a481ef31d239f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_twelve_slot_names/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_twelve_slot_names/summary.json",
+      "git_blob_sha": "cd67a508d58363aa0ca33960fc92930452ae699b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_twelve_slot_names/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_twelve_slot_names/tests.log",
+      "git_blob_sha": "a12d07bdbb4b38f87cd57a1e028662756950fd73",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/0cdf1bb6383e40eb8aabade5c871e69f36039a11/reports/raw-acceptance/20261029_twelve_slot_names/tests.log"
+    }
+  ],
+  "reviewed_sha": "099922c7af4a0276b4905234339284c7051e9521",
+  "latest_checked_code_sha": "04166290ec6d92a6667d12af0bbbf1050babb964",
+  "latest_deployment_ready": false,
+  "required_release_work": [
+    {
+      "id": "G1",
+      "status": "CORE_IMPLEMENTED_CATALOG_ROLLOUT_PENDING",
+      "item": "Pinned native production runtime, bounded staging and verified archives passed one real retained NDC QA case; seven production catalogs and release approval pending"
+    },
+    {
+      "id": "G2",
+      "status": "PARTIAL_TYPES_AND_LIVE_ACCEPTANCE",
+      "item": "Complete required source contract types and positive download/save/revalidation cases; keep unknown history held"
+    },
+    {
+      "id": "G3",
+      "status": "INTEGRATION_AND_LIVE_LOAD_REQUIRED",
+      "item": "Wire durable continuation/watchdog and measure provider quotas, lease heartbeat and storage throughput on the actual worker"
+    },
+    {
+      "id": "G4",
+      "status": "RELEASE_REQUIRED",
+      "item": "After G1-G3 pass, merge pinned candidate, recheck old writers/ghost queue and validate the initial formal batch"
+    }
+  ],
+  "latest_tested_sha": "f4dcc82b684a807d87e5f88b2b54d24d6b7a78b7"
+}

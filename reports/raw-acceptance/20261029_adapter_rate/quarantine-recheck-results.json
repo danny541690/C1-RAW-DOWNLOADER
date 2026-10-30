@@ -1,0 +1,76 @@
+{
+  "run": 40875609531,
+  "parts": [
+    {
+      "summary": {
+        "schema": "JARVIS_TAIFEX_RETAINED_QUARANTINE_RECHECK_V1",
+        "part": 1,
+        "all_unique_candidates": 1606,
+        "planned": 808,
+        "checked": 808,
+        "counts": {
+          "OFFICIAL_EMPTY_UNCONFIRMED": 808
+        },
+        "drive_raw_reads": 15,
+        "source_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false,
+        "full_acceptance": false
+      },
+      "publication": {
+        "record_sha256": "852aefd74ddd8a02a3c420020aadda8cf482b6dc076d1da4c8dbab39b9278374",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1Ys4HnwhOj7USo005TzxK0aSaUiVdE1d8",
+          "folder_id": "1KZ3GLY7v__6izzYbQU0ClS7bJi5HGPDH",
+          "sha256": "852aefd74ddd8a02a3c420020aadda8cf482b6dc076d1da4c8dbab39b9278374",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40875609531-1-quarantine-1/TAIFEX",
+        "job_status": "success"
+      }
+    },
+    {
+      "summary": {
+        "schema": "JARVIS_TAIFEX_RETAINED_QUARANTINE_RECHECK_V1",
+        "part": 0,
+        "all_unique_candidates": 1606,
+        "planned": 798,
+        "checked": 798,
+        "counts": {
+          "OFFICIAL_EMPTY_UNCONFIRMED": 798
+        },
+        "drive_raw_reads": 15,
+        "source_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false,
+        "full_acceptance": false
+      },
+      "publication": {
+        "record_sha256": "000d4e21feafceafe28e3b242629f44286cf53ecb4ae7c510f4bd1c96838badf",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "14iZU37mWJwAExZtEJNr3rwBse8Hp9KME",
+          "folder_id": "1DNjnOZdZxl2pmKgvCRdlJvhLPxrVrgV-",
+          "sha256": "000d4e21feafceafe28e3b242629f44286cf53ecb4ae7c510f4bd1c96838badf",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40875609531-1-quarantine-0/TAIFEX",
+        "job_status": "success"
+      }
+    }
+  ],
+  "aggregate": {
+    "response_versions": 1606,
+    "unique_tasks": 1602,
+    "unique_raw_sha": 16,
+    "attempts_preserved": true,
+    "all_empty": true
+  }
+}

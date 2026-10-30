@@ -1,0 +1,309 @@
+{
+  "schema": "JARVIS_SEVEN_SOURCE_DESIGN_V1",
+  "version": "20261029_TWELVE_SLOTS_NAMING_R1",
+  "activate_production": false,
+  "direction": "DESC",
+  "floor": "2000-01",
+  "upper": "2026-10-29",
+  "upper_is_frozen_per_campaign": true,
+  "latest_month_partial": true,
+  "work_budget_minutes": 45,
+  "job_timeout_minutes": 60,
+  "lease_ttl_minutes": 90,
+  "heartbeat_seconds": 60,
+  "watchdog_cron": "3,13,23,33,43,53 * * * *",
+  "continuation": "Explicit workflow_dispatch only after durable save, ready work remains and no source hold; cron is recovery, not normal waiting",
+  "initial_concurrent_sources": 7,
+  "attempts": {
+    "max_total": 4,
+    "reset_on_restart": false,
+    "respect_retry_after": true,
+    "reconcile_unknown_intent_before_retry": true
+  },
+  "capacity_shares": {
+    "new_updates": 0.1,
+    "historical_desc": 0.7,
+    "due_repairs": 0.2,
+    "unused_capacity_borrowable": true
+  },
+  "raw_root": "01_RAW/{YYYY}/{source}/{YYYY-MM}",
+  "raw_immutable": true,
+  "raw_monetary_units": "NATIVE",
+  "display_amount_unit": "NTD_100_MILLION_WHERE_APPLICABLE",
+  "analysis_markets": [
+    "TSE",
+    "OTC"
+  ],
+  "esb_policy": "RETAIN_RAW_ONLY",
+  "legacy_import_allowed": false,
+  "states": [
+    "NEEDS_RECONCILIATION",
+    "READY_CHECK",
+    "READY_FETCH",
+    "REQUEST_INTENT",
+    "RAW_SAVED",
+    "READBACK_VERIFIED",
+    "BASIC_QA_PASS",
+    "NUMERIC_QA_PASS",
+    "PIT_QA_PASS",
+    "READY_RELEASE_REVIEW",
+    "REPAIR_PENDING",
+    "RETRY_WAIT",
+    "SOURCE_HOLD",
+    "CONTENT_BLOCKED",
+    "VERIFIED_EXCEPTION"
+  ],
+  "lanes": [
+    {
+      "id": 1,
+      "source": "TWSE",
+      "workflow": "jarvis-seven-01-twse-preview.yml",
+      "lock": "jarvis-source-twse",
+      "state_branch": "jarvis-source-state/TWSE",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "SOURCE_FILTER_MISSING_IN_SHARED_OFFICIAL_WORKER",
+        "SOURCE_QUEUE_AND_FENCED_WRITES_NOT_INTEGRATED",
+        "END_TO_END_REPAIR_REVERIFY_NOT_ACCEPTED"
+      ],
+      "display_name": "證交所"
+    },
+    {
+      "id": 2,
+      "source": "TPEx",
+      "workflow": "jarvis-seven-02-tpex-preview.yml",
+      "lock": "jarvis-source-tpex",
+      "state_branch": "jarvis-source-state/TPEx",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "SOURCE_FILTER_MISSING_IN_SHARED_OFFICIAL_WORKER",
+        "SOURCE_QUEUE_AND_FENCED_WRITES_NOT_INTEGRATED",
+        "END_TO_END_REPAIR_REVERIFY_NOT_ACCEPTED"
+      ],
+      "display_name": "櫃買中心"
+    },
+    {
+      "id": 3,
+      "source": "MOPS",
+      "workflow": "jarvis-seven-03-mops-preview.yml",
+      "lock": "jarvis-source-mops",
+      "state_branch": "jarvis-source-state/MOPS",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "SOURCE_FILTER_MISSING_IN_SHARED_OFFICIAL_WORKER",
+        "PRE_2013_FINANCIAL_ROUTES_REQUIRE_EVIDENCE",
+        "DETACH_EMBEDDED_FINMIND_BEFORE_SEVENTH_LANE"
+      ],
+      "display_name": "公開資訊觀測站"
+    },
+    {
+      "id": 4,
+      "source": "TDCC",
+      "workflow": "jarvis-seven-04-tdcc-preview.yml",
+      "lock": "jarvis-source-tdcc",
+      "state_branch": "jarvis-source-state/TDCC",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "DESC_CURRENTLY_EXCLUDES_DATES_BEFORE_2026_05",
+        "MENU_AVAILABILITY_IS_NOT_HISTORICAL_UNIVERSE",
+        "UNIFY_REPAIR_REVERIFY_RECEIPTS_AND_RETRY_LIMIT"
+      ],
+      "display_name": "集保所"
+    },
+    {
+      "id": 5,
+      "source": "TAIFEX",
+      "workflow": "jarvis-seven-05-taifex-preview.yml",
+      "lock": "jarvis-source-taifex",
+      "state_branch": "jarvis-source-state/TAIFEX",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "CURRENT_BIDIRECTIONAL_OWNERSHIP_MUST_BE_MIGRATED_TO_SHARED_SOURCE_COORDINATOR",
+        "UNIFY_REPAIR_REVERIFY_RECEIPTS_AND_RETRY_LIMIT"
+      ],
+      "display_name": "期交所"
+    },
+    {
+      "id": 6,
+      "source": "NDC",
+      "workflow": "jarvis-seven-06-ndc-preview.yml",
+      "lock": "jarvis-source-ndc",
+      "state_branch": "jarvis-source-state/NDC",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": null,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "REUSE_SOURCE_BUNDLE_WITH_MONTH_LINEAGE",
+        "HISTORICAL_VINTAGES_NOT_PROVEN",
+        "UNIFY_REPAIR_REVERIFY_RECEIPTS"
+      ],
+      "display_name": "國發會"
+    },
+    {
+      "id": 7,
+      "source": "FinMind",
+      "workflow": "jarvis-seven-07-finmind-preview.yml",
+      "lock": "jarvis-source-finmind",
+      "state_branch": "jarvis-source-state/FinMind",
+      "proposed_request_order": "LATEST_TO_2000_DESC",
+      "source_requests_limit_per_batch": 20,
+      "rate_limit": "Reuse shared provider ledger and Retry-After; measure before increasing",
+      "readiness_blockers": [
+        "STANDALONE_GAP_CONSUMER_ADAPTER_MISSING",
+        "EXPLICIT_GAPS_AND_SEMANTIC_CONTRACT_REQUIRED",
+        "DISABLE_EMBEDDED_SUPPLEMENT_CALLS_AT_CUTOVER"
+      ],
+      "display_name": "FinMind補缺"
+    }
+  ],
+  "slots": [
+    {
+      "source": "TWSE",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-01-twse-preview.yml",
+      "lock": "jarvis-seven-twse-desc",
+      "state_branch": "jarvis-source-state/TWSE/DESC",
+      "schedule_number": "1-1",
+      "display_name": "證交所排程一之一（1-1）",
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/TWSE"
+    },
+    {
+      "source": "TWSE",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-01-twse-oldest-preview.yml",
+      "lock": "jarvis-seven-twse-asc",
+      "state_branch": "jarvis-source-state/TWSE/ASC",
+      "schedule_number": "1-2",
+      "display_name": "證交所排程一之二（1-2）",
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/TWSE"
+    },
+    {
+      "source": "TPEx",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-02-tpex-preview.yml",
+      "lock": "jarvis-seven-tpex-desc",
+      "state_branch": "jarvis-source-state/TPEx/DESC",
+      "schedule_number": "2-1",
+      "display_name": "櫃買中心排程二之一（2-1）",
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/TPEx"
+    },
+    {
+      "source": "TPEx",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-02-tpex-oldest-preview.yml",
+      "lock": "jarvis-seven-tpex-asc",
+      "state_branch": "jarvis-source-state/TPEx/ASC",
+      "schedule_number": "2-2",
+      "display_name": "櫃買中心排程二之二（2-2）",
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/TPEx"
+    },
+    {
+      "source": "MOPS",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-03-mops-preview.yml",
+      "lock": "jarvis-seven-mops-desc",
+      "state_branch": "jarvis-source-state/MOPS/DESC",
+      "schedule_number": "3-1",
+      "display_name": "公開資訊觀測站排程三之一（3-1）",
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/MOPS"
+    },
+    {
+      "source": "MOPS",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-03-mops-oldest-preview.yml",
+      "lock": "jarvis-seven-mops-asc",
+      "state_branch": "jarvis-source-state/MOPS/ASC",
+      "schedule_number": "3-2",
+      "display_name": "公開資訊觀測站排程三之二（3-2）",
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/MOPS"
+    },
+    {
+      "source": "TDCC",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-04-tdcc-preview.yml",
+      "lock": "jarvis-seven-tdcc-desc",
+      "state_branch": "jarvis-source-state/TDCC/DESC",
+      "schedule_number": "4-1",
+      "display_name": "集保所排程四之一（4-1）",
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/TDCC"
+    },
+    {
+      "source": "TDCC",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-04-tdcc-oldest-preview.yml",
+      "lock": "jarvis-seven-tdcc-asc",
+      "state_branch": "jarvis-source-state/TDCC/ASC",
+      "schedule_number": "4-2",
+      "display_name": "集保所排程四之二（4-2）",
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/TDCC"
+    },
+    {
+      "source": "TAIFEX",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-05-taifex-preview.yml",
+      "lock": "jarvis-seven-taifex-desc",
+      "state_branch": "jarvis-source-state/TAIFEX/DESC",
+      "schedule_number": "5-1",
+      "display_name": "期交所排程五之一（5-1）",
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/TAIFEX"
+    },
+    {
+      "source": "TAIFEX",
+      "direction": "ASC",
+      "workflow": "jarvis-seven-05-taifex-oldest-preview.yml",
+      "lock": "jarvis-seven-taifex-asc",
+      "state_branch": "jarvis-source-state/TAIFEX/ASC",
+      "schedule_number": "5-2",
+      "display_name": "期交所排程五之二（5-2）",
+      "direction_label": "最舊往新",
+      "coordination_state_branch": "jarvis-source-state/TAIFEX"
+    },
+    {
+      "source": "NDC",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-06-ndc-preview.yml",
+      "lock": "jarvis-seven-ndc-desc",
+      "state_branch": "jarvis-source-state/NDC/DESC",
+      "schedule_number": "6-1",
+      "display_name": "國發會排程六之一（6-1）",
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/NDC"
+    },
+    {
+      "source": "FinMind",
+      "direction": "DESC",
+      "workflow": "jarvis-seven-07-finmind-preview.yml",
+      "lock": "jarvis-seven-finmind-desc",
+      "state_branch": "jarvis-source-state/FinMind/DESC",
+      "schedule_number": "7-1",
+      "display_name": "FinMind補缺排程七之一（7-1）",
+      "direction_label": "最新往舊",
+      "coordination_state_branch": "jarvis-source-state/FinMind"
+    }
+  ],
+  "cutover_strategy": "ONE_TIME_SWITCH_NO_DUAL_OPERATION",
+  "state_contract": {
+    "authority": "PER_SOURCE_SHARED_CAS",
+    "slot_state_role": "LEGACY_PROJECTION_ONLY_NOT_OWNERSHIP",
+    "direction_role": "WORKER_AND_CURSOR_ONLY"
+  }
+}

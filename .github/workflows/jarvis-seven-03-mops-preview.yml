@@ -1,0 +1,28 @@
+name: 公開資訊觀測站排程三之一（3-1）｜最新往舊｜候選執行入口（正式未啟用）
+on:
+  workflow_dispatch:
+    inputs:
+      continuation_id:
+        description: Durable continuation identity; empty for initial guarded start
+        type: string
+        required: false
+      mode:
+        description: Entry validation uses fixtures; production remains blocked
+        type: choice
+        options: [entry-validation, production]
+        default: entry-validation
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: jarvis-seven-entry-mops-desc
+  cancel-in-progress: false
+jobs:
+  worker:
+    uses: ./.github/workflows/jarvis-seven-worker.yml
+    with:
+      source: MOPS
+      direction: DESC
+      mode: ${{ inputs.mode }}
+      continuation_id: ${{ inputs.continuation_id }}
+    secrets: inherit

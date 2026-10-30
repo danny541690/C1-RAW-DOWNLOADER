@@ -1,0 +1,1280 @@
+{
+  "schema": "JARVIS_OVERNIGHT_MERGED_RELEASE_REPORT_V1",
+  "run_id": "40903920061",
+  "source_sha": "7c7db39e5dfed18d835aabe02d14943ff9a18b24",
+  "jobs": {
+    "regression": "success",
+    "entries": "success",
+    "catalogs-and-runtime": "success",
+    "legacy-audit": "success"
+  },
+  "offline": {
+    "tests": 1059,
+    "passed": true
+  },
+  "entry_fixtures": [
+    {
+      "source": "TPEx",
+      "slot": "DESC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "TAIFEX",
+      "slot": "ASC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "TDCC",
+      "slot": "ASC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "FinMind",
+      "slot": "DESC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "TPEx",
+      "slot": "ASC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "NDC",
+      "slot": "DESC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "TWSE",
+      "slot": "ASC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "MOPS",
+      "slot": "ASC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "TDCC",
+      "slot": "DESC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "TAIFEX",
+      "slot": "DESC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "MOPS",
+      "slot": "DESC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    },
+    {
+      "source": "TWSE",
+      "slot": "DESC",
+      "statuses": {
+        "CONTENT_BLOCKED": 1,
+        "RAW_BASIC_VERIFIED": 1
+      }
+    }
+  ],
+  "candidate_catalogs": {
+    "schema": "JARVIS_OVERNIGHT_CANDIDATE_CATALOG_V1",
+    "ledger_count": 2389,
+    "total_frozen_review_tasks": 189521,
+    "sources": {
+      "TWSE": {
+        "frozen_review_tasks": 47042,
+        "retained_candidates": 6370,
+        "held_not_admitted": 40672,
+        "direction_counts": {
+          "ASC": 3185,
+          "DESC": 3185
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 10776,
+          "VERIFY_RETAINED_RAW_FIRST": 29887,
+          "RETRY_EXHAUSTED_REVIEW": 1,
+          "VERSION_CONFLICT_REVIEW": 8
+        }
+      },
+      "TPEx": {
+        "frozen_review_tasks": 62814,
+        "retained_candidates": 7302,
+        "held_not_admitted": 55512,
+        "direction_counts": {
+          "ASC": 3651,
+          "DESC": 3651
+        },
+        "held_action_counts": {
+          "VERIFY_RETAINED_RAW_FIRST": 52872,
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2636,
+          "VERSION_CONFLICT_REVIEW": 4
+        }
+      },
+      "MOPS": {
+        "frozen_review_tasks": 23512,
+        "retained_candidates": 771,
+        "held_not_admitted": 22741,
+        "direction_counts": {
+          "ASC": 385,
+          "DESC": 386
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 15328,
+          "VERIFY_RETAINED_RAW_FIRST": 7403,
+          "RETRY_EXHAUSTED_REVIEW": 10
+        }
+      },
+      "TAIFEX": {
+        "frozen_review_tasks": 5061,
+        "retained_candidates": 2365,
+        "held_not_admitted": 2696,
+        "direction_counts": {
+          "ASC": 1182,
+          "DESC": 1183
+        },
+        "held_action_counts": {
+          "VERIFY_RETAINED_RAW_FIRST": 851,
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 1845
+        }
+      },
+      "TDCC": {
+        "frozen_review_tasks": 48059,
+        "retained_candidates": 45120,
+        "held_not_admitted": 2939,
+        "direction_counts": {
+          "ASC": 22560,
+          "DESC": 22560
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2169,
+          "VERIFY_RETAINED_RAW_FIRST": 770
+        }
+      },
+      "NDC": {
+        "frozen_review_tasks": 322,
+        "retained_candidates": 320,
+        "held_not_admitted": 2,
+        "direction_counts": {
+          "DESC": 320
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 2
+        }
+      },
+      "FinMind": {
+        "frozen_review_tasks": 2711,
+        "retained_candidates": 2316,
+        "held_not_admitted": 395,
+        "direction_counts": {
+          "DESC": 2316
+        },
+        "held_action_counts": {
+          "CLASSIFY_APPLICABILITY_AND_MISSING_EVIDENCE": 395
+        }
+      }
+    },
+    "catalogs": {
+      "TWSE": {
+        "ASC": {
+          "commit": "424aecde279467bd0187454b5e505ac1ed39f751",
+          "index_sha256": "3b1bb70bec8707cea6fd61ed54d8492577bf420725ece5467ac48670dbb40ce9",
+          "task_count": 3185,
+          "catalog_id": "186a215408916016206f7de20a0b63d9d568e5788762a773ab2b0e12ded6c3d8"
+        },
+        "DESC": {
+          "commit": "df8654fc9d6fe29b49c50c696bfc207e8dce18c0",
+          "index_sha256": "6bfd2ccb7a373909e5856690dfa927759380035b2b23e3e5e7bc09e3ce2e2480",
+          "task_count": 3185,
+          "catalog_id": "0b07e319ef86bd7172311960b8ceaf123b6fb86682335a533c65480bc2891f6d"
+        }
+      },
+      "TPEx": {
+        "ASC": {
+          "commit": "d7f0a680d77e9066c39725dd952e2ecf474f6d34",
+          "index_sha256": "36e6664ca73f198dbdb8c1e06762884c91050af6ffcdb8b526ecb702025d1460",
+          "task_count": 3651,
+          "catalog_id": "e8a6c5d2375757b1cae7fa53dc7ae058cb02e18becbd2323f94237bf1dc1587b"
+        },
+        "DESC": {
+          "commit": "619a1345a12fb4fb8c6155b3588645eb10972e60",
+          "index_sha256": "d7fe08613e569e156966803cd24a528bc21be0d9ac6840ad2815fff5cab85938",
+          "task_count": 3651,
+          "catalog_id": "93984b7eb382cd7e80deed67ecc1580e910ac6679c6dabf379b14cf0394ab24c"
+        }
+      },
+      "MOPS": {
+        "ASC": {
+          "commit": "56fc9ddfe36346770d4b6150716a3453c8f93469",
+          "index_sha256": "383128454c0a3d2a8699725de1a0f1bd3e4b8b511f44eecb3d65a25e0880cb0a",
+          "task_count": 385,
+          "catalog_id": "042f499c5ebffd6b1116bd3fdb251f5b635a37094f143724b0d62cd74c2e2cc7"
+        },
+        "DESC": {
+          "commit": "78ee09b25a585ec3a0991e904d7cfdef2c04206b",
+          "index_sha256": "bfb401d4a877501603748ab024a5ba797648e28f8c1cc2c221f6a8dbba6435b0",
+          "task_count": 386,
+          "catalog_id": "f0716b96b494ac78347b54f4a9a79d3242e622717701bdf2a0564490720b7c21"
+        }
+      },
+      "TAIFEX": {
+        "ASC": {
+          "commit": "4d42b6a3dc311764e6348690255561d94bf3fa12",
+          "index_sha256": "e709a80dcfa7458dc3cf3594de7d8616a35445e9466d1447f91246040cd16d0b",
+          "task_count": 1182,
+          "catalog_id": "be998a336b27e41bc8312dee8112b65f16f54a95ad1a30827435ebb7a6652465"
+        },
+        "DESC": {
+          "commit": "4a79b10829d17d0f9c8f96fff3d32de348210528",
+          "index_sha256": "c48a6c56011a60a5d03a19d28f0e7b1e79062851b282d6aa4f6afeac4e653444",
+          "task_count": 1183,
+          "catalog_id": "befd9e4856a843993ec1e67eeeb8992697028f44d86872ed6d25162e2f2e6c98"
+        }
+      },
+      "TDCC": {
+        "ASC": {
+          "commit": "ee7e2d06111d09df331be4787e98d70fbec6fa80",
+          "index_sha256": "2f8fb32e5aa88a15192f7791b2c88f3cd2d6561b1f6600c11fad0ca2c068ef4e",
+          "task_count": 22560,
+          "catalog_id": "edf3b2eb706245c5ea1f0cf5a3101354c3ea30149002ed2f73ed5c536e5128fa"
+        },
+        "DESC": {
+          "commit": "47a8b39a9f7e455b9586c4dc991dd31ce044d147",
+          "index_sha256": "4a71a5aa5ebe6dff31b9d91ac86ebd8017ae146a49b7b136ae399931dcc112b9",
+          "task_count": 22560,
+          "catalog_id": "58ad44a4e0eaec58c44a0545e0b6f6198bdd8c548bae39767be3c83c7d4b53ac"
+        }
+      },
+      "NDC": {
+        "DESC": {
+          "commit": "ec7b28f0782fe1a9d2ef5a9ed989433765249aaa",
+          "index_sha256": "910c60681de84b9a02f0347682e2b5d31b0ff285dd29da948b902a0247d7e881",
+          "task_count": 320,
+          "catalog_id": "73023a9276a8c4b37cc4a76ca36224460adad046a7b8170ed6cd3cd8e14edf6e"
+        }
+      },
+      "FinMind": {
+        "DESC": {
+          "commit": "cabaafecb5f2b8c7febb274618fff7e21d6a120f",
+          "index_sha256": "bfdb0a613249cac4f783d86fa615c99f412a0c10c36c52ab169fe30cb0d0a86c",
+          "task_count": 2316,
+          "catalog_id": "f80bd83ec201ed9e09ab5fb96e3d3d0b4e02a2339e7b175aaa821623b0f90293"
+        }
+      }
+    },
+    "contract_rejections": {},
+    "catalog_entries": 12,
+    "source_requests": 0,
+    "formal_raw_writes": 0,
+    "production_approved": false,
+    "missing_download_authority": false,
+    "scope": "Retained-only candidate catalogs; held and missing scope remains in immutable frozen review, not discarded"
+  },
+  "real_retained_continuous": {
+    "schema": "JARVIS_OVERNIGHT_REAL_CONTINUOUS_V1",
+    "first": {
+      "source": "NDC",
+      "slot": "DESC",
+      "processed": 1,
+      "outcomes": [
+        {
+          "key": "NDC|2026-07|2026-07",
+          "outcome": "BASIC_VERIFIED",
+          "recovered": false,
+          "evidence": {
+            "task_key": "NDC|2026-07|2026-07",
+            "sha256": "f1e71de850cbae49ee2ac933e839fda528c38531db0d6c9da2546c9f09117650",
+            "reference": "1EU-eGqYc9kekNPkUn5qfoPubaiY2i-qY",
+            "stats": {
+              "basic_verified": true,
+              "native": {
+                "tables": 5,
+                "cells": 34,
+                "source_archive_sha256": "c035dc5bbd3fe91ca80a620fd84828a54e8c49885a1b3aa51db5e42857772c83",
+                "source_cells_reconstructed": true,
+                "gaps": 0
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            },
+            "numeric_verified": false,
+            "pit_verified": false,
+            "full_acceptance": false
+          }
+        }
+      ],
+      "task_status_counts": {
+        "RAW_BASIC_VERIFIED": 1
+      },
+      "task_scope": 1,
+      "denominator_is_database_universe": false,
+      "elapsed_seconds": 19.082,
+      "full_acceptance": false,
+      "ready_remaining": 0,
+      "source_hold": null,
+      "cooldown_until": null,
+      "admission_cursor": {
+        "active_keys": [],
+        "archived_status_counts": {
+          "RAW_BASIC_VERIFIED": 2
+        },
+        "catalog_id": "f25636e09c7a92666c3fb4c529e6f71dc088eaf81d8c03687e135da5140dd77b",
+        "chunk_number": 2,
+        "finished": true,
+        "last_archive": {
+          "branch": "refs/heads/jarvis-source-preflight/continuous-archive-overnight-40903920061-1-1/NDC",
+          "commit": "1733619b8e1f62500ade0a02f10bc483d38c4644",
+          "readback_verified": true,
+          "sha256": "a21d1ffc02a533692e34f6ccd88b5b6a6da5ca24bb1cd74ddde9412854a2d137"
+        },
+        "offset": 0,
+        "page": 1,
+        "signature": "b28918dc2ce13ce0b7f71522119f86530f40b804969115a9d1d0a0a165908359"
+      },
+      "chunk_archived": true,
+      "catalog_finished": true,
+      "catalog_more": false,
+      "active_source_tasks": 0,
+      "batches": 2,
+      "total_processed": 2,
+      "stop_reason": "CATALOG_FINISHED",
+      "elapsed_campaign_seconds": 68.141,
+      "production_activation": false
+    },
+    "cold_restart": {
+      "source": "NDC",
+      "slot": "DESC",
+      "processed": 0,
+      "outcomes": [],
+      "task_status_counts": {},
+      "task_scope": 0,
+      "denominator_is_database_universe": false,
+      "elapsed_seconds": 3.795,
+      "full_acceptance": false,
+      "ready_remaining": 0,
+      "source_hold": null,
+      "cooldown_until": null,
+      "admission_cursor": {
+        "active_keys": [],
+        "archived_status_counts": {
+          "RAW_BASIC_VERIFIED": 2
+        },
+        "catalog_id": "f25636e09c7a92666c3fb4c529e6f71dc088eaf81d8c03687e135da5140dd77b",
+        "chunk_number": 2,
+        "finished": true,
+        "last_archive": {
+          "branch": "refs/heads/jarvis-source-preflight/continuous-archive-overnight-40903920061-1-1/NDC",
+          "commit": "1733619b8e1f62500ade0a02f10bc483d38c4644",
+          "readback_verified": true,
+          "sha256": "a21d1ffc02a533692e34f6ccd88b5b6a6da5ca24bb1cd74ddde9412854a2d137"
+        },
+        "more_after_chunk": false,
+        "next_position": {
+          "offset": 0,
+          "page": 1
+        },
+        "offset": 0,
+        "page": 1,
+        "signature": "b28918dc2ce13ce0b7f71522119f86530f40b804969115a9d1d0a0a165908359"
+      },
+      "chunk_archived": false,
+      "catalog_finished": true,
+      "catalog_more": false,
+      "active_source_tasks": 0,
+      "batches": 1,
+      "total_processed": 0,
+      "stop_reason": "CATALOG_FINISHED",
+      "elapsed_campaign_seconds": 10.12,
+      "production_activation": false
+    },
+    "periods": [
+      "2026-07",
+      "2026-08"
+    ],
+    "source_requests": 0,
+    "formal_raw_writes": 0,
+    "data_repaired": 0,
+    "verified_exceptions": 0,
+    "numeric_verified": false,
+    "pit_verified": false,
+    "full_acceptance": false,
+    "production_activation": false
+  },
+  "old_writer_audit": {
+    "schema": "JARVIS_OVERNIGHT_LIVE_OLD_WRITER_AUDIT_V1",
+    "checked_at_taipei": "2026-10-29T23:41:31.175184+08:00",
+    "workflows": [
+      {
+        "id": 394884636,
+        "path": ".github/workflows/four-lane-live-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394895705,
+        "path": ".github/workflows/four-lane-month-integration.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394856871,
+        "path": ".github/workflows/four-source-repair-review.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399266721,
+        "path": ".github/workflows/jarvis-acceptance-blocked-followup.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399566226,
+        "path": ".github/workflows/jarvis-acceptance-journal-readback.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399240768,
+        "path": ".github/workflows/jarvis-acceptance-live-rehearsal.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399145021,
+        "path": ".github/workflows/jarvis-acceptance-remote-inventory.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399561416,
+        "path": ".github/workflows/jarvis-acceptance-scheduled.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391885852,
+        "path": ".github/workflows/jarvis-checkpoint-replan-launch-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399291425,
+        "path": ".github/workflows/jarvis-eight-group-live-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392585810,
+        "path": ".github/workflows/jarvis-financial-continue-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392262802,
+        "path": ".github/workflows/jarvis-four-consumers-60m-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391792184,
+        "path": ".github/workflows/jarvis-live-staging-followthrough-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392251696,
+        "path": ".github/workflows/jarvis-parallel-four-30m-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391782044,
+        "path": ".github/workflows/jarvis-raw-first-live-batch-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392273198,
+        "path": ".github/workflows/jarvis-raw-hourly-60m-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 398214465,
+        "path": ".github/workflows/jarvis-raw-repair-onepass-20261027.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391845831,
+        "path": ".github/workflows/jarvis-replan-stop-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391887014,
+        "path": ".github/workflows/jarvis-resume-201404-30-10-10-10-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391741593,
+        "path": ".github/workflows/jarvis-retire-legacy-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392433204,
+        "path": ".github/workflows/jarvis-stage06-drive-publish-test-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392528968,
+        "path": ".github/workflows/jarvis-stage06-financial-expand-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392504517,
+        "path": ".github/workflows/jarvis-stage06-full-launch-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392360714,
+        "path": ".github/workflows/jarvis-stage06-ledger-task-test-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391767368,
+        "path": ".github/workflows/jarvis-start-live-five-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391777998,
+        "path": ".github/workflows/jarvis-start-live-five-v2-20261021.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392540621,
+        "path": ".github/workflows/jarvis-terminal-worker-recovery-20261022.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 396147289,
+        "path": ".github/workflows/pause-all-finalize-20261026.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 396145414,
+        "path": ".github/workflows/pause-all-google-auth-20261026.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394864608,
+        "path": ".github/workflows/pause-legacy-four-20261024.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392987176,
+        "path": ".github/workflows/provider-sample-20261016.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 397210533,
+        "path": ".github/workflows/resume-audited-downloads-20261026.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 395000467,
+        "path": ".github/workflows/taifex-v3-handoff-20261024.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394779320,
+        "path": ".github/workflows/tdcc-history-repair-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 395011971,
+        "path": ".github/workflows/tdcc-timeout-handoff-20261024.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388836023,
+        "path": ".github/workflows/v093-2024-four-source-annual-capture.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389056869,
+        "path": ".github/workflows/v093-2024-full-year-qa-repair-r1.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389155467,
+        "path": ".github/workflows/v093-2024-integrity-r2.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389159961,
+        "path": ".github/workflows/v093-2024-tpex-correct-r3.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389156476,
+        "path": ".github/workflows/v093-2024-tpex-date-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389076549,
+        "path": ".github/workflows/v093-2025-2026-443-integration-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389045025,
+        "path": ".github/workflows/v093-202609-deep-source-scan-fixed.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389043849,
+        "path": ".github/workflows/v093-202609-deep-source-scan.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388536097,
+        "path": ".github/workflows/v093-actual-partial-2024.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388119911,
+        "path": ".github/workflows/v093-annual-plan.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390281963,
+        "path": ".github/workflows/v093-audit-backlog.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388580020,
+        "path": ".github/workflows/v093-bulk-drive-e2e.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388589452,
+        "path": ".github/workflows/v093-bulk-feb-dec-combined.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388587833,
+        "path": ".github/workflows/v093-bulk-january-e2e.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388572957,
+        "path": ".github/workflows/v093-bulk-market-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391187034,
+        "path": ".github/workflows/v093-combined-prelaunch-fast-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391656552,
+        "path": ".github/workflows/v093-complete-prelaunch-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391282997,
+        "path": ".github/workflows/v093-concurrent-multimonth-cas-integrated.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391179723,
+        "path": ".github/workflows/v093-consolidated-prelaunch-gates.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390676147,
+        "path": ".github/workflows/v093-conversion-2023.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391177452,
+        "path": ".github/workflows/v093-corrected-price-reconciliation.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388908407,
+        "path": ".github/workflows/v093-cross-asset-52-second-pass.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388898547,
+        "path": ".github/workflows/v093-cross-asset-72-sep-pilot.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388913109,
+        "path": ".github/workflows/v093-cross-asset-third-pass-source-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391247609,
+        "path": ".github/workflows/v093-cross-runner-cas-retry-merge.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391246739,
+        "path": ".github/workflows/v093-cross-runner-github-cas-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391281821,
+        "path": ".github/workflows/v093-cross-runner-recovery-integrated.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391176335,
+        "path": ".github/workflows/v093-cross-source-price-readonly-probe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391240257,
+        "path": ".github/workflows/v093-cross-workflow-lock-a.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391240307,
+        "path": ".github/workflows/v093-cross-workflow-lock-b.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391271972,
+        "path": ".github/workflows/v093-data-manifest-crash-recovery.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391162263,
+        "path": ".github/workflows/v093-deep-repair-three-lane-smoke.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388209339,
+        "path": ".github/workflows/v093-drive-auth-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388487883,
+        "path": ".github/workflows/v093-drive-checkpoint-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391212478,
+        "path": ".github/workflows/v093-drive-concurrency-release-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391257754,
+        "path": ".github/workflows/v093-drive-helper-fault-injection.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391287709,
+        "path": ".github/workflows/v093-durable-backlog-restart-integrated.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391243611,
+        "path": ".github/workflows/v093-durable-queue-cancel-recovery.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390165314,
+        "path": ".github/workflows/v093-feature-history.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388183941,
+        "path": ".github/workflows/v093-finmind-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389244421,
+        "path": ".github/workflows/v093-finmind-free-2026-backfill.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389239115,
+        "path": ".github/workflows/v093-finmind-free-2026-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389034229,
+        "path": ".github/workflows/v093-finmind-three-year-coverage-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391301144,
+        "path": ".github/workflows/v093-five-stage-combined-launch-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391167564,
+        "path": ".github/workflows/v093-five-stage-dependency-smoke.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391188070,
+        "path": ".github/workflows/v093-five-stage-integrated-prelaunch-test.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391734233,
+        "path": ".github/workflows/v093-five-stage-policy-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388591285,
+        "path": ".github/workflows/v093-four-source-mini-e2e.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388524660,
+        "path": ".github/workflows/v093-full-readiness-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389542457,
+        "path": ".github/workflows/v093-history-2023-to-2014-descending.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390718048,
+        "path": ".github/workflows/v093-independent-raw.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391280865,
+        "path": ".github/workflows/v093-integrated-safety-regression.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391227952,
+        "path": ".github/workflows/v093-isolated-drive-race-reproduction.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390764404,
+        "path": ".github/workflows/v093-l1-secondpass-qa-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391092171,
+        "path": ".github/workflows/v093-l1-thirdpass-gated-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389098951,
+        "path": ".github/workflows/v093-layer02-2025-2026-all-months.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389093973,
+        "path": ".github/workflows/v093-layer02-format-probe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389129043,
+        "path": ".github/workflows/v093-layer02-governance-policy-sync.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389128174,
+        "path": ".github/workflows/v093-layer02-governance-tests.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389971175,
+        "path": ".github/workflows/v093-layer02-r3-2025-2026.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389091776,
+        "path": ".github/workflows/v093-layer02-standard-r1-pilot.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389096102,
+        "path": ".github/workflows/v093-layer02-standard-r2.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 393062898,
+        "path": ".github/workflows/v093-live-resume-watchdog.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391279144,
+        "path": ".github/workflows/v093-manifest-false-certification-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390743176,
+        "path": ".github/workflows/v093-merged-quick-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391232323,
+        "path": ".github/workflows/v093-multiprocess-lease-crash-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391178094,
+        "path": ".github/workflows/v093-multistock-historical-qa-readonly.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394255149,
+        "path": ".github/workflows/v093-ndc-independent.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389037670,
+        "path": ".github/workflows/v093-official-first-finmind-delta-test.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394904073,
+        "path": ".github/workflows/v093-official-four-lane-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 393608880,
+        "path": ".github/workflows/v093-official-only-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 393596952,
+        "path": ".github/workflows/v093-official-only-two-ended.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390030530,
+        "path": ".github/workflows/v093-operational-control.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391185406,
+        "path": ".github/workflows/v093-otc-numeric-reconciliation-retry-safe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391184902,
+        "path": ".github/workflows/v093-otc-numeric-reconciliation-safe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391184438,
+        "path": ".github/workflows/v093-otc-schema-full-regression-safe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390128449,
+        "path": ".github/workflows/v093-parallel-workers.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391176634,
+        "path": ".github/workflows/v093-price-basis-diagnostic-readonly.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388831191,
+        "path": ".github/workflows/v093-production-gap-test.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391290876,
+        "path": ".github/workflows/v093-production-release-readonly-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391200315,
+        "path": ".github/workflows/v093-production-scheduler-conflict-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391242437,
+        "path": ".github/workflows/v093-queue-stress-one.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391242478,
+        "path": ".github/workflows/v093-queue-stress-three.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391242459,
+        "path": ".github/workflows/v093-queue-stress-two.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390756928,
+        "path": ".github/workflows/v093-raw-2015-to-2000.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390709485,
+        "path": ".github/workflows/v093-raw-firstpass.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390744214,
+        "path": ".github/workflows/v093-raw-resume.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391175353,
+        "path": ".github/workflows/v093-readonly-integration-probe.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388189196,
+        "path": ".github/workflows/v093-remaining-sources.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394753402,
+        "path": ".github/workflows/v093-repair-prelaunch-tests.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391254854,
+        "path": ".github/workflows/v093-retry-exhaustion-corrected.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391254446,
+        "path": ".github/workflows/v093-retry-exhaustion-safety-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390697538,
+        "path": ".github/workflows/v093-stop-all.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 390757277,
+        "path": ".github/workflows/v093-stop-prior-raw-once.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394842279,
+        "path": ".github/workflows/v093-taifex-independent-asc.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394231455,
+        "path": ".github/workflows/v093-taifex-independent.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394849391,
+        "path": ".github/workflows/v093-tdcc-independent-asc.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 394199526,
+        "path": ".github/workflows/v093-tdcc-independent.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389294427,
+        "path": ".github/workflows/v093-three-year-finmind-gap-supplement.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389413337,
+        "path": ".github/workflows/v093-three-year-monthly-continuation.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 389291909,
+        "path": ".github/workflows/v093-three-year-official-gap-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391231128,
+        "path": ".github/workflows/v093-transaction-fencing-prelaunch.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388176113,
+        "path": ".github/workflows/v093-twse-canary.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388811583,
+        "path": ".github/workflows/v093-unified-annual-integration.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 388492217,
+        "path": ".github/workflows/v093-unified-preflight.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391305920,
+        "path": ".github/workflows/v093-v2-01-raw.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306021,
+        "path": ".github/workflows/v093-v2-02-qa.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306051,
+        "path": ".github/workflows/v093-v2-03-price.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306068,
+        "path": ".github/workflows/v093-v2-04-financial.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306100,
+        "path": ".github/workflows/v093-v2-05-chip.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 392498437,
+        "path": ".github/workflows/v093-v2-06-reconcile-repair.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 393418650,
+        "path": ".github/workflows/v093-v2-07-raw-ascending.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391331063,
+        "path": ".github/workflows/v093-v2-all-month-file-metadata-combined.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391370999,
+        "path": ".github/workflows/v093-v2-consolidated-prelaunch-release-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391354596,
+        "path": ".github/workflows/v093-v2-consolidated-repair-triage-qa.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391306218,
+        "path": ".github/workflows/v093-v2-cutover-contract-audit.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391324565,
+        "path": ".github/workflows/v093-v2-drive-guard-historical-adapter-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391356441,
+        "path": ".github/workflows/v093-v2-duplicate-historical-boundary-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391387501,
+        "path": ".github/workflows/v093-v2-final-real-data-launch-smoke.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391328865,
+        "path": ".github/workflows/v093-v2-full-history-inventory-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391373752,
+        "path": ".github/workflows/v093-v2-onepass-five-stage-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391325911,
+        "path": ".github/workflows/v093-v2-real-drive-isolated-historical-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391327364,
+        "path": ".github/workflows/v093-v2-real-historical-sha-crc-repair-gate.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391390313,
+        "path": ".github/workflows/v093-v2-real-native-parser-acceptance.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 391321804,
+        "path": ".github/workflows/v093-v2-shared-lease-adapter-integrated.yml",
+        "state": "disabled_manually"
+      }
+    ],
+    "active_old_triggers": [],
+    "outstanding_old_writers": [],
+    "quarantined_metadata": {
+      "id": 39611764652,
+      "status": "queued",
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "job_count": 0
+    },
+    "read_only": true,
+    "production_activation": false,
+    "passed": true
+  },
+  "production_activation": false,
+  "deployment_ready": false,
+  "source_download_requests": 0,
+  "formal_raw_writes": 0,
+  "data_repaired": 0,
+  "confirmed_historical_exceptions": 0,
+  "remaining_release_gates": [
+    {
+      "id": "G1",
+      "item": "Candidate retained catalogs must incorporate later QA outcomes and approved missing/correction contracts before production release; missing/held scope is preserved in frozen review"
+    },
+    {
+      "id": "G2",
+      "item": "Actual native positive missing download and invalid-old-file correction/save/reverify for approved source types; existing retained rechecks and entry fixtures do not replace this"
+    },
+    {
+      "id": "G3",
+      "item": "Continuous loop and gated ten-minute recovery controller are implemented; actual released twelve-worker quota/heartbeat/storage throughput and provider failover remain unmeasured"
+    },
+    {
+      "id": "G4",
+      "item": "Merge fixed tested revision, approve release manifest only after required gates, then validate first formal batch"
+    }
+  ],
+  "historical_empty_backlog_nonblocking": 1602,
+  "implemented_batch_passed": true
+}

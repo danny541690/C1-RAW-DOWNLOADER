@@ -1,0 +1,172 @@
+{
+  "schema": "JARVIS_TYPED_ACTION_CATALOGS_V1",
+  "source_sha": "2e7830884f9d54b5e701eb8b43e5e65a4fbd2c72",
+  "catalogs": {
+    "TWSE": {
+      "DESC": {
+        "commit": "df4674b5a7b1cd5e43579c7d6bb27667f0af976a",
+        "index_sha256": "86090e5ffe9878bc1f786c5a656b4bf2fefd1d59f1a24344f49b812ef3ec04d2"
+      },
+      "ASC": {
+        "commit": "7aa3041643441d61f2f01665c339d35201a8fa16",
+        "index_sha256": "f21f0e05c07569037db7ed666b08c17cba9b338b6b302f76f7d7fbe501d2f02a"
+      }
+    },
+    "TPEx": {
+      "DESC": {
+        "commit": "236673a6d7e697376fa8588ad039d1b974fe4d1b",
+        "index_sha256": "999a0c53e7308e9dacee7194b46189b66b66ec7bb3fe6b2f34870111c963d3c3"
+      },
+      "ASC": {
+        "commit": "762c6125524e9ef181a11b0575677f08a2716d63",
+        "index_sha256": "8fdcf2ef577f12d6ea684ab73f185ea8bfb0901824ef9ec9d8fe79389bd06c39"
+      }
+    },
+    "MOPS": {
+      "DESC": {
+        "commit": "d743b9a286e6a7bc8bca1cb3d53d8906f509f429",
+        "index_sha256": "bb832b74b007f50c9dd3242c266342c2ea1b986b78f3c4a0aa861f806b639653"
+      },
+      "ASC": {
+        "commit": "b5b4b65a24969b86a462efff0fbee420ccc77d04",
+        "index_sha256": "7c4159bc501d09d69e3e63a71ca3bee2ef09e12d945f8181540fa73712c932cc"
+      }
+    },
+    "TAIFEX": {
+      "DESC": {
+        "commit": "35ece7bc582bbcb5e4cfcf0703f72223b8268692",
+        "index_sha256": "335e3b89dc2c3630c1a8d50cb88a72fd801cc134b4e2c13462688fe3ce30d14b"
+      },
+      "ASC": {
+        "commit": "da1ce1ae7226f23c9b1483798ac407567d646d7f",
+        "index_sha256": "fdb51954fa2a6a87dff7a6b9fafc720858dca23e6175480893bb66157c674ea8"
+      }
+    },
+    "TDCC": {
+      "DESC": {
+        "commit": "08fcd6858947d6f166eccbc914c6290793fadf72",
+        "index_sha256": "2773ecf271ae00b5916963adaefa9dc6cd473acbbe11089a5682c7091aabd256"
+      },
+      "ASC": {
+        "commit": "9726c2bbae6cc1f373e24459e3f6da63e66e5e0b",
+        "index_sha256": "2149dff6cc1e86778db0d24cc050bae970cee246a122099931c7f5391ea395fb"
+      }
+    },
+    "NDC": {
+      "DESC": {
+        "commit": "00e0227d41a2c7aec85d1a8e8af9419e9565175d",
+        "index_sha256": "8038698a8d6d03dc506479715426824a56d48728f33a99ef708d05ea44eeb6b8"
+      }
+    },
+    "FinMind": {
+      "DESC": {
+        "commit": "58539ec650b2e393921c9ac1a4cd406a4f2f5f59",
+        "index_sha256": "1468c634a5764eb068b716bdc81b46e663dd71b027633739521ffbd973ae565a"
+      }
+    }
+  },
+  "counts": {
+    "TWSE": {
+      "DESC": {
+        "RETAINED": 3184,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      },
+      "ASC": {
+        "RETAINED": 3185,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      }
+    },
+    "TPEx": {
+      "DESC": {
+        "RETAINED": 3650,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      },
+      "ASC": {
+        "RETAINED": 3651,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      }
+    },
+    "MOPS": {
+      "DESC": {
+        "RETAINED": 385,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      },
+      "ASC": {
+        "RETAINED": 386,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      }
+    },
+    "TAIFEX": {
+      "DESC": {
+        "RETAINED": 1182,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      },
+      "ASC": {
+        "RETAINED": 1183,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      }
+    },
+    "TDCC": {
+      "DESC": {
+        "RETAINED": 22568,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 1
+      },
+      "ASC": {
+        "RETAINED": 22552,
+        "MISSING": 4,
+        "REPAIR": 0,
+        "PROMOTE": 1
+      }
+    },
+    "NDC": {
+      "DESC": {
+        "RETAINED": 320,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      }
+    },
+    "FinMind": {
+      "DESC": {
+        "RETAINED": 2316,
+        "MISSING": 0,
+        "REPAIR": 0,
+        "PROMOTE": 0
+      }
+    }
+  },
+  "total_modes": {
+    "RETAINED": 64562,
+    "PROMOTE": 2,
+    "MISSING": 4
+  },
+  "promotion_keys": [
+    "TDCC|2025-12|20251205|8401",
+    "TDCC|2026-09|20260911|6912"
+  ],
+  "automatic_missing_sources": [
+    "TDCC"
+  ],
+  "other_source_missing_scope": "Only typed approved actions; unsupported/unproven tasks remain held",
+  "source_requests": 0,
+  "formal_raw_writes": 0,
+  "production_activation": false
+}

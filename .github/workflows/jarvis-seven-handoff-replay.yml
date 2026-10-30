@@ -1,0 +1,59 @@
+name: JARVIS frozen legacy handoff replay
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-handoff-replay.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: jarvis-frozen-legacy-replay
+  cancel-in-progress: true # Only superseded read-only import rehearsals; never production writers.
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore immutable frozen ledgers
+        run: |
+          mkdir frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/legacy-freeze
+          git archive refs/remotes/origin/legacy-freeze | tar -x -C frozen
+      - run: pip install -r requirements-qa.lock
+      - name: Reconcile all frozen ledgers and stream-check retained TDCC sample
+        env:
+          VERIFY_TDCC_STREAM: '1'
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_legacy_handoff_replay
+      - name: Persist frozen ledgers and candidate review pages
+        if: always()
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          def git(*a,input=None):return subprocess.check_output(['git',*a],input=input).decode().strip()
+          def tree(root):
+              rows=[]
+              for p in sorted(root.iterdir()):
+                  if p.is_dir():rows.append('040000 tree '+tree(p)+'\t'+p.name+'\n')
+                  else:rows.append('100644 blob '+git('hash-object','-w','--stdin',input=p.read_bytes())+'\t'+p.name+'\n')
+              return git('mktree',input=''.join(rows).encode())
+          root=Path('handoff-replay')
+          if not root.exists():raise RuntimeError('NO_IMPORT_EVIDENCE')
+          sha=git('-c','user.name=JARVIS handoff','-c','user.email=jarvis-handoff@users.noreply.github.com','commit-tree',tree(root),input=b'Frozen old ledger import rehearsal [skip ci]\n')
+          git('push','origin',sha+':refs/heads/jarvis-handoff-replay/20261029-'+os.environ['GITHUB_RUN_ID'])
+          print('DURABLE_IMPORT_COMMIT',sha)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvis-frozen-handoff-replay-${{ github.run_id }}
+          path: handoff-replay
+          retention-days: 90

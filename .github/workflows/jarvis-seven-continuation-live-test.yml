@@ -1,0 +1,39 @@
+name: JARVIS real durable continuation dispatch and receiver acceptance
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/jarvis-seven-continuation-live-test.yml]
+  workflow_dispatch:
+    inputs:
+      phase: {type: choice, options: [send, receive], default: send}
+      namespace: {type: string, required: false}
+      continuation_id: {type: string, required: false}
+permissions:
+  contents: write
+  actions: write
+jobs:
+  transport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Real dispatch or independent receiver; no source or Drive RAW requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PHASE: ${{ inputs.phase || 'send' }}
+          NAMESPACE: ${{ inputs.namespace || github.run_id }}
+          CONTINUATION_ID: ${{ inputs.continuation_id }}
+        run: python -m scripts.v093_continuation_live --phase "$PHASE" --namespace "$NAMESPACE" --continuation-id "$CONTINUATION_ID"
+      - name: Preserve actual transport evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job continuation-transport --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'continuation-${{ github.run_id }}', path: results, retention-days: 90}

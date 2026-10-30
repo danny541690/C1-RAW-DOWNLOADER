@@ -1,0 +1,393 @@
+{
+  "review_date": "2026-10-29",
+  "review_window_start_taipei": "2026-10-24T00:00:00+08:00",
+  "reviewed_script_commit_count": 65,
+  "reviewed_commits": [
+    {
+      "sha": "2b5a7fbe08a06772e481d646c513e62ad8d77429",
+      "message": "Persist unattended run journals and numeric worker progress even after pipeline failures",
+      "date": "2026-10-28T15:19:43Z"
+    },
+    {
+      "sha": "5badf4cf059a1a6c42f0d5760c23ab0d800abdbe",
+      "message": "Report incremental checked repaired exceptions and pending counts with scoped history",
+      "date": "2026-10-28T14:40:14Z"
+    },
+    {
+      "sha": "89eecc6a6f58cd3b543eb972a0a7a598e236cedd",
+      "message": "Normalize current inventory metadata without granting universe or readback approval",
+      "date": "2026-10-28T10:58:03Z"
+    },
+    {
+      "sha": "650cce4756a18965c912e8ec54a8f20f160b420e",
+      "message": "Run all eight acceptance groups with scoped live RAW, restore and continuation checks",
+      "date": "2026-10-28T10:49:20Z"
+    },
+    {
+      "sha": "b8342d1e8bd659feb7febeb31d9f2973a33d66b5",
+      "message": "Connect native monthly futures and financial checks; recheck exact blockers",
+      "date": "2026-10-28T10:20:18Z"
+    },
+    {
+      "sha": "81e8bc77deeecdf9316bd57f017984204f7a98f7",
+      "message": "Integrate current main and test three-worker resume and summary recovery",
+      "date": "2026-10-28T09:23:59Z"
+    },
+    {
+      "sha": "bed986bec6a53b2e4533a952b0376e382037bf43",
+      "message": "Add bounded read-only acceptance scheduler with three disjoint workers",
+      "date": "2026-10-28T08:52:04Z"
+    },
+    {
+      "sha": "c013b426a80dfbb3c5b1671d01802aeca4a911bc",
+      "message": "Integrate read-only acceptance, dependency resume, recovery and remote inventory",
+      "date": "2026-10-28T07:59:32Z"
+    },
+    {
+      "sha": "8c7f3cc94f9fdbaf4ed8d64daef335748683b638",
+      "message": "Route dated official ESB evidence to retained RAW-only acceptance",
+      "date": "2026-10-28T06:56:40Z"
+    },
+    {
+      "sha": "c672602767df1b3abf0b880435e8b7810ec065ef",
+      "message": "feat: validate retained native supplements and TPEx CSV content dates",
+      "date": "2026-10-28T02:20:37Z"
+    },
+    {
+      "sha": "e61f811a4d2701d8137976cd02c554a125f40473",
+      "message": "fix: compare native unpadded price columns and explicit TPEx OHLC aliases",
+      "date": "2026-10-28T01:40:57Z"
+    },
+    {
+      "sha": "94ed63d52be54a46308de0c46fbde43feb65dc1e",
+      "message": "feat: consolidate read-only prelaunch acceptance and resumable evidence backlog",
+      "date": "2026-10-28T00:53:46Z"
+    },
+    {
+      "sha": "e01d933c18832251452f3d6ec07e2a9ab1bd1bf8",
+      "message": "fix: include historical route holds in bounded FinMind gaps; retain detailed evidence",
+      "date": "2026-10-27T13:08:03Z"
+    },
+    {
+      "sha": "753d096befd85a93dc4dfdb82cb0d7c9ae9cdc9f",
+      "message": "fix: consolidate raw repair audit coverage and historical MOPS route holds",
+      "date": "2026-10-27T12:17:09Z"
+    },
+    {
+      "sha": "c1ad9484338de173bdd17d4ba7143e6fc34c8018",
+      "message": "fix: refresh historical form bounds on verified latest-date advances",
+      "date": "2026-10-26T23:17:28Z"
+    },
+    {
+      "sha": "63bc10f866194354f65e8a18eb5803fba8c569ad",
+      "message": "fix: inventory native futures contract-code headers during RAW validation",
+      "date": "2026-10-26T23:15:35Z"
+    },
+    {
+      "sha": "0216f9b7e4bbf69031d162642c2d6acd1f842f6d",
+      "message": "feat: repair TAIFEX RAW bidirectionally across 2000 to latest with shared ownership",
+      "date": "2026-10-26T23:12:01Z"
+    },
+    {
+      "sha": "c1d4e3b6ffd1294ed2e4820b8211a7367cba7c81",
+      "message": "feat: coordinate opposite TAIFEX full-range repair and verify native data",
+      "date": "2026-10-26T23:11:57Z"
+    },
+    {
+      "sha": "a7e53e1aef846bda91788d6bc2bc9f096d72ef89",
+      "message": "fix: filter unproven trading dates and keep FinMind gap queue progressing",
+      "date": "2026-10-26T22:55:28Z"
+    },
+    {
+      "sha": "f55c3173a38666037e51f70024328bc2222013b8",
+      "message": "fix: filter unproven trading dates and keep FinMind gap queue progressing",
+      "date": "2026-10-26T22:55:26Z"
+    },
+    {
+      "sha": "7aeb96e9bbd87315bb4cb5779bac7339f38852d5",
+      "message": "feat: process FinMind gaps alongside official repairs and persist supplement backlog",
+      "date": "2026-10-26T22:49:49Z"
+    },
+    {
+      "sha": "d3d589617fe923ba4479bd06f545b3749ebaacff",
+      "message": "feat: fill explicit official RAW gaps with bounded shared FinMind requests",
+      "date": "2026-10-26T22:49:45Z"
+    },
+    {
+      "sha": "63d185e34c6eecee746aae1a96f611f331ffc624",
+      "message": "fix: initialize explicit backfill option before starting official repair",
+      "date": "2026-10-26T22:32:36Z"
+    },
+    {
+      "sha": "c1c454bdd73436cc54ac151233dbf6cf8b522b2d",
+      "message": "fix: reconcile visited months and reopen recorded missing RAW once per authorized pass",
+      "date": "2026-10-26T22:32:04Z"
+    },
+    {
+      "sha": "ba21530ac74738a927d5a7adb67b40a5f92c961f",
+      "message": "fix: backfill missing TAIFEX RAW from recorded failures and expected plan",
+      "date": "2026-10-26T22:25:29Z"
+    },
+    {
+      "sha": "cba67bfd23c1117e2c2e51ecf8270432a6b1356e",
+      "message": "fix: relaunch inward official repair with resilient GitHub reads",
+      "date": "2026-10-26T15:35:51Z"
+    },
+    {
+      "sha": "ecbd2130819fcc0a31abc1c1690c3c832040f6e6",
+      "message": "fix: apply second TAIFEX pass and requested lane mapping",
+      "date": "2026-10-26T15:25:47Z"
+    },
+    {
+      "sha": "45816be84d7858da092b816f273fab127786fc8f",
+      "message": "fix: bounded transport recovery with readback and preserved RAW",
+      "date": "2026-10-26T15:14:29Z"
+    },
+    {
+      "sha": "7b500c889a4b1f065036053ec30e56c42e4344dd",
+      "message": "fix: bounded transport recovery with readback and preserved RAW",
+      "date": "2026-10-26T15:14:26Z"
+    },
+    {
+      "sha": "c1aec3d7c411cf4ff2ba6437ba870c0863c7fe5b",
+      "message": "TDCC: classify storage failures separately and recover incomplete source reads (#25)",
+      "date": "2026-10-25T13:21:54Z"
+    },
+    {
+      "sha": "dd5973f0e05f946447704940d93f4f1d525ce85c",
+      "message": "Restrict TAIFEX repair workers to recorded receipt units (#24)",
+      "date": "2026-10-25T10:59:42Z"
+    },
+    {
+      "sha": "5e0306bf64d2ce9a61a1f86f788aa80987d6bf99",
+      "message": "TAIFEX: resume remote RAW audit and swap schedule 6 partitions (#21)",
+      "date": "2026-10-25T10:37:30Z"
+    },
+    {
+      "sha": "50370bd6c5c6d149848812810913cb7386319bd1",
+      "message": "fix: reconcile missing financial downloads across four repair lanes (#20)",
+      "date": "2026-10-25T01:49:42Z"
+    },
+    {
+      "sha": "b2fa60895575a488d9f0e4f7a4fd5bd5ca9145bb",
+      "message": "fix(taifex): resume same batch after short source cooldown (#19)",
+      "date": "2026-10-24T22:21:51Z"
+    },
+    {
+      "sha": "d27ccd9b5cd59df13b6c34bcc9cea4436802b167",
+      "message": "fix(taifex): enable live-verified CCP member CSV after transient source timeout (#18)",
+      "date": "2026-10-24T22:20:02Z"
+    },
+    {
+      "sha": "f41e458e15881f42491984a8884e57ba226a8090",
+      "message": "fix(taifex): recover four official CSV routes and prioritize due transport retries (#17)",
+      "date": "2026-10-24T22:16:54Z"
+    },
+    {
+      "sha": "d77ad57f02a23df5bd91eb2d7014c5a75735fd23",
+      "message": "fix(taifex): use verified official CSV mirrors for current snapshots (#16)",
+      "date": "2026-10-24T22:06:56Z"
+    },
+    {
+      "sha": "e2ec4aecad23be4526f545fe1182e1fbafedfe3f",
+      "message": "fix(taifex): count missing legacy snapshot flags safely (#15)",
+      "date": "2026-10-24T21:46:46Z"
+    },
+    {
+      "sha": "634d48a9a811ff71b5892b4e42e017e806c7f19e",
+      "message": "fix(taifex): synchronize historical catalogs and preserve canonical retry work (#14)",
+      "date": "2026-10-24T21:44:29Z"
+    },
+    {
+      "sha": "bed0d42ecb5e6bd6a5cfa5121e80b004b80543bc",
+      "message": "fix(taifex): require exact observed futures API CSV schema (#13)",
+      "date": "2026-10-24T16:20:20Z"
+    },
+    {
+      "sha": "17e7392bb84ab1a0904fb44bc0836e926b428768",
+      "message": "fix(taifex): validate native API CSV responses and recover retained snapshots (#12)",
+      "date": "2026-10-24T16:17:23Z"
+    },
+    {
+      "sha": "aa043a5d385ea4d3107e8a544efa7e5af6057463",
+      "message": "fix(taifex): recover verified peer files and bounded transient failures in both lanes (#11)",
+      "date": "2026-10-24T16:03:31Z"
+    },
+    {
+      "sha": "cddb7a5686caa43476f4860eb8cc695620e2381d",
+      "message": "fix(official): target due repairs and recover missing month controls with durable batched indexes (#10)",
+      "date": "2026-10-24T15:40:17Z"
+    },
+    {
+      "sha": "c1d472d8d3dcb3f2945ba1c343b0bc606afd4c70",
+      "message": "fix(official): recover retained RAW offline and share source error cooldown (#9)",
+      "date": "2026-10-24T14:57:26Z"
+    },
+    {
+      "sha": "fede2844f745ae424aa3a5cf560213f95c7d61eb",
+      "message": "fix(tdcc): separate pending candidates and coalesce durable progress writes (#8)",
+      "date": "2026-10-24T11:25:03Z"
+    },
+    {
+      "sha": "73480fca76340c6396c665d5d0f7041ed567e7c4",
+      "message": "Unblock retained official RAW audit before missing routes; repair validators and lease handoff (#7)",
+      "date": "2026-10-24T10:59:32Z"
+    },
+    {
+      "sha": "6ce946e6e39a348ae35630680b58b193b5bffa42",
+      "message": "Prioritize due TDCC timeout repairs and expose requested 2000 floor versus official menu",
+      "date": "2026-10-24T10:25:17Z"
+    },
+    {
+      "sha": "9cf320973f9ff3e946472e8a45ec031dfb19f8e4",
+      "message": "Cover official options large-trader header and note layout with 623 passing tests",
+      "date": "2026-10-24T10:09:27Z"
+    },
+    {
+      "sha": "e6e48c8b93ff202cf93ed9942d52cfebec969716",
+      "message": "Deploy TAIFEX V3 layout repair and retained RAW recovery after 622 passing tests",
+      "date": "2026-10-24T10:04:06Z"
+    },
+    {
+      "sha": "e0fe60f02afc919cfc265b851ace79888ebcc610",
+      "message": "Release tested four-lane official repairs with full regression gate",
+      "date": "2026-10-24T07:15:57Z"
+    },
+    {
+      "sha": "e0d4bc0fa625d5076695f0f96b3bda90527aa12a",
+      "message": "Integrate four real workers against isolated monthly fixtures, meeting CAS, cooldown queues and Drive receipts",
+      "date": "2026-10-24T06:59:58Z"
+    },
+    {
+      "sha": "94b34119c817bdc1df5a8e97eda5b809f832d611",
+      "message": "Run isolated live Drive RAW reparse, crash recovery and cross-job output deduplication acceptance",
+      "date": "2026-10-24T06:39:06Z"
+    },
+    {
+      "sha": "5d2e1ec14863267acf380daf2475d028a00ad23b",
+      "message": "Test executable RAW reparse and due retries after frontier meeting; document legacy pause",
+      "date": "2026-10-24T06:06:43Z"
+    },
+    {
+      "sha": "5afc98ded4e5172df6706a37bb4d788f75e38c44",
+      "message": "Review four-source repair inventory and four-frontier audit corrections; keep production unchanged",
+      "date": "2026-10-24T05:45:29Z"
+    },
+    {
+      "sha": "993e7dabae9dfe6eb572ad0f0d45173648efe6b2",
+      "message": "Add TDCC schedule 5-1 ascending history with isolated checkpoints and disjoint month ownership",
+      "date": "2026-10-24T05:28:47Z"
+    },
+    {
+      "sha": "3348a9beacdb04431c9c7a53f62866406a76db71",
+      "message": "Fix TDCC source-empty classification, result validation, delayed retries and live progress",
+      "date": "2026-10-24T05:22:34Z"
+    },
+    {
+      "sha": "3fe9eea36c7fc4f875ecf565fd69fb784f714edc",
+      "message": "Add TAIFEX schedule 6-1 ascending from 2000 with disjoint two-ended history partitions",
+      "date": "2026-10-24T05:13:49Z"
+    },
+    {
+      "sha": "00a9eec54e0b8d3f033b4f08750c2f0278e43323",
+      "message": "Fix TAIFEX native CSV EOF, source-empty classification and bounded evidence recovery",
+      "date": "2026-10-24T05:05:24Z"
+    },
+    {
+      "sha": "772672a1d8bf6043d571cf09d95d3c30efd9d73e",
+      "message": "fix: deploy tested TDCC history restart, receipt recovery and remote SHA verification",
+      "date": "2026-10-24T02:59:57Z"
+    },
+    {
+      "sha": "345b981f742a2db3334353cb47b35df0ee5eec24",
+      "message": "fix: exclude NDC column schema CSVs from historical data tables",
+      "date": "2026-10-23T16:14:19Z"
+    },
+    {
+      "sha": "64e9da5973e394fe1a5f1d7cd66eda4831002c10",
+      "message": "fix: treat NDC manifest as metadata and validate deployments independently",
+      "date": "2026-10-23T16:13:36Z"
+    },
+    {
+      "sha": "8a853af271e2d0d5e84bcfda8e499c39b27057e1",
+      "message": "feat: add resumable official NDC schedule 7 with per-series date gaps and immutable RAW",
+      "date": "2026-10-23T16:11:41Z"
+    },
+    {
+      "sha": "6535925907d7e689da4f204ee7c63da495824ae3",
+      "message": "Skip empty or unpublished official TAIFEX data once and continue descending downloads",
+      "date": "2026-10-23T16:06:57Z"
+    },
+    {
+      "sha": "fd4761dc89e1159d19556ab06e0691f2eeee6bec",
+      "message": "Exclude future-dated website links from requested historical coverage without deleting RAW",
+      "date": "2026-10-23T16:02:36Z"
+    },
+    {
+      "sha": "3bc7e535d2c358800de953ea88f0bbb12419164d",
+      "message": "Reject future-dated download links and migrate existing TAIFEX tick queue",
+      "date": "2026-10-23T16:00:16Z"
+    }
+  ],
+  "github_base": "f11b3d155402555ebc59735008f91e3fbccd518c",
+  "drive_authoritative_readme": "https://drive.google.com/file/d/1qw3JKsH6zHIvReFYwxFG3W2bkIMfdUKU/view",
+  "drive_authoritative_download_rules": "https://drive.google.com/file/d/14-NdK84WuYb9IjGc9n2uGMaRAwWzS3_P/view",
+  "drive_execution_config": "https://drive.google.com/file/d/15u9Pg_U-1hshn-fJuBUAVv_il51RS7JN/view",
+  "findings": [
+    {
+      "severity": "blocking",
+      "id": "OFFICIAL_SOURCE_ISOLATION",
+      "evidence": "scripts/v093_official_repair.py main accepts --direction, --lane, --minutes but no source selector",
+      "required": "Split source-owned task adapters before three independent official workflows"
+    },
+    {
+      "severity": "blocking",
+      "id": "TDCC_DESC_PARTITION",
+      "evidence": "assigned_dates and history_plan exclude dates before 2026-05 for DESC",
+      "required": "Full-range descending mode with migration of both ASC/DESC receipts; date menu not proof of complete history"
+    },
+    {
+      "severity": "blocking",
+      "id": "FINMIND_DOUBLE_OWNER",
+      "evidence": "official_finmind_gapfill.supplement is invoked inside official repair",
+      "required": "Explicit canonical gap queue; disable embedded calls only at successful cutover"
+    },
+    {
+      "severity": "high",
+      "id": "RETRY_POLICY_DRIFT",
+      "evidence": "Drive authoritative policy is initial+3=4 total; several legacy paths use 3 total",
+      "required": "Preserve counters and never reset on restart or config revision"
+    },
+    {
+      "severity": "high",
+      "id": "RAW_NOT_MISSING",
+      "evidence": "Frozen missing flags and current-cache absence differ from actual remote availability",
+      "required": "Latest receipts+remote reconciliation before source download"
+    },
+    {
+      "severity": "high",
+      "id": "EMPTY_MOPS_VALUES",
+      "evidence": "20261028 exact blocker followup and five-day historical-route fixes",
+      "required": "Empty account/value table stays blocked; repair route or retain traced supplement"
+    },
+    {
+      "severity": "high",
+      "id": "NDC_METADATA_NOT_CONTENT",
+      "evidence": "345b981 and 64e9da: schema CSV/manifest must not be treated as historical tables",
+      "required": "Content tables, actual series dates and vintage lineage"
+    },
+    {
+      "severity": "high",
+      "id": "HOST_BUDGET",
+      "evidence": "Seven sources share GitHub/Drive capacity, and host aliases can share rate limits",
+      "required": "Shared quota pacing, independent source ownership and measurement, no unlimited fan-out"
+    },
+    {
+      "severity": "high",
+      "id": "UNBOUNDED_RESTART",
+      "evidence": "GitHub workflows need explicit dispatch to start follow-up work from GITHUB_TOKEN",
+      "required": "Save before dispatch; ready work, hold, epoch and lease checks; no retry loops without progress"
+    }
+  ],
+  "implementation_status": "DESIGN_PREVIEW_ONLY; source executor adapters and full cutover not implemented"
+}

@@ -1,0 +1,15 @@
+{
+  "run_id": 40968961523,
+  "source_sha": "f4edf37793478429a6aab1ffa010c1e12cf4dc29",
+  "status": "COMPLETED_RETAINED_HANDOFF_PRODUCTION_BLOCKED",
+  "production_activation": false,
+  "overlay_manifest": "config/v093_handoff_overlays.json",
+  "source_requests": 0,
+  "formal_raw_writes": 0,
+  "final_catalog_run": 40971896108,
+  "recovery_run": 40970854358,
+  "whole_repository_tests": 1082,
+  "real_units_basic_verified": 12,
+  "units_held": 2,
+  "formal_data_repaired": 0
+}

@@ -1,0 +1,167 @@
+{
+  "schema": "JARVIS_FINAL_HANDOFF_CATALOGS_V1",
+  "source_sha": "ed6e3c3ab8b6a50b8d0ea58a070a2ff035ad8b77",
+  "prior_qa_run": "40970854358",
+  "directions": 12,
+  "candidate_counts": {
+    "TWSE": {
+      "ASC": 3184,
+      "DESC": 3185
+    },
+    "TPEx": {
+      "ASC": 3650,
+      "DESC": 3651
+    },
+    "MOPS": {
+      "ASC": 385,
+      "DESC": 386
+    },
+    "TAIFEX": {
+      "ASC": 1182,
+      "DESC": 1183
+    },
+    "TDCC": {
+      "ASC": 22561,
+      "DESC": 22561
+    },
+    "NDC": {
+      "DESC": 320
+    },
+    "FinMind": {
+      "DESC": 2316
+    }
+  },
+  "retained_candidates": 64564,
+  "held_exclusions": [
+    {
+      "source": "TWSE",
+      "key": "TWSE|2000-01|ab92acc221481b33795943ab",
+      "period": "2000-01-03",
+      "status": "CONTENT_BLOCKED",
+      "reference": "1alYiE_gA9OxUx8o6vq02xemufKEGYOFY/ab92acc221481b33795943ab.raw",
+      "sha256": "a8b11738354ac7dfdcc5acbfc1d229e460e067078ce51051bb2c83d66ad99fb5",
+      "attempts": 1,
+      "archive_commit": "4b49eef4e5b6d082c7a8ee9007e7ec3c96a8db53",
+      "archive_ref": "refs/heads/jarvis-source-preflight/archive-twelve-recovery-40970854358-1-ASC-0/TWSE",
+      "full_acceptance": false,
+      "confirmed_historical_absence": false
+    },
+    {
+      "source": "TPEx",
+      "key": "TPEx|2000-01|8ece066c4c96e2e38decc891",
+      "period": "2000-01-01",
+      "status": "APPLICABILITY_HOLD",
+      "reference": "1Ztclc6zEWYLrQXiGNkaAIFAfEVybCsgm/8ece066c4c96e2e38decc891.raw",
+      "sha256": "b04f9ea127ebfa81842bf0a86da7f2e4446123052ec9a015886a5f98b636876d",
+      "attempts": 1,
+      "archive_commit": "30aa5809dcb4d5926347f7522fcb390cfdda3401",
+      "archive_ref": "refs/heads/jarvis-source-preflight/archive-twelve-recovery-40970854358-1-ASC-0/TPEx",
+      "full_acceptance": false,
+      "confirmed_historical_absence": false
+    }
+  ],
+  "later_qa_overlays": [
+    {
+      "source": "TDCC",
+      "key": "TDCC|2025-12|20251205|8042",
+      "status": "APPLICABILITY_HOLD",
+      "attempts": 2,
+      "contract_retained": false,
+      "pin": "67c8fdd894e214afef1cfda1d007424815c732c7"
+    },
+    {
+      "source": "TDCC",
+      "key": "TDCC|2026-09|20260911|6912",
+      "status": "RAW_BASIC_VERIFIED",
+      "attempts": 2,
+      "contract_retained": true,
+      "pin": "67c8fdd894e214afef1cfda1d007424815c732c7"
+    },
+    {
+      "source": "TDCC",
+      "key": "TDCC|2025-12|20251205|8401",
+      "status": "RAW_BASIC_VERIFIED",
+      "attempts": 2,
+      "contract_retained": true,
+      "pin": "890da9541aeb64a61ad966ab845a03d9dcadd154"
+    },
+    {
+      "source": "TAIFEX",
+      "key": "TAIFEX|2017-01|HISTORY|dlSingleOrderDown|2017-01",
+      "status": "APPLICABILITY_HOLD",
+      "attempts": 1,
+      "contract_retained": false,
+      "pin": "8c5211236b9d7d1429a15ac9bcd3e968f4a9364c"
+    }
+  ],
+  "catalogs": {
+    "TWSE": {
+      "ASC": {
+        "commit": "d5fda5810f74f9270892d5e6a1e55a092cb8b7a1",
+        "index_sha256": "a83aefcdfb45d33454766b013ce94b312dfc7673d33030a4f173a2ca668fa3f9"
+      },
+      "DESC": {
+        "commit": "84134f97d2894cdb38483529afe57f055d0d0d76",
+        "index_sha256": "111734e6bce38c60d220e1ad8a615068268449ff2c03f69db21ef934d0a70d05"
+      }
+    },
+    "TPEx": {
+      "ASC": {
+        "commit": "4fd8f3008520bbffb3e12eabbd2e65b040704405",
+        "index_sha256": "86357fc0e94a29e2cb0b128c9a8cf6d454408177bf674c3bb505c0ba85541505"
+      },
+      "DESC": {
+        "commit": "e8e564e70ef904ec4e036b49fcf4e3f60ef9af04",
+        "index_sha256": "1ace6882447536a16c7e68ac15a52ec1469f8febb7ec60bcd53bc262192ed967"
+      }
+    },
+    "MOPS": {
+      "ASC": {
+        "commit": "2fab700381e74db15093929223e8c9c3f9cbcad3",
+        "index_sha256": "6b0d718b0f94cca6ed992c11e5c3e908d5aeccc5e7230c199419ea2c06f335fc"
+      },
+      "DESC": {
+        "commit": "0fd21d80e9a2e54bf38aa0aac7f22139de9327fb",
+        "index_sha256": "e8ea33913db65ff675820adb7509b681cf0fe3076daf7fe19745b967e3602a08"
+      }
+    },
+    "TAIFEX": {
+      "ASC": {
+        "commit": "bc512090d01c84f0d8b8c5c844c9772c1a2fe0f4",
+        "index_sha256": "87c0576e3b341c94945658770f55cff68ab95002e4e8457ba2a7f11ab8ec00dd"
+      },
+      "DESC": {
+        "commit": "0e84a329cae705a0bf963009c70a36cf063db466",
+        "index_sha256": "cf892047cc21dbfb5706de899833b7c22b3d225f18575030e3156807b6652700"
+      }
+    },
+    "TDCC": {
+      "ASC": {
+        "commit": "ea236b0fb9886c2749df6e90ddccac41aba542bb",
+        "index_sha256": "8c161f2220951901338519aca57d01a9a7462e9d9c0ec8e6f05500b8a7847487"
+      },
+      "DESC": {
+        "commit": "c1c37415625cabe28ecc7d60444cf2ee29572b72",
+        "index_sha256": "da82d0b2b5669e08511b51a3c7db5af2c762ab8149683369aa8d52245657892f"
+      }
+    },
+    "NDC": {
+      "DESC": {
+        "commit": "99a8e044e0276f51223e62af13986c5f4ebd83b0",
+        "index_sha256": "02703facaab1b1613c6afb54fa2cb8a75748f50b5365f1c74912c69bddc472a6"
+      }
+    },
+    "FinMind": {
+      "DESC": {
+        "commit": "492ce560447a7887b0627ce2c9d358b0fbaf1ede",
+        "index_sha256": "365419f45305d06c0d7c22d674a84ca29779978065cb3143b49e74089bd346c6"
+      }
+    }
+  },
+  "source_requests": 0,
+  "formal_raw_writes": 0,
+  "formal_state_writes": 0,
+  "production_activation": false,
+  "missing_download_authority": false,
+  "limitation": "Complete pinned retained-check handoff candidate; missing/repair task generation, scope approval and provider load are separate release gates"
+}

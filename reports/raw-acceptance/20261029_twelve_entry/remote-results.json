@@ -1,0 +1,857 @@
+{
+  "run": 40857674847,
+  "observations": [
+    {
+      "job_id": 123392634470,
+      "entry": {
+        "source": "TPEx",
+        "slot": "DESC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-DESC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-DESC-good",
+              "sha256": "71f4987430ccb9fa68928e1d45a1eac8dec94ad588351807fed843dc97dc62bf",
+              "reference": "entry-fixtures/71f4987430ccb9fa68928e1d45a1eac8dec94ad588351807fed843dc97dc62bf.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          },
+          {
+            "key": "entry-DESC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 15.868,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "4da31be58c4e7fec732f4bafc59a3fcb3137ae65a3b28d30cbc90b858fd5f10d",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1v99YWbAurd0j4283T78Mo7Q1o-a7ftpO",
+          "folder_id": "10SpG8vE8nueoVR3qN9y_NFx4Lsda2rNw",
+          "sha256": "4da31be58c4e7fec732f4bafc59a3fcb3137ae65a3b28d30cbc90b858fd5f10d",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-TPEx-DESC/TPEx",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392634831,
+      "entry": {
+        "source": "TWSE",
+        "slot": "ASC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-ASC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          },
+          {
+            "key": "entry-ASC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-ASC-good",
+              "sha256": "a575636f0393cbe16f90c72653002cdb2bf396f71d293c9938137c8e4ae1b2ef",
+              "reference": "entry-fixtures/a575636f0393cbe16f90c72653002cdb2bf396f71d293c9938137c8e4ae1b2ef.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 16.368,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "2900c3522b2ed63f6be3c0a31e41b308d5abe9f18aa59979a7bde60271b91023",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1Do93pAWceT5SotlD5wamR0_OMfHm16d1",
+          "folder_id": "1juQ-mtdREAdJINw1XXeYVdoVgWZbU_ps",
+          "sha256": "2900c3522b2ed63f6be3c0a31e41b308d5abe9f18aa59979a7bde60271b91023",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-TWSE-ASC/TWSE",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392634838,
+      "entry": {
+        "source": "TPEx",
+        "slot": "ASC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-ASC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          },
+          {
+            "key": "entry-ASC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-ASC-good",
+              "sha256": "9e2f482da255c039b556be4d8b2932dfe807269ce48d7404ad11e625829d8426",
+              "reference": "entry-fixtures/9e2f482da255c039b556be4d8b2932dfe807269ce48d7404ad11e625829d8426.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 16.227,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "2bfd0f990014e9b03b6470aaf3fd7ae7fb1cca11cd7ab3a2c04e1ef1ec81fe5d",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1Tc7iUtgK22hS7glV-1aIMZ_cXp3Eu-82",
+          "folder_id": "1MABPhQDebZEmQDXvidr9iZWG3yUJ14GG",
+          "sha256": "2bfd0f990014e9b03b6470aaf3fd7ae7fb1cca11cd7ab3a2c04e1ef1ec81fe5d",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-TPEx-ASC/TPEx",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392634873,
+      "entry": {
+        "source": "TDCC",
+        "slot": "DESC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-DESC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-DESC-good",
+              "sha256": "52bd824577d305caabcbd1fc0eb631cbf74dd0a7dcfbd48b026d3f86c26dc4a8",
+              "reference": "entry-fixtures/52bd824577d305caabcbd1fc0eb631cbf74dd0a7dcfbd48b026d3f86c26dc4a8.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          },
+          {
+            "key": "entry-DESC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 19.878,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "296ead03a4035d1464c2e91d9e907d312887194d77708bf633eacd304c4f1608",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1vB0Bfn34Y7PRfHXM4VvOZFF8WEXAPnld",
+          "folder_id": "1Vz0NE46yK2NlhyitRDBxij710Cj5wplU",
+          "sha256": "296ead03a4035d1464c2e91d9e907d312887194d77708bf633eacd304c4f1608",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-TDCC-DESC/TDCC",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392634904,
+      "entry": {
+        "source": "TAIFEX",
+        "slot": "ASC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-ASC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          },
+          {
+            "key": "entry-ASC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-ASC-good",
+              "sha256": "1d0cf1bcc7eca1509254f091ab8b013ee194e8fa1ae30ed15f85eea76e7de665",
+              "reference": "entry-fixtures/1d0cf1bcc7eca1509254f091ab8b013ee194e8fa1ae30ed15f85eea76e7de665.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 15.922,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "0c1d18de81140bea001ac8368de74842f41ad19efdbfd155cf56ae1636c8d148",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1zBNuKy-Erxd6xzQxEc1J83msAifmNFEs",
+          "folder_id": "1Y68PxEvLTX31ZPFJ-qZi0SN25YFXl1wj",
+          "sha256": "0c1d18de81140bea001ac8368de74842f41ad19efdbfd155cf56ae1636c8d148",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-TAIFEX-ASC/TAIFEX",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392634917,
+      "entry": {
+        "source": "TWSE",
+        "slot": "DESC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-DESC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-DESC-good",
+              "sha256": "de3e3fa97e9749029dc7f6b8caf2cec6db2b45efc750867c74012ded44ec9b7c",
+              "reference": "entry-fixtures/de3e3fa97e9749029dc7f6b8caf2cec6db2b45efc750867c74012ded44ec9b7c.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          },
+          {
+            "key": "entry-DESC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 40.549,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "90493584719688961b872aa3fefaa17e9b44f35a3a754c2d923d9e7ed52e17d5",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "19z3OyBKWWR0HlYWQrIHgBmKIgRwcOnPo",
+          "folder_id": "12sRRKHdMtNRIBU-lD4lAxa0OGwmGu1cM",
+          "sha256": "90493584719688961b872aa3fefaa17e9b44f35a3a754c2d923d9e7ed52e17d5",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-TWSE-DESC/TWSE",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392634964,
+      "entry": {
+        "source": "NDC",
+        "slot": "DESC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-DESC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-DESC-good",
+              "sha256": "b8864082609adb63e36318b907181c1244cd15540b41d4bb4cf5b4f8ce9a56c8",
+              "reference": "entry-fixtures/b8864082609adb63e36318b907181c1244cd15540b41d4bb4cf5b4f8ce9a56c8.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          },
+          {
+            "key": "entry-DESC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 21.887,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "89768d7a27bbb2dd68344f4ef6cb9f4bb4d3c36d60e637e30e7e0b8c96f7053e",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1BLcN7SndO4QIOfcU-Tpta28ag-nffAD7",
+          "folder_id": "1Z8JSjN98q-ES0kzlPKrgZf_YoWwAY2VS",
+          "sha256": "89768d7a27bbb2dd68344f4ef6cb9f4bb4d3c36d60e637e30e7e0b8c96f7053e",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-NDC-DESC/NDC",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392634987,
+      "entry": {
+        "source": "FinMind",
+        "slot": "DESC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-DESC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-DESC-good",
+              "sha256": "7993a5a5e15a406d39b2e6d8a6f36e126c786aa71f875cdbc8e7f2d193d7acc9",
+              "reference": "entry-fixtures/7993a5a5e15a406d39b2e6d8a6f36e126c786aa71f875cdbc8e7f2d193d7acc9.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          },
+          {
+            "key": "entry-DESC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 20.565,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "68814dd431dae2a329711360e456975793a763a28b919c5b560917e13e957487",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1SC9hY_bM6tuXmveG_LzHlM5OfNAU18cN",
+          "folder_id": "1CKNpT1sq5QjUm62_NtCrKlfgl6ZdIZa-",
+          "sha256": "68814dd431dae2a329711360e456975793a763a28b919c5b560917e13e957487",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-FinMind-DESC/FinMind",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392635005,
+      "entry": {
+        "source": "MOPS",
+        "slot": "ASC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-ASC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          },
+          {
+            "key": "entry-ASC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-ASC-good",
+              "sha256": "b56be973c9e5128f6282fde3ec4032fbe7764cf0583d1491ceb15c5db1601c5c",
+              "reference": "entry-fixtures/b56be973c9e5128f6282fde3ec4032fbe7764cf0583d1491ceb15c5db1601c5c.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 34.514,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "4d0e3956655c48288ed77ee9d667d5c7d630df94fdb0957cf78722b10330ff71",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1niY22AGuDRiN0wz5JKSKdzOOHIg70Yj6",
+          "folder_id": "1PcdA5iRq2VwmeI9VbSLb7PPKB-E4xlY8",
+          "sha256": "4d0e3956655c48288ed77ee9d667d5c7d630df94fdb0957cf78722b10330ff71",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-MOPS-ASC/MOPS",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392635009,
+      "entry": {
+        "source": "TAIFEX",
+        "slot": "DESC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-DESC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-DESC-good",
+              "sha256": "e7f1eef2d184124d2bc25f91a81d18a1a61cbf336140dee6208f3e9a62b9a396",
+              "reference": "entry-fixtures/e7f1eef2d184124d2bc25f91a81d18a1a61cbf336140dee6208f3e9a62b9a396.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          },
+          {
+            "key": "entry-DESC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 19.984,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "d009aaa9faaa2bbdf93a97e27d62f30b05f9dab258638389ae356387f8249549",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1KEi3Ldcxb_Ij9QVXFgjs9TMrvSTNDsyp",
+          "folder_id": "1s6T2xkHEh7avptIyB1ak6D19IFb7u2PG",
+          "sha256": "d009aaa9faaa2bbdf93a97e27d62f30b05f9dab258638389ae356387f8249549",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-TAIFEX-DESC/TAIFEX",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392635040,
+      "entry": {
+        "source": "TDCC",
+        "slot": "ASC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-ASC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          },
+          {
+            "key": "entry-ASC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-ASC-good",
+              "sha256": "569a89b17f170ca88bd4e8f9c0f3741a643d9807b29e871dcb05bf953339d206",
+              "reference": "entry-fixtures/569a89b17f170ca88bd4e8f9c0f3741a643d9807b29e871dcb05bf953339d206.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 22.422,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "9de3ddebcb8b45b351918d28a282ff8ec79b1dd48adcafd6d0e28f81ec9fe438",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1uht-XwoukzWexg0rgfe-WDerGCBkkgfK",
+          "folder_id": "1uD-oA6qDUaPefVf5Dn-DOGEfLQXbb5f7",
+          "sha256": "9de3ddebcb8b45b351918d28a282ff8ec79b1dd48adcafd6d0e28f81ec9fe438",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-TDCC-ASC/TDCC",
+        "job_status": "success"
+      }
+    },
+    {
+      "job_id": 123392635145,
+      "entry": {
+        "source": "MOPS",
+        "slot": "DESC",
+        "processed": 2,
+        "outcomes": [
+          {
+            "key": "entry-DESC-good",
+            "outcome": "BASIC_VERIFIED",
+            "recovered": false,
+            "evidence": {
+              "task_key": "entry-DESC-good",
+              "sha256": "8cc40d42f72603ea9391ca51d50a8f1816ec9402d47deb9cbf5a9db717259105",
+              "reference": "entry-fixtures/8cc40d42f72603ea9391ca51d50a8f1816ec9402d47deb9cbf5a9db717259105.raw",
+              "stats": {
+                "basic_verified": true,
+                "fixture_only": true
+              },
+              "numeric_verified": false,
+              "pit_verified": false,
+              "full_acceptance": false
+            }
+          },
+          {
+            "key": "entry-DESC-bad",
+            "outcome": "ISOLATED_ERROR",
+            "error": "ValueError"
+          }
+        ],
+        "task_status_counts": {
+          "CONTENT_BLOCKED": 1,
+          "RAW_BASIC_VERIFIED": 1
+        },
+        "task_scope": 2,
+        "denominator_is_database_universe": false,
+        "elapsed_seconds": 26.452,
+        "full_acceptance": false,
+        "ready_remaining": 0,
+        "source_hold": null,
+        "cooldown_until": null,
+        "schema": "JARVIS_COMMON_WORKER_ENTRY_QA_V1",
+        "execution_mode": "ENTRY_FIXTURES_ONLY",
+        "market_requests": 0,
+        "formal_raw_writes": 0,
+        "production_activation": false
+      },
+      "publication": {
+        "record_sha256": "1e78f9a9c981f1ee34b9506d8be6af0540105186b3836e89fb5af387efd1a216",
+        "files": 1,
+        "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+        "drive_receipt": {
+          "file_id": "1Qv8mj2m4LtzEI3p2PX3IbknywjBx48Oz",
+          "folder_id": "1SqNjwKDZEct4xZa-7DjLI6kApgwgDXb0",
+          "sha256": "1e78f9a9c981f1ee34b9506d8be6af0540105186b3836e89fb5af387efd1a216",
+          "readback_verified": true
+        },
+        "source_requests": 0,
+        "production_activation": false,
+        "git_state_branch": "jarvis-source-preflight/record-40857674847-1-entry-MOPS-DESC/MOPS",
+        "job_status": "success"
+      }
+    }
+  ],
+  "independent_final_source_readback": [
+    {
+      "source": "TWSE",
+      "tasks": 4,
+      "slots": [
+        "DESC",
+        "ASC"
+      ],
+      "attempts_preserved": true,
+      "source_direction_binding": true,
+      "last_batch_slots": [
+        "ASC",
+        "DESC"
+      ]
+    },
+    {
+      "source": "TPEx",
+      "tasks": 4,
+      "slots": [
+        "DESC",
+        "ASC"
+      ],
+      "attempts_preserved": true,
+      "source_direction_binding": true,
+      "last_batch_slots": [
+        "ASC",
+        "DESC"
+      ]
+    },
+    {
+      "source": "MOPS",
+      "tasks": 4,
+      "slots": [
+        "DESC",
+        "ASC"
+      ],
+      "attempts_preserved": true,
+      "source_direction_binding": true,
+      "last_batch_slots": [
+        "ASC",
+        "DESC"
+      ]
+    },
+    {
+      "source": "TDCC",
+      "tasks": 4,
+      "slots": [
+        "DESC",
+        "ASC"
+      ],
+      "attempts_preserved": true,
+      "source_direction_binding": true,
+      "last_batch_slots": [
+        "ASC",
+        "DESC"
+      ]
+    },
+    {
+      "source": "TAIFEX",
+      "tasks": 4,
+      "slots": [
+        "DESC",
+        "ASC"
+      ],
+      "attempts_preserved": true,
+      "source_direction_binding": true,
+      "last_batch_slots": [
+        "ASC",
+        "DESC"
+      ]
+    },
+    {
+      "source": "NDC",
+      "tasks": 2,
+      "slots": [
+        "DESC"
+      ],
+      "attempts_preserved": true,
+      "source_direction_binding": true,
+      "last_batch_slots": [
+        "DESC"
+      ]
+    },
+    {
+      "source": "FinMind",
+      "tasks": 2,
+      "slots": [
+        "DESC"
+      ],
+      "attempts_preserved": true,
+      "source_direction_binding": true,
+      "last_batch_slots": [
+        "DESC"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# 實際續派送與缺件契約檢查
+
+2026-10-29（台北）。新增WorkflowDispatch transport接入既有durable outbox：先保存INTENT再POST，成功後保存SENT；不確定回應保持待對帳，不盲目重派，同run identity不重複派送。
+
+實際GitHub測試：parent40822023305（push）success → receiver40822041631（workflow_dispatch）success。獨立workflow run回讀前輪保存outbox並寫入接收run ID；不是同workflow的job依賴。僅隔離QA狀態，零市場請求、零Drive寫入、未啟正式十二線。測試workflow固定程式SHA；main僅合併一次性無cron QA入口PR52。
+
+缺件契約audit40821834586 success：TWSE主帳本35994筆有原件參照；9781筆在目前價格證據集合中沒有可核定交易日（樣本多為2012年前法人資料OFFICIAL_PERIOD_NOT_PROVIDED）；16筆已核定交易日但早於該來源提供起日；1筆中斷且嘗試已滿。這些是audit篩選原因，不是全庫缺件數；未判全部9781均為期間限制，也不把它們當可下載任務。
+
+新增保留earliest_available_date及availability_evidence；同單元無原件且具期間不支援證據時轉SOURCE_AVAILABILITY_HOLD，不再歸一般缺件。無證據僅有旗標則仍待分類；不改為已驗收例外，不重設原件、嘗試或進度。新規則本機測試通過，完整凍結清單尚未以此新分類重建。
+
+本機109項與12preview YAML通過。完整部署仍阻擋：正式來源adapter與查核佇列未全接線；真實補下載／補正→Drive保存與重驗的七來源案例及真實來源限流負載未全驗收；本輪續派送transport測試成功不等於十二個正式入口已啟動。原本12項版本差異及不確定內容持續保留。
+

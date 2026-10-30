@@ -1,0 +1,2160 @@
+{
+  "review_date_taipei": "2026-10-29",
+  "candidate_sha": "682a76f4eac6e3d483161810bf8ac863ef84f23c",
+  "query_window_utc": "2026-10-15..2026-10-29",
+  "run_count": 2291,
+  "groups": {
+    "JARVIS 2024 Four-Source Annual Actual Capture": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Offline Engine Tests": {
+      "count": 48,
+      "outcomes": {
+        "success": 43,
+        "failure": 5
+      }
+    },
+    "JARVIS v0.93 Unified 2024 Preflight": {
+      "count": 68,
+      "outcomes": {
+        "success": 63,
+        "failure": 5
+      }
+    },
+    "JARVIS v0.93 FULL Annual Download Readiness Gate": {
+      "count": 56,
+      "outcomes": {
+        "failure": 56
+      }
+    },
+    "JARVIS v0.93 Production Gap Evidence Test": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 One-Shot Combined Preproduction Acceptance": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Unified Four-Source Annual Downloader Integration": {
+      "count": 2,
+      "outcomes": {
+        "success": 1,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 FOUR SOURCE MINI E2E": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS 2024 Bulk Quotes Combined Feb-Dec Capture": {
+      "count": 1,
+      "outcomes": {
+        "cancelled": 1
+      }
+    },
+    "JARVIS 2024 Bulk January Real Monthly E2E": {
+      "count": 1,
+      "outcomes": {
+        "cancelled": 1
+      }
+    },
+    "JARVIS v0.93 Bulk Market Drive End-to-End": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS Official Bulk Market Daily Source Gate": {
+      "count": 3,
+      "outcomes": {
+        "success": 2,
+        "failure": 1
+      }
+    },
+    "JARVIS 2024 Bounded Actual Source First Pass (PARTIAL)": {
+      "count": 4,
+      "outcomes": {
+        "success": 2,
+        "failure": 2
+      }
+    },
+    "JARVIS v0.93 TPEx MOPS and Drive Contract Tests": {
+      "count": 7,
+      "outcomes": {
+        "success": 1,
+        "failure": 6
+      }
+    },
+    "JARVIS v0.93 Drive Cross-Job Checkpoint Canary": {
+      "count": 2,
+      "outcomes": {
+        "success": 1,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 Google Drive Authorization Canary": {
+      "count": 2,
+      "outcomes": {
+        "success": 1,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 FinMind 2024 Canary": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 TWSE 2024 Public API Canary": {
+      "count": 2,
+      "outcomes": {
+        "success": 2
+      }
+    },
+    "JARVIS 2023-2014 Descending Monthly Raw Backfill": {
+      "count": 36,
+      "outcomes": {
+        "success": 31,
+        "cancelled": 5
+      }
+    },
+    "JARVIS Layer02 R3 2025-2026 Parser Repair and Structural QA": {
+      "count": 1,
+      "outcomes": {
+        "failure": 1
+      }
+    },
+    "JARVIS Three-Year Verified Financial Gap Supplement": {
+      "count": 4,
+      "outcomes": {
+        "success": 2,
+        "skipped": 2
+      }
+    },
+    "JARVIS Three-Year Monthly Gap Continuation": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS 2024-2026 Official Audit and Gap Repair": {
+      "count": 3,
+      "outcomes": {
+        "success": 1,
+        "cancelled": 2
+      }
+    },
+    "JARVIS 2026 FinMind FREE All-Year Backfill": {
+      "count": 5,
+      "outcomes": {
+        "success": 4,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 2026 FinMind FREE Canary": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS 2024 TPEx Correct Historical R3 Resume": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS 2024 TPEx Historical Date Canary": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 2024 Actual-Date Integrity R2": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Layer02 Governance Policy Sync": {
+      "count": 2,
+      "outcomes": {
+        "success": 1,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 Layer02 Governance Regression Tests": {
+      "count": 2,
+      "outcomes": {
+        "success": 2
+      }
+    },
+    "JARVIS v0.93 Layer02 STANDARD R2 2025-2026 Annual Staging": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Layer02 STANDARD R2 Native Tables": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Layer02 Native Formats Probe": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Layer 02 STANDARD R1 Pilot": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS 0.93 2025-2026 443 Integration Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 2024 Full Year RAW QA and Targeted Repair": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 L1 Third-pass Gated RAW Repair": {
+      "count": 7,
+      "outcomes": {
+        "success": 7
+      }
+    },
+    "JARVIS v0.93 L1 RAW Second-pass QA and Gap Repair": {
+      "count": 15,
+      "outcomes": {
+        "success": 14,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 RAW Layer 1 Backfill 2015-2000": {
+      "count": 13,
+      "outcomes": {
+        "success": 13
+      }
+    },
+    "JARVIS One-time Prior RAW Stop": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Independent RAW Resume 2026-2000": {
+      "count": 2,
+      "outcomes": {
+        "cancelled": 2
+      }
+    },
+    "JARVIS v0.93 Merged Quick Launch Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS Pause All Workflows": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS Independent RAW Latest-2000": {
+      "count": 1,
+      "outcomes": {
+        "cancelled": 1
+      }
+    },
+    "JARVIS Independent RAW 2025-2000": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS RAW First Capture Only 2026-2000": {
+      "count": 1,
+      "outcomes": {
+        "cancelled": 1
+      }
+    },
+    "JARVIS Stop All Workflows": {
+      "count": 1,
+      "outcomes": {
+        "failure": 1
+      }
+    },
+    "JARVIS Operational Control and Bounded Recovery": {
+      "count": 99,
+      "outcomes": {
+        "success": 89,
+        "cancelled": 10
+      }
+    },
+    "JARVIS Data Audit Backlog": {
+      "count": 26,
+      "outcomes": {
+        "cancelled": 5,
+        "success": 21
+      }
+    },
+    "JARVIS 2023 Layer02 Conversion": {
+      "count": 4,
+      "outcomes": {
+        "cancelled": 4
+      }
+    },
+    "JARVIS Independent Feature History": {
+      "count": 44,
+      "outcomes": {
+        "cancelled": 7,
+        "success": 37
+      }
+    },
+    "JARVIS Parallel Repair and Feature Preparation": {
+      "count": 26,
+      "outcomes": {
+        "cancelled": 8,
+        "success": 17,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 LIVE FINANCIAL": {
+      "count": 54,
+      "outcomes": {
+        "success": 41,
+        "cancelled": 3,
+        "failure": 10
+      }
+    },
+    "JARVIS v0.93 LIVE PRICE": {
+      "count": 44,
+      "outcomes": {
+        "failure": 19,
+        "success": 21,
+        "cancelled": 4
+      }
+    },
+    "JARVIS v0.93 LIVE QA1": {
+      "count": 45,
+      "outcomes": {
+        "success": 22,
+        "cancelled": 6,
+        "failure": 17
+      }
+    },
+    "JARVIS v0.93 LIVE RAW": {
+      "count": 44,
+      "outcomes": {
+        "success": 23,
+        "cancelled": 7,
+        "queued": 1,
+        "failure": 13
+      }
+    },
+    "JARVIS RAW Hourly 60m 20261022": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 LIVE CHIP": {
+      "count": 42,
+      "outcomes": {
+        "success": 20,
+        "cancelled": 7,
+        "failure": 15
+      }
+    },
+    "JARVIS Four Independent Consumers 60m 20261022": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS Independent Four Consumers 30m 20261022": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS Resume 201404 RAW and Hourly 30 10 10 10": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS Launch Replan RAW 201404 Audit 202610": {
+      "count": 1,
+      "outcomes": {
+        "failure": 1
+      }
+    },
+    "JARVIS Stop All Before Checkpoint Replan 20261021": {
+      "count": 1,
+      "outcomes": {
+        "failure": 1
+      }
+    },
+    "JARVIS Live Staging Provenance Followthrough": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS RAW Source Independent First Live Batch": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS Direct Start Real Five Stages 20261021": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS Start Real Five Stages 20261021": {
+      "count": 3,
+      "outcomes": {
+        "failure": 2,
+        "cancelled": 1
+      }
+    },
+    "JARVIS Retire Legacy Workflows 20261021": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Adopted Five Stage Policy Acceptance": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Complete Prelaunch Audit": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    ".github/workflows/v093-queue-stress-trigger.yml": {
+      "count": 148,
+      "outcomes": {
+        "failure": 148
+      }
+    },
+    "JARVIS v0.93 Real Native Parser Acceptance": {
+      "count": 64,
+      "outcomes": {
+        "success": 58,
+        "failure": 6
+      }
+    },
+    "JARVIS resume all six from saved checkpoints": {
+      "count": 21,
+      "outcomes": {
+        "success": 18,
+        "failure": 3
+      }
+    },
+    "JARVIS v0.93 LIVE RECONCILE REPAIR": {
+      "count": 35,
+      "outcomes": {
+        "failure": 13,
+        "cancelled": 15,
+        "success": 7
+      }
+    },
+    "JARVIS v0.93 RAW ascending helper 07": {
+      "count": 11,
+      "outcomes": {
+        "failure": 4,
+        "success": 6,
+        "cancelled": 1
+      }
+    },
+    "Jarvis stage06 real Drive fenced publication test": {
+      "count": 15,
+      "outcomes": {
+        "failure": 10,
+        "success": 5
+      }
+    },
+    "Jarvis stage06 ledger and repair task tests": {
+      "count": 9,
+      "outcomes": {
+        "failure": 2,
+        "success": 7
+      }
+    },
+    "JARVIS independent NDC download 7": {
+      "count": 98,
+      "outcomes": {
+        "success": 90,
+        "cancelled": 2,
+        "failure": 6
+      }
+    },
+    "JARVIS independent TAIFEX download 6": {
+      "count": 229,
+      "outcomes": {
+        "success": 183,
+        "cancelled": 38,
+        "failure": 8
+      }
+    },
+    "JARVIS official-only first pass - two ends": {
+      "count": 60,
+      "outcomes": {
+        "success": 38,
+        "cancelled": 21,
+        "failure": 1
+      }
+    },
+    "JARVIS independent TDCC download 5": {
+      "count": 174,
+      "outcomes": {
+        "success": 138,
+        "cancelled": 29,
+        "failure": 6,
+        "in_progress": 1
+      }
+    },
+    "JARVIS official-only targeted repairs 3 and 4": {
+      "count": 48,
+      "outcomes": {
+        "cancelled": 14,
+        "success": 34
+      }
+    },
+    "JARVIS independent TAIFEX download 6-1 ASC": {
+      "count": 176,
+      "outcomes": {
+        "cancelled": 18,
+        "success": 152,
+        "failure": 6
+      }
+    },
+    "JARVIS independent TDCC download 5-1 ASC": {
+      "count": 168,
+      "outcomes": {
+        "cancelled": 41,
+        "success": 119,
+        "failure": 7,
+        "in_progress": 1
+      }
+    },
+    "JARVIS official repair schedules 1 to 4": {
+      "count": 108,
+      "outcomes": {
+        "success": 84,
+        "failure": 11,
+        "cancelled": 12,
+        "in_progress": 1
+      }
+    },
+    "Pause all JARVIS workflows pending Google authorization": {
+      "count": 3,
+      "outcomes": {
+        "failure": 2,
+        "cancelled": 1
+      }
+    },
+    ".github/workflows/v093-taifex-independent.yml": {
+      "count": 2,
+      "outcomes": {
+        "failure": 2
+      }
+    },
+    ".github/workflows/v093-taifex-independent-asc.yml": {
+      "count": 2,
+      "outcomes": {
+        "failure": 2
+      }
+    },
+    "JARVIS audited recovery 20261026": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS RAW consolidated one-pass acceptance": {
+      "count": 45,
+      "outcomes": {
+        "success": 45
+      }
+    },
+    "JARVIS bounded read-only acceptance (3 workers)": {
+      "count": 11,
+      "outcomes": {
+        "success": 11
+      }
+    },
+    "JARVIS saved journal cold readback": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS eight-group integrated live audit (release blocked)": {
+      "count": 6,
+      "outcomes": {
+        "success": 6
+      }
+    },
+    "JARVIS eleven-slot real Git control preflight": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 2026 Sep Native Data Scan Fixed": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 2026 Sep Native Data Scan": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "C1 v0.93 Official First FinMind Delta Test": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "C1 v0.93 Three Year FinMind Coverage Audit": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "C1 v0.93 Cross Asset Third Pass Source Audit": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "C1 v0.93 Cross Asset 52 Second Pass": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "C1 v0.93 Cross Asset 72 September Pilot": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Final Real-Data Five-Lane Launch Smoke": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 ONE-PASS Five-Stage Combined Acceptance": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 V2 Consolidated Prelaunch Release Gate": {
+      "count": 2,
+      "outcomes": {
+        "success": 1,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 Consolidated Duplicate Hash and Historical Boundary Gate": {
+      "count": 2,
+      "outcomes": {
+        "success": 1,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 Consolidated Repair Triage and Real ZIP QA": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Combined Full File Metadata and Repair Queue Gate": {
+      "count": 2,
+      "outcomes": {
+        "success": 1,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 Full 322 Month Readonly Inventory Combined Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Real Historical SHA CRC and Repair Queue Combined": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Real Drive Isolated Commit and Historical Readonly Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Drive Guard and Historical Adapter Combined Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Shared Lease and Adapter Combined Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Five New Schedules Cutover Audit": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Five Stage Combined Launch Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Production Release Readonly Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Durable Backlog Restart Integrated Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Concurrent Multi-Month CAS Integrated Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Cross Runner Recovery Integrated Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Integrated Safety Regression Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Manifest False Certification Fault Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Crash Between Data and Manifest Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Actual Drive Helper Fault Injection Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Retry Exhaustion Corrected Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Retry Exhaustion Safety Gate": {
+      "count": 1,
+      "outcomes": {
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 Cross Runner CAS Conflict Retry and Merge Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Cross Runner GitHub SHA CAS Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Durable Queue Cancellation Recovery Gate": {
+      "count": 2,
+      "outcomes": {
+        "success": 1,
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 Queue Stress TWO": {
+      "count": 1,
+      "outcomes": {
+        "cancelled": 1
+      }
+    },
+    "JARVIS v0.93 Queue Stress ONE": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Queue Stress THREE": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Cross Workflow Lock A": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Cross Workflow Lock B": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Multiprocess Lease Crash Recovery Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Transaction and Fencing Prelaunch Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Isolated Drive Race Reproduction": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Drive Concurrency Release Audit": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Production Scheduler Conflict Audit": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Five Stage Integrated Prelaunch Test": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Combined Prelaunch Fast Gate": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 OTC Numeric Reconciliation Retry SAFE": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 OTC Numeric Reconciliation SAFE": {
+      "count": 1,
+      "outcomes": {
+        "failure": 1
+      }
+    },
+    "JARVIS v0.93 OTC Schema and Full Regression SAFE": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Consolidated Prelaunch Gates SAFE": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Multi-stock Historical QA Readonly": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Corrected Price Reconciliation": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Price Basis Diagnostic Readonly": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Cross Source Price Readonly Probe": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS L1 Readonly Integration Probe": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Five-Stage Dependency SAFE Smoke": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS v0.93 Deep Repair Three-Lane SAFE Smoke": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "Fugle FinLab 20261016 sample": {
+      "count": 2,
+      "outcomes": {
+        "success": 2
+      }
+    },
+    "JARVIS stage06 cleanup safe handoff": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS stage06 all-data financial repair expansion": {
+      "count": 5,
+      "outcomes": {
+        "success": 3,
+        "failure": 2
+      }
+    },
+    "JARVIS continue financial owner from durable checkpoint": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS resume terminal workers from durable checkpoints": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS stage06 first full live batch": {
+      "count": 1,
+      "outcomes": {
+        "failure": 1
+      }
+    },
+    "JARVIS stop legacy schedules for official-only first pass": {
+      "count": 2,
+      "outcomes": {
+        "failure": 2
+      }
+    },
+    "JARVIS resume unpaused stages from saved checkpoints": {
+      "count": 5,
+      "outcomes": {
+        "success": 4,
+        "failure": 1
+      }
+    },
+    "JARVIS resume all seven from saved checkpoints": {
+      "count": 2,
+      "outcomes": {
+        "success": 2
+      }
+    },
+    "TDCC timeout checkpoint handoff": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "TAIFEX V3.1 checkpoint handoff": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "TAIFEX V3 checkpoint handoff": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "Four-source repair review": {
+      "count": 6,
+      "outcomes": {
+        "success": 5,
+        "cancelled": 1
+      }
+    },
+    "Four-lane monthly scheduler isolated integration": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "Four-lane isolated Drive and restart acceptance": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "Pause legacy official schedules 1 through 4": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "TDCC history repair source acceptance": {
+      "count": 3,
+      "outcomes": {
+        "success": 3
+      }
+    },
+    "JARVIS shared repair prelaunch tests": {
+      "count": 4,
+      "outcomes": {
+        "success": 4
+      }
+    },
+    "JARVIS exact 12 blocker read-only followup": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS one-off live read-only two-round rehearsal": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    },
+    "JARVIS acceptance read-only RAW metadata inventory": {
+      "count": 1,
+      "outcomes": {
+        "success": 1
+      }
+    }
+  },
+  "days": [
+    {
+      "date": "2026-10-15",
+      "total": 0
+    },
+    {
+      "date": "2026-10-16",
+      "total": 0
+    },
+    {
+      "date": "2026-10-17",
+      "total": 0
+    },
+    {
+      "date": "2026-10-18",
+      "total": 109
+    },
+    {
+      "date": "2026-10-19",
+      "total": 125
+    },
+    {
+      "date": "2026-10-20",
+      "total": 267
+    },
+    {
+      "date": "2026-10-21",
+      "total": 349
+    },
+    {
+      "date": "2026-10-22",
+      "total": 238
+    },
+    {
+      "date": "2026-10-23",
+      "total": 193
+    },
+    {
+      "date": "2026-10-24",
+      "total": 324
+    },
+    {
+      "date": "2026-10-25",
+      "total": 189
+    },
+    {
+      "date": "2026-10-26",
+      "total": 99
+    },
+    {
+      "date": "2026-10-27",
+      "total": 179
+    },
+    {
+      "date": "2026-10-28",
+      "total": 205
+    },
+    {
+      "date": "2026-10-29",
+      "total": 14
+    }
+  ],
+  "sampled_failed_jobs": [
+    121180850172,
+    120996186332,
+    121187190674,
+    120937386142
+  ],
+  "limitations": [
+    "Run statuses are a moving snapshot",
+    "All run metadata paginated by day to bypass GitHub 1000-result query limit",
+    "Failure logs sampled, not all failures read",
+    "Script commits cover main ancestry only, not every abandoned branch",
+    "Drive selected authoritative policy and register read, not all RAW content"
+  ],
+  "non_success_run_ids": [
+    39174803748,
+    39174767064,
+    39174767066,
+    39174767065,
+    39174529346,
+    39174529456,
+    39174529442,
+    39172643385,
+    39171565250,
+    39171545167,
+    39145525371,
+    39145318735,
+    39145147609,
+    39145129387,
+    39145119293,
+    39144317508,
+    39143837553,
+    39143626213,
+    39143573538,
+    39143561331,
+    39143557863,
+    39143257173,
+    39142428319,
+    39142428329,
+    39139985536,
+    39139589993,
+    39139567299,
+    39138997331,
+    39138993700,
+    39138560024,
+    39138443102,
+    39138308286,
+    39135996822,
+    39134371098,
+    39103951533,
+    39101799861,
+    39101796382,
+    39099466528,
+    39099425803,
+    39099383988,
+    39099305590,
+    39099302929,
+    39099280884,
+    39342027385,
+    39342000254,
+    39342000257,
+    39342000209,
+    39341996670,
+    39337804252,
+    39295523705,
+    39274739816,
+    39274581339,
+    39274317077,
+    39256154843,
+    39239990271,
+    39239878052,
+    39239802177,
+    39239748966,
+    39239748900,
+    39239476547,
+    39239160996,
+    39239160807,
+    39235644298,
+    39232354167,
+    39232220305,
+    39232185176,
+    39231967662,
+    39231293049,
+    39221131554,
+    39220736978,
+    39220581184,
+    39217033404,
+    39216932917,
+    39216897612,
+    39216767613,
+    39216759434,
+    39212360307,
+    39212080276,
+    39211780582,
+    39209576036,
+    39457643971,
+    39454147017,
+    39454119369,
+    39451680708,
+    39448810456,
+    39447006272,
+    39446519008,
+    39446519122,
+    39446515850,
+    39446510779,
+    39446511087,
+    39446511075,
+    39444257121,
+    39444256341,
+    39444250621,
+    39444249492,
+    39444249494,
+    39444249647,
+    39444241474,
+    39444241484,
+    39444241551,
+    39444241438,
+    39444241650,
+    39444234506,
+    39444234457,
+    39444225359,
+    39443528329,
+    39441215056,
+    39696602795,
+    39690265883,
+    39685323505,
+    39677193458,
+    39666975505,
+    39659668882,
+    39651542580,
+    39642765106,
+    39640717237,
+    39633472114,
+    39627949987,
+    39622875661,
+    39622701053,
+    39612881992,
+    39611764652,
+    39611726506,
+    39611605435,
+    39596110949,
+    39590752057,
+    39590686033,
+    39590623284,
+    39590618533,
+    39588208029,
+    39588127550,
+    39588073843,
+    39588070507,
+    39582374073,
+    39582331013,
+    39582232876,
+    39582230678,
+    39581485957,
+    39581453757,
+    39576008700,
+    39575890769,
+    39575892682,
+    39575853677,
+    39575819148,
+    39875306390,
+    39874998732,
+    39873864813,
+    39873860635,
+    39872867990,
+    39872549474,
+    39871671196,
+    39871296549,
+    39870839103,
+    39870060506,
+    39869304437,
+    39868971575,
+    39867859162,
+    39866130974,
+    39864900269,
+    39864465853,
+    39864108617,
+    39863374243,
+    39863325711,
+    39863289922,
+    39863229707,
+    39862402703,
+    39861987668,
+    39861793940,
+    39861751770,
+    39860684648,
+    39860653027,
+    39860653352,
+    39860649652,
+    39859764555,
+    39858658890,
+    39857400984,
+    39856967673,
+    39856810359,
+    39856805666,
+    39856803098,
+    39855601528,
+    39854639492,
+    39854095548,
+    39853268078,
+    39850431285,
+    39848879079,
+    39848259193,
+    39848211432,
+    39848205014,
+    39846785984,
+    39845521715,
+    39842014171,
+    39840721729,
+    39840151896,
+    39839833343,
+    39839137010,
+    39837977684,
+    39835537168,
+    39833830062,
+    39831734783,
+    39831005612,
+    39829006373,
+    39827457319,
+    39825195178,
+    39824214550,
+    39822848994,
+    39815945625,
+    39814777241,
+    39813725479,
+    39811521474,
+    40041452076,
+    40040424548,
+    40038461640,
+    40035443762,
+    40028933902,
+    40025316377,
+    40020072745,
+    40014979750,
+    39998831530,
+    39993865016,
+    39991299308,
+    39985107551,
+    39985026098,
+    39985008405,
+    39983441035,
+    39983120632,
+    39983098307,
+    39982869064,
+    39982721330,
+    39982050443,
+    39982006903,
+    39981942372,
+    39979842828,
+    39978232100,
+    39976190022,
+    39974688755,
+    39968882876,
+    40144740856,
+    40144720708,
+    40144719623,
+    40141962249,
+    40141906471,
+    40139923440,
+    40139630097,
+    40138880140,
+    40138856611,
+    40138100281,
+    40135885027,
+    40135548495,
+    40135548565,
+    40135472271,
+    40129920751,
+    40129604648,
+    40129364087,
+    40126387980,
+    40125846753,
+    40122703281,
+    40116681611,
+    40116605361,
+    40116000096,
+    40210311413,
+    40210170430,
+    40210133411,
+    40210129386,
+    40209800280,
+    40209675995,
+    40209319650,
+    40208723026,
+    40207954130,
+    40207578685,
+    40207427159,
+    40206907842,
+    40206725169,
+    40205764346,
+    40205630063,
+    40205514352,
+    40205192320,
+    40204562200,
+    40203975301,
+    40203823970,
+    40203610373,
+    40203137655,
+    40202190813,
+    40202110407,
+    40201290460,
+    40201066070,
+    40201042476,
+    40200934575,
+    40199946834,
+    40199642133,
+    40199410557,
+    40199403339,
+    40199145533,
+    40197934581,
+    40197358144,
+    40197271730,
+    40197271727,
+    40196970726,
+    40195248482,
+    40194116064,
+    40190888375,
+    40187252584,
+    40187082428,
+    40185544445,
+    40185543873,
+    40185535004,
+    40185534387,
+    40181245351,
+    40181019364,
+    40422719555,
+    40418727321,
+    40418727310,
+    40418602640,
+    40418508342,
+    40418507875,
+    40418501250,
+    40418501222,
+    40418098502,
+    40418093502,
+    40418089934,
+    40418089912,
+    40417336640,
+    40417325804,
+    40416454610,
+    40416090763,
+    40416066184,
+    40415549633,
+    40415482911,
+    40415412506,
+    40415410666,
+    40413352528,
+    40413239209,
+    40413174928,
+    40413171608,
+    40412713523,
+    40412314143,
+    40412308208,
+    40404275246,
+    40391653328,
+    40350890117,
+    40349206877,
+    40349165605,
+    40340814860,
+    40605114813,
+    40600443307,
+    40594842945,
+    40582671542,
+    40579492139,
+    40505819219,
+    40784083816,
+    40796541628,
+    40795675547,
+    40795121543,
+    39206613634,
+    39204923429,
+    39204759026,
+    39203727021,
+    39203144179,
+    39186072629,
+    39185463001,
+    39184202733,
+    39179387294,
+    39406114470,
+    39382093056,
+    39382072728,
+    39382067834,
+    39382067881,
+    39381999181,
+    39378241498,
+    39377807889,
+    39377803442,
+    39375437590,
+    39374489008,
+    39372857662,
+    39372189841,
+    39371321202,
+    39369115367,
+    39359729837,
+    39575658789,
+    39575509359,
+    39575466560,
+    39575438328,
+    39575400997,
+    39575239946,
+    39573711765,
+    39573584435,
+    39573471432,
+    39573380327,
+    39573378493,
+    39573264603,
+    39573236618,
+    39573211867,
+    39573110078,
+    39573030703,
+    39573028726,
+    39573005552,
+    39572973928,
+    39572859360,
+    39572411893,
+    39572380291,
+    39572349176,
+    39572320117,
+    39569246870,
+    39569221170,
+    39569199131,
+    39569176433,
+    39567175316,
+    39567152022,
+    39567096684,
+    39567068128,
+    39566945586,
+    39566839531,
+    39566801636,
+    39566775549,
+    39566747542,
+    39566716170,
+    39566670267,
+    39565801052,
+    39565775905,
+    39565749902,
+    39565725745,
+    39563029571,
+    39562926582,
+    39562924866,
+    39562902681,
+    39562901048,
+    39562872676,
+    39562828426,
+    39562553024,
+    39562533295,
+    39562509736,
+    39562488453,
+    39562259900,
+    39562228225,
+    39562181096,
+    39560354253,
+    39560274315,
+    39560272717,
+    39560254410,
+    39559877292,
+    39559847623,
+    39559814476,
+    39559712187,
+    39559224975,
+    39558959996,
+    39558749593,
+    39558680415,
+    39558651306,
+    39558527796,
+    39558169379,
+    39558138891,
+    39558099790,
+    39557969324,
+    39557941133,
+    39557564255,
+    39557523332,
+    39557202740,
+    39555463814,
+    39555144353,
+    39555054835,
+    39555053655,
+    39555012852,
+    39554984145,
+    39553098428,
+    39553045861,
+    39552973453,
+    39552972177,
+    39552931739,
+    39552912419,
+    39552705787,
+    39552655812,
+    39552635225,
+    39549531372,
+    39549302188,
+    39549300781,
+    39549265639,
+    39549247289,
+    39548942969,
+    39548906125,
+    39548890119,
+    39548711574,
+    39548685802,
+    39548665091,
+    39548470598,
+    39548230220,
+    39547978889,
+    39547947611,
+    39547789062,
+    39547755749,
+    39547731553,
+    39545393425,
+    39545369476,
+    39545362026,
+    39545355814,
+    39545350199,
+    39545336336,
+    39545241862,
+    39545233853,
+    39545220823,
+    39544560323,
+    39543109237,
+    39542648458,
+    39542036856,
+    39541870483,
+    39541729702,
+    39541479930,
+    39540355136,
+    39538327108,
+    39537904538,
+    39537847287,
+    39537846136,
+    39536844052,
+    39536709674,
+    39536281852,
+    39536235137,
+    39536233742,
+    39536056638,
+    39536055385,
+    39527198395,
+    39811032413,
+    39807082604,
+    39805765766,
+    39805757204,
+    39805752931,
+    39805618312,
+    39805118837,
+    39804079751,
+    39803867434,
+    39803855048,
+    39803517719,
+    39802007003,
+    39801230499,
+    39800595775,
+    39800564379,
+    39800553087,
+    39797902569,
+    39796428378,
+    39795979832,
+    39794601740,
+    39792727376,
+    39790291043,
+    39788996372,
+    39788565207,
+    39787108732,
+    39786339025,
+    39786000184,
+    39781247951,
+    39779507682,
+    39778816404,
+    39778453465,
+    39778453549,
+    39778453487,
+    39776883649,
+    39775401458,
+    39774302659,
+    39772732264,
+    39772255253,
+    39770936010,
+    39770349609,
+    39756682132,
+    39747173585,
+    39732675791,
+    39732010350,
+    39731823010,
+    39731822954,
+    39731585954,
+    39728231016,
+    39728113424,
+    39727860911,
+    39727065664,
+    39726132280,
+    39723908527,
+    39722646377,
+    39716874280,
+    39958703373,
+    39948428848,
+    39945493907,
+    39942563469,
+    39936080550,
+    39935154973,
+    39931464353,
+    39923159022,
+    39907498637,
+    39904609122,
+    39903159190,
+    39902782744,
+    39902780318,
+    39902025156,
+    39901965487,
+    39898935105,
+    39896040679,
+    39893793418,
+    39893512213,
+    39893419658,
+    39893296406,
+    39893068336,
+    39892696253,
+    39892544580,
+    39889656484,
+    39889274182,
+    39888463351,
+    39887835226,
+    39884629241,
+    39883658670,
+    39883656582,
+    39883248292,
+    39883109341,
+    39880536475,
+    39880182189,
+    39879679298,
+    39879030501,
+    39878175194,
+    39878173272,
+    39878171676,
+    39878168540,
+    39878140217,
+    39875988996,
+    40112987550,
+    40112221760,
+    40110868183,
+    40108937392,
+    40106920351,
+    40103060594,
+    40102938453,
+    40102429784,
+    40099327035,
+    40096751209,
+    40090193275,
+    40089517005,
+    40088118454,
+    40088115863,
+    40087840213,
+    40086190213,
+    40085910351,
+    40085738396,
+    40084917403,
+    40084760966,
+    40084471941,
+    40084320376,
+    40083971629,
+    40083147956,
+    40082297765,
+    40081578120,
+    40080964653,
+    40080427090,
+    40079375690,
+    40075680311,
+    40074970298,
+    40074250219,
+    40073887476,
+    40072161008,
+    40071248212,
+    40069072678,
+    40067663003,
+    40067521241,
+    40067505731,
+    40066407556,
+    40066008186,
+    40065436694,
+    40065345529,
+    40065338219,
+    40065259246,
+    40064896749,
+    40063538259,
+    40063469493,
+    40063366010,
+    40061520171,
+    40057458004,
+    40056971014,
+    40051855485,
+    40176699067,
+    40175241619,
+    40174852361,
+    40167202085,
+    40163938313,
+    40161501077,
+    40156106600,
+    40153390291,
+    40150902971,
+    40150475772,
+    40490023538,
+    40452633511,
+    40452297311,
+    40443296202,
+    40424369506
+  ],
+  "script_commit_count": 295,
+  "script_commit_shas": [
+    "2b5a7fbe08a06772e481d646c513e62ad8d77429",
+    "5badf4cf059a1a6c42f0d5760c23ab0d800abdbe",
+    "89eecc6a6f58cd3b543eb972a0a7a598e236cedd",
+    "650cce4756a18965c912e8ec54a8f20f160b420e",
+    "b8342d1e8bd659feb7febeb31d9f2973a33d66b5",
+    "81e8bc77deeecdf9316bd57f017984204f7a98f7",
+    "bed986bec6a53b2e4533a952b0376e382037bf43",
+    "c013b426a80dfbb3c5b1671d01802aeca4a911bc",
+    "8c7f3cc94f9fdbaf4ed8d64daef335748683b638",
+    "c672602767df1b3abf0b880435e8b7810ec065ef",
+    "e61f811a4d2701d8137976cd02c554a125f40473",
+    "94ed63d52be54a46308de0c46fbde43feb65dc1e",
+    "e01d933c18832251452f3d6ec07e2a9ab1bd1bf8",
+    "753d096befd85a93dc4dfdb82cb0d7c9ae9cdc9f",
+    "c1ad9484338de173bdd17d4ba7143e6fc34c8018",
+    "63bc10f866194354f65e8a18eb5803fba8c569ad",
+    "0216f9b7e4bbf69031d162642c2d6acd1f842f6d",
+    "c1d4e3b6ffd1294ed2e4820b8211a7367cba7c81",
+    "a7e53e1aef846bda91788d6bc2bc9f096d72ef89",
+    "f55c3173a38666037e51f70024328bc2222013b8",
+    "7aeb96e9bbd87315bb4cb5779bac7339f38852d5",
+    "d3d589617fe923ba4479bd06f545b3749ebaacff",
+    "63d185e34c6eecee746aae1a96f611f331ffc624",
+    "c1c454bdd73436cc54ac151233dbf6cf8b522b2d",
+    "ba21530ac74738a927d5a7adb67b40a5f92c961f",
+    "cba67bfd23c1117e2c2e51ecf8270432a6b1356e",
+    "ecbd2130819fcc0a31abc1c1690c3c832040f6e6",
+    "45816be84d7858da092b816f273fab127786fc8f",
+    "7b500c889a4b1f065036053ec30e56c42e4344dd",
+    "c1aec3d7c411cf4ff2ba6437ba870c0863c7fe5b",
+    "dd5973f0e05f946447704940d93f4f1d525ce85c",
+    "5e0306bf64d2ce9a61a1f86f788aa80987d6bf99",
+    "50370bd6c5c6d149848812810913cb7386319bd1",
+    "b2fa60895575a488d9f0e4f7a4fd5bd5ca9145bb",
+    "d27ccd9b5cd59df13b6c34bcc9cea4436802b167",
+    "f41e458e15881f42491984a8884e57ba226a8090",
+    "d77ad57f02a23df5bd91eb2d7014c5a75735fd23",
+    "e2ec4aecad23be4526f545fe1182e1fbafedfe3f",
+    "634d48a9a811ff71b5892b4e42e017e806c7f19e",
+    "bed0d42ecb5e6bd6a5cfa5121e80b004b80543bc",
+    "17e7392bb84ab1a0904fb44bc0836e926b428768",
+    "aa043a5d385ea4d3107e8a544efa7e5af6057463",
+    "cddb7a5686caa43476f4860eb8cc695620e2381d",
+    "c1d472d8d3dcb3f2945ba1c343b0bc606afd4c70",
+    "fede2844f745ae424aa3a5cf560213f95c7d61eb",
+    "73480fca76340c6396c665d5d0f7041ed567e7c4",
+    "6ce946e6e39a348ae35630680b58b193b5bffa42",
+    "9cf320973f9ff3e946472e8a45ec031dfb19f8e4",
+    "e6e48c8b93ff202cf93ed9942d52cfebec969716",
+    "e0fe60f02afc919cfc265b851ace79888ebcc610",
+    "e0d4bc0fa625d5076695f0f96b3bda90527aa12a",
+    "94b34119c817bdc1df5a8e97eda5b809f832d611",
+    "5d2e1ec14863267acf380daf2475d028a00ad23b",
+    "5afc98ded4e5172df6706a37bb4d788f75e38c44",
+    "993e7dabae9dfe6eb572ad0f0d45173648efe6b2",
+    "3348a9beacdb04431c9c7a53f62866406a76db71",
+    "3fe9eea36c7fc4f875ecf565fd69fb784f714edc",
+    "00a9eec54e0b8d3f033b4f08750c2f0278e43323",
+    "772672a1d8bf6043d571cf09d95d3c30efd9d73e",
+    "345b981f742a2db3334353cb47b35df0ee5eec24",
+    "64e9da5973e394fe1a5f1d7cd66eda4831002c10",
+    "8a853af271e2d0d5e84bcfda8e499c39b27057e1",
+    "6535925907d7e689da4f204ee7c63da495824ae3",
+    "fd4761dc89e1159d19556ab06e0691f2eeee6bec",
+    "3bc7e535d2c358800de953ea88f0bbb12419164d",
+    "f9363e7c142b434846846b5da2ec1467de11684f",
+    "275c0ca87f09a10c8acf6c56d2b7b400e4efb9fe",
+    "14470d8a6665b3d72a15d47c32d89ca1b9c4faa5",
+    "17037f25c821ef224fd2905a354a7f27c05a5fe3",
+    "adbd6f216d1847941ab4f7c1cd46042273c399ed",
+    "c0312398db8ebba277ad3581f0421a345b3079e7",
+    "46327f82e95e4fb6b0e1542b3828c087eb127e71",
+    "2ad124ae21c2d7f2d86556a287313413ab1a65c7",
+    "7d5e7fefc3581707d379975dbe716d48f5954a8a",
+    "2539b4ded473c3ccb06d9e8390c7e736a2e4ef51",
+    "db9a66f8475ab7a71d17fc071c3f7763d3c026d6",
+    "0e456eda7d37c2ec35c419a2be7d8fb932aa75ab",
+    "d0337885a53b69a862707571c3b1850a0868718f",
+    "6f492abf8a3838ead577f33988f474402b72384e",
+    "caa9b3cc2474a34006eac2facbe0bf88a4d9ab56",
+    "1f36690c8e80df30e4245a954202f6d42f7dd67a",
+    "d5e1c5ab67e7047cf88a90975a44ace884fb61fa",
+    "dcc306ea5aa913875a435ee748723a9dfbf79ec2",
+    "41b9a54893d2f165bb2a0fb832adb83bc8cb4aed",
+    "228ab93c0f392dc14301b66dd183910a1705de09",
+    "ae467e7fdf980e28f1833ffd12e75e6532b340cc",
+    "01707eb5476a72dbeffbba21005527f5411242fc",
+    "0f680011aa71d7b7069bd8e777aa7dbed3d1e564",
+    "59c57d53e4b33d43a39aa05a9f525d6e6f6c6c59",
+    "879336e77806d5877085794586351e3b51939fd9",
+    "f7df11db2ba5c2a830813b025fc9fc1130a99f04",
+    "f16aedbe7f4d6d61d0ab886b583056a2d947b753",
+    "15db1ab5ddc8dff7b146523c2da94ae49f8fabd1",
+    "c72482d6862d6195d298bb65f90f4f436c2e4c0d",
+    "703a295a3435c5a3d806545952bc73924907872f",
+    "009f223aca6b2bb16e631f6509c8a7b5a8e3d494",
+    "8fe01294a1ac8df88d773905f9801e1ed78efa8b",
+    "282744cc67c17f9c16dcd30fd917b16d05372abd",
+    "660755b55ea652f08c2d7042582c6b3beb7473c1",
+    "4e7d43a7d8841b26b72fce5c107fb2def43985bf",
+    "cf7190049c6db93bc023e147b55aafa889a43a89",
+    "79824f744319fa3d473f5a7da761dae3dde7cf54",
+    "f072e66c769faffcf6b29c24739e5480b328fe05",
+    "90b2339cb1bdda96e163e371e903d46adb77a230",
+    "3a690874c1b804709d103cc041df877bd2f72bc0",
+    "a92f047285097a478120f5e0a54af149b386940f",
+    "087f6c2415fa086e776a9d235f5f9eb5bc129d7d",
+    "328669f5f49127ffa56c6dcf390057a308e8f46c",
+    "0a04e974c9733514d194f38fa6d731027481ba63",
+    "8afc5d384fb4e6bd4dc9f05879d20f629f44df60",
+    "7a151e525200cd7893a918cbe4f49e3fd8b27628",
+    "bd145cc66b6590c7126d5789c0de423701c34cb2",
+    "9827e85301092c008f022b1b92e6369571109fa4",
+    "55b2f3de69e728d1a1a7127ba0b9051221c9ba18",
+    "a918ec0d01b092536a5c5c4f112b7ba317af43fc",
+    "7599f501b52b6959eeb79f87bedfab765564382a",
+    "218d6b8002ffd2162af4b870ea2bb63e2725996f",
+    "632c389009d4a2856af22e12baffac32e792e730",
+    "3345b6885bc7387724742f0a002c4432de7ae7cb",
+    "753abe63cb755fb273b7bc353c0b12bea1277d58",
+    "31d8558a96d7e4e2fe4801faa607a78253e4d2ad",
+    "b688e8aee7ac3ce42e81d550ef4895d9777b0c84",
+    "8e9a3a53d7411d0ad7cac55b36b0118531b76f92",
+    "b30f3a1d541ef9ff618e850b40cbfc9fbd2529bd",
+    "c8b3eb784ea542a05c04e3f136544175b4f872d7",
+    "ac7fb4f8f6c43e5069c6e5bde924641ea3fb7854",
+    "dad93ab94578e18d425884e7fedbe935b47d6e50",
+    "dac761a1e0f348080b63b517c8788de32c559740",
+    "51ab040d62a5ea6554834e6152a64a269f992182",
+    "72f55bab415785b35fcffebe1fd5b4fcc03cb8bf",
+    "c08196e1318e468669839442a273556c8b506f17",
+    "b2d4c8b46d5aa2162ce940ce52a6972cc1c4a688",
+    "ae81e73f7903ac8b50413dd8ffc2a778dd2a9ef2",
+    "b3306b6df882203ae2b3c5bc6c4f3932b9b699be",
+    "0034dccea8e4c40bd36b2d90c5de0241e0dc51e1",
+    "f3531b298f4b61dcec9bd1cd9472205eb13d5957",
+    "9d556a6ae83d62939ffa51bc1254857386afcda6",
+    "216683f0ad14d44f142bd8e6fc01bc6d314308c7",
+    "5c23de32419ee409b5d27f20607c03660ff14b0c",
+    "3ccd61291bc03ecc3ab2b416573545d5cede70a6",
+    "9a8f667e694c6829ba09609a81f621b16aef65e2",
+    "651915e6f08368e7efcf1c9cda53c0e745d13299",
+    "9b7e4775aa91fa24c854b45b5ceef0b80d1e7bd3",
+    "aecb49274ac6b3c977431b628eeaa0f1a9a78867",
+    "98830d1b7a2f0b64b2d9ef1e52dc97664ba2fc60",
+    "4e3880f91405edab070cf842e1c761c7d257d2df",
+    "f20af77604ade198571189fb21a8a4fa7256f98a",
+    "874438c9af348939c69d6af7dfbc3079cd9677d4",
+    "71ee594c30989036eb124ee222b926621b5c807f",
+    "98a83fe7177ced15e2a3b377976e7beba42dbdb4",
+    "8629befa5e63b666ddb30f2be59775cbb0c4b2b4",
+    "40b289abf7113894fddb3e941a3d9dbd45ff23b5",
+    "848c19f71ab56a0c365dd9f1fea45e5ec952e074",
+    "5e21a5c7c81e61cadde4848000fc4a062c94d895",
+    "df1cd33bb8c6148cdb04877fb1fc79b6d9787065",
+    "c57008c88739f236663979f5fd4e8df4ad3b083c",
+    "fbbcb039b8ec675daabcbf5f6959633ca1023ee9",
+    "e2c1bb5c46584c264e0f0fdda586bf2a0312d001",
+    "2037def8549b37c10148565723353f39f7e40506",
+    "78f956c817db9d4a1ad5068add3edf3f741495ec",
+    "eb92d818660cd80babe6fe3e731b182e8abc24f1",
+    "7519868ebfc3b5272e666984e8899e582d2058c4",
+    "08dc32c031e9cd908c1f28d2f8dee3dbb2068d75",
+    "c56cc0086cdabdb1091aecf54a53008a55513173",
+    "608154007e6566b355926443e926f3cb2d7483d7",
+    "34e4c84b77743b96af1018d2ec2f681c8021687d",
+    "9ea6c12bd247be9572e44aa4c8a477a0c6831985",
+    "1fbdd2e9bd167e4b29522a46cad093c5cfff4ce0",
+    "428b8298ebb88dfbc597e8f32c4312bed4002398",
+    "cbccae5d23a91684e0b5f1b233d11e16e2e63dea",
+    "37cb82d5df7915b50226bab81707e1995cac1849",
+    "40cdfbff0d56f70e672f5db441851f370e9db9d3",
+    "31ff59030a7c219ccabde6afa9c6128853ff8056",
+    "98607149dd6965bf8759bf369f4eb879c8f74514",
+    "d3a2f24abceb1353f7a98e72247b158ce817437b",
+    "a380fa326cc3e39be419a88b40dea4aca4f557e7",
+    "44d4d938bac7dbc7de2de67cb1a85bdef84b9b03",
+    "58c403f59608dfca47ec12b0e555511ea87e3742",
+    "a82ef0b615a00fe617263c70ae8b4b4bd644efdc",
+    "866ec31b2c1b3d132596d03e7dad7e3f46d6d2c1",
+    "46a043190505a3a677241b202c590398f1d6293b",
+    "5e0fbf9373cb42f5232e09a48053288e1839b5eb",
+    "42cc283a28ca62f3a736e1aa5f6768f94881d21f",
+    "e7f071fe664ede2e1420b02995cd310ee18bb40d",
+    "c2b80c78a895c985da802ac974821e3536eef238",
+    "21afe56e551c55e87f0a6818a79e37fce7ad61ba",
+    "a0c862a00c9c24995ffa95e8e56db70a32b82210",
+    "6610e9cd48eda1793e15c800e1e75fb7e7d0a419",
+    "2d06b629b97f80c0b2db6da4c2da96c35ce22da6",
+    "8319ad6b2d1826acdc39e7f58da824bf8d7c76ad",
+    "94851e8fc7f0072a079dad0febb69baac87e883c",
+    "da50b3d29d08b28e9550c04729dd490584e48d22",
+    "c90c9096b395e93787f3e877625dde6b0768fc2e",
+    "1715e7790d1e3410e23c05d24f2f540718449ff0",
+    "338928a730baf0ac4b8933702a59dada36678375",
+    "c0e01a68bcc9521c7614c22bd71466778b005b71",
+    "4e6efdd67c943f74d65b21f74ca4124e38d5a426",
+    "15237d13c5ad6bf0d81faa5c1432f7c748dc849a",
+    "66e8eb16046143636c7f81f825209eecaa519a52",
+    "6b4e87867d0e65b080cead834dd98d9d4c3ebee1",
+    "6c734ab85700f3da200fe0465649589a0da473da",
+    "4660cf019c4fde4a162ed2cad043a482a4cf0d90",
+    "50938044a487a52679b556e3c9b8eb2bdb9ccb6c",
+    "41de362695a47f03b5e75b395f48f145f1ae9237",
+    "092abc80aba3e2d75c5ab45a0274f4eea813adb6",
+    "9178855af79c4c3163c2d9b095a8d3d1f1a5fe69",
+    "234caf8e3c1caea79275ed74e18042f704f89cae",
+    "f4355fd1827e8a3a4f7b65f3f39d564e6ace76d8",
+    "328353529895df68a878606846f72541a808d040",
+    "74c7b3a83bdc5cbea51299f00b998a303c803ce0",
+    "f511fa532efeb4595921973263a822b5dc6ab67f",
+    "5531039e47dbabf199a048b5ce31daebb435ac2f",
+    "b785542cb3d89a5c544d33919ef7eba95356fa91",
+    "74ff52067e9172ee6e7e6cc7fe3e4219dc052279",
+    "81d35d791de99187b1bf115db032d009a740f114",
+    "de87c1d27f40fc1a839f407a40cdf78a1041770a",
+    "6c4774aefa2f01d98a6044f950e81c0cce52e0c3",
+    "e4b45f3edd0eca8666d043db694e6fd4b1758b67",
+    "bf5b4ae88be40a5996bf724d607ef54d41fc7c3d",
+    "119317c13e370a8b97fac07ce59b2af023dec327",
+    "242a98adc5f5d7c5c131c3a2397342aa6586c4e2",
+    "cfc08b53587b7ced5bdef1df85e7b05ab047a839",
+    "c15a8c6c5cc048d33a1179174131f1c323ff7efc",
+    "61d6c5af7a946a8c5ffc3dd77f102d396d13d87d",
+    "474b5819b5083b7b0d93f3b7ef5c20eea62ef1df",
+    "5a8ea7f7a3b50a2f4429ec6eb7404990d48e2266",
+    "a39d5ed1198c17488c0e5f44a9d5f002da74065c",
+    "9d1fe7c907f7e4df09be0640131615b79085f50e",
+    "998d6863f70e6f85781488350ca467999047e663",
+    "b8212e0d2157dac99089c2822529da84ded33eda",
+    "92c1b2f2332a7b7b1da1ea145814fa2a156379eb",
+    "9af40bdea46fa0784d9842adf60b2ac927aa0da5",
+    "44dccf7c60d66c6d47dcce97cf92465e4b108274",
+    "817ff1ad1c55330fdd503294d74f9d7b004ca640",
+    "a307dbc82f86a1d46f1d7fcedcf592f713d43f01",
+    "48eabef1d8d16f4339a8d7df9aecc24ffde890a5",
+    "5583175d7f48e2d52c9ecab8bdf33c05f8c9d9d2",
+    "4195d48c0565cf36669565ebdd55aefb8e80e9a0",
+    "5b6042b5d0a6487f3fe11ecf4c9f2d737d197ea5",
+    "77cfef1507fb40e74aee22ca42746d19fb2a9ffe",
+    "f0aed029c829c299e5a125df9b52170c42951eec",
+    "f58987fb05862843917cb9326d87796e66a89fe7",
+    "1a7d0996e6ab286e25d5acc024cf4e1d0e471afd",
+    "3fbcf23d08c47d638f713eae9611e38e108c586a",
+    "553d8cefeb3e36495c1e6a853f8af791d33986e6",
+    "d1f423b01586f3c58b9027ecfebc3e04c948ac9c",
+    "358c04f74aeb4be046ab5ae310590142242c0ec4",
+    "9ce14ceb0e601cebf8e395822287bab8850d623f",
+    "743217abd2bc110f2559021452053f1b05940dd3",
+    "4cee73d3d7dc1c54f3c9051502e664aeab0653b7",
+    "08810944d4b15333e59ed9d6623283853de7ac3d",
+    "f98591b8c5f99bad6142473f310ddeea21d40e0d",
+    "c22874617a4cd71d182de3b2d1978d5036182143",
+    "c55fa4c8d35418317db6cbf5a6c425fcfb7b23d0",
+    "8842d3d44656f35e8e21181ca0d09ce93a169352",
+    "a5ac9b1af6bfae0eace8c493b7acf5f77fe7d01e",
+    "598756031f5e7e710885042ebe8b17bb69111818",
+    "836749f853b8ad1ff418242689177e9553fdbcc0",
+    "eaeb5fd9d77d5b8ecf07c5f9ec8ae869255b264f",
+    "80ad3b85942a451fdb3edc8eb1afa73592401a39",
+    "cd848c8eb57404de2672a5037ecf78ae3666c7e8",
+    "958839a843ed8cf1210f89b8e6c51a487cff973f",
+    "f816849305eb9f4cfaf97dde34d16c3ba5300054",
+    "13cbaaf89b64bf6d5d608a9383cbbf0c03039738",
+    "eb759891874064703f9c6b438ab94cae19276629",
+    "06587596e762781fcd4db1cde2ae282485cab611",
+    "4ccff437e4e9cd130741b365f10230475d850986",
+    "53771d4c6abcb458e3320644c29d86aff09c0a51",
+    "2c0bbc5b632bfc6f943480a76759ae5857afe881",
+    "0ea586a7216dad5491bb011f3d18fb559b9329a7",
+    "074f88c853b648d0f8c3126444dfbba562c3abbb",
+    "a1d29bbc41bae73637d1bf3b81d3610d9c4dba60",
+    "ed9f2a4e12f67f1ce63727ba0efcb8149b27fe46",
+    "2a149fed351ca8091ed3bfc7a0f32802b0f16ec6",
+    "7b58a66a8e13c481624aecb82c8b3ef9b6ddb61b",
+    "ba612959ece7147e7837ff4dc079e107e7da5e64",
+    "ed1d8bd1cfa2488b17d6dbe21f768331a53058a9",
+    "7894c26a48c3e9ec9d9b6ec979f6a8730ebc6fcc",
+    "5e385c3b5c7a958cee56f8eccf0c36d65ce6bc5b",
+    "316328e727c1574757197d70f9c02f1a77195b1a",
+    "6dbea243a665d9a0ac8aad6f4432ceb3bcedd156",
+    "3a6f60726abaec2cd099363901c1b76af75f8941",
+    "f12097da275216be3aeae52f0bc8a6ff8a968ef5",
+    "3ddbcfe058cbc782a7e3797976980f4057690c36",
+    "84c1d61e3e7f01eaa051422429e61842deae6b19",
+    "dfa9c47c4b52d19381d654912f7a9893d0106526",
+    "a8c71f229d32bbb93ec8a1e3ce098572784feaf1",
+    "846c2347a8c27c39dd188a4124c8a61d9ebc9faa",
+    "baf7e44ecf06fa2ff7da176215e8b8e716ef1b63",
+    "d6b433b22bbe966eaad53bb4f7865bbcd044f82d",
+    "e1cb3549093cda9b9809814f86f48643b31e9f2f",
+    "81d57a223b1e9e4a8994aca36691776afe1c47e9",
+    "09b825095376a569bda5dffc41a22dd6a7cade9f",
+    "630178c56dfd11e0d1ef1e37526f474182e4e115",
+    "127d0c6d276cb754ac0a99eb19b46f8f867ff0b5"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "version": "20261030_R17",
+  "folder_id": "1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
+  "folder_url": "https://drive.google.com/drive/folders/1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA",
+  "path": "C1_0.93/01_RAW/00_下載規則與問題清單",
+  "files": [
+    {
+      "name": "01_測試結果總彙整.md",
+      "file_id": "1oyqkqFUWWIx3dmfUV68KuzOWpgg3FFTW",
+      "url": "https://drive.google.com/file/d/1oyqkqFUWWIx3dmfUV68KuzOWpgg3FFTW/view?usp=drivesdk"
+    },
+    {
+      "name": "02_有效下載規則.md",
+      "file_id": "1UXyDqJNU8sV_NIPObCrTFrND6pqw8vN9",
+      "url": "https://drive.google.com/file/d/1UXyDqJNU8sV_NIPObCrTFrND6pqw8vN9/view?usp=drivesdk"
+    },
+    {
+      "name": "03_問題追蹤表.md",
+      "file_id": "1g9FxCFrp_fmc6wcpDH5jb-JC4wZATvLE",
+      "url": "https://drive.google.com/file/d/1g9FxCFrp_fmc6wcpDH5jb-JC4wZATvLE/view?usp=drivesdk"
+    },
+    {
+      "name": "registry.json",
+      "file_id": "1M0HjxhCPe9E-WmOOizPSWk8nIGcfc-IQ",
+      "url": "https://drive.google.com/file/d/1M0HjxhCPe9E-WmOOizPSWk8nIGcfc-IQ/view?usp=drivesdk"
+    },
+    {
+      "name": "manifest.json",
+      "file_id": "1Q92y2j2UGi7Y6ni__DbWrax2RhQPHfgw",
+      "url": "https://drive.google.com/file/d/1Q92y2j2UGi7Y6ni__DbWrax2RhQPHfgw/view?usp=drivesdk"
+    },
+    {
+      "name": "04_上線前待辦複核.md",
+      "file_id": "1_uI-saEZb8VlF3I_GmGCRFHqr4qBeUjG",
+      "url": "https://drive.google.com/file/d/1_uI-saEZb8VlF3I_GmGCRFHqr4qBeUjG/view?usp=drivesdk"
+    },
+    {
+      "name": "05_I17_I18修正結果.md",
+      "file_id": "1OGyjDeCLQEkDhnQ2C7DvEPzEHhe3etk1",
+      "url": "https://drive.google.com/file/d/1OGyjDeCLQEkDhnQ2C7DvEPzEHhe3etk1/view?usp=drivesdk"
+    }
+  ],
+  "readback_verified": true,
+  "automatic_future_sync_installed": true,
+  "automatic_future_sync_scope": {
+    "branch": "codex/seven-source-closed-loop-design-20261029",
+    "workflows": [
+      "jarvis-seven-native-reuse-test.yml",
+      "jarvis-seven-import-test.yml",
+      "jarvis-seven-closed-loop-batch.yml",
+      "jarvis-seven-tdcc-missing-test.yml"
+    ],
+    "production_twelve_entrypoints": false,
+    "governance_summary_auto_update": false,
+    "pending_drive_background_retry": false,
+    "candidate_twelve_guarded_entries": true,
+    "shared_worker_workflow": "jarvis-seven-worker.yml",
+    "twelve_shared_entry_publications_real_verified": true,
+    "adapter_quota_and_quarantine_workflows": true,
+    "consolidated_final_bundle": true,
+    "admission_runtime_qa": true,
+    "merged_release_regression": true,
+    "unattended_prelaunch_batch": true,
+    "native_positive_and_repair_qa": true,
+    "twelve_native_handoff_and_finalization": true,
+    "typed_action_and_limited_formal_handoff": true
+  }
+}

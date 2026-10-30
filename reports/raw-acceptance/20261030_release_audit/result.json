@@ -1,0 +1,67 @@
+{
+  "report": {
+    "schema": "JARVIS_RELEASE_READINESS_AUDIT_V1",
+    "code_sha": "f4dcc82b684a807d87e5f88b2b54d24d6b7a78b7",
+    "candidate_manifest_complete": true,
+    "source_count": 7,
+    "direction_count": 12,
+    "automatic_missing_sources": [
+      "TDCC"
+    ],
+    "sources_without_automatic_missing_rules": [
+      "FinMind",
+      "MOPS",
+      "NDC",
+      "TAIFEX",
+      "TPEx",
+      "TWSE"
+    ],
+    "actual_release_enabled": false,
+    "deployment_ready": false,
+    "source_requests": 0,
+    "formal_raw_writes": 0,
+    "remaining": [
+      {
+        "item": "Automatic missing/correction scope",
+        "status": "INCOMPLETE",
+        "sources": [
+          "FinMind",
+          "MOPS",
+          "NDC",
+          "TAIFEX",
+          "TPEx",
+          "TWSE"
+        ]
+      },
+      {
+        "item": "Actual provider long-run limits and throughput",
+        "status": "NOT_RUN_FOR_FINAL_SCOPE"
+      },
+      {
+        "item": "Merge fixed release and activate twelve schedules",
+        "status": "NOT_DONE"
+      }
+    ],
+    "existing_formal_three_unit_canary": "Prior verified storage handoff is not twelve-schedule activation"
+  },
+  "publication": {
+    "record_sha256": "ee58a4e2e6e89921d3768dbeb9779726438bdbabbed5f7bddc0f0aa5e218fc0c",
+    "files": 8,
+    "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+    "drive_receipt": {
+      "file_id": "1ol0Z5SDEcUR3QnbdzWSJ3mB1Sk7r65fn",
+      "folder_id": "16uy292jpDbmK7dvVvra8X_sN8T0ZcJNL",
+      "sha256": "ee58a4e2e6e89921d3768dbeb9779726438bdbabbed5f7bddc0f0aa5e218fc0c",
+      "readback_verified": true
+    },
+    "source_requests": 0,
+    "production_activation": false,
+    "git_state_branch": "jarvis-source-preflight/record-40981399108-1-release-readiness/TWSE",
+    "job_status": "success"
+  },
+  "tests": {
+    "tests": 1094,
+    "passed": true
+  },
+  "run_id": 40981399108
+}

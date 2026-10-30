@@ -1,0 +1,150 @@
+name: JARVIS one-shot unattended prelaunch batch
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-overnight-prelaunch.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Whole repository in one invocation
+        run: |
+          mkdir -p results
+          python - <<'PY'
+          import json,re,subprocess,sys
+          from pathlib import Path
+          p=subprocess.run([sys.executable,'-m','unittest','discover','-s','tests','-p','test_*.py','-v'],capture_output=True,text=True)
+          log=p.stdout+p.stderr
+          for i in range(0,len(log),100000):Path('results/full-repo-'+str(i//100000)+'.log').write_text(log[i:i+100000])
+          m=re.search(r'Ran (\d+) tests?',log);r=dict(tests=int(m[1]) if m else None,passed=p.returncode==0)
+          Path('results/full-repo-summary.json').write_text(json.dumps(r));print(json.dumps(r));print('\n'.join(log.splitlines()[-8:]));raise SystemExit(p.returncode)
+          PY
+      - name: Twelve entry gates and combined preflight
+        run: python -m scripts.v093_final_prelaunch_bundle
+      - name: Preserve regression evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job overnight-regression --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: overnight-regression, path: results, retention-days: 90}
+  entries:
+    needs: regression
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        include:
+          - {source: TWSE, direction: DESC}
+          - {source: TWSE, direction: ASC}
+          - {source: TPEx, direction: DESC}
+          - {source: TPEx, direction: ASC}
+          - {source: MOPS, direction: DESC}
+          - {source: MOPS, direction: ASC}
+          - {source: TDCC, direction: DESC}
+          - {source: TDCC, direction: ASC}
+          - {source: TAIFEX, direction: DESC}
+          - {source: TAIFEX, direction: ASC}
+          - {source: NDC, direction: DESC}
+          - {source: FinMind, direction: DESC}
+    uses: ./.github/workflows/jarvis-seven-worker.yml
+    with:
+      source: ${{ matrix.source }}
+      direction: ${{ matrix.direction }}
+      mode: entry-validation
+    secrets: inherit
+  catalogs-and-runtime:
+    needs: regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Restore immutable handoff snapshots
+        run: |
+          mkdir original frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/original
+          git archive refs/remotes/origin/original | tar -x -C original
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen
+          git archive refs/remotes/origin/frozen | tar -x -C frozen
+      - name: Seven-source read-only candidate catalogs and twelve cold page checks
+        run: python -m scripts.v093_overnight_catalogs --namespace overnight-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Real consecutive saved chunks and independent cold restart
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_overnight_runtime --namespace overnight-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Preserve candidate and runtime results
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source NDC --job overnight-catalogs --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: overnight-catalogs-runtime, path: results, retention-days: 90}
+  legacy-audit:
+    needs: regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Fresh read-only old triggers and live writer check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_overnight_audit
+      - name: Preserve live audit
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job overnight-old-audit --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: overnight-legacy-audit, path: results, retention-days: 90}
+  summary:
+    if: always()
+    needs: [regression, entries, catalogs-and-runtime, legacy-audit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with: {path: collected}
+      - name: Final single report with every unresolved gate
+        env:
+          BATCH_NEEDS: ${{ toJSON(needs) }}
+        run: python -m scripts.v093_overnight_summary
+      - name: Preserve final report even when a stage failed
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job overnight-final-summary --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: overnight-final-report, path: results, retention-days: 90}

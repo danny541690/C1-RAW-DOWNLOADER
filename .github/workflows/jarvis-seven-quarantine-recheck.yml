@@ -1,0 +1,56 @@
+name: JARVIS TAIFEX retained quarantine full recheck without redownload
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-quarantine-recheck.yml]
+  workflow_dispatch:
+    inputs:
+      resume_namespace:
+        type: string
+        default: ""
+        description: Existing recheck namespace; leave empty for a new batch
+permissions:
+  contents: write
+jobs:
+  recheck:
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Restore immutable original and review ledgers
+        run: |
+          mkdir original frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/original
+          git archive refs/remotes/origin/original | tar -x -C original
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen
+          git archive refs/remotes/origin/frozen | tar -x -C frozen
+      - name: Verify retained quarantine SHA and native CSV contents
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          RESUME_NAMESPACE: ${{ inputs.resume_namespace }}
+        run: |
+          RECHECK_NAMESPACE="${RESUME_NAMESPACE:-recheck-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}}"
+          python -m scripts.v093_taifex_quarantine_recheck --part '${{ matrix.part }}' --namespace "$RECHECK_NAMESPACE"
+      - name: Save recheck evidence automatically
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TAIFEX --job 'quarantine-${{ matrix.part }}' --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quarantine-${{ matrix.part }}
+          path: results
+          retention-days: 90

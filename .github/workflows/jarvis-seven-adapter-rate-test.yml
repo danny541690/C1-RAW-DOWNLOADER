@@ -1,0 +1,71 @@
+name: JARVIS merged native adapter and source-shared quota acceptance
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-adapter-rate-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  quota:
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - run: python -m scripts.v093_adapter_live_preflight --mode quota --source '${{ matrix.source }}' --namespace quota-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Preserve quota acceptance evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job 'quota-${{ matrix.source }}' --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quota-${{ matrix.source }}
+          path: results
+          retention-days: 90
+  missing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Restore frozen original and reviewed ledgers
+        run: |
+          mkdir original frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/original
+          git archive refs/remotes/origin/original | tar -x -C original
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen
+          git archive refs/remotes/origin/frozen | tar -x -C frozen
+      - name: One proven missing TAIFEX native case through common worker
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_adapter_live_preflight --mode missing --source TAIFEX --namespace adapter-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Preserve real adapter acceptance evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TAIFEX --job adapter-missing --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: adapter-missing
+          path: results
+          retention-days: 90

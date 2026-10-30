@@ -1,0 +1,28 @@
+{
+  "checked_at_taipei": "2026-10-29T23:41:31.175184+08:00",
+  "workflows_checked": 160,
+  "active_old_triggers": [],
+  "old_writers": [],
+  "quarantined_metadata": {
+    "id": 39611764652,
+    "status": "queued",
+    "path": ".github/workflows/v093-v2-01-raw.yml",
+    "job_count": 0
+  },
+  "passed": true,
+  "publication": {
+    "record_sha256": "670f18347a959d1ff7b89d6f0d00834aeddfc8abf974f1e79c37cef7c8b7b968",
+    "files": 1,
+    "publication_state": "GIT_AND_DRIVE_READBACK_VERIFIED",
+    "drive_receipt": {
+      "file_id": "1VWBrkMKGm3U0MeJgtD2FMgOoTLcZalN-",
+      "folder_id": "1rH2ar0D-BSga5Vxxhh5g-i1jJCmnV5VN",
+      "sha256": "670f18347a959d1ff7b89d6f0d00834aeddfc8abf974f1e79c37cef7c8b7b968",
+      "readback_verified": true
+    },
+    "source_requests": 0,
+    "production_activation": false,
+    "git_state_branch": "jarvis-source-preflight/record-40903920061-1-overnight-old-audit/TWSE",
+    "job_status": "success"
+  }
+}

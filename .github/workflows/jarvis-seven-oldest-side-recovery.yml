@@ -1,0 +1,158 @@
+name: JARVIS two oldest-side recovery with ten passed native slots reused
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-oldest-side-recovery.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Whole repository in one invocation
+        run: |
+          mkdir -p results
+          python - <<'PY'
+          import json,re,subprocess,sys
+          from pathlib import Path
+          p=subprocess.run([sys.executable,'-m','unittest','discover','-s','tests','-p','test_*.py','-v'],capture_output=True,text=True)
+          log=p.stdout+p.stderr
+          for i in range(0,len(log),100000):Path('results/full-repo-'+str(i//100000)+'.log').write_text(log[i:i+100000])
+          m=re.search(r'Ran (\d+) tests?',log);r=dict(tests=int(m[1]) if m else None,passed=p.returncode==0)
+          Path('results/full-repo-summary.json').write_text(json.dumps(r));print(json.dumps(r));print('\n'.join(log.splitlines()[-8:]));raise SystemExit(p.returncode)
+          PY
+      - name: Twelve entry gates and combined preflight
+        run: python -m scripts.v093_final_prelaunch_bundle
+      - name: Preserve regression evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job overnight-regression --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: overnight-regression, path: results, retention-days: 90}
+  legacy-audit:
+    needs: regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Fresh read-only old triggers and live writer check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_overnight_audit
+      - name: Preserve live audit
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job overnight-old-audit --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: overnight-legacy-audit, path: results, retention-days: 90}
+  prepare:
+    needs: [regression, legacy-audit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40968961523
+          github-token: ${{ github.token }}
+          pattern: twelve-native-*
+          path: collected/original-slots
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40968961523
+          github-token: ${{ github.token }}
+          name: twelve-updated-catalogs-1
+          path: collected/catalogs
+      - name: Extend only two failed oldest-side probes using pinned catalogs
+        run: python -m scripts.v093_twelve_recovery_inputs
+      - uses: actions/upload-artifact@v4
+        with: {name: reused-original-records, path: collected, retention-days: 90}
+      - name: Preserve evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job recovery-inputs --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'recovery-inputs-${{ github.run_attempt }}', path: results, retention-days: 90}
+  slots:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with: {name: 'recovery-inputs-${{ github.run_attempt }}', path: inputs}
+      - name: Isolate oldest unsupported response and continue to positive native sample
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_twelve_native_smoke --source '${{ matrix.source }}' --direction ASC --namespace twelve-recovery-${{ github.run_id }}-${{ github.run_attempt }} --quota-namespace twelve-native-40968961523-1 --recovery-of-run 40968961523 --allow-classified-holds
+      - name: Preserve evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source ${{ matrix.source }} --job oldest-recovery-${{ matrix.source }} --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'oldest-recovery-${{ matrix.source }}-${{ github.run_attempt }}', path: results, retention-days: 90}
+  summary:
+    if: always()
+    needs: [regression, legacy-audit, prepare, slots]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with: {path: collected}
+      - name: Merge ten original passes with two recovered slots and preserve held outcomes
+        env:
+          BATCH_NEEDS: ${{ toJSON(needs) }}
+          ORIGINAL_NAMESPACE: twelve-native-40968961523-1
+        run: python -m scripts.v093_twelve_native_summary
+      - name: Preserve evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job oldest-recovery-summary --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'oldest-recovery-summary-${{ github.run_attempt }}', path: results, retention-days: 90}

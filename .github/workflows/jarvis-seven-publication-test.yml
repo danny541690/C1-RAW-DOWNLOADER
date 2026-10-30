@@ -1,0 +1,53 @@
+name: JARVIS automatic Git and Drive acceptance record test
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-publication-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jarvis-publication-qa
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - name: Prepare explicit publication-only test evidence
+        run: |
+          mkdir results
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          Path('results/publication-probe.json').write_text(json.dumps(dict(schema='JARVIS_PUBLICATION_PROBE_V1',purpose='RECORD_TRANSPORT_TEST_ONLY',source_requests=0,raw_writes=0,production_activation=False)))
+          PY
+      - name: Publish twice to verify idempotence against actual Git and Drive
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m scripts.v093_acceptance_publish --source TWSE --job publication-probe --status success
+          cp publication/receipt.json first-receipt.json
+          python -m scripts.v093_acceptance_publish --source TWSE --job publication-probe --status success
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          first=json.loads(Path('first-receipt.json').read_text());second=json.loads(Path('publication/receipt.json').read_text())
+          assert first['record_sha256']==second['record_sha256']
+          assert first['drive_receipt']['file_id']==second['drive_receipt']['file_id']
+          assert second['publication_state']=='GIT_AND_DRIVE_READBACK_VERIFIED'
+          print('REAL_PUBLICATION_IDEMPOTENCE_PASS')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: automatic-publication-receipt
+          path: publication
+          retention-days: 90

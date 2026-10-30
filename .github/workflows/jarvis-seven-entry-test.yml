@@ -1,0 +1,44 @@
+name: JARVIS merged twelve-entry common-worker integration
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-entry-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  entry:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - source: TWSE
+            direction: DESC
+          - source: TWSE
+            direction: ASC
+          - source: TPEx
+            direction: DESC
+          - source: TPEx
+            direction: ASC
+          - source: MOPS
+            direction: DESC
+          - source: MOPS
+            direction: ASC
+          - source: TDCC
+            direction: DESC
+          - source: TDCC
+            direction: ASC
+          - source: TAIFEX
+            direction: DESC
+          - source: TAIFEX
+            direction: ASC
+          - source: NDC
+            direction: DESC
+          - source: FinMind
+            direction: DESC
+    uses: ./.github/workflows/jarvis-seven-worker.yml
+    with:
+      source: ${{ matrix.source }}
+      direction: ${{ matrix.direction }}
+      mode: entry-validation
+    secrets: inherit

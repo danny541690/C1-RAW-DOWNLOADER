@@ -1,0 +1,40 @@
+name: JARVIS recover actual saved TDCC missing task without refetch
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-tdcc-recover-test.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: jarvis-tdcc-missing-qa
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with:
+          name: tdcc-missing-start
+          path: expected
+          run-id: 40853248163
+          github-token: ${{ github.token }}
+      - name: Cold recover saved RAW and preserve empty-response hold
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_tdcc_missing_live resume --namespace tdcc-missing-40853248163-1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tdcc-missing-recovered
+          path: results
+          retention-days: 90
