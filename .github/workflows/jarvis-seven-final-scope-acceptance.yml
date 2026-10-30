@@ -1,9 +1,11 @@
-name: JARVIS final pinned twelve-slot two-runner acceptance
+name: JARVIS final recovery-safe twelve-slot native acceptance
 on:
   push:
     branches: [main]
     paths: [.github/workflows/jarvis-seven-final-scope-acceptance.yml]
   workflow_dispatch:
+env:
+  SCOPE_NAMESPACE: '41000854884'
 permissions:
   contents: write
   actions: read
@@ -69,7 +71,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_final_scope_live --phase start --source '${{ matrix.source }}' --slot '${{ matrix.slot }}' --namespace '${{ github.run_id }}'
+        run: python -m scripts.v093_final_scope_live --phase start --source '${{ matrix.source }}' --slot '${{ matrix.slot }}' --namespace '${{ env.SCOPE_NAMESPACE }}'
       - name: Preserve native first phase
         if: always()
         env:
@@ -117,7 +119,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_final_scope_live --phase cold --source '${{ matrix.source }}' --slot '${{ matrix.slot }}' --namespace '${{ github.run_id }}'
+        run: python -m scripts.v093_final_scope_live --phase cold --source '${{ matrix.source }}' --slot '${{ matrix.slot }}' --namespace '${{ env.SCOPE_NAMESPACE }}'
       - name: Preserve independent recovery evidence
         if: always()
         env:

@@ -46,6 +46,8 @@ class Executor:
   if phase=='FETCH':
    status=getattr(exc,'code',None)
    if isinstance(status,int):code+='_'+str(status)
+   if status in (404,410):
+    self.c.error(ticket,'APPLICABILITY_HOLD',phase,code);return
    if status in (408,429,500,502,503,504) or isinstance(exc,(TimeoutError,ConnectionError,http.client.IncompleteRead)) or isinstance(exc,OSError) and not isinstance(exc,urllib.error.HTTPError):
     self.c.failed(ticket,retry_after=self.retry_delay(exc),source_cooldown=status in (429,503),error_code=code);return
    self.c.error(ticket,'SOURCE_HOLD',phase,code,source_hold=status in (401,403) or status is None);return

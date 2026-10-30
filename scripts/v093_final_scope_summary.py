@@ -8,6 +8,8 @@ def main():
  root=Path.cwd();digest=code_digest(root);reports=[json.loads(p.read_text()) for p in Path('collected').rglob('final-scope-phase.json')];cold=[r for r in reports if r['phase']=='cold'];expected={(s,slot) for s,n in COUNTS.items() for slot in (('DESC','ASC') if n==2 else ('DESC',))}
  if len(cold)!=12 or {(r['source'],r['slot']) for r in cold}!=expected:raise ValueError('FINAL_SCOPE_TWELVE_RESULTS_REQUIRED')
  if any(r['operational_pass'] is not True or r['code_sha']!=os.environ['GITHUB_SHA'] or r['code_sha256']!=digest for r in reports):raise ValueError('FINAL_SCOPE_CODE_OR_OPERATIONAL_GATE')
+ if any(r.get('cold_revalidated_units')!=r['units_basic_verified'] for r in reports):raise ValueError('FINAL_SCOPE_INDEPENDENT_REVALIDATION_REQUIRED')
+ if any(sum(r['units_basic_verified'] for r in cold if r['source']==source)==0 for source in COUNTS):raise ValueError('FINAL_SCOPE_POSITIVE_NATIVE_CASE_PER_SOURCE_REQUIRED')
  if len(reports)!=24:raise ValueError('FINAL_SCOPE_TWO_RUNNER_PHASES_REQUIRED')
  transport=json.loads(Path('inputs/continuation-live.json').read_text())
  if transport.get('real_github_dispatch_ack_verified') is not True or transport.get('source_requests')!=0 or transport.get('formal_raw_writes')!=0:raise ValueError('FINAL_SCOPE_REAL_TRANSPORT_REQUIRED')

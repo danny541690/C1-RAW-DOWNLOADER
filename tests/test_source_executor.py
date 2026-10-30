@@ -54,6 +54,14 @@ class ExecutorTests(unittest.TestCase):
   with self.assertRaises(urllib.error.HTTPError):Executor(self.c,self.a).one('DESC','one')
   self.assertIsNone(self.c.claim('ASC','opposite','ASC'));self.now[0]+=121
   self.assertIsNotNone(self.c.claim('ASC','later','ASC'))
+ def test_missing_historical_route_is_task_hold_not_source_wide_failure(self):
+  for status in (404,410):
+   with self.subTest(status=status):
+    self.setUp()
+    def fetch():raise urllib.error.HTTPError('https://example.invalid',status,'no route',None,None)
+    self.a.fetch=fetch
+    with self.assertRaises(urllib.error.HTTPError):Executor(self.c,self.a).one('DESC','one')
+    self.assertEqual(self.task()['status'],'APPLICABILITY_HOLD');self.assertFalse(self.c.store.read('TWSE')[1].get('hold'));self.assertFalse(self.task().get('full_acceptance',False))
  def test_auth_error_holds_source_and_does_not_persist_secret(self):
   def fetch():raise urllib.error.HTTPError('https://example.invalid/secret',403,'secret',None,None)
   self.a.fetch=fetch

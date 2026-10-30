@@ -1,4 +1,4 @@
-name: FinMind補缺排程七之一（7-1）｜最新往舊｜候選執行入口（正式未啟用）
+name: FinMind補缺排程七之一（7-1）｜最新往舊｜受控執行入口
 on:
   workflow_dispatch:
     inputs:
