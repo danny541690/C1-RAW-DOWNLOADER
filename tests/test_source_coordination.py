@@ -93,6 +93,8 @@ class CoordinationTests(unittest.TestCase):
   broken=Coordinator(Broken(),'TWSE',clock=lambda:self.now[0])
   with self.assertRaises(OSError):broken.begin_request(t)
   called=[]
+  self.assertFalse(broken.dispatch_after_save('ASC','run',called.append)) # No mutation or dispatch for an empty slot.
+  self.c.add([dict(source='TWSE',key='asc',slot='ASC',period='2000-01')])
   with self.assertRaises(OSError):broken.dispatch_after_save('ASC','run',called.append)
   self.assertEqual(called,[])
  def test_continuation_is_durable_and_not_duplicated_for_same_run(self):

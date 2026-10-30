@@ -1,49 +1,10 @@
-name: JARVIS release-gated twelve-worker recovery controller
+name: JARVIS legacy recovery entry (manual only)
 on:
-  schedule:
-    - cron: '3,13,23,33,43,53 * * * *'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  release:
+  notice:
     runs-on: ubuntu-latest
-    outputs:
-      enabled: ${{ steps.gate.outputs.enabled }}
     steps:
-      - uses: actions/checkout@v4
-      - id: gate
-        run: |
-          python - <<'PY'
-          import json,os
-          from pathlib import Path
-          d=json.loads(Path('config/v093_source_release.json').read_text())
-          enabled=d.get('enabled') is True and all(d.get('approved_checks',{}).get(k) is True for k in ('source_contracts','continuation_and_quota','cutover'))
-          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('enabled='+str(enabled).lower()+'\n')
-          PY
-  workers:
-    needs: release
-    if: needs.release.outputs.enabled == 'true'
-    strategy:
-      fail-fast: false
-      max-parallel: 12
-      matrix:
-        include:
-          - {source: TWSE, direction: DESC}
-          - {source: TWSE, direction: ASC}
-          - {source: TPEx, direction: DESC}
-          - {source: TPEx, direction: ASC}
-          - {source: MOPS, direction: DESC}
-          - {source: MOPS, direction: ASC}
-          - {source: TDCC, direction: DESC}
-          - {source: TDCC, direction: ASC}
-          - {source: TAIFEX, direction: DESC}
-          - {source: TAIFEX, direction: ASC}
-          - {source: NDC, direction: DESC}
-          - {source: FinMind, direction: DESC}
-    uses: ./.github/workflows/jarvis-seven-worker.yml
-    with:
-      source: ${{ matrix.source }}
-      direction: ${{ matrix.direction }}
-      mode: production
-    secrets: inherit
+      - run: echo "Recovery is owned by jarvis-seven-production-watchdog.yml"
