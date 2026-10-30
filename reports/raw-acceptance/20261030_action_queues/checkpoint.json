@@ -1,0 +1,13 @@
+{
+  "action_qa_run": 40977540557,
+  "refresh_run": 40978702558,
+  "formal_canary_run": 40979899200,
+  "status": "COMPLETED_ACTION_QA_AND_THREE_UNIT_FORMAL_RAW_CANARY",
+  "formal_schedules_activated": false,
+  "automatic_missing_sources": [
+    "TDCC"
+  ],
+  "whole_repository_tests": 1092,
+  "formal_raw_new_files": 3,
+  "formal_invalid_values_repaired": 0
+}

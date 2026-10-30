@@ -1,5 +1,5 @@
 {
-  "version": "20261030_R16",
+  "version": "20261030_R17",
   "source_sha": "0cdf1bb6383e40eb8aabade5c871e69f36039a11",
   "repository": "danny541690/C1-RAW-DOWNLOADER",
   "test_results": [
@@ -368,6 +368,63 @@
       "formal_data_repaired": 0,
       "production_activation": false,
       "drive_receipt_file_id": "1TkveHkDJlUSf1CF0FfNt4vvxPTjou3S-"
+    },
+    {
+      "id": "T34",
+      "name": "十二型別化動作清單與可查詢缺件生成",
+      "status": "PASS_TYPED_QUEUES_SCOPED_TDCC_AUTOMATIC_MISSING",
+      "source_sha": "2e7830884f9d54b5e701eb8b43e5e65a4fbd2c72",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40977540557",
+      "whole_repository_tests": 1091,
+      "initial_modes": {
+        "RETAINED": 64562,
+        "PROMOTE": 2,
+        "MISSING": 4
+      },
+      "automatic_missing_sources": [
+        "TDCC"
+      ],
+      "formal_schedules_activated": false
+    },
+    {
+      "id": "T35",
+      "name": "真實自動缺件與移交故障冷恢復及重用",
+      "status": "PASS_LIVE_QA_AND_RECEIPT_REFRESH",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40977540557",
+      "new_missing_downloaded": 1,
+      "period": "2025-12-05",
+      "code": "8307",
+      "source_requests": 2,
+      "qa_promotion_copies": 2,
+      "promotion_source_requests": 0,
+      "source_attempts_unchanged_on_promotion": true,
+      "refreshed_run": 40978702558,
+      "latest_modes": {
+        "RETAINED": 64562,
+        "PROMOTE": 3,
+        "MISSING": 3
+      },
+      "formal_schedules_activated": false
+    },
+    {
+      "id": "T36",
+      "name": "三件已驗證原件正式存檔移交及位置獨立核對",
+      "status": "PASS_LIMITED_FORMAL_RAW_CANARY_NOT_SCHEDULER_RELEASE",
+      "source_sha": "4beec65c905b1d78f4ed8c309f8dd7c6c377c389",
+      "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/40979899200",
+      "whole_repository_tests": 1092,
+      "formal_originals_added": 3,
+      "formal_invalid_values_repaired": 0,
+      "source_requests": 0,
+      "original_qa_retained": true,
+      "independent_folder_ancestry_verified": true,
+      "formal_schedules_activated": false,
+      "drive_receipt_file_id": "1h_mlgiYo27N-At19ZHx1aJ96PB_i66ZB",
+      "raw_references": [
+        "1_An-mXnPD8AzQ2Cuo2PAEJwtuvz_N0ki",
+        "15wQq03HZnMkMV0FJV4DZZdPsIYB1ZPdl",
+        "1W6RX2MR21Aj_TcrvJFtlow3Sn11gKrJr"
+      ]
     }
   ],
   "rules": [
@@ -1440,5 +1497,5 @@
       "item": "After G1-G3 pass, merge pinned candidate, recheck old writers/ghost queue and validate the initial formal batch"
     }
   ],
-  "latest_tested_sha": "ed6e3c3ab8b6a50b8d0ea58a070a2ff035ad8b77"
+  "latest_tested_sha": "4beec65c905b1d78f4ed8c309f8dd7c6c377c389"
 }
