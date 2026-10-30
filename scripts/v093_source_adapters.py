@@ -40,6 +40,12 @@ class NativeAdapter(Retained):
   if any(v.get('raw_reference') or v.get('status') in ('SAVED_BASIC_VERIFIED','SAVED_RAW_ROWS_READBACK_VERIFIED','PROCESSING','REQUEST_INTENT','FINMIND_REQUEST_INTENT','SKIPPED_SOURCE_EMPTY','SKIPPED_NOT_PUBLISHED') for v in old['provenance']):raise ValueError('REUSE_OR_RECONCILIATION_REQUIRED')
   if any(proof.get(k)!=case[k] for k in ('source','key','period')):raise ValueError('MISSING_EVIDENCE_BINDING')
   applicable=proof.get('availability_verified') is True
+  if case['source'] in ('TWSE','TPEx','MOPS') and proof.get('query_applicability_verified') is True:
+   from scripts.v093_missing_rules import official_job
+   job=official_job(case['source'],case['period'],case.get('category'))
+   origin_sha=proof.get('frozen_ledger_sha256')
+   if not job or proof.get('native_route')!=job or not re.fullmatch('[0-9a-f]{64}',origin_sha or '') or not any(v.get('ledger_origin',{}).get('sha256')==origin_sha and v.get('ledger_origin',{}).get('file_id')==proof.get('official_evidence_id') for v in old.get('provenance',[])):raise ValueError('OFFICIAL_QUERY_ROUTE_OR_LEDGER_BINDING')
+   applicable=True
   if case['source']=='TAIFEX' and proof.get('query_applicability_verified') is True:
    form=proof.get('official_form',{});job=case.get('native_job',{});fields=job.get('fields',{})
    if not {'queryStartDate','queryEndDate'}<=set(form.get('fields',{})) or urllib.parse.urlsplit(form.get('source_page','')).hostname!='www.taifex.com.tw' or job.get('url')!='https://www.taifex.com.tw/cht/3/'+str(form.get('action')):raise ValueError('QUERY_FORM_FILTER_PROOF_REQUIRED')

@@ -1,0 +1,85 @@
+name: JARVIS missing rules regression and bounded real provider closeout
+on:
+  push:
+    branches: [codex/seven-source-closed-loop-design-20261029]
+    paths: [.github/workflows/jarvis-seven-missing-rules-closeout.yml]
+  workflow_dispatch:
+concurrency:
+  group: jarvis-native-missing-rules-closeout
+  cancel-in-progress: false
+permissions:
+  contents: write
+  actions: read
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Whole repository regression and exact twelve entry bindings
+        run: |
+          mkdir -p results
+          python -m unittest discover -s tests -p 'test_*.py' > results/regression.log 2>&1
+          tail -4 results/regression.log
+          python -m scripts.v093_source_preflight --out results/preflight
+      - name: Fresh old-writer check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_overnight_audit
+      - name: Restore immutable receipts and reviews
+        run: |
+          mkdir original frozen
+          git fetch --depth=1 origin refs/heads/jarvis-handoff-import/20261029-40806985547:refs/remotes/origin/original refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen
+          git archive refs/remotes/origin/original | tar -x -C original
+          git archive refs/remotes/origin/frozen | tar -x -C frozen
+      - name: Compile source rules with later verified and held QA overlaid
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_missing_rules --overlay-manifest config/v093_handoff_overlays.json
+      - name: Preserve compile and old-writer evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job missing-rule-compile --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: missing-rule-compile, path: results, retention-days: 90}
+  canary:
+    needs: compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        source: [TWSE, TPEx, MOPS, TAIFEX, NDC, FinMind]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with: {name: missing-rule-compile, path: inputs}
+      - name: At most two real missing queries per source with cold readback
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_missing_rules_live --source '${{ matrix.source }}' --namespace '${{ github.run_id }}-${{ github.run_attempt }}'
+      - name: Preserve actual provider outcome including holds and NOT_RUN
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job missing-rule-canary --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'missing-rule-${{ matrix.source }}', path: results, retention-days: 90}

@@ -78,6 +78,10 @@ def main():
   rows_by_source[source].append(promotion_row(row,'PINNED_VERIFIED_QA:'+targets[key]));promoted.append(key)
  known={(r['execution_contract'].get('date'),r['execution_contract'].get('code')) for r in rows_by_source['TDCC']}
  missing=tdcc_missing_rows(reviews['TDCC'],proof,known);rows_by_source['TDCC']+=missing
+ # Compile other source rules against the latest overlaid reviews, not stale originals.
+ from scripts.v093_missing_rules import compile_rules
+ automatic_rows,missing_audit=compile_rules(reviews,existing={(source,r['definition']['key']) for source,rs in rows_by_source.items() for r in rs})
+ for row in automatic_rows:rows_by_source[row['definition']['source']].append(row)
  approved=json.loads(Path('config/v093_approved_actions.json').read_text())
  if approved.get('schema')!='JARVIS_TYPED_APPROVED_ACTIONS_V1':raise ValueError('APPROVED_ACTION_SCHEMA')
  for supplied in approved['actions']:
@@ -108,8 +112,8 @@ def main():
  samples['all_promotions']=samples.get('promotions',[])
  samples['promotions']=samples.get('promotions',[])[:2]
  out=Path('results');out.mkdir(exist_ok=True)
- report=dict(schema='JARVIS_TYPED_ACTION_CATALOGS_V1',source_sha=__import__('os').environ['GITHUB_SHA'],catalogs=pins,counts=counts,total_modes=total_modes,promotion_keys=promoted,automatic_missing_sources=['TDCC'],other_source_missing_scope='Only typed approved actions; unsupported/unproven tasks remain held',source_requests=0,formal_raw_writes=0,production_activation=False)
- proposed=dict(schema='JARVIS_NATIVE_RELEASE_V1',enabled=False,tested_code_sha256=code_digest(root),approved_checks=dict(source_contracts=False,continuation_and_quota=False,cutover=False),catalogs=pins,raw_root=RAW_ROOT,candidate_scope='RETAINED_PROMOTION_AND_PROVEN_TDCC_QUERY',missing_download_authority=bool(missing))
+ report=dict(schema='JARVIS_TYPED_ACTION_CATALOGS_V1',source_sha=__import__('os').environ['GITHUB_SHA'],catalogs=pins,counts=counts,total_modes=total_modes,promotion_keys=promoted,automatic_missing_sources=['TDCC']+sorted(missing_audit['rules']),missing_rule_audit=missing_audit,other_source_missing_scope='Supported native query contracts only; NDC archive-month and FinMind alignment requirements remain held when no proof',source_requests=0,formal_raw_writes=0,production_activation=False)
+ proposed=dict(schema='JARVIS_NATIVE_RELEASE_V1',enabled=False,tested_code_sha256=code_digest(root),approved_checks=dict(source_contracts=False,continuation_and_quota=False,cutover=False),catalogs=pins,raw_root=RAW_ROOT,candidate_scope='RETAINED_PROMOTION_AND_PROVEN_NATIVE_QUERIES',missing_download_authority=bool(missing or automatic_rows))
  for name,value in [('action-catalogs.json',report),('action-samples.json',samples),('proposed-action-release.json',proposed)]: (out/name).write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n')
- print(json.dumps(dict(schema=report['schema'],total_modes=total_modes,automatic_missing_sources=['TDCC'],production_activation=False)),flush=True)
+ print(json.dumps(dict(schema=report['schema'],total_modes=total_modes,automatic_missing_sources=report['automatic_missing_sources'],production_activation=False)),flush=True)
 if __name__=='__main__':main()
