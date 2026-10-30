@@ -1,0 +1,254 @@
+{
+  "as_of": "2026-10-30T15:10:02+08:00",
+  "scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
+  "planned_total": 65238,
+  "raw_basic_verified": 4329,
+  "verified_percent": 6.64,
+  "held_or_blocked": 1329,
+  "full_database_acceptance": false,
+  "numeric_acceptance": false,
+  "pit_acceptance": false,
+  "code_commit": "a905617bc4466ec577ae0f08f888c4f45f544379",
+  "regression": {
+    "tests": 1133,
+    "result": "PASS",
+    "live_run": 41018329103,
+    "live_job": 123939629844
+  },
+  "recovered": {
+    "TDCC_ASC": {
+      "before": 224,
+      "now": 322,
+      "run_id": 41018131503
+    },
+    "TAIFEX_DESC": {
+      "before": 109,
+      "now": 139,
+      "run_id": 41016805138,
+      "receipt": "RECEIVED"
+    }
+  },
+  "rules": {
+    "watchdog_cron": "3,13,23,33,43,53 * * * *",
+    "work_budget_minutes": 45,
+    "worker_mutex": "PER_SOURCE",
+    "next_direction": "ALTERNATE_UNFINISHED_DIRECTION",
+    "controller_defers_active_source": true,
+    "source_pending_dispatches_max": 1,
+    "unacknowledged_retirement": "IDENTITY_FENCED_BEFORE_REDISPATCH_AND_NO_LIVE_LEASE",
+    "late_receivers": "REJECT_BEFORE_SOURCE_REQUEST",
+    "dispatch_recovery_max": 4,
+    "reset_task_attempts": false,
+    "successful_raw_replayed": false
+  },
+  "source_snapshots": {
+    "TWSE": "2a201a45288c7c9c1c8fbdc5849bab383401c817",
+    "TPEx": "a856af23da8e217b321546dcb5ac4dabf5c762fe",
+    "MOPS": "f5af7cf99bbb3936915434c135f49ee483fc59cf",
+    "TDCC": "f29d44db7a5c4b1a37ddfadaabeb09a1ea81a0b9",
+    "TAIFEX": "e1d5c46c8112ac1556d68d2d4dea654be1d6f42d",
+    "NDC": "d7bb128a22624604916b94f38e2011782c35d3c7",
+    "FinMind": "6d36df034d622440064a321a153d732775e8703d"
+  },
+  "rows": [
+    {
+      "source": "TWSE",
+      "slot": "DESC",
+      "total": 3176,
+      "counts": {
+        "APPLICABILITY_HOLD": 138,
+        "RAW_BASIC_VERIFIED": 530,
+        "STORED": 1,
+        "READY_CHECK": 3
+      },
+      "finished": false,
+      "verified_percent": 16.69,
+      "number": "1-1",
+      "run_id": 41016052966,
+      "run_status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "source": "TWSE",
+      "slot": "ASC",
+      "total": 3201,
+      "counts": {
+        "APPLICABILITY_HOLD": 29,
+        "CONTENT_BLOCKED": 66,
+        "RAW_BASIC_VERIFIED": 138,
+        "READY_CHECK": 23
+      },
+      "finished": false,
+      "verified_percent": 4.31,
+      "number": "1-2",
+      "run_id": 41016196512,
+      "run_status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "source": "TPEx",
+      "slot": "DESC",
+      "total": 3371,
+      "counts": {
+        "APPLICABILITY_HOLD": 43,
+        "RAW_BASIC_VERIFIED": 161,
+        "READY_CHECK": 20
+      },
+      "finished": false,
+      "verified_percent": 4.78,
+      "number": "2-1",
+      "run_id": 41016192137,
+      "run_status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "source": "TPEx",
+      "slot": "ASC",
+      "total": 4242,
+      "counts": {
+        "APPLICABILITY_HOLD": 738,
+        "READY_CHECK": 29,
+        "LEASED": 1
+      },
+      "finished": false,
+      "verified_percent": 0,
+      "number": "2-2",
+      "run_id": 41015991095,
+      "run_status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "source": "MOPS",
+      "slot": "DESC",
+      "total": 799,
+      "counts": {
+        "APPLICABILITY_HOLD": 18,
+        "CONTENT_BLOCKED": 32,
+        "RAW_BASIC_VERIFIED": 749
+      },
+      "finished": true,
+      "verified_percent": 93.74,
+      "number": "3-1",
+      "run_id": 41015972677,
+      "run_status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "source": "MOPS",
+      "slot": "ASC",
+      "total": 218,
+      "counts": {
+        "APPLICABILITY_HOLD": 154,
+        "BLOCKED": 1,
+        "SOURCE_HOLD": 6,
+        "REQUEST_INTENT": 1,
+        "READY": 30
+      },
+      "finished": false,
+      "verified_percent": 0,
+      "number": "3-2",
+      "run_id": 41016819756,
+      "run_status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "source": "TDCC",
+      "slot": "DESC",
+      "total": 22567,
+      "counts": {
+        "RAW_BASIC_VERIFIED": 564,
+        "READY_CHECK": 11,
+        "RETAINED_CHECK": 1
+      },
+      "finished": false,
+      "verified_percent": 2.5,
+      "number": "4-1",
+      "run_id": 41016057804,
+      "run_status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "source": "TDCC",
+      "slot": "ASC",
+      "total": 22559,
+      "counts": {
+        "RAW_BASIC_VERIFIED": 322,
+        "READY_CHECK": 30
+      },
+      "finished": false,
+      "verified_percent": 1.43,
+      "number": "4-2",
+      "run_id": 41018131503,
+      "run_status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "source": "TAIFEX",
+      "slot": "DESC",
+      "total": 1390,
+      "counts": {
+        "RAW_BASIC_VERIFIED": 139,
+        "READY_CHECK": 20,
+        "LEASED": 1
+      },
+      "finished": false,
+      "verified_percent": 10,
+      "number": "5-1",
+      "run_id": 41016805138,
+      "run_status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "source": "TAIFEX",
+      "slot": "ASC",
+      "total": 1079,
+      "counts": {
+        "APPLICABILITY_HOLD": 104,
+        "RAW_BASIC_VERIFIED": 628,
+        "LEASED": 1,
+        "READY_CHECK": 3
+      },
+      "finished": false,
+      "verified_percent": 58.2,
+      "number": "5-2",
+      "run_id": 41017789369,
+      "run_status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "source": "NDC",
+      "slot": "DESC",
+      "total": 320,
+      "counts": {
+        "RAW_BASIC_VERIFIED": 320
+      },
+      "finished": true,
+      "verified_percent": 100,
+      "number": "6-1",
+      "run_id": 41007348429,
+      "run_status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "source": "FinMind",
+      "slot": "DESC",
+      "total": 2316,
+      "counts": {
+        "RAW_BASIC_VERIFIED": 778,
+        "READY_CHECK": 21,
+        "LEASED": 1
+      },
+      "finished": false,
+      "verified_percent": 33.59,
+      "number": "7-1",
+      "run_id": 41016097376,
+      "run_status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "limitations": [
+    "TWSE ASC and TPEx DESC latest runs failed; source counterpart remains active, recovery deferred until source is idle.",
+    "MOPS DESC finished its campaign but 50 tasks remain held, so verified coverage is 93.74%, not 100%.",
+    "Already running workers migrate to shared source mutex on subsequent current-main handoff."
+  ]
+}
