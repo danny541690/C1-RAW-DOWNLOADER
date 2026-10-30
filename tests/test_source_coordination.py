@@ -107,6 +107,18 @@ class CoordinationTests(unittest.TestCase):
    self.c.update(lambda state:state['outbox'][identity].update(status='RECEIVED',received_run_id='next-run'))
   self.assertTrue(self.c.dispatch_after_save('DESC','run',receiver))
   self.assertEqual(next(iter(self.c.store.read('TWSE')[1]['outbox'].values()))['status'],'RECEIVED')
+ def test_saved_interruption_is_dispatched_for_readback_without_new_attempt(self):
+  self.c.add([dict(source='TWSE',key='saved',slot='DESC',period='2026-10-01')])
+  ticket=self.c.claim('DESC','first');self.c.begin_request(ticket);self.c.prepare_save(ticket,'a'*64,'immutable-locator');self.c.error(ticket,'RECONCILE','STORE','OSError')
+  called=[];self.assertTrue(self.c.dispatch_after_save('DESC','recover-run',called.append));self.assertEqual(len(called),1)
+  recovered=self.c.recover('DESC','cold');self.assertIsNotNone(recovered);self.assertEqual(self.c.store.read('TWSE')[1]['tasks']['saved']['attempts'],1)
+ def test_unrecoverable_saved_locator_is_held_after_four_readback_attempts(self):
+  self.c.add([dict(source='TWSE',key='lost',slot='DESC',period='2026-10-01')])
+  ticket=self.c.claim('DESC','first');self.c.begin_request(ticket);self.c.prepare_save(ticket,'a'*64,'lost-locator');self.c.error(ticket,'RECONCILE','STORE','OSError')
+  for attempt in range(4):
+   ticket=self.c.recover('DESC','cold');self.assertIsNotNone(ticket);self.c.error(ticket,'RECONCILE','LOOKUP','OSError')
+  self.assertIsNone(self.c.recover('DESC','fifth'));task=self.c.store.read('TWSE')[1]['tasks']['lost']
+  self.assertEqual(task['status'],'STORAGE_HOLD');self.assertEqual(task['recovery_attempts'],4);self.assertEqual(task['attempts'],1)
  def test_uncertain_dispatch_is_not_blindly_repeated(self):
   self.add()
   def fail(_):raise TimeoutError('dispatch fixture')

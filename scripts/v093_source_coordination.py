@@ -141,6 +141,9 @@ class Coordinator:
     if t.get('owner') and t.get('expires',0)>now:continue
     if t['status'] not in ('REQUEST_INTENT','STORED','RECONCILE','RETAINED_CHECK'):continue
     if not t.get('save_intent'):continue
+    if t.get('recovery_attempts',0)>=4:
+     t.update(owner=None,status='STORAGE_HOLD',error=dict(phase='RECOVERY',code='READBACK_RETRY_EXHAUSTED'),next_action='REVIEW_SAVED_BYTES_WITHOUT_REDOWNLOAD');continue
+    t['recovery_attempts']=t.get('recovery_attempts',0)+1
     s['fence']+=1;t.update(owner=owner,fence=s['fence'],expires=now+self.ttl,status='REQUEST_INTENT')
     return dict(source=self.source,key=key,owner=owner,fence=t['fence'])
    return None
@@ -171,7 +174,13 @@ class Coordinator:
    if s.get('hold') or s.get('cooldown_until',0)>now or identity in s['outbox']:return False
    tasks=[t for t in s['tasks'].values() if t['definition']['slot']==slot]
    if any(t.get('owner') and t.get('expires',0)>now for t in tasks):return False
-   if not any(t['status'] in ('READY','READY_CHECK') or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now for t in tasks):return False
+   def runnable(t):
+    if t['status'] in ('READY','READY_CHECK') or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now:return True
+    if t.get('owner') and t.get('expires',0)>now:return False
+    # Saved work must be woken for readback recovery, even with no READY task.
+    if t.get('save_intent') and t['status'] in ('REQUEST_INTENT','STORED','RECONCILE','RETAINED_CHECK'):return True
+    return t['status']=='LEASED' and t.get('expires',0)<=now
+   if not any(runnable(t) for t in tasks):return False
    s['outbox'][identity]=dict(status='INTENT',slot=slot,run_id=run_id);return True
   if not self.update(reserve):return False
   try:dispatch(identity)
