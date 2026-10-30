@@ -71,15 +71,16 @@ def prepare_row(source,slot,key,row):
  if definition.get('source')!=source or definition.get('slot')!=slot or definition.get('key')!=key:raise ValueError('ADMISSION_TASK_SCOPE')
  attempts=row.get('attempts');old=row.get('legacy_review',{})
  if type(attempts) is not int or attempts<0 or old.get('source')!=source or old.get('task_key')!=key or type(old.get('attempts')) is not int or attempts<old['attempts']:raise ValueError('ADMISSION_LEGACY_ATTEMPTS')
+ if type(row.get('materializations',0)) is not int or row.get('materializations',0)<0:raise ValueError('ADMISSION_MATERIALIZATION_COUNT')
  status=row.get('status')
  if status not in {'READY','READY_CHECK'}|HELD:raise ValueError('ADMISSION_TASK_STATUS')
  if status in ('READY','READY_CHECK'):
   if old.get('action')=='VERSION_CONFLICT_REVIEW' or {p.get('period') for p in old.get('provenance',[])}!={definition.get('period')}:raise ValueError('ADMISSION_UNRESOLVED_PERIOD_OR_VERSION')
   contract=row.get('execution_contract',{})
-  if contract.get('mode') not in (('RETAINED',) if status=='READY_CHECK' else ('MISSING','REPAIR')):raise ValueError('ADMISSION_TASK_MODE')
+  if contract.get('mode') not in (('RETAINED',) if status=='READY_CHECK' else ('MISSING','REPAIR','PROMOTE')):raise ValueError('ADMISSION_TASK_MODE')
   NativeAdapter(None,None,dict(source=source,key=key),row)
-  if status=='READY' and attempts>=4:status='BLOCKED'
- return dict(definition=definition,attempts=attempts,status=status,fence=0,owner=None,legacy_review=old,execution_contract=row.get('execution_contract'),check_only=status=='READY_CHECK',full_acceptance=False,numeric_verified=False,pit_verified=False)
+  if status=='READY' and attempts>=4 and contract.get('mode')!='PROMOTE':status='BLOCKED'
+ return dict(definition=definition,attempts=attempts,status=status,fence=0,owner=None,legacy_review=old,execution_contract=row.get('execution_contract'),check_only=status=='READY_CHECK',local_only=(row.get('execution_contract') or {}).get('mode')=='PROMOTE',materializations=row.get('materializations',0),full_acceptance=False,numeric_verified=False,pit_verified=False)
 
 def stage(coordinator,catalog,limit=32):
  if type(limit) is not int or not 1<=limit<=64:raise ValueError('ADMISSION_ACTIVE_CHUNK_LIMIT')

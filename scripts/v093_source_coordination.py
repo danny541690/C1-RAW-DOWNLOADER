@@ -44,7 +44,8 @@ class Coordinator:
     and (t['status'] in ('READY','READY_CHECK') or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now)]
    available.sort(key=lambda x:(x[1]['definition']['period'],x[0]),reverse=direction=='DESC')
    for key,task in available:
-    if task['attempts']>=4 and task['status']!='READY_CHECK':task['status']='BLOCKED';continue
+    exhausted=task.get('materializations',0)>=4 if task.get('local_only') else task['attempts']>=4 and task['status']!='READY_CHECK'
+    if exhausted:task['status']='BLOCKED';continue
     state['fence']+=1;task.update(check_only=task.get('check_only',False) or task['status']=='READY_CHECK',status='LEASED',owner=owner,fence=state['fence'],expires=now+self.ttl)
     return dict(source=self.source,key=key,owner=owner,fence=task['fence'])
    return None
@@ -70,6 +71,14 @@ class Coordinator:
    if s.get('hold') or s.get('cooldown_until',0)>self.clock():raise ValueError('SOURCE_ON_HOLD')
    if t.get('check_only') or t['status']!='LEASED' or t['attempts']>=4:raise ValueError('REQUEST_NOT_ADMITTED')
    t.update(status='REQUEST_INTENT',attempts=t['attempts']+1);return t['attempts']
+  return self.update(change)
+ def begin_materialization(self,ticket):
+  def change(s):
+   t=self.owned(s,ticket)
+   if s.get('hold') or s.get('cooldown_until',0)>self.clock():raise ValueError('SOURCE_ON_HOLD')
+   if not t.get('local_only') or t.get('check_only') or t['status']!='LEASED' or t.get('materializations',0)>=4:raise ValueError('LOCAL_MATERIALIZATION_NOT_ADMITTED')
+   t.update(status='REQUEST_INTENT',materializations=t.get('materializations',0)+1)
+   return t['materializations']
   return self.update(change)
  def saved(self,ticket,raw_sha):
   if not isinstance(raw_sha,str) or not re.fullmatch('[0-9a-f]{64}',raw_sha):raise ValueError('INVALID_RAW_SHA')
@@ -114,7 +123,8 @@ class Coordinator:
    t=s['tasks'][key]
    if t.get('owner') and t.get('expires',0)>self.clock():raise StaleOwner('ACTIVE_OWNER')
    if t['status'] not in ('REQUEST_INTENT','RECONCILE') or t.get('save_intent'):raise ValueError('NOT_UNSAVED_REQUEST')
-   t.update(owner=None,status='BLOCKED' if t['attempts']>=4 else 'RETRY_WAIT',next_at=self.clock()+retry_after,reconciliation=dict(evidence))
+   exhausted=t.get('materializations',0)>=4 if t.get('local_only') else t['attempts']>=4
+   t.update(owner=None,status='BLOCKED' if exhausted else 'RETRY_WAIT',next_at=self.clock()+retry_after,reconciliation=dict(evidence))
   self.update(change)
  def prepare_save(self,ticket,raw_sha,locator):
   if not re.fullmatch('[0-9a-f]{64}',raw_sha) or not locator:raise ValueError('SAVE_INTENT')
@@ -150,7 +160,8 @@ class Coordinator:
   def change(s):
    t=self.owned(s,ticket)
    if t['status']!='REQUEST_INTENT':raise ValueError('NO_IN_FLIGHT_REQUEST')
-   t.update(status='BLOCKED' if t['attempts']>=4 else 'RETRY_WAIT',owner=None,next_at=self.clock()+retry_after)
+   exhausted=t.get('materializations',0)>=4 if t.get('local_only') else t['attempts']>=4
+   t.update(status='BLOCKED' if exhausted else 'RETRY_WAIT',owner=None,next_at=self.clock()+retry_after)
    if error_code:t['error']=dict(phase='FETCH',code=error_code)
    if source_cooldown:s['cooldown_until']=max(s.get('cooldown_until',0),self.clock()+retry_after)
   self.update(change)

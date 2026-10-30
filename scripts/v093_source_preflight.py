@@ -3,7 +3,7 @@ import argparse,contextlib,datetime,hashlib,io,json,time,unittest
 from pathlib import Path
 import yaml
 
-PATTERNS=('test_finalize_handoff.py','test_handoff_overlays.py','test_native_repair.py','test_admission_runtime.py','test_source_rate.py','test_source_worker.py','test_acceptance_publish.py','test_native_reuse_batch.py','test_tdcc_missing_live.py','test_review_import.py','test_workflow_dispatch.py','test_source_executor.py','test_source_state_pages.py','test_retained_stream_verify.py','test_legacy_handoff.py','test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
+PATTERNS=('test_action_catalogs.py','test_native_promotion.py','test_finalize_handoff.py','test_handoff_overlays.py','test_native_repair.py','test_admission_runtime.py','test_source_rate.py','test_source_worker.py','test_acceptance_publish.py','test_native_reuse_batch.py','test_tdcc_missing_live.py','test_review_import.py','test_workflow_dispatch.py','test_source_executor.py','test_source_state_pages.py','test_retained_stream_verify.py','test_legacy_handoff.py','test_seven_source_plan.py','test_source_partition.py','test_source_migration_and_scope.py',
           'test_source_closed_loop_preflight.py','test_source_coordination.py','test_source_git_store.py','test_acceptance_scheduler.py','test_acceptance_state.py','test_tdcc_download_v4.py')
 BLOCKERS={
  'source_executors':'COMMON_ADMITTED_WORKER_AND_TWELVE_GUARDED_ENTRIES_WIRED_SOURCE_ADAPTER_ROLLOUT_PENDING',

@@ -22,17 +22,18 @@ class NativeAdapter(Retained):
   case=task.get('execution_contract')
   if not isinstance(case,dict) or any(case.get(k)!=task['definition'][k] for k in ('source','key','period')):raise ValueError('NATIVE_CONTRACT_BINDING')
   if ticket['key']!=case['key'] or ticket['source']!=case['source']:raise ValueError('NATIVE_TICKET_BINDING')
-  if case.get('mode') not in ('RETAINED','MISSING','REPAIR'):raise ValueError('NATIVE_EXECUTION_MODE')
+  if case.get('mode') not in ('RETAINED','MISSING','REPAIR','PROMOTE'):raise ValueError('NATIVE_EXECUTION_MODE')
   dt.date.fromisoformat(case['period']+'-01' if len(case['period'])==7 else case['period'])
   if case['period'][:7]<'2000-01' or case['period'][:10]>dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date().isoformat():raise ValueError('NATIVE_PERIOD_SCOPE')
   super().__init__(drive,dict(case));self.c=coordinator;self.ticket=ticket;self.target_root=target_root;self.folder=None;self.source_requests=0
-  self.download_authorized=case['mode'] in ('MISSING','REPAIR')
+  self.download_authorized=case['mode'] in ('MISSING','REPAIR','PROMOTE');self.requires_source_request=case['mode']!='PROMOTE';self.destination_reference=None
   if not self.download_authorized:
    if not isinstance(case.get('reference'),str) or not re.fullmatch('[0-9a-f]{64}',case.get('sha256') or ''):raise ValueError('RETAINED_NATIVE_RECEIPT')
    old=task.get('legacy_review',{})
    if old.get('source')!=case['source'] or old.get('task_key')!=case['key'] or not any(v.get('raw_reference')==case['reference'] and v.get('sha256')==case['sha256'] and v.get('period')==case['period'] for v in old.get('provenance',[])):raise ValueError('RETAINED_LEGACY_BINDING')
   elif case['mode']=='MISSING':self.check_missing(task)
-  else:self.check_repair(task)
+  elif case['mode']=='REPAIR':self.check_repair(task)
+  else:self.check_promotion(task)
  def check_missing(self,task):
   case=self.case;proof=case.get('missing_evidence',{});old=task.get('legacy_review',{})
   if case.get('reference') or case.get('sha256') or old.get('source')!=case['source'] or old.get('task_key')!=case['key'] or not old.get('provenance'):raise ValueError('MISSING_LEGACY_PROOF')
@@ -53,6 +54,11 @@ class NativeAdapter(Retained):
    applicable=True
   if old.get('attempts',0)>task['attempts'] or not applicable or not proof.get('official_evidence_id'):raise ValueError('MISSING_AVAILABILITY_OR_ATTEMPTS')
   if case['source']=='FinMind' and (proof.get('official_source') not in ('TWSE','TPEx','MOPS') or not all(proof.get(k) is True for k in ('confirmed_gap','identity_period_market_verified','definition_unit_frequency_verified','cross_source_alignment_approved'))):raise ValueError('FINMIND_GAP_NOT_APPROVED')
+ def check_promotion(self,task):
+  case=self.case;proof=case.get('promotion_evidence',{});old=task.get('legacy_review',{})
+  if any(proof.get(k)!=case[k] for k in ('source','key','period')) or case.get('reference') or case.get('sha256') or not proof.get('verified_evidence_id'):raise ValueError('PROMOTION_IDENTITY_PROOF')
+  if old.get('source')!=case['source'] or old.get('task_key')!=case['key'] or old.get('action')=='VERSION_CONFLICT_REVIEW' or old.get('attempts',0)>task['attempts']:raise ValueError('PROMOTION_LEGACY_SCOPE')
+  if not isinstance(proof.get('reference'),str) or not re.fullmatch('[0-9a-f]{64}',proof.get('sha256') or '') or not any(v.get('raw_reference')==proof['reference'] and v.get('sha256')==proof['sha256'] and v.get('period')==case['period'] for v in old.get('provenance',[])):raise ValueError('PROMOTION_RECEIPT_BINDING')
  def check_repair(self,task):
   case=self.case;proof=case.get('repair_evidence',{});old=task.get('legacy_review',{})
   if case['source']=='FinMind':raise ValueError('FINMIND_REPAIR_ALIGNMENT_REVIEW_REQUIRED')
@@ -70,14 +76,17 @@ class NativeAdapter(Retained):
   raise ApplicabilityUnproven('REPAIR_NOT_NEEDED_EXISTING_VALID')
  def find(self,key):
   if key!=self.case['key']:raise ValueError('ADAPTER_TASK_MISMATCH')
+  if self.case['mode']=='PROMOTE':
+   self.destination_reference=self.find_locator(self.locator(key,self.case['promotion_evidence']['sha256']));return self.destination_reference
   return self.case.get('reference')
  def expected_receipt(self,key):
   if key!=self.case['key']:raise ValueError('ADAPTER_TASK_MISMATCH')
+  if self.case['mode']=='PROMOTE':return dict(source=self.case['source'],task_key=key,period=self.case['period'],reference=self.destination_reference,sha256=self.case['promotion_evidence']['sha256'])
   return dict(source=self.case['source'],task_key=self.case['key'],period=self.case['period'],reference=self.case.get('reference'),sha256=self.case.get('sha256'))
  def before_request(self,ticket):
   if self.case['mode']=='REPAIR':self.verify_repair_needed()
   source=self.case['source'];cost=2 if source=='TDCC' else 0 if source=='NDC' else 1
-  if self.case['mode']=='REPAIR' and self.case['repair_evidence'].get('replacement_reference'):cost=0
+  if self.case['mode']=='PROMOTE' or self.case['mode']=='REPAIR' and self.case['repair_evidence'].get('replacement_reference'):cost=0
   reserve(self.c,ticket,cost=cost,limit=200 if source=='FinMind' else 30,window=3600 if source=='FinMind' else 60,spacing=2)
  def http(self,url,params=None,headers=None):
   source=self.case['source'];allowed={'TWSE':{'www.twse.com.tw'},'TPEx':{'www.tpex.org.tw'},'MOPS':{'mopsov.twse.com.tw','mops.twse.com.tw','mopsfin.twse.com.tw'},'TAIFEX':{'www.taifex.com.tw','openapi.taifex.com.tw'},'FinMind':{'api.finmindtrade.com'}}
@@ -96,6 +105,10 @@ class NativeAdapter(Retained):
   return raw
  def fetch(self):
   case=self.case;source=case['source']
+  if case['mode']=='PROMOTE':
+   proof=case['promotion_evidence'];raw=self.read(proof['reference'])
+   if hashlib.sha256(raw).hexdigest()!=proof['sha256']:raise ValueError('PROMOTION_SOURCE_SHA_CHANGED')
+   self.validate(raw);return raw
   if case['mode']=='REPAIR' and case['repair_evidence'].get('replacement_reference'):
    proof=case['repair_evidence'];raw=self.read(proof['replacement_reference'])
    if hashlib.sha256(raw).hexdigest()!=proof['replacement_sha256']:raise ValueError('REPAIR_REPLACEMENT_SHA_CHANGED')
@@ -158,8 +171,8 @@ class NativeAdapter(Retained):
  def ensure_receipt(self,key,sha,reference,stats):
   if not self.download_authorized:return None
   if key!=self.case['key'] or not re.fullmatch('[0-9a-f]{64}',sha):raise ValueError('NATIVE_SIDECAR_BINDING')
-  proof=self.case.get('repair_evidence',{})
-  receipt=dict(schema='JARVIS_NATIVE_RAW_RECEIPT_V1',source=self.case['source'],task_key=key,period=self.case['period'],raw_reference=reference,raw_sha256=sha,mode=self.case['mode'],previous_reference=proof.get('reference'),previous_sha256=proof.get('sha256'),evidence_id=proof.get('official_evidence_id') or self.case.get('missing_evidence',{}).get('official_evidence_id'),basic_verified=True,numeric_verified=False,pit_verified=False,full_acceptance=False,units='AS_PUBLISHED_NO_CONVERSION')
+  proof=self.case.get('promotion_evidence') or self.case.get('repair_evidence',{})
+  receipt=dict(schema='JARVIS_NATIVE_RAW_RECEIPT_V1',source=self.case['source'],task_key=key,period=self.case['period'],raw_reference=reference,raw_sha256=sha,mode=self.case['mode'],previous_reference=proof.get('reference'),previous_sha256=proof.get('sha256'),evidence_id=proof.get('verified_evidence_id') or proof.get('official_evidence_id') or self.case.get('missing_evidence',{}).get('official_evidence_id'),basic_verified=True,numeric_verified=False,pit_verified=False,full_acceptance=False,units='AS_PUBLISHED_NO_CONVERSION')
   raw=json.dumps(receipt,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode();name=self.locator(key,sha)+'.receipt_'+hashlib.sha256(raw).hexdigest()+'.json'
   self.d.direct_readback=True;self.d.put(self.storage_folder(),name,raw,'application/json',overwrite=False)
   found=self.d.find(self.storage_folder(),name)

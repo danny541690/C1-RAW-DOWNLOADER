@@ -40,6 +40,9 @@ class Executor:
   if isinstance(exc,RequestDeferred):self.c.defer(ticket,exc.seconds);return
   if isinstance(exc,SourcePaused):self.c.error(ticket,'SOURCE_HOLD',phase,code,source_hold=True);return
   if isinstance(exc,ApplicabilityUnproven):self.c.error(ticket,'APPLICABILITY_HOLD',phase,code);return
+  if phase=='READ_LOCAL':
+   if isinstance(exc,(OSError,TimeoutError)):self.c.failed(ticket,retry_after=60,error_code=code);return
+   self.c.error(ticket,'CONTENT_BLOCKED',phase,code);return
   if phase=='FETCH':
    status=getattr(exc,'code',None)
    if isinstance(status,int):code+='_'+str(status)
@@ -82,7 +85,9 @@ class Executor:
    phase='REQUEST_ADMISSION'
    admission=getattr(self.a,'before_request',None)
    if callable(admission):admission(t)
-   self.c.begin_request(t);phase='FETCH';raw=self.a.fetch();sha=hashlib.sha256(raw).hexdigest()
+   if getattr(self.a,'requires_source_request',True):self.c.begin_request(t);phase='FETCH'
+   else:self.c.begin_materialization(t);phase='READ_LOCAL'
+   raw=self.a.fetch();sha=hashlib.sha256(raw).hexdigest()
    phase='VALIDATE';self.a.validate(raw)
    phase='PREPARE_SAVE';locator=self.a.locator(t['key'],sha);self.c.prepare_save(t,sha,locator)
    self.c.heartbeat(t);phase='STORE';reference=self.a.put(locator,raw);self.c.saved(t,sha)
