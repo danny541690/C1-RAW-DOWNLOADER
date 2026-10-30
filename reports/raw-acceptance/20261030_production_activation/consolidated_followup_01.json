@@ -1,0 +1,109 @@
+{
+  "schema": "JARVIS_CONSOLIDATED_LIVE_FOLLOWUP_V1",
+  "basis": "Existing 1118-test regression and final release acceptance reused; current seven source states read at immutable commits without new source downloads",
+  "sources": [
+    {
+      "source": "TWSE",
+      "commit": "38c625a3615df181d450148165f79e5460cae53a",
+      "counts": {
+        "CONTENT_BLOCKED": 45,
+        "READY_CHECK": 25,
+        "RAW_BASIC_VERIFIED": 18,
+        "APPLICABILITY_HOLD": 7,
+        "STORED": 1
+      },
+      "source_hold": null,
+      "violations": []
+    },
+    {
+      "source": "TPEx",
+      "commit": "8b2413b26929aa163cb1988f7ab946cb664334ed",
+      "counts": {
+        "APPLICABILITY_HOLD": 60,
+        "READY_CHECK": 20,
+        "RETAINED_CHECK": 1,
+        "RAW_BASIC_VERIFIED": 15
+      },
+      "source_hold": null,
+      "violations": []
+    },
+    {
+      "source": "MOPS",
+      "commit": "15e91839baabd71fe7ba8243c56a2bb720c4e6d7",
+      "counts": {
+        "RAW_BASIC_VERIFIED": 41,
+        "SOURCE_HOLD": 6,
+        "APPLICABILITY_HOLD": 24,
+        "RETRY_WAIT": 2,
+        "READY_CHECK": 22,
+        "LEASED": 1
+      },
+      "source_hold": null,
+      "violations": []
+    },
+    {
+      "source": "TDCC",
+      "commit": "986640d90373681595c05ca805fa307776e4151b",
+      "counts": {
+        "RAW_BASIC_VERIFIED": 54,
+        "READY_CHECK": 9,
+        "STORED": 1
+      },
+      "source_hold": null,
+      "violations": []
+    },
+    {
+      "source": "TAIFEX",
+      "commit": "9d016590e505403e05dbd332f80411f08613cc78",
+      "counts": {
+        "APPLICABILITY_HOLD": 45,
+        "LEASED": 1,
+        "READY": 12,
+        "READY_CHECK": 20,
+        "RETAINED_CHECK": 1,
+        "RAW_BASIC_VERIFIED": 17
+      },
+      "source_hold": null,
+      "violations": []
+    },
+    {
+      "source": "NDC",
+      "commit": "a0486169673b01c865a0baf1cc0894005d08c893",
+      "counts": {
+        "RAW_BASIC_VERIFIED": 45,
+        "READY_CHECK": 18,
+        "STORED": 1
+      },
+      "source_hold": null,
+      "violations": []
+    },
+    {
+      "source": "FinMind",
+      "commit": "cbcbfa92b5e08d7463a06bf52fab63728930cc99",
+      "counts": {
+        "RAW_BASIC_VERIFIED": 44,
+        "READY_CHECK": 19,
+        "RETAINED_CHECK": 1
+      },
+      "source_hold": null,
+      "violations": []
+    }
+  ],
+  "counts": {
+    "CONTENT_BLOCKED": 45,
+    "READY_CHECK": 133,
+    "RAW_BASIC_VERIFIED": 234,
+    "APPLICABILITY_HOLD": 136,
+    "STORED": 3,
+    "RETAINED_CHECK": 3,
+    "SOURCE_HOLD": 6,
+    "RETRY_WAIT": 2,
+    "LEASED": 2,
+    "READY": 12
+  },
+  "all_sources_read": true,
+  "no_source_wide_holds": true,
+  "attempt_budget_checks_pass": true,
+  "full_database_acceptance": false,
+  "new_download_count": null
+}
