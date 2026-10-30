@@ -59,3 +59,25 @@ class DispatchRecoveryTests(unittest.TestCase):
   api=ActionsEvidence('owner/repo','token');api.runs=Mock(return_value=[dict(id=42,status='completed',conclusion='failure')])
   api.get=Mock(side_effect=[{'jobs':[{'id':9,'conclusion':'failure'}]},RuntimeError('ACTIONS_HTTP_404_LOGS')])
   self.assertEqual(api.terminal_receivers('workflow',{'a'*64}),{})
+ def test_late_unacknowledged_receiver_is_fenced_before_source_work(self):
+  from scripts.v093_source_continuation import acknowledge
+  c=self.setup_state();api=ActionsEvidence('owner/repo','token',fence_unacknowledged=True)
+  api.runs=Mock(return_value=[])
+  self.assertEqual(reconcile_pending(c,'ASC','workflow',api),'RECONCILED_TERMINAL')
+  with self.assertRaisesRegex(ValueError,'OUTBOX_STATUS'):acknowledge(c,'ASC',self.key,'late-run')
+  self.assertEqual(self.state['tasks']['one']['attempts'],3)
+ def test_source_queue_preserves_other_direction_waiter(self):
+  from scripts.v093_source_continuation import continue_slot
+  c=self.setup_state();c.source='TDCC';self.state['outbox'][self.key]['slot']='DESC'
+  with patch('scripts.v093_source_continuation.stage') as stage:
+   self.assertFalse(continue_slot(None,c,None,'ASC','run',Mock()));stage.assert_not_called()
+ def test_sender_cannot_resurrect_retired_dispatch_after_race(self):
+  state={'source':'TDCC','tasks':{'one':dict(definition=dict(slot='ASC'),status='READY',attempts=0)},'outbox':{},'fence':0}
+  c=Mock();c.source='TDCC'
+  class Store:
+   def read(self,source):return 1,copy.deepcopy(state)
+   def cas(self,source,rev,value):state.clear();state.update(copy.deepcopy(value));return True
+  coordinator=Coordinator(Store(),'TDCC',clock=lambda:100)
+  def late_dispatch(identity):state['outbox'][identity]['status']='RESOLVED_TERMINAL'
+  self.assertTrue(coordinator.dispatch_after_save('ASC','sender',late_dispatch))
+  self.assertEqual(next(iter(state['outbox'].values()))['status'],'RESOLVED_TERMINAL')

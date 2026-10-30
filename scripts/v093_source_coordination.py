@@ -174,6 +174,7 @@ class Coordinator:
   now=self.clock();identity=hashlib.sha256((self.source+'|'+slot+'|'+run_id).encode()).hexdigest()
   def reserve(s):
    if s.get('hold') or s.get('cooldown_until',0)>now or identity in s['outbox']:return False
+   if any(e.get('status') in ('INTENT','SENT','UNKNOWN_RECONCILE_DISPATCH') for e in s['outbox'].values()):return False
    tasks=[t for t in s['tasks'].values() if t['definition']['slot']==slot]
    if any(t.get('owner') and t.get('expires',0)>now for t in tasks):return False
    def runnable(t):
@@ -188,8 +189,8 @@ class Coordinator:
   try:dispatch(identity)
   except Exception:
    def unknown(s):
-    if s['outbox'][identity]['status']!='RECEIVED':s['outbox'][identity]['status']='UNKNOWN_RECONCILE_DISPATCH'
+    if s['outbox'][identity]['status'] in ('INTENT','SENT','UNKNOWN_RECONCILE_DISPATCH'):s['outbox'][identity]['status']='UNKNOWN_RECONCILE_DISPATCH'
    self.update(unknown);raise
   def sent(s):
-   if s['outbox'][identity]['status']!='RECEIVED':s['outbox'][identity]['status']='SENT'
+   if s['outbox'][identity]['status'] in ('INTENT','SENT','UNKNOWN_RECONCILE_DISPATCH'):s['outbox'][identity]['status']='SENT'
   self.update(sent);return True

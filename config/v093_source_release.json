@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "7ff77896ab8b0a30b4243aac1157968064b167c9aeec1e7ec4260b0af48f3278",
+  "tested_code_sha256": "822c356ce5940dee0b156557e7957a2618f3d0f12cca4070cd46b1018cd3c4d2",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -77,7 +77,7 @@
   "activation_evidence_run": "41002625767",
   "recovery_update": "TERMINAL_RECEIVER_EVIDENCE_AND_CAS_BACKOFF_20261030",
   "recovery_validation": {
-    "regression_tests": 1127,
+    "regression_tests": 1130,
     "result": "PASS"
   }
 }

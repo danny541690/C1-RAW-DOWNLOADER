@@ -24,7 +24,7 @@ def acknowledge(c,slot,identity,run_id):
 def continue_slot(root,c,catalog,slot,run_id,dispatch):
  _,state=c.store.read(c.source)
  if state and (state.get('hold') or state.get('cooldown_until',0)>c.clock()):return False
- if any(e.get('slot')==slot and e.get('status') in ('INTENT','SENT','UNKNOWN_RECONCILE_DISPATCH') for e in (state or {}).get('outbox',{}).values()):return False
+ if any(e.get('status') in ('INTENT','SENT','UNKNOWN_RECONCILE_DISPATCH') for e in (state or {}).get('outbox',{}).values()):return False
  cursor=(state or {}).get('admission',{}).get(slot,{})
  if cursor.get('finished'):return False
  stage(c,catalog,limit=32) # Persist the next chunk before any dispatch intent.
@@ -41,7 +41,7 @@ def main():
  from scripts.v093_dispatch_recovery import ActionsEvidence,reconcile_pending
  bindings_path=root/'config/v093_legacy_receiver_bindings.json'
  bindings=json.loads(bindings_path.read_text()) if bindings_path.exists() else {}
- api=ActionsEvidence(os.environ['GITHUB_REPOSITORY'],token,bindings)
+ api=ActionsEvidence(os.environ['GITHUB_REPOSITORY'],token,bindings,fence_unacknowledged=True)
  design=json.loads((root/'config/v093_seven_source_design.json').read_text())
  for source,directions in release['catalogs'].items():
   for slot,pin in directions.items():

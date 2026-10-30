@@ -7,11 +7,12 @@ import json, re, requests
 PENDING = ('INTENT', 'SENT', 'UNKNOWN_RECONCILE_DISPATCH')
 
 class ActionsEvidence:
- def __init__(self, repository, token,bindings=None):
+ def __init__(self, repository, token,bindings=None,fence_unacknowledged=False):
   if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+',repository):raise ValueError('REPOSITORY')
   self.base='https://api.github.com/repos/'+repository
   self.token=token
   self.bindings=bindings or {}
+  self.fence_unacknowledged=fence_unacknowledged
  def get(self,path,text=False):
   response=requests.get(self.base+path,headers={'Authorization':'Bearer '+self.token,'Accept':'application/vnd.github+json'},timeout=30)
   if response.status_code>=400:raise RuntimeError('ACTIONS_HTTP_'+str(response.status_code)+'_'+('LOGS' if path.endswith('/logs') else 'METADATA'))
@@ -37,7 +38,7 @@ class ActionsEvidence:
    binding=self.bindings.get(str(run['id']),{})
    if binding.get('workflow')==workflow and binding.get('verified_job_id'):
     candidates.append(binding.get('identity',''))
-   if not candidates and legacy_scans<3:
+   if not candidates and legacy_scans<3 and not self.fence_unacknowledged:
     legacy_scans+=1
     jobs=self.get('/actions/runs/'+str(run['id'])+'/jobs?per_page=100&page=1')['jobs']
     for job in jobs:
@@ -52,6 +53,9 @@ class ActionsEvidence:
     if current.get('conclusion') not in ('failure','cancelled','timed_out'):continue
     found[identity]=dict(run_id=str(run['id']),run_attempt=current.get('run_attempt',1),conclusion=current['conclusion'],workflow=workflow)
    if len(found)==len(identities):break
+  if self.fence_unacknowledged:
+   for identity in identities-set(found):
+    found[identity]=dict(run_id=None,workflow=workflow,disposition='NO_ACTIVE_RECEIVER_IDENTITY_RETIRED')
   return found
 
 def reconcile_pending(c,slot,workflow,api):

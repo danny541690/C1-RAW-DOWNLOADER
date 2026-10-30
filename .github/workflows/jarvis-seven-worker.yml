@@ -21,7 +21,7 @@ permissions:
 jobs:
   worker:
     concurrency:
-      group: jarvis-v093-${{ inputs.mode }}-${{ inputs.source }}-${{ inputs.direction }}
+      group: jarvis-v093-${{ inputs.mode }}-${{ inputs.source }}
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
