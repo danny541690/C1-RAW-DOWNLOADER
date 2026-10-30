@@ -2,7 +2,7 @@
 
 Never expires an unknown dispatch by age. Never modifies tasks or attempts.
 """
-import json, re, urllib.request
+import json, re, requests
 
 PENDING = ('INTENT', 'SENT', 'UNKNOWN_RECONCILE_DISPATCH')
 
@@ -12,10 +12,10 @@ class ActionsEvidence:
   self.base='https://api.github.com/repos/'+repository
   self.token=token
  def get(self,path,text=False):
-  req=urllib.request.Request(self.base+path,headers={'Authorization':'Bearer '+self.token,'Accept':'application/vnd.github+json'})
-  with urllib.request.urlopen(req,timeout=30) as response:
-   raw=response.read().decode('utf-8')
-  return raw if text else json.loads(raw)
+  response=requests.get(self.base+path,headers={'Authorization':'Bearer '+self.token,'Accept':'application/vnd.github+json'},timeout=30)
+  if response.status_code>=400:raise RuntimeError('ACTIONS_HTTP_'+str(response.status_code)+'_'+('LOGS' if path.endswith('/logs') else 'METADATA'))
+  return response.text if text else response.json()
+
  def runs(self,workflow):
   # Bounded history; absence is never proof that a dispatch did not arrive.
   rows=[]

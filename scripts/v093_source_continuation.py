@@ -53,7 +53,8 @@ def main():
      sent=continue_slot(root,c,catalog,slot,'watchdog-'+os.environ['GITHUB_RUN_ID'],transport(root,source,slot,token))
     results.append(dict(source=source,slot=slot,recovery=recovery,continuation_sent=sent))
    except Exception as exc:
-    results.append(dict(source=source,slot=slot,error=type(exc).__name__,continuation_sent=False))
+    results.append(dict(source=source,slot=slot,error=type(exc).__name__+(':'+str(exc) if str(exc).startswith('ACTIONS_HTTP_') else ''),continuation_sent=False))
  Path('results').mkdir(exist_ok=True);Path('results/watchdog.json').write_text(json.dumps(dict(slots=results,source_requests=0))+'\n')
  print(json.dumps(dict(slots=results,source_requests=0)),flush=True)
+ if any('error' in r for r in results):raise RuntimeError('RECOVERY_SLOT_ERRORS_SEE_DECISIONS')
 if __name__=='__main__':main()
