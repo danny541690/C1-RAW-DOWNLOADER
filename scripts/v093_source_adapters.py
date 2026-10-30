@@ -58,6 +58,9 @@ class NativeAdapter(Retained):
    if menu.get('url')!='https://www.tdcc.com.tw/portal/zh/smWeb/qryStock' or not re.fullmatch('[0-9a-f]{64}',menu.get('sha256') or '') or case.get('date') not in menu.get('offered_dates',[]) or not re.fullmatch('[0-9A-Za-z]{4,8}',case.get('code','')):raise ValueError('TDCC_QUERY_MENU_PROOF')
    if case['period']!=case['date'][:4]+'-'+case['date'][4:6]+'-'+case['date'][6:]:raise ValueError('TDCC_QUERY_PERIOD_BINDING')
    applicable=True
+  if case['source']=='NDC' and proof.get('availability_verified') is True:
+   archive=case.get('source_archive',{})
+   if not re.fullmatch('[0-9a-f]{64}',archive.get('sha256') or '') or proof.get('verified_archive_sha256')!=archive['sha256'] or proof.get('verified_archive_file_id')!=archive.get('file_id'):raise ValueError('NDC_MISSING_ARCHIVE_BINDING')
   if old.get('attempts',0)>task['attempts'] or not applicable or not proof.get('official_evidence_id'):raise ValueError('MISSING_AVAILABILITY_OR_ATTEMPTS')
   if case['source']=='FinMind' and (proof.get('official_source') not in ('TWSE','TPEx','MOPS') or not all(proof.get(k) is True for k in ('confirmed_gap','identity_period_market_verified','definition_unit_frequency_verified','cross_source_alignment_approved'))):raise ValueError('FINMIND_GAP_NOT_APPROVED')
  def check_promotion(self,task):

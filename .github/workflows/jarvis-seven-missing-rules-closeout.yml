@@ -1,4 +1,4 @@
-name: JARVIS missing rules regression and bounded real provider closeout
+name: JARVIS paged missing rules and bounded real provider closeout
 on:
   push:
     branches: [codex/seven-source-closed-loop-design-20261029]
@@ -83,3 +83,40 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: 'missing-rule-${{ matrix.source }}', path: results, retention-days: 90}
+  summary:
+    if: always()
+    needs: [compile, canary]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with: {path: collected}
+      - name: Aggregate actual outcomes without promoting holds to provider passes
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          jobs=json.loads(os.environ['NEEDS_JSON']);reports=[json.loads(p.read_text()) for p in Path('collected').rglob('rule-canary.json')]
+          result=dict(schema='JARVIS_MISSING_RULE_CLOSEOUT_V1',code_sha=os.environ['GITHUB_SHA'],run_id=os.environ['GITHUB_RUN_ID'],jobs={k:v['result'] for k,v in jobs.items()},providers=reports,formal_raw_writes=0,production_activation=False,deployment_ready=False,remaining=['Unsupported native formats and real rejected-old-file repair actions remain held','Final-scope provider sustained throughput and takeover acceptance','Merge fixed release and activate twelve production schedules'])
+          result['batch_completed']=all(v['result']=='success' for v in jobs.values()) and len(reports)==6
+          result['source_requests']=sum(p['source_requests'] for p in reports)
+          Path('results').mkdir(exist_ok=True);Path('results/missing-rule-closeout.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(dict(batch_completed=result['batch_completed'],source_requests=result['source_requests'],providers={p['source']:p['provider_acceptance'] for p in reports},deployment_ready=False)))
+          if not result['batch_completed']:raise SystemExit(1)
+          PY
+      - name: Preserve combined evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job missing-rule-closeout --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: missing-rule-closeout, path: results, retention-days: 90}

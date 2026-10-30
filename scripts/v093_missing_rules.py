@@ -36,7 +36,7 @@ def official_job(source,period,category):
  jobs=[j for j in Audit.jobs(object.__new__(Audit),period[:7],set()) if (j['source'],j['period'],j['category'])==(source,period,category)]
  return jobs[0] if len(jobs)==1 else None
 
-def make_row(item,row,entry,document,origin):
+def make_row(item,row,entry,document,origin,verified_archives=None):
  source=row['source'];period=row['period'];key=row['task_key']
  reason=eligibility(item)
  if reason:return None,reason
@@ -54,8 +54,10 @@ def make_row(item,row,entry,document,origin):
   if job.get('kind')!='csv' or not action or not {'queryStartDate','queryEndDate'}<=set(form.get('fields',{})):return None,'OFFICIAL_FORM_NOT_PROVEN'
   case['native_job']=job;proof.update(query_applicability_verified=True,official_form=form)
  elif source=='NDC':
-  # Unpublished months stay held until source archive content is independently read.
-  return None,'VERIFIED_ARCHIVE_MONTH_REQUIRED'
+  archive=document.get('selected_archive',{});digest=archive.get('sha256')
+  verified=(verified_archives or {}).get(digest,{})
+  if verified.get('file_id')!=archive.get('file_id') or period not in verified.get('months',[]):return None,'VERIFIED_ARCHIVE_MONTH_REQUIRED'
+  case['source_archive']=archive;proof.update(availability_verified=True,verified_archive_sha256=digest,verified_archive_file_id=archive['file_id'])
  elif source=='FinMind':
   approved=entry.get('missing_evidence',{})
   if not all(approved.get(k) is True for k in ('confirmed_gap','identity_period_market_verified','definition_unit_frequency_verified','cross_source_alignment_approved')) or approved.get('official_source') not in ('TWSE','TPEx','MOPS'):return None,'OFFICIAL_GAP_ALIGNMENT_REQUIRED'
@@ -68,8 +70,8 @@ def make_row(item,row,entry,document,origin):
  try:return prepare_row(source,'DESC',key,candidate),None
  except (ValueError,KeyError,TypeError):return None,'NATIVE_CONTRACT_REJECTED'
 
-def compile_rules(reviews,original=Path('original'),existing=()):
- known=set(existing);candidates={};reasons={s:{} for s in RULES};seen=set()
+def compile_rules(reviews,original=Path('original'),existing=(),drive=None):
+ known=set(existing);candidates={};verified_archives={};reasons={s:{} for s in RULES};seen=set()
  manifest=json.loads((original/'ledger_manifest.json').read_text())
  for f in manifest:
   raw=gzip.decompress((original/f['local']).read_bytes())
@@ -77,6 +79,16 @@ def compile_rules(reviews,original=Path('original'),existing=()):
   document=json.loads(raw)
   if f['name'].startswith('HISTORY_'):document={'history_receipts':document}
   if not isinstance(document,dict):continue
+  if drive and f['path'].startswith('NDC_') and document.get('selected_archive'):
+   archive=document['selected_archive'];digest=archive.get('sha256')
+   if not re.fullmatch('[0-9a-f]{64}',digest or ''):raise ValueError('NDC_ARCHIVE_PROOF_SHA')
+   if digest not in verified_archives:
+    from scripts.v093_native_reuse_batch import Adapter
+    from scripts.v093_ndc_independent import parse_bundle
+    archive_raw=Adapter(drive,{}).read(archive['file_id'])
+    if hashlib.sha256(archive_raw).hexdigest()!=digest:raise ValueError('NDC_ARCHIVE_PROOF_CHANGED')
+    tables=parse_bundle(archive_raw)
+    verified_archives[digest]=dict(file_id=archive['file_id'],months=sorted({month for table in tables for month in table['rows']}))
   origin=dict(file_id=f['id'],version=f['version'],sha256=f['sha256'])
   rows,_=normalize(document,f['path'],DEFAULT.get(f['path'].split('/')[0]),origin)
   entry_index={}
@@ -92,7 +104,7 @@ def compile_rules(reviews,original=Path('original'),existing=()):
    else:
     entries=entry_index.get((row['legacy_bucket'],row['legacy_unit_id']),[])
     if len(entries)!=1:candidate=None;reason='NATIVE_ENTRY_AMBIGUOUS'
-    else:candidate,reason=make_row(item,row,entries[0],document,origin)
+    else:candidate,reason=make_row(item,row,entries[0],document,origin,verified_archives)
    reasons[source].setdefault(key,set()).add(reason or 'ELIGIBLE_QUERY')
    if candidate:
     prior=candidates.get((source,key))
@@ -109,14 +121,22 @@ def compile_rules(reviews,original=Path('original'),existing=()):
 
 def main():
  p=argparse.ArgumentParser();p.add_argument('--overlay-manifest');a=p.parse_args()
+ drive=None
  reviews={s:json.loads(gzip.decompress(Path('frozen',s+'.review.json.gz').read_bytes()))['tasks'] for s in list(RULES)+['TDCC']}
  if a.overlay_manifest:
   from scripts.v093_handoff_overlays import apply_manifest
   from scripts.annual_actual_firstpass import Drive,service
-  apply_manifest(Path.cwd(),reviews,a.overlay_manifest,Drive(service()))
- rows,report=compile_rules(reviews)
+  drive=Drive(service());apply_manifest(Path.cwd(),reviews,a.overlay_manifest,drive)
+ rows,report=compile_rules(reviews,drive=drive)
  Path('results').mkdir(exist_ok=True)
  Path('results/missing-rule-audit.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
- Path('results/missing-rule-actions.json').write_text(json.dumps(dict(schema='JARVIS_TYPED_APPROVED_ACTIONS_V1',actions=rows),ensure_ascii=False)+'\n')
+ payload=(json.dumps(dict(schema='JARVIS_TYPED_APPROVED_ACTIONS_V1',actions=rows),ensure_ascii=False)+'\n').encode()
+ Path('results/missing-rule-actions.data').write_bytes(payload)
+ pages=[]
+ for offset in range(0,len(rows),32):
+  page=(json.dumps(dict(actions=rows[offset:offset+32]),ensure_ascii=False)+'\n').encode();name='missing-rule-page-'+str(offset//32).zfill(5)+'.json'
+  if len(page)>700000:raise ValueError('MISSING_RULE_PAGE_TOO_LARGE')
+  Path('results',name).write_bytes(page);pages.append(dict(name=name,sha256=hashlib.sha256(page).hexdigest(),count=len(rows[offset:offset+32])))
+ Path('results/missing-rule-action-index.json').write_text(json.dumps(dict(schema='JARVIS_MISSING_RULE_ACTION_INDEX_V1',sha256=hashlib.sha256(payload).hexdigest(),count=len(rows),pages=pages),indent=2)+'\n')
  print(json.dumps(report,ensure_ascii=False),flush=True)
 if __name__=='__main__':main()

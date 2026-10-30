@@ -80,7 +80,7 @@ def main():
  missing=tdcc_missing_rows(reviews['TDCC'],proof,known);rows_by_source['TDCC']+=missing
  # Compile other source rules against the latest overlaid reviews, not stale originals.
  from scripts.v093_missing_rules import compile_rules
- automatic_rows,missing_audit=compile_rules(reviews,existing={(source,r['definition']['key']) for source,rs in rows_by_source.items() for r in rs})
+ automatic_rows,missing_audit=compile_rules(reviews,existing={(source,r['definition']['key']) for source,rs in rows_by_source.items() for r in rs},drive=d)
  for row in automatic_rows:rows_by_source[row['definition']['source']].append(row)
  approved=json.loads(Path('config/v093_approved_actions.json').read_text())
  if approved.get('schema')!='JARVIS_TYPED_APPROVED_ACTIONS_V1':raise ValueError('APPROVED_ACTION_SCHEMA')

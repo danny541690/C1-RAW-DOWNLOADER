@@ -32,3 +32,8 @@ class MissingRulesTests(unittest.TestCase):
   from scripts.v093_source_adapters import NativeAdapter
   r,_=make_row(*self.inputs());r['execution_contract']['missing_evidence']['native_route']['url']='https://example.com/'
   with self.assertRaisesRegex(ValueError,'OFFICIAL_QUERY_ROUTE_OR_LEDGER_BINDING'):NativeAdapter(None,None,dict(source='TWSE',key=r['definition']['key']),r)
+ def test_ndc_only_actual_verified_archive_month_can_be_admitted(self):
+  args=list(self.inputs('NDC','business','2026-09'));archive=dict(file_id='archive',sha256='b'*64);args[3]['selected_archive']=archive
+  verified={'b'*64:dict(file_id='archive',months=['2026-08'])}
+  self.assertEqual(make_row(*args,verified_archives=verified)[1],'VERIFIED_ARCHIVE_MONTH_REQUIRED')
+  verified['b'*64]['months'].append('2026-09');row,reason=make_row(*args,verified_archives=verified);self.assertIsNone(reason);self.assertEqual(row['execution_contract']['source_archive'],archive)

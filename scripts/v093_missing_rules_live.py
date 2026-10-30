@@ -13,9 +13,16 @@ from scripts.v093_admission_runtime import prepare_row
 def main():
  from scripts.annual_actual_firstpass import Drive,service
  p=argparse.ArgumentParser();p.add_argument('--source',required=True);p.add_argument('--namespace',required=True);a=p.parse_args()
- rows=json.loads(Path('inputs/missing-rule-actions.json').read_text())['actions'];rows=sorted([r for r in rows if r['definition']['source']==a.source],key=lambda r:(r['definition']['period'],r['definition']['key']),reverse=True)
+ import hashlib
+ payload=Path('inputs/missing-rule-actions.data').read_bytes();index=json.loads(Path('inputs/missing-rule-action-index.json').read_text())
+ if hashlib.sha256(payload).hexdigest()!=index['sha256']:raise ValueError('MISSING_RULE_INPUT_SHA')
+ rows=json.loads(payload)['actions']
+ if len(rows)!=index['count']:raise ValueError('MISSING_RULE_INPUT_COUNT')
+ rows=sorted([r for r in rows if r['definition']['source']==a.source],key=lambda r:(r['definition']['period'],r['definition']['key']),reverse=True)
  c=Coordinator(GitCAS(Path.cwd(),'jarvis-source-preflight/missing-rule-canary'),a.source,ttl=600)
- _,prior=c.store.read(a.source);known=set((prior or {}).get('tasks',{}));rows=[r for r in rows if r['definition']['key'] not in known][:2]
+ _,prior=c.store.read(a.source);tasks=(prior or {}).get('tasks',{});known=set(tasks)
+ pending=[copy.deepcopy(t) for t in tasks.values() if t['status'] in ('READY','READY_CHECK','RETRY_WAIT','RECONCILE','REQUEST_INTENT','STORED','LEASED')]
+ rows=pending[:2]+[r for r in rows if r['definition']['key'] not in known][:max(0,2-len(pending))]
  out=Path('results');out.mkdir(exist_ok=True)
  report=dict(schema='JARVIS_NATIVE_MISSING_RULE_CANARY_V1',source=a.source,selected=len(rows),source_requests=0,formal_raw_writes=0,production_activation=False,provider_acceptance='NOT_RUN_NO_ADMITTED_CANDIDATE',full_acceptance=False)
  if rows:
@@ -23,7 +30,7 @@ def main():
   def seed(s):
    for row in rows:
     key=row['definition']['key']
-    if key in s['tasks']:raise ValueError('RULE_CANARY_ALREADY_ATTEMPTED')
+    if key in s['tasks']:continue # Resume persisted attempts/save intent without reseeding.
     s['tasks'][key]=prepare_row(a.source,'DESC',key,row)
   c.update(seed);adapters=[]
   def factory(ticket,task):
