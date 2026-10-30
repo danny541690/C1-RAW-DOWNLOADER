@@ -1,0 +1,62 @@
+name: JARVIS final immutable release handoff preserving live attempts and holds
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/jarvis-seven-final-release-build.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Verify current handoff code with complete regression
+        run: |
+          mkdir results
+          python -m unittest discover -s tests -p 'test_*.py' > results/regression.log 2>&1
+          tail -4 results/regression.log
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41001539894
+          github-token: ${{ github.token }}
+          path: collected
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40984730379
+          github-token: ${{ github.token }}
+          name: typed-action-catalogs-1
+          path: inputs
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41000295778
+          github-token: ${{ github.token }}
+          name: continuation-41000295778
+          path: inputs
+      - name: Complete three preserved report outboxes with source-isolated folders
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_reconcile_scope_publications
+      - name: Fresh final old-writer and trigger audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_overnight_audit
+      - name: Rebind frozen queues to all real outcomes without resetting or redownloading
+        run: python -m scripts.v093_final_scope_summary
+      - name: Preserve current immutable release decision
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job final-release-build --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: final-release-build, path: results, retention-days: 90, overwrite: true}

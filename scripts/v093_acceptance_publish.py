@@ -64,6 +64,6 @@ def main():
  identity=run+'-'+attempt+'-'+a.job
  record=dict(schema='JARVIS_AUTOMATIC_ACCEPTANCE_RECORD_V1',metadata=dict(run_id=run,attempt=attempt,job=a.job,source_namespace=a.source,code_sha=sha,repository=repo,job_status=a.status,run_url='https://github.com/'+repo+'/actions/runs/'+run,acceptance_semantics='PER_JOB_EVIDENCE_ONLY_NOT_FULL_DATA_CERTIFICATION'),files=collect(a.input))
  c=Coordinator(GitCAS(Path.cwd(),'jarvis-source-preflight/record-'+identity),a.source)
- result=publish(c,record,DriveArchive(identity));result.update(git_state_branch='jarvis-source-preflight/record-'+identity+'/'+a.source,job_status=a.status)
+ result=publish(c,record,DriveArchive(identity+'-'+a.source));result.update(git_state_branch='jarvis-source-preflight/record-'+identity+'/'+a.source,job_status=a.status)
  out=Path('publication');out.mkdir(exist_ok=True);(out/'receipt.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result),flush=True)
 if __name__=='__main__':main()
