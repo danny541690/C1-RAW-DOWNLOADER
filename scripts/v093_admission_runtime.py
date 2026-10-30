@@ -162,11 +162,21 @@ def run_until_budget(coordinator,drive,catalog,slot,owner,target_root,archive,se
  # Each batch has already saved its state. This summary must not replace it.
  return result
 
+def validate_catalog_manifest(catalogs):
+ from scripts.v093_source_partition import COUNTS
+ if not isinstance(catalogs,dict) or set(catalogs)!=set(COUNTS):raise ValueError('PRODUCTION_RELEASE_BLOCKED_SEVEN_SOURCE_MANIFEST')
+ for source,count in COUNTS.items():
+  slots={'DESC','ASC'} if count==2 else {'DESC'}
+  if not isinstance(catalogs[source],dict) or set(catalogs[source])!=slots:raise ValueError('PRODUCTION_RELEASE_BLOCKED_TWELVE_DIRECTION_MANIFEST')
+  for pin in catalogs[source].values():
+   if not isinstance(pin,dict) or not re.fullmatch('[0-9a-f]{40}',pin.get('commit') or '') or not re.fullmatch('[0-9a-f]{64}',pin.get('index_sha256') or ''):raise ValueError('PRODUCTION_RELEASE_BLOCKED_UNPINNED_CATALOG')
+
 def production(root,source,slot,namespace):
  release=json.loads((root/'config/v093_source_release.json').read_text())
  if release.get('enabled') is not True:raise ValueError('PRODUCTION_RELEASE_BLOCKED_RELEASE_NOT_APPROVED')
  if namespace!='production' or release.get('schema')!='JARVIS_NATIVE_RELEASE_V1' or any(release.get('approved_checks',{}).get(x) is not True for x in ('source_contracts','continuation_and_quota','cutover')):raise ValueError('PRODUCTION_RELEASE_BLOCKED_REQUIRED_CHECKS')
  if release.get('tested_code_sha256')!=code_digest(root):raise ValueError('PRODUCTION_RELEASE_BLOCKED_CODE_CHANGED')
+ validate_catalog_manifest(release.get('catalogs'))
  from scripts.v093_source_adapters import RAW_ROOT
  if release.get('raw_root')!=RAW_ROOT:raise ValueError('PRODUCTION_RELEASE_BLOCKED_RAW_ROOT_CHANGED')
  from scripts.v093_source_git_store import GitCAS

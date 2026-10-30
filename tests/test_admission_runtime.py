@@ -94,3 +94,20 @@ class ContinuousBudgetTests(unittest.TestCase):
   step=next(x for x in doc['jobs']['worker']['steps'] if x.get('name')=='Run guarded source worker')
   for name in ('GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','GOOGLE_REFRESH_TOKEN'):
    self.assertEqual(step['env'][name],'${{ secrets.'+name+' }}')
+
+class ReleaseManifestTests(unittest.TestCase):
+ def manifest(self):
+  from scripts.v093_source_partition import COUNTS
+  return {s:{slot:dict(commit='a'*40,index_sha256='b'*64) for slot in (('ASC','DESC') if n==2 else ('DESC',))} for s,n in COUNTS.items()}
+ def test_complete_twelve_pinned_directions(self):
+  from scripts.v093_admission_runtime import validate_catalog_manifest
+  validate_catalog_manifest(self.manifest())
+ def test_partial_source_direction_or_unpinned_file_cannot_release(self):
+  from scripts.v093_admission_runtime import validate_catalog_manifest
+  for kind in ('source','direction','pin','extra'):
+   d=self.manifest()
+   if kind=='source':del d['NDC']
+   elif kind=='direction':del d['TWSE']['ASC']
+   elif kind=='pin':d['TWSE']['ASC']['commit']='main'
+   else:d['NDC']['ASC']=d['NDC']['DESC']
+   with self.assertRaisesRegex(ValueError,'PRODUCTION_RELEASE_BLOCKED'):validate_catalog_manifest(d)
