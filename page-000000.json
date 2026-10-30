@@ -1,0 +1,1 @@
+{"continuation-live.json":{"bytes":157,"sha256":"77e4bc6976c7cb94c5c0726ad2c18312b57e10fba173939aac8c10b03ff8a978","text":"{\n  \"phase\": \"receive\",\n  \"acknowledged\": true,\n  \"fixture_only\": true,\n  \"source_requests\": 0,\n  \"formal_raw_writes\": 0,\n  \"production_activation\": false\n}\n"}}
