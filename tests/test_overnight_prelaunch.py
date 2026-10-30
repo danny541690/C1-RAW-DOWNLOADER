@@ -1,14 +1,18 @@
-import unittest,yaml
+import unittest,yaml,json
 from pathlib import Path
 from scripts.v093_overnight_catalogs import bound_row,receipt_contract
 from scripts.v093_source_partition import COUNTS
 class OvernightTests(unittest.TestCase):
  def test_controller_exact_twelve_bindings_and_no_cancellation_of_writers(self):
   d=yaml.load(Path('.github/workflows/jarvis-seven-watchdog.yml').read_text(),Loader=yaml.BaseLoader)
-  matrix=d['jobs']['workers']['strategy']['matrix']['include']
+  self.assertNotIn('schedule',d['on'])
+  active=yaml.load(Path('.github/workflows/jarvis-seven-production-watchdog.yml').read_text(),Loader=yaml.BaseLoader)
+  self.assertEqual(active['on']['schedule'][0]['cron'],'3,13,23,33,43,53 * * * *')
+  self.assertEqual(active['permissions']['actions'],'write')
+  design=json.loads(Path('config/v093_seven_source_design.json').read_text())
   expected={(s,slot) for s,n in COUNTS.items() for slot in (('DESC','ASC') if n==2 else ('DESC',))}
-  self.assertEqual({(r['source'],r['direction']) for r in matrix},expected);self.assertEqual(len(matrix),12)
-  self.assertEqual(d['jobs']['workers']['if'],"needs.release.outputs.enabled == 'true'")
+  self.assertEqual({(r['source'],r['direction']) for r in design['slots']},expected)
+  self.assertEqual(len(design['slots']),12)
   worker=yaml.load(Path('.github/workflows/jarvis-seven-worker.yml').read_text(),Loader=yaml.BaseLoader)['jobs']['worker']
   self.assertEqual(worker['concurrency']['cancel-in-progress'],'false')
  def test_compiler_rejects_conflicts_and_keeps_exhausted_read_only_attempts(self):
