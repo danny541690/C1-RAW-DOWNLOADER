@@ -1,5 +1,8 @@
 name: JARVIS guarded twelve-source recovery watchdog
 on:
+  push:
+    branches: [main]
+    paths: [config/v093_source_release.json]
   schedule:
     - cron: '3,13,23,33,43,53 * * * *'
   workflow_dispatch:

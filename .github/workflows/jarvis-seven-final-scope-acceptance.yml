@@ -1,0 +1,169 @@
+name: JARVIS final pinned twelve-slot two-runner acceptance
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/jarvis-seven-final-scope-acceptance.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Final code regression and twelve entry gates
+        run: |
+          mkdir results
+          python -m unittest discover -s tests -p 'test_*.py' > results/regression.log 2>&1
+          tail -4 results/regression.log
+          python -m scripts.v093_source_preflight --out results/preflight
+      - name: Preserve final code acceptance
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job final-scope-regression --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: final-scope-regression, path: results, retention-days: 90, overwrite: true}
+  start:
+    needs: regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        include:
+          - {source: TWSE, slot: DESC}
+          - {source: TWSE, slot: ASC}
+          - {source: TPEx, slot: DESC}
+          - {source: TPEx, slot: ASC}
+          - {source: MOPS, slot: DESC}
+          - {source: MOPS, slot: ASC}
+          - {source: TDCC, slot: DESC}
+          - {source: TDCC, slot: ASC}
+          - {source: TAIFEX, slot: DESC}
+          - {source: TAIFEX, slot: ASC}
+          - {source: NDC, slot: DESC}
+          - {source: FinMind, slot: DESC}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40984730379
+          github-token: ${{ github.token }}
+          name: typed-action-catalogs-1
+          path: inputs
+      - name: First actual native chunk from exact pinned release queue
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_final_scope_live --phase start --source '${{ matrix.source }}' --slot '${{ matrix.slot }}' --namespace '${{ github.run_id }}'
+      - name: Preserve native first phase
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job 'final-scope-start-${{ matrix.slot }}' --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'scope-start-${{ matrix.source }}-${{ matrix.slot }}', path: results, retention-days: 90, overwrite: true}
+  cold:
+    needs: start
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        include:
+          - {source: TWSE, slot: DESC}
+          - {source: TWSE, slot: ASC}
+          - {source: TPEx, slot: DESC}
+          - {source: TPEx, slot: ASC}
+          - {source: MOPS, slot: DESC}
+          - {source: MOPS, slot: ASC}
+          - {source: TDCC, slot: DESC}
+          - {source: TDCC, slot: ASC}
+          - {source: TAIFEX, slot: DESC}
+          - {source: TAIFEX, slot: ASC}
+          - {source: NDC, slot: DESC}
+          - {source: FinMind, slot: DESC}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40984730379
+          github-token: ${{ github.token }}
+          name: typed-action-catalogs-1
+          path: inputs
+      - name: Independent runner resumes and cold-reads both immutable chunks
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_final_scope_live --phase cold --source '${{ matrix.source }}' --slot '${{ matrix.slot }}' --namespace '${{ github.run_id }}'
+      - name: Preserve independent recovery evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job 'final-scope-cold-${{ matrix.slot }}' --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'scope-cold-${{ matrix.source }}-${{ matrix.slot }}', path: results, retention-days: 90, overwrite: true}
+  summary:
+    needs: cold
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with: {path: collected}
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40984730379
+          github-token: ${{ github.token }}
+          name: typed-action-catalogs-1
+          path: inputs
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41000295778
+          github-token: ${{ github.token }}
+          name: continuation-41000295778
+          path: inputs
+      - name: Fresh final old-writer and trigger audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -m scripts.v093_overnight_audit
+      - name: Approve only the frozen admitted campaign while keeping activation off
+        run: python -m scripts.v093_final_scope_summary
+      - name: Preserve final admission decision
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job final-scope-summary --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: final-scope-summary, path: results, retention-days: 90, overwrite: true}
