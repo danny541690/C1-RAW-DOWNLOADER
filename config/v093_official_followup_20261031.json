@@ -13,6 +13,8 @@
   "tpex_official_pages": [
     "https://www.tpex.org.tw/zh-tw/mainboard/trading/info/pricing_hist96.html",
     "https://hist.tpex.org.tw/Hist/STOCK/AFTERTRADING/DAILY_CLOSE_QUOTES/param_3104.html",
+    "https://hist.tpex.org.tw/Hist/STOCK/AFTERTRADING/DAILY_CLOSE_QUOTES/RSTA3104QRY.HTML",
+    "https://hist.tpex.org.tw/Hist/STOCK/AFTERTRADING/DAILY_CLOSE_QUOTES/RSTA3104RES.HTML",
     "https://www.tpex.org.tw/zh-tw/announce/market/holiday.html"
   ],
   "query_is_not_availability_proof": true,
@@ -20,5 +22,21 @@
   "keep_original_raw": true,
   "full_acceptance": false,
   "calendar_query_revision": "DATE_PARAMETER_VERIFIED_RECENT_FIRST_20261031",
-  "calendar_seconds": 240
+  "calendar_seconds": 240,
+  "route_probe_revision": "FOLLOW_OFFICIAL_FRAMES_AND_EARLY2007_POST_API_V3",
+  "tpex_early_2007": {
+    "endpoint": "https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotesHis",
+    "method": "POST",
+    "date_parameter": "date",
+    "date_format": "yyyy/mm/dd",
+    "start": "2007-01-02",
+    "end": "2007-04-20",
+    "canary_date": "2007-01-02",
+    "page_url": "https://www.tpex.org.tw/zh-tw/mainboard/trading/info/pricing_hist96.html",
+    "page_sha256": "c1185961b2c0a82ad13e9bf239dfe1cbdee7d8bcee4043ae5b42bc38b791f753",
+    "api_pattern_sha256": "cfbd8c64c748149f039f1d4f1c5b3ba4511039b9c9e60d8ed53fd9624edc587a",
+    "form_script_sha256": "085fd65b4e15e2af4f3adb3f256f0058d0176dd2d98ce53217ede16667a04a90",
+    "canary_required_before_bulk": true
+  },
+  "legacy_calendar_template": "https://www.twse.com.tw/docs1/data01/market/public_html/{roc_year}.htm"
 }

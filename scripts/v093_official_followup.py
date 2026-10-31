@@ -16,6 +16,7 @@ from scripts.v093_problem_recovery import load_rows,PLAN as ORIGINAL_PLAN
 
 PLAN='config/v093_official_followup_20261031.json'
 NAMESPACE='official-followup-20261031-v2'
+CALENDAR_PARSER_REVISION='SUPPLEMENTARY_HOLIDAYS_AND_LEGACY_V3'
 HOSTS={'TWSE':{'www.twse.com.tw'},'TPEx':{'www.tpex.org.tw','hist.tpex.org.tw'}}
 
 def sha(raw):return hashlib.sha256(raw).hexdigest()
@@ -44,7 +45,7 @@ def calendar(raw,year,url):
   if day.year!=year:raise ValueError('CALENDAR_ROW_YEAR_MISMATCH')
   # Last/new trading dates must take precedence over holiday words in notes.
   if any(s in label for s in ('開始交易','最後交易','開始買賣','最後買賣')):opened.append(day.isoformat())
-  elif any(s in label+' '+description for s in ('休市','放假','市場無交易','不交易')):closed.append(day.isoformat())
+  elif any(s in label+' '+description for s in ('休市','放假','補假','市場無交易','不交易')):closed.append(day.isoformat())
   else:unknown.append(day.isoformat())
  if set(closed)&set(opened):raise ValueError('CALENDAR_CONFLICTING_DATE')
  return dict(year=year,url=url,raw_sha256=sha(raw),closed=sorted(set(closed)),opened=sorted(set(opened)),unclassified=sorted(set(unknown)),annual_table_is_not_complete_emergency_calendar=True)
@@ -108,7 +109,10 @@ def metadata(root,source,logical,url,state,store,checkpoint):
 
 def discover(text,url):
  """Collect only links actually present in official HTML; never invent an API."""
- scripts=[];forms=[];apis=[]
+ scripts=[];forms=[];apis=[];frames=[]
+ for value in re.findall(r'<(?:i?frame)[^>]+src=["\']([^"\']+)',text,re.I):
+  link=urllib.parse.urljoin(url,html.unescape(value));parsed=urllib.parse.urlsplit(link)
+  if parsed.scheme=='https' and parsed.hostname in HOSTS['TPEx'] and '/cdn-cgi/' not in parsed.path:frames.append(link)
  for value in re.findall(r'<script[^>]+src=["\']([^"\']+)',text,re.I):
   link=urllib.parse.urljoin(url,html.unescape(value));p=urllib.parse.urlsplit(link)
   if p.scheme=='https' and p.hostname in HOSTS['TPEx']:scripts.append(link)
@@ -116,7 +120,7 @@ def discover(text,url):
  for value in re.findall(r'["\']([^"\']*(?:/www/|/Hist/)[^"\'\s<>]*)["\']',text):
   link=urllib.parse.urljoin(url,html.unescape(value));p=urllib.parse.urlsplit(link)
   if p.scheme=='https' and p.hostname in HOSTS['TPEx']:apis.append(link)
- return dict(scripts=sorted(set(scripts)),forms=sorted(set(forms)),observed_routes=sorted(set(apis)),route_verified_for_download=False)
+ return dict(scripts=sorted(set(scripts)),frames=sorted(set(frames)),forms=sorted(set(forms)),observed_routes=sorted(set(apis)),route_verified_for_download=False)
 
 def run_calendars(root,config):
  budget=int(config.get('calendar_seconds',240))
@@ -126,6 +130,20 @@ def run_calendars(root,config):
   nonlocal revision
   if not store.cas('TWSE',revision,state):raise ValueError('CALENDAR_CHECKPOINT_CONFLICT')
   revision,_=store.read('TWSE')
+ # Reparse saved official documents after a parser revision; no new GET or
+ # source-attempt reset is necessary to recognize an omitted 補假 label.
+ for year,old in list(state['calendars'].items()):
+  if old.get('parser_revision')==CALENDAR_PARSER_REVISION:continue
+  cached=state['tasks'].get(sha(old['url'].encode()))
+  if not cached or cached.get('status')!='RESPONSE_SAVED':continue
+  try:
+   if old.get('format')=='OFFICIAL_ARCHIVED_HTML_CALENDAR':
+    from scripts.v093_legacy_calendar import parse
+    fresh=parse(cached['text'],int(year),old['url'])
+   else:fresh=calendar(cached['text'].encode(),int(year),old['url'])
+  except (ValueError,KeyError,TypeError):continue
+  fresh.update(raw_sha256=cached['raw_sha256'],parser_revision=CALENDAR_PARSER_REVISION);state['calendars'][year]=fresh
+ checkpoint()
  started=time.monotonic()
  # Live verification showed queryYear is ignored by this API; date binds the
  # response year. Prioritize recent periods and reuse older saved probes.
@@ -138,14 +156,25 @@ def run_calendars(root,config):
    if result.get('status')!='RESPONSE_SAVED':continue
    try:proof=calendar(result['text'].encode(),year,url)
    except (ValueError,KeyError,TypeError):continue
-   proof['raw_sha256']=result['raw_sha256'];state['calendars'][str(year)]=proof;checkpoint();break
+   proof.update(raw_sha256=result['raw_sha256'],parser_revision=CALENDAR_PARSER_REVISION);state['calendars'][str(year)]=proof;checkpoint();break
+  if str(year) not in state['calendars'] and config.get('legacy_calendar_template'):
+   url=config['legacy_calendar_template'].format(roc_year=year-1911)
+   result=metadata(root,'TWSE',str(year)+'|calendar',url,state,store,checkpoint)
+   if result.get('status')=='RESPONSE_SAVED':
+    try:
+     from scripts.v093_legacy_calendar import parse
+     proof=parse(result['text'],year,url)
+    except (ValueError,KeyError,TypeError):proof=None
+    if proof:
+     proof.update(raw_sha256=result['raw_sha256'],parser_revision=CALENDAR_PARSER_REVISION);state['calendars'][str(year)]=proof;checkpoint()
   time.sleep(2)
  state['checked_at']=dt.datetime.now(dt.timezone.utc).isoformat();checkpoint()
  Path('results').mkdir(exist_ok=True);Path('results/official-calendars.json').write_text(json.dumps(state,ensure_ascii=False,indent=2)+'\n')
  print(json.dumps(dict(verified_years=sorted(state['calendars']),metadata_attempts=state.get('metadata_attempts'),calendar_state_commit=revision)),flush=True)
 
 def classify(prior,calendars,config):
- if prior.get('status')!='REVIEW_REQUIRED' or prior.get('reason')!='OFFICIAL_EMPTY_UNCONFIRMED':return None
+ empty=prior.get('reason')=='OFFICIAL_EMPTY_UNCONFIRMED' or prior.get('reason')=='REQUERY_APPLICABILITY_HOLD' and (prior.get('error') or {})==dict(code='ApplicabilityUnproven',phase='VALIDATE')
+ if prior.get('status')!='REVIEW_REQUIRED' or not empty:return None
  definition=prior['definition'];source=definition['source'];period=definition['period'];date=dt.date.fromisoformat(period)
  if source=='TPEx' and period>='2001-01-01' and date.weekday()==5:
   return dict(reason='NATIONAL_STOCK_MARKET_SATURDAY_CLOSED',url=config['national_weekend_evidence'],date=period)
@@ -154,21 +183,40 @@ def classify(prior,calendars,config):
   return dict(reason='OFFICIAL_ANNUAL_NONTRADING_DATE',date=period,url=proof['url'],raw_sha256=proof['raw_sha256'],calendar_year=proof['year'])
  return None
 
-def eligible(task,prior,calendars):
+def early_2007(task,config):
+ proof=config.get('tpex_early_2007') or {};period=task['definition']['period']
+ return task['definition']['source']=='TPEx' and proof.get('endpoint')=='https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotesHis' and '2007-01-02'<=period<='2007-04-20' and proof.get('method')=='POST' and all(re.fullmatch('[0-9a-f]{64}',proof.get(key,'')) for key in ('page_sha256','api_pattern_sha256','form_script_sha256'))
+
+def eligible(task,prior,calendars,config=None):
  source=task['definition']['source'];period=task['definition']['period'];case=task.get('execution_contract') or {}
  if prior.get('status')!='REVIEW_REQUIRED' or prior.get('reason')!='OFFICIAL_EMPTY_UNCONFIRMED' or prior['attempts']>=4:return False
  # A proved calendar allows a bounded query, not a claim that every unlisted
  # weekday traded. Emergency closures can still return an unresolved empty.
- if period[:4] not in calendars or dt.date.fromisoformat(period).weekday()>=5:return False
+ historic=early_2007(task,config or {})
+ if (period[:4] not in calendars and not historic) or dt.date.fromisoformat(period).weekday()>=5:return False
  if case.get('mode')=='RETAINED':
   if not case.get('reference') or prior.get('raw_sha256')!=case.get('sha256'):return False
  elif case.get('mode')=='MISSING':
   proof=prior.get('rejected_evidence') or {}
   if case.get('reference') or proof.get('readback_verified') is not True or proof.get('accepted_as_raw') is not False or proof.get('raw_sha256')!=prior.get('raw_sha256'):return False
  else:return False
- return source=='TWSE' and period>='2004-02-11' or source=='TPEx' and period>='2007-04-21'
+ return historic or source=='TWSE' and period>='2004-02-11' or source=='TPEx' and period>='2007-04-21'
 
 class EmptyQueryAdapter(NativeAdapter):
+ def fetch(self):
+  proof=self.case.get('official_historical_query')
+  if proof:
+   if self.case['source']!='TPEx' or not '2007-01-02'<=self.case['period']<='2007-04-20' or proof.get('endpoint')!='https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotesHis':raise ValueError('FOLLOWUP_HISTORICAL_ROUTE_SCOPE')
+   return self.http(proof['endpoint'],{'date':self.case['period'].replace('-','/')})
+  return super().fetch()
+ def validate(self,raw):
+  if self.case.get('official_historical_query'):
+   try:obj=json.loads(raw.decode('utf-8-sig'))
+   except (ValueError,UnicodeDecodeError):obj={}
+   if isinstance(obj,dict) and isinstance(obj.get('html'),str):
+    from scripts.v093_tpex_legacy_prices import validate
+    return validate(raw,self.case['period'])
+  return super().validate(raw)
  def read(self,reference):
   proof=self.case.get('repair_evidence') or {};evidence=proof.get('rejected_evidence') or {}
   if reference==proof.get('reference') and evidence.get('readback_verified') is True and evidence.get('raw_sha256')==proof.get('sha256'):
@@ -190,6 +238,9 @@ def repair_row(task,prior,calendar_proof):
   old_ref=case['reference'];old_sha=case['sha256']
   case.update(mode='REPAIR',reference=None,sha256=None,repair_evidence=dict(source=case['source'],key=case['key'],period=case['period'],reference=old_ref,sha256=old_sha,download_approved=True,reason='NATIVE_CONTENT_REJECTED',official_evidence_id='CALENDAR:'+calendar_proof['raw_sha256'],empty_response_requery=True,query_is_not_availability_proof=True,calendar_evidence=calendar_proof,rejected_evidence=task.get('rejected_evidence')))
  elif case['mode']!='MISSING':raise ValueError('FOLLOWUP_REPAIR_MODE')
+ if calendar_proof.get('kind')=='OFFICIAL_HISTORICAL_ROUTE':
+  case['official_historical_query']=calendar_proof['route']
+  if case.get('repair_evidence'):case['repair_evidence']['official_evidence_id']='OFFICIAL_HISTORICAL_ROUTE:'+calendar_proof['raw_sha256']
  row.update(attempts=prior['attempts'],status='READY',check_only=False,owner=None,followup_repair=NAMESPACE)
  for field in ('save_intent','raw_reference','raw_sha256','reused_existing'):row.pop(field,None)
  return row
@@ -220,6 +271,7 @@ def requery(root,source,task,prior,calendar_proof,drive):
  else:result['followup_pending_status']=status
  for name in ('raw_reference','raw_sha256','storage_receipt','error'):
   if name in current:result[name]=current[name]
+ if current.get('rejected_evidence'):result['followup_rejected_evidence']=current['rejected_evidence']
  return result
 
 def run_source(root,source,config):
@@ -237,7 +289,7 @@ def run_source(root,source,config):
   summary=dict(baseline_held=len(state['tasks']),counts=state['counts'],state_commit=revision,phase=state['phase'],analysis_complete=state.get('analysis_complete',False),finished=state.get('finished',False),source_requests=state['source_requests'],full_acceptance=False,updated_at=state['updated_at'])
   Coordinator(GitCAS(root),source).update(lambda s:s.setdefault('problem_followup',{}).update({NAMESPACE:summary}))
   print(json.dumps(summary),flush=True)
- if source=='TPEx' and not state.get('discovery_done'):
+ if source=='TPEx' and state.get('discovery_revision')!=config.get('route_probe_revision'):
   probe_revision,probe_state=metadata_store.read('TPEx');probe_state=probe_state or dict(source='TPEx',tasks={},metadata_attempts={})
   def probe_checkpoint():
    nonlocal probe_revision
@@ -249,26 +301,35 @@ def run_source(root,source,config):
    if url in seen:continue
    seen.add(url);result=metadata(root,source,'route-'+sha(url.encode())[:12],url,probe_state,metadata_store,probe_checkpoint)
    if result.get('status')=='RESPONSE_SAVED':
-    found=discover(result['text'],url);discovery.append(dict(url=url,raw_sha256=result['raw_sha256'],**found));urls.extend(u for u in found['scripts'] if not any(x in u.lower() for x in ('jquery','bootstrap','gtag','analytics')))
+    found=discover(result['text'],url);discovery.append(dict(url=url,raw_sha256=result['raw_sha256'],**found));urls=found['frames']+urls;urls.extend(u for u in found['scripts'] if not any(x in u.lower() for x in ('jquery','bootstrap','gtag','analytics')))
    time.sleep(2)
-  state.update(discovery_done=True,discovered_official_links=discovery);checkpoint()
+  state.update(discovery_done=True,discovery_revision=config.get('route_probe_revision'),discovered_official_links=discovery);checkpoint()
  for key,prior in state['tasks'].items():
   proof=classify(prior,calendars,config)
   if proof:state['tasks'][key]=dict(prior,status='CONFIRMED_EXCEPTION',followup_evidence=proof,full_acceptance=False)
  state['analysis_complete']=True;checkpoint()
  rows=load_rows(store,json.loads((root/ORIGINAL_PLAN).read_text()),source);started=time.monotonic()
+ if source=='TPEx' and config.get('tpex_early_2007'):
+  canary=config['tpex_early_2007']['canary_date'];rows.sort(key=lambda task:(task['definition']['period']!=canary,task['definition']['period'],task['definition']['key']))
  from scripts.annual_actual_firstpass import Drive,service
  drive=Drive(service());more=False
  for task in rows:
   key=task['definition']['key'];prior=state['tasks'][key]
+  historic=early_2007(task,config)
+  if historic and not state.get('early_2007_canary_verified') and task['definition']['period']!=config['tpex_early_2007']['canary_date']:continue
   if prior.get('followup_terminal'):continue
-  if not prior.get('followup_pending_status') and not eligible(task,prior,calendars):continue
+  if not prior.get('followup_pending_status') and not eligible(task,prior,calendars,config):continue
   if time.monotonic()-started>1500:more=True;break
   _,shared=Coordinator(GitCAS(root),source).store.read(source)
   if (shared or {}).get('hold'):more=True;break
   delay=max(0,(shared or {}).get('http_budget',{}).get('next_at',0)-time.time())
   if 0<delay<=5:time.sleep(delay)
-  before=prior['attempts'];result=requery(root,source,task,prior,calendars[task['definition']['period'][:4]],drive)
+  proof=calendars.get(task['definition']['period'][:4])
+  if historic:proof=dict(kind='OFFICIAL_HISTORICAL_ROUTE',raw_sha256=config['tpex_early_2007']['page_sha256'],route=config['tpex_early_2007'])
+  before=prior['attempts'];result=requery(root,source,task,prior,proof,drive)
+  if historic and task['definition']['period']==config['tpex_early_2007']['canary_date']:
+   state['early_2007_canary_attempted']=True
+   if result['status']=='RAW_BASIC_VERIFIED':state['early_2007_canary_verified']=dict(key=key,raw_sha256=result['raw_sha256'],raw_reference=result['raw_reference'])
   state['source_requests']+=result['attempts']-before;state['tasks'][key]=result;checkpoint()
   if result.get('followup_terminal'):
    def cleanup(s):

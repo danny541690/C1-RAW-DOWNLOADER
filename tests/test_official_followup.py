@@ -9,6 +9,14 @@ from test_native_repair import FakeDrive
 from test_problem_recovery import retained,sha
 
 class OfficialFollowupTests(unittest.TestCase):
+ def test_compensatory_holiday_does_not_require_the_word_fangjia(self):
+  obj=self.payload();obj['data'].append(['2026-10-09','國慶日補假','10月10日適逢星期六，於10月9日補假。'])
+  self.assertIn('2026-10-09',calendar(json.dumps(obj).encode(),2026,'official')['closed'])
+ def test_requeried_empty_can_be_closed_by_new_official_evidence(self):
+  prior=dict(status='REVIEW_REQUIRED',reason='REQUERY_APPLICABILITY_HOLD',error=dict(code='ApplicabilityUnproven',phase='VALIDATE'),definition=dict(source='TWSE',period='2026-01-01'))
+  proof=calendar(json.dumps(self.payload()).encode(),2026,'official')
+  self.assertIsNotNone(classify(prior,{'2026':proof},dict(national_weekend_evidence='official')))
+  prior['error']['phase']='AUTHORIZE';self.assertIsNone(classify(prior,{'2026':proof},dict(national_weekend_evidence='official')))
  def payload(self,year=2026):
   return dict(stat='ok',queryYear=year,date=str(year)+'0101',title=str(year-1911)+' 年市場開休市日期',data=[[str(year)+'-01-01','開國紀念日','依規定放假1日。'],[str(year)+'-01-02','國曆新年開始交易日','春節放假依另公告'],[str(year)+'-02-12','市場無交易，僅辦理結算交割',''],[str(year)+'-03-03','其他說明','請見公告']])
  def test_calendar_preserves_open_dates_and_unknowns(self):
