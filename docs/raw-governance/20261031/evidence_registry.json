@@ -1,0 +1,840 @@
+{
+  "schema": "JARVIS_RAW_PLAYBOOK_EVIDENCE_V1",
+  "version": "20261031_V1",
+  "review_window_taipei": [
+    "2026-10-17",
+    "2026-10-31"
+  ],
+  "reviewed_main_sha": "9b1fd633a73c7be491634a12c1793febeca04da6",
+  "execution_code_commit": "0e2d958e06bef2cbf67011879b4eebe18c96597a",
+  "document_only": true,
+  "market_downloads_this_review": 0,
+  "production_state_modified": false,
+  "raw_modified": false,
+  "rules": [
+    {
+      "id": "R01",
+      "rule": "成功資料不重抓，按單元去重，不按整月有檔就跳過",
+      "implementation_or_limit": "已接入原件／收據綁定；全庫尚未全部驗證"
+    },
+    {
+      "id": "R02",
+      "rule": "原件不可靜默覆寫，錯版／修訂另存",
+      "implementation_or_limit": "保留新舊SHA與supersedes；版本衝突需審核"
+    },
+    {
+      "id": "R03",
+      "rule": "RAW保留原值與原單位；展示金額用億元",
+      "implementation_or_limit": "價格、每股值、股數、口數、百分比保持自然單位；外幣另明幣別"
+    },
+    {
+      "id": "R04",
+      "rule": "查詢日期、內容日期、交易日、報告期、公告時間、擷取時間分開",
+      "implementation_or_limit": "改檔名不會修正錯日期；未知日期隔離"
+    },
+    {
+      "id": "R05",
+      "rule": "空白／--／N/A／0／非交易／不適用／未發布分開",
+      "implementation_or_limit": "不將空回應當取得成功或歷史不存在"
+    },
+    {
+      "id": "R06",
+      "rule": "官方優先，FinMind補件獨立留存",
+      "implementation_or_limit": "補到研究所需值不自動關閉官方原件缺口"
+    },
+    {
+      "id": "R07",
+      "rule": "重試三次＝初次1＋追加3，最多4次來源請求",
+      "implementation_or_limit": "依同邏輯任務持久累計，重啟／改版不重設；舊特定五次配置不套現版"
+    },
+    {
+      "id": "R08",
+      "rule": "限流／逾時／暫時5xx才有界退避；尊重Retry-After",
+      "implementation_or_limit": "認證／參數／內容／適用性分流，系統錯誤按來源暫停"
+    },
+    {
+      "id": "R09",
+      "rule": "不明中斷先對帳原件與收據，再決定請求",
+      "implementation_or_limit": "不能直接重送，也不能永久略過未確認單元"
+    },
+    {
+      "id": "R10",
+      "rule": "已保存但未ACK的資料，只恢復讀回／收據／報告",
+      "implementation_or_limit": "不因summary失敗重抓市場；本地移交次數、恢復次數與來源請求分開"
+    },
+    {
+      "id": "R11",
+      "rule": "同來源單一有效寫入者，ASC／DESC輪替",
+      "implementation_or_limit": "12條是邏輯方向槽，不等於12條同時全速；不同來源可並行"
+    },
+    {
+      "id": "R12",
+      "rule": "發送前持久outbox，同來源最多一個未確認續派送",
+      "implementation_or_limit": "晚到receiver先驗identity/fence；不強行退休仍活躍owner"
+    },
+    {
+      "id": "R13",
+      "rule": "分頁狀態索引與內容固定同一commit",
+      "implementation_or_limit": "統計＝archived_status_counts＋該commit當前頁；不能只加last_batches"
+    },
+    {
+      "id": "R14",
+      "rule": "release開關及完整程式指紋驗證",
+      "implementation_or_limit": "變更scripts／workflow需重新驗證指紋；本次只寫docs不改執行碼"
+    },
+    {
+      "id": "R15",
+      "rule": "存檔、基本QA、數值、PIT、全庫驗收分開",
+      "implementation_or_limit": "RAW_BASIC_VERIFIED不是全面驗收；布林自填true不能當證據"
+    },
+    {
+      "id": "R16",
+      "rule": "缺值不人工補價、不任意擴大容差",
+      "implementation_or_limit": "合法負值依欄位解釋；母體未知不得當零缺漏"
+    },
+    {
+      "id": "R17",
+      "rule": "最新更新與歷史補庫各保留斷點",
+      "implementation_or_limit": "固定清單結束不等於永久每日更新已完備；未發布狀態需重新查證"
+    },
+    {
+      "id": "R18",
+      "rule": "第二層按輸入SHA／規則版本增量重算",
+      "implementation_or_limit": "歷史補件後只更新依賴範圍；不能宣稱全部下游已接通或核准"
+    },
+    {
+      "id": "R19",
+      "rule": "事件追加，歷史失敗不改寫成功",
+      "implementation_or_limit": "原錯誤、失敗／取消／跳過與新成功分別保留"
+    },
+    {
+      "id": "R20",
+      "rule": "每份進度標示時間、母體與動作",
+      "implementation_or_limit": "檢查數、新下載數、移交數、修復重驗數、隔離數分列，不相加冒充下載"
+    }
+  ],
+  "incidents": [
+    {
+      "id_and_keyword": "K01 TPEx 日期錯置",
+      "finding": "歷史查詢參數／格式與內容日期不符，檔案存在不代表日期對",
+      "handling_and_limit": "重讀內容日期；修正路由與另存版本，原件不覆寫。242交易日為歷史對話報告，本次未逐日重驗",
+      "evidence_locator": "對話10/19；原五階段規則"
+    },
+    {
+      "id_and_keyword": "K02 Google invalid_grant",
+      "finding": "舊工作曾因refresh token失效中斷",
+      "handling_and_limit": "按授權錯誤處理，更新憑證後先讀回與續跑；不能反覆重抓。不得把現在所有慢速都歸因授權",
+      "evidence_locator": "runs40197934581、40202190813，歷史線索"
+    },
+    {
+      "id_and_keyword": "K03 TAIFEX 路由／日期",
+      "finding": "表單action、起迄欄位或csv格式未受控",
+      "handling_and_limit": "原生表單與期間綁定，未知最早日不直接禁止合法查詢；空回覆仍HOLD",
+      "evidence_locator": "舊I21；source_adapters.check_missing"
+    },
+    {
+      "id_and_keyword": "K04 TAIFEX 年度包／夜盤",
+      "finding": "一個年度包可能多月；夜盤交易日不同於日曆日",
+      "handling_and_limit": "以商品／到期月／盤別等主鍵解析；結算價不混收盤價；遺失快照不能用後來快照補造",
+      "evidence_locator": "10/27 A01～A03"
+    },
+    {
+      "id_and_keyword": "K05 TDCC 8碼日期／49.5MB",
+      "finding": "日期解析與測試尺寸上限造成讀取誤判",
+      "handling_and_limit": "八碼轉ISO並保留原字串；49,535,982 bytes串流讀回相符，不算原件壞掉",
+      "evidence_locator": "舊I04、I06／T05"
+    },
+    {
+      "id_and_keyword": "K06 TDCC 適用性／候選",
+      "finding": "候選代碼不是歷史全證券母體；今日可選日期也有限",
+      "handling_and_limit": "核對官方menu日期與當期證券；空回覆不證明歷史不存在",
+      "evidence_locator": "舊I14、D01/D02"
+    },
+    {
+      "id_and_keyword": "K07 TDCC 慢速",
+      "finding": "本輪兩方向45,126項，占固定清單約69%；當前多數讀舊檔",
+      "handling_and_limit": "逐項Drive讀回、驗證與Git保存有成本；同來源輪替。11～12秒是個別近期批次，不作全庫吞吐保證",
+      "evidence_locator": "10/31本對話批次檢視；固定catalog"
+    },
+    {
+      "id_and_keyword": "K08 MOPS 2001Q1空數值表",
+      "finding": "六份原件雖有公司／期間表頭，無會計科目數值列",
+      "handling_and_limit": "SOURCE_ROUTE_REVIEW；改parser無法憑空產生數字，也不能推論歷史財報不存在",
+      "evidence_locator": "20261028_integrated/README.md"
+    },
+    {
+      "id_and_keyword": "K09 MOPS 部分公司／財報口徑",
+      "finding": "公司組回應不代表所有公司；單季／累計／合併／個別不同",
+      "handling_and_limit": "保留原生科目、單位與公告，逐公司必要欄位驗；現3-2清單走完仍218項未通過",
+      "evidence_locator": "10/27 M01～M03；10/31固定狀態"
+    },
+    {
+      "id_and_keyword": "K10 NDC bundle／vintage",
+      "finding": "月數相同不代表每序列都有值；最新修訂非歷史當時版本",
+      "handling_and_limit": "綁定原始xlsx與抽取cell、月期別、gap原因；已過期NOT_YET_PUBLISHED要重查",
+      "evidence_locator": "N01/N02；NDC320月固定清單"
+    },
+    {
+      "id_and_keyword": "K11 FinMind 相同上游",
+      "finding": "同值不保證獨立驗證，零值／空值與市場別可能不相容",
+      "handling_and_limit": "官方優先，補件分開；期末日期不是公告可得日，還原價不混原價",
+      "evidence_locator": "20261028_actual_cross_source/cross_round_summary.json"
+    },
+    {
+      "id_and_keyword": "K12 興櫃open超高低",
+      "finding": "興櫃open語意不適用一般開盤價規則",
+      "handling_and_limit": "44疑點有當期市場證據；120列480高低量額欄位對一致，但close未獨立全驗。僅保存、不分析，不批准forward-fill",
+      "evidence_locator": "20261028_esb_contract/README.md"
+    },
+    {
+      "id_and_keyword": "K13 前導零漏檢",
+      "finding": "舊OHLC檢查可能只認非零開頭四碼",
+      "handling_and_limit": "合成反例不等於18,700項真實錯誤；先核准證券母體，再輸出checked／skipped／uncovered",
+      "evidence_locator": "10/27 G07/G12／R06"
+    },
+    {
+      "id_and_keyword": "K14 RAW與下游紀錄混算",
+      "finding": "舊匯入含137,242筆下游紀錄、383,461筆RAW收據",
+      "handling_and_limit": "下游保留稽核但不當RAW缺件；匯入189,521任務是另一口徑，不混加",
+      "evidence_locator": "舊I05、I19／T05/T17"
+    },
+    {
+      "id_and_keyword": "K15 單檔狀態超限",
+      "finding": "單檔32MiB無法承接大狀態",
+      "handling_and_limit": "分頁索引、同commit完整性、冷讀恢復；不得任意加上限當完整",
+      "evidence_locator": "舊I07／T06；source_state_pages"
+    },
+    {
+      "id_and_keyword": "K16 CAS_RETRY_EXHAUSTED",
+      "finding": "方向寫入者、控制器及過渡期舊run競寫",
+      "handling_and_limit": "同來源互斥；controller遇active不寫；有界退避。不得為解鎖重設成功／嘗試數",
+      "evidence_locator": "checkpoint_recovery_1711.json；source_continuation"
+    },
+    {
+      "id_and_keyword": "K17 DURABLE_PUSH_FAILED",
+      "finding": "舊例外缺少細節，歷史根因不確定",
+      "handling_and_limit": "分類auth／transport／lost ACK；先讀remote head及祖先，暫時錯誤重推同commit最多3次",
+      "evidence_locator": "checkpoint_recovery_1711.json；source_git_store"
+    },
+    {
+      "id_and_keyword": "K18 DURABLE_PUSH_REJECTED",
+      "finding": "10/30晚間、10/31凌晨仍有推送拒絕",
+      "handling_and_limit": "已見後續成功與續跑，但沒有完整remote拒絕診斷，不能稱根治或一定配額不足",
+      "evidence_locator": "jobs124114208791、124096663258、124096631095、124096279580、124190579522"
+    },
+    {
+      "id_and_keyword": "K19 summary／publication失敗",
+      "finding": "原件可能已保存，但報告回存失敗",
+      "handling_and_limit": "只恢復summary或收據，重核原件digest；原failed run保留，不能重抓充成功",
+      "evidence_locator": "舊I28／T29/T30"
+    },
+    {
+      "id_and_keyword": "K20 Drive版本讀回變動",
+      "finding": "讀取前後版本不同，可能抓到非穩定內容",
+      "handling_and_limit": "最多3次完整重讀，每次前後版本相同且預期SHA／內容仍通過",
+      "evidence_locator": "舊I29；native_reuse_batch.read"
+    },
+    {
+      "id_and_keyword": "K21 回覆不明／請求中斷",
+      "finding": "REQUEST_INTENT後是否取得資料不能確定",
+      "handling_and_limit": "先核對保存位置、雜湊及收據；未完成對帳不重新源站請求",
+      "evidence_locator": "source_executor.resume_ticket"
+    },
+    {
+      "id_and_keyword": "K22 派送ACK遺失／舊receiver晚到",
+      "finding": "發送與接收可能不同步",
+      "handling_and_limit": "每來源一個pending、綁定identity與run、先隔離舊identity才重派；恢復與下載計次分開",
+      "evidence_locator": "recovery_update_1510.json；dispatch_recovery"
+    },
+    {
+      "id_and_keyword": "K23 YAML啟動失敗",
+      "finding": "flow mapping裡未引用artifact表達式",
+      "handling_and_limit": "修正引號並測YAML；失敗run40970582654保留，不能計市場下載",
+      "evidence_locator": "舊I32／T32"
+    },
+    {
+      "id_and_keyword": "K24 READY_CHECK被漏計",
+      "finding": "待續跑統計漏掉既有原件檢查",
+      "handling_and_limit": "待辦與基本驗證數分開；統計archived＋當前頁，不用最後一批推全局",
+      "evidence_locator": "舊I25；source_worker"
+    },
+    {
+      "id_and_keyword": "K25 RETAINED失敗未自動補抓",
+      "finding": "有錯誤隔離能力不等於每種錯誤都有修補契約",
+      "handling_and_limit": "建明確REPAIR任務與原件／路由證據後再補；本輪固定清單REPAIR未核准全範圍",
+      "evidence_locator": "source_adapters／executor；本對話10/31"
+    },
+    {
+      "id_and_keyword": "K26 測試綠燈誤當全驗收",
+      "finding": "fixture、局部真實樣本、程式回歸與全庫不同",
+      "handling_and_limit": "1,139測試不能說1,139份真資料全正確；workflow成功可能含HOLD，skipped不可算PASS",
+      "evidence_locator": "10/27層次表；啟用summary"
+    }
+  ],
+  "open_items": [
+    {
+      "id": "O01 全歷史母體／完整率",
+      "state": "尚未建立核准的資料集×期別×適用證券／欄位分母",
+      "next_action": "各資料集建立官方起點、發布頻率、歷史身分與expected keys，再與原件內容實際日期交集"
+    },
+    {
+      "id": "O02 既有檢查錯件轉補抓",
+      "state": "有REPAIR橋接，未證明所有HOLD均會自動消費",
+      "next_action": "依錯誤群核定修補契約，先真實錯件canary；正確檔不重抓充測試"
+    },
+    {
+      "id": "O03 TDCC全庫補齊",
+      "state": "45,126本輪任務多為既有原件驗證，不是歷史全母體",
+      "next_action": "分別統計重用、新下載、移交、錯件、官方限制；核對較早歷史及當期證券"
+    },
+    {
+      "id": "O04 MOPS舊→新",
+      "state": "固定清單218項未基本通過；清單finished不代表成功",
+      "next_action": "按路由／空表／適用性／認證分組，先驗證原件，再補公司與必要科目"
+    },
+    {
+      "id": "O05 Git推送拒絕",
+      "state": "仍有DURABLE_PUSH_REJECTED；後續能續跑但未根治",
+      "next_action": "保存去密鑰錯誤類別與head／祖先證據，診斷拒絕原因；禁止用猜測改權限或重抓"
+    },
+    {
+      "id": "O06 最新資料發現",
+      "state": "完成固定清單不會自動證明跟上官方新增發布",
+      "next_action": "建各資料集鮮度watermark與版本發現；NDC9月發布不能永久沿用8月清單"
+    },
+    {
+      "id": "O07 數值／PIT",
+      "state": "基本驗證與37條全範圍驗收不同",
+      "next_action": "補欄位規則覆蓋、公告可得時間、修訂vintage、獨立證據與關閉驗收"
+    },
+    {
+      "id": "O08 72國際／400多指標",
+      "state": "來源清單未證明需求全覆蓋",
+      "next_action": "需求→原始欄位→來源→期間→頻率→可用時點映射；停用項維持停用"
+    },
+    {
+      "id": "O09 復原事件與吞吐",
+      "state": "cron能喚醒，完成事件尚未觀測；無3天完成證據",
+      "next_action": "明列schedule／workflow_run／manual事件證據，量測連續時段吞吐，不承諾準點或三天完成"
+    },
+    {
+      "id": "O10 儲存與FinMind計畫",
+      "state": "699盤後全量未啟動，容量沒有實測",
+      "next_action": "購買／權限與範圍核定後先量樣本；所有FinMind工作共用額度與去重，不另造第八來源"
+    },
+    {
+      "id": "O11 文件鮮度",
+      "state": "RAW有效規則、README與舊接續檔可能落後正式程式",
+      "next_action": "本版作入口，舊文件保留時間標記；後續變更需同時更新索引與證據"
+    },
+    {
+      "id": "O12 集保速度優化",
+      "state": "每項多次Drive／Git讀寫，同來源輪替",
+      "next_action": "檔案SHA＋版本綁定快取、同原件多證券批次驗證、減少冗餘checkpoint可評估，尚未實作，不直接增worker造成CAS競態"
+    }
+  ],
+  "github_sources": [
+    {
+      "path": "docs/V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md",
+      "blob_sha": "c674c36850571f73d4155564ddf9e5531661fd0a",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/docs/V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md"
+    },
+    {
+      "path": "docs/raw-governance/20261029/registry.json",
+      "blob_sha": "124341f28394d0f05b515ca7b83f253a79bb8e8f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/docs/raw-governance/20261029/registry.json"
+    },
+    {
+      "path": "docs/raw-governance/20261029/02_有效下載規則.md",
+      "blob_sha": "b6485b19d9646d7fd592066d79f11d25142bb4f6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/docs/raw-governance/20261029/02_有效下載規則.md"
+    },
+    {
+      "path": "docs/raw-governance/20261029/03_問題追蹤表.md",
+      "blob_sha": "3f717ad51f90a5d6a5e539e38d212d640f0c414d",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/docs/raw-governance/20261029/03_問題追蹤表.md"
+    },
+    {
+      "path": "reports/raw-register/20261027_v1/README.md",
+      "blob_sha": "75dac32ff04966e02d118db0b94ec22335d6c732",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-register/20261027_v1/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_actual_cross_source/cross_round_summary.json",
+      "blob_sha": "cd107cf402a2dfd624eb28c1d50ec0d47221ad9b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-acceptance/20261028_actual_cross_source/cross_round_summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_esb_contract/README.md",
+      "blob_sha": "599ac933db6fa8f992f323b8ba4f1349a9865a70",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-acceptance/20261028_esb_contract/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261028_integrated/README.md",
+      "blob_sha": "bb6ab20e4bce12c28be807a5f6a6c78d180a9c10",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-acceptance/20261028_integrated/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_closed_loop_batch/README.md",
+      "blob_sha": "38ea623bbbbf75c1040bc9759a037a0c71d35923",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-acceptance/20261029_closed_loop_batch/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261029_tdcc_missing/README.md",
+      "blob_sha": "04cf4ea3599347d0fdd8d5b311cb27ab11bb6c20",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-acceptance/20261029_tdcc_missing/README.md"
+    },
+    {
+      "path": "reports/raw-acceptance/20261030_production_activation/summary.json",
+      "blob_sha": "1cf9dae2a2d5f8e80a5eeea8b6525e07bb7009d6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-acceptance/20261030_production_activation/summary.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261030_production_activation/recovery_update_1510.json",
+      "blob_sha": "bfb3fead648852520629adf656525056e2b94671",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-acceptance/20261030_production_activation/recovery_update_1510.json"
+    },
+    {
+      "path": "reports/raw-acceptance/20261030_production_activation/checkpoint_recovery_1711.json",
+      "blob_sha": "97116bd8750e68bebd622d4b782cbe86829134f6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/reports/raw-acceptance/20261030_production_activation/checkpoint_recovery_1711.json"
+    },
+    {
+      "path": "scripts/v093_source_executor.py",
+      "blob_sha": "0c7f4a336507605639fdea0e59874958325877e5",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/scripts/v093_source_executor.py"
+    },
+    {
+      "path": "scripts/v093_source_adapters.py",
+      "blob_sha": "a8b4d49faab4de2ede3806bda176f9d6695ce283",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/scripts/v093_source_adapters.py"
+    },
+    {
+      "path": "scripts/v093_source_git_store.py",
+      "blob_sha": "b9640d1041b82c6de945e18294851325352e0ec6",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/scripts/v093_source_git_store.py"
+    },
+    {
+      "path": "scripts/v093_source_coordination.py",
+      "blob_sha": "570d5a727c0694eb5faec8938a420cdf4567a18f",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/scripts/v093_source_coordination.py"
+    },
+    {
+      "path": "scripts/v093_source_continuation.py",
+      "blob_sha": "951ef4d771878b234dd598c849ed45b2151c4dee",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/scripts/v093_source_continuation.py"
+    },
+    {
+      "path": "scripts/v093_dispatch_recovery.py",
+      "blob_sha": "c1a936bdb50cab4cf0bc39d27d87c8f2e5cd3b7d",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/scripts/v093_dispatch_recovery.py"
+    },
+    {
+      "path": "scripts/v093_admission_runtime.py",
+      "blob_sha": "c435226498426d2937259233609dc9d0086d4c01",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/scripts/v093_admission_runtime.py"
+    },
+    {
+      "path": ".github/workflows/jarvis-seven-worker.yml",
+      "blob_sha": "34a8a69a3c930322a85859cc118d3fc8ae631d0d",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/.github/workflows/jarvis-seven-worker.yml"
+    },
+    {
+      "path": ".github/workflows/jarvis-seven-production-watchdog.yml",
+      "blob_sha": "f235d21a551c6c6f46a423a20ecc20f62e8ad50b",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/.github/workflows/jarvis-seven-production-watchdog.yml"
+    },
+    {
+      "path": "config/v093_source_release.json",
+      "blob_sha": "b4952e9921d8b5e046d50a2b3aaacd8af7a235f0",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/9b1fd633a73c7be491634a12c1793febeca04da6/config/v093_source_release.json"
+    }
+  ],
+  "drive_sources": [
+    {
+      "file_id": "1UXyDqJNU8sV_NIPObCrTFrND6pqw8vN9",
+      "title": "02_有效下載規則.md",
+      "url": "https://drive.google.com/file/d/1UXyDqJNU8sV_NIPObCrTFrND6pqw8vN9/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "1XhJrnVzTvfcL3afsJm8sDX7SQCPht5zf",
+      "title": "JARVIS_七大來源錯誤處理與驗收規範_20261027.md",
+      "url": "https://drive.google.com/file/d/1XhJrnVzTvfcL3afsJm8sDX7SQCPht5zf/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "1Q-zssjHq7rkkC-r-vg3KSSiFATGoLan7",
+      "title": "JARVIS_七大來源錯誤處理與驗收規格表_20261027.xlsx",
+      "url": "https://drive.google.com/file/d/1Q-zssjHq7rkkC-r-vg3KSSiFATGoLan7/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "1DsCed0v9eRwgi6G93GvaK17RN7dZZCeZ",
+      "title": "JARVIS_來源年月下載缺失補正對帳總表_20261027.xlsx",
+      "url": "https://drive.google.com/file/d/1DsCed0v9eRwgi6G93GvaK17RN7dZZCeZ/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "14-NdK84WuYb9IjGc9n2uGMaRAwWzS3_P",
+      "title": "C1_0.93_FIVE_STAGE_DOWNLOAD_RULES_20261021.md",
+      "url": "https://drive.google.com/file/d/14-NdK84WuYb9IjGc9n2uGMaRAwWzS3_P/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "1GTAzWlL1WBMVTciXxUpMXux0o-exbWFe",
+      "title": "C1_0.93_CHATGPT_CONTINUATION.md",
+      "url": "https://drive.google.com/file/d/1GTAzWlL1WBMVTciXxUpMXux0o-exbWFe/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "1oyqkqFUWWIx3dmfUV68KuzOWpgg3FFTW",
+      "title": "01_測試結果總彙整.md",
+      "url": "https://drive.google.com/file/d/1oyqkqFUWWIx3dmfUV68KuzOWpgg3FFTW/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "1g9FxCFrp_fmc6wcpDH5jb-JC4wZATvLE",
+      "title": "03_問題追蹤表.md",
+      "url": "https://drive.google.com/file/d/1g9FxCFrp_fmc6wcpDH5jb-JC4wZATvLE/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "1_uI-saEZb8VlF3I_GmGCRFHqr4qBeUjG",
+      "title": "04_上線前待辦複核.md",
+      "url": "https://drive.google.com/file/d/1_uI-saEZb8VlF3I_GmGCRFHqr4qBeUjG/view",
+      "access": "DIRECT_READABLE_FETCH"
+    },
+    {
+      "file_id": "1OGyjDeCLQEkDhnQ2C7DvEPzEHhe3etk1",
+      "title": "05_I17_I18修正結果.md",
+      "url": "https://drive.google.com/file/d/1OGyjDeCLQEkDhnQ2C7DvEPzEHhe3etk1/view",
+      "access": "DIRECT_READABLE_FETCH"
+    }
+  ],
+  "chat_retrieval": {
+    "method": "personal_context.search + current conversation",
+    "query_scope": "2026-10-17 to 2026-10-31 JARVIS C1 RAW seven-source downloads, tests, rules and repairs",
+    "complete_transcript_export": false,
+    "conversation_locators": [
+      "2026-10-17~19 四來源批次與TPEx日期修正",
+      "2026-10-20~22 五階段與第六修補線",
+      "2026-10-25 Google授權與方向問題",
+      "2026-10-27 七來源盤點／驗收規格",
+      "2026-10-28~30 十二槽合併測試與正式啟用",
+      "2026-10-30~31 本對話FinMind範圍與集保檢查／補抓釐清"
+    ],
+    "permanent_memory_written": false
+  },
+  "software_regression": {
+    "tests": 1139,
+    "result": "PASS_REPORTED_FOR_PINNED_CODE",
+    "run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41031412584",
+    "job": 123981777443,
+    "job_steps_read_this_review": true,
+    "tests_rerun_this_review": false
+  },
+  "runtime_snapshot": {
+    "as_of_taipei": "2026-10-31T09:01:00+08:00",
+    "sources": [
+      {
+        "source": "TWSE",
+        "commit": "7a87ba356f48a2cb510178e077469748ba9034ce",
+        "slots": {
+          "ASC": {
+            "counts": {
+              "APPLICABILITY_HOLD": 540,
+              "CONTENT_BLOCKED": 66,
+              "RAW_BASIC_VERIFIED": 2336,
+              "LEASED": 1,
+              "READY_CHECK": 1
+            },
+            "finished": false
+          },
+          "DESC": {
+            "counts": {
+              "APPLICABILITY_HOLD": 182,
+              "CONTENT_BLOCKED": 1,
+              "RAW_BASIC_VERIFIED": 2993
+            },
+            "finished": true
+          }
+        }
+      },
+      {
+        "source": "TPEx",
+        "commit": "c13fa95fde300d665de221a7df3f02edced4f8fa",
+        "slots": {
+          "ASC": {
+            "counts": {
+              "APPLICABILITY_HOLD": 2481,
+              "RAW_BASIC_VERIFIED": 770,
+              "READY_CHECK": 13
+            },
+            "finished": false
+          },
+          "DESC": {
+            "counts": {
+              "APPLICABILITY_HOLD": 184,
+              "RAW_BASIC_VERIFIED": 2296,
+              "READY_CHECK": 14,
+              "READY": 1,
+              "LEASED": 1
+            },
+            "finished": false
+          }
+        }
+      },
+      {
+        "source": "MOPS",
+        "commit": "476d07a94d22d0abb6ee055a0f3b86b0dd5e9e7f",
+        "slots": {
+          "ASC": {
+            "counts": {
+              "APPLICABILITY_HOLD": 211,
+              "BLOCKED": 1,
+              "SOURCE_HOLD": 6
+            },
+            "finished": true
+          },
+          "DESC": {
+            "counts": {
+              "APPLICABILITY_HOLD": 18,
+              "CONTENT_BLOCKED": 32,
+              "RAW_BASIC_VERIFIED": 749
+            },
+            "finished": true
+          }
+        }
+      },
+      {
+        "source": "TDCC",
+        "commit": "0df66c684d30c1d6ccd76ff1806cde7db91f8c77",
+        "slots": {
+          "ASC": {
+            "counts": {
+              "RAW_BASIC_VERIFIED": 2779,
+              "READY_CHECK": 5
+            },
+            "finished": false
+          },
+          "DESC": {
+            "counts": {
+              "RAW_BASIC_VERIFIED": 3646,
+              "READY_CHECK": 2
+            },
+            "finished": false
+          }
+        }
+      },
+      {
+        "source": "TAIFEX",
+        "commit": "8b8fc21448b03a7736dfa6b1a4897c7cba8714a2",
+        "slots": {
+          "ASC": {
+            "counts": {
+              "APPLICABILITY_HOLD": 104,
+              "RAW_BASIC_VERIFIED": 975
+            },
+            "finished": true
+          },
+          "DESC": {
+            "counts": {
+              "CONTENT_BLOCKED": 1,
+              "RAW_BASIC_VERIFIED": 1389
+            },
+            "finished": true
+          }
+        }
+      },
+      {
+        "source": "NDC",
+        "commit": "d7bb128a22624604916b94f38e2011782c35d3c7",
+        "slots": {
+          "DESC": {
+            "counts": {
+              "RAW_BASIC_VERIFIED": 320
+            },
+            "finished": true
+          }
+        }
+      },
+      {
+        "source": "FinMind",
+        "commit": "5cd12be02370be55a6733d2a735317504dccc021",
+        "slots": {
+          "DESC": {
+            "counts": {
+              "RAW_BASIC_VERIFIED": 2316
+            },
+            "finished": true
+          }
+        }
+      }
+    ],
+    "basic_verified": 20569,
+    "campaign_total": 65238,
+    "percent": 31.5292,
+    "is_full_database_denominator": false,
+    "atomic_across_sources": false
+  },
+  "recent_runs": [
+    {
+      "id": 41150032918,
+      "name": "櫃買中心排程二之一（2-1）｜最新往舊｜受控執行入口 | production | 4d8e15563b019b68a940d87c49b8d8dea21484e89e4644e88ffd123c3f031d49",
+      "path": ".github/workflows/jarvis-seven-02-tpex-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-31T00:24:57Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41150032918"
+    },
+    {
+      "id": 41149914850,
+      "name": "集保所排程四之二（4-2）｜最舊往新｜受控執行入口 | production | fd4884ddf1aa36a7e3c21b74d5b9da1d9080e1fb46e673a50030b45f4e7e7820",
+      "path": ".github/workflows/jarvis-seven-04-tdcc-oldest-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-31T00:23:36Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41149914850"
+    },
+    {
+      "id": 41149567764,
+      "name": "證交所排程一之二（1-2）｜最舊往新｜受控執行入口 | production | 1246ff960c4839e86426cb9e910cb10855f450c9991d6ebc1c41dcfb3e357d64",
+      "path": ".github/workflows/jarvis-seven-01-twse-oldest-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-31T00:19:47Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41149567764"
+    },
+    {
+      "id": 41148208477,
+      "name": "JARVIS guarded twelve-source recovery watchdog",
+      "path": ".github/workflows/jarvis-seven-production-watchdog.yml",
+      "event": "schedule",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-31T00:05:18Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41148208477"
+    },
+    {
+      "id": 41145715133,
+      "name": "櫃買中心排程二之二（2-2）｜最舊往新｜受控執行入口 | production | 1ae99f7a34e85b97a444d4b0a664af230f39cc4ef9647840346037caab0f6e77",
+      "path": ".github/workflows/jarvis-seven-02-tpex-oldest-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T23:38:57Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41145715133"
+    },
+    {
+      "id": 41145607447,
+      "name": "集保所排程四之一（4-1）｜最新往舊｜受控執行入口 | production | bc46ad6ceffda023ffa7e4e499c97f2e24bdfd5b92004869a04ea8e5044b1172",
+      "path": ".github/workflows/jarvis-seven-04-tdcc-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T23:37:48Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41145607447"
+    },
+    {
+      "id": 41145207723,
+      "name": "證交所排程一之二（1-2）｜最舊往新｜受控執行入口 | production | 3aa5180f352d35e15b3f4c3731fe95765b0ff839bdc04050d234bc368439f36c",
+      "path": ".github/workflows/jarvis-seven-01-twse-oldest-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T23:33:46Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41145207723"
+    },
+    {
+      "id": 41144830683,
+      "name": "JARVIS guarded twelve-source recovery watchdog",
+      "path": ".github/workflows/jarvis-seven-production-watchdog.yml",
+      "event": "schedule",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T23:30:06Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41144830683"
+    },
+    {
+      "id": 41144036519,
+      "name": "證交所排程一之一（1-1）｜最新往舊｜受控執行入口 | production | 82b3694c74c997f97f099d83bb0eb4b5a2966cf72fe5955fc3f29874a26b4b05",
+      "path": ".github/workflows/jarvis-seven-01-twse-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T23:22:00Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41144036519"
+    },
+    {
+      "id": 41141279338,
+      "name": "JARVIS guarded twelve-source recovery watchdog",
+      "path": ".github/workflows/jarvis-seven-production-watchdog.yml",
+      "event": "schedule",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T22:55:41Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41141279338"
+    },
+    {
+      "id": 41140994216,
+      "name": "櫃買中心排程二之一（2-1）｜最新往舊｜受控執行入口 | production | 2492a6ec2af4662c858d96421bc22936527de5197e498dd01cd65b52727b0c39",
+      "path": ".github/workflows/jarvis-seven-02-tpex-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T22:52:57Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41140994216"
+    },
+    {
+      "id": 41140897630,
+      "name": "集保所排程四之二（4-2）｜最舊往新｜受控執行入口 | production | 714f6aa1db645a0f1d9f6c3b84688de7f593e1c44dc2c617dc4a53ed7bef3891",
+      "path": ".github/workflows/jarvis-seven-04-tdcc-oldest-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T22:52:00Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41140897630"
+    },
+    {
+      "id": 41139184834,
+      "name": "證交所排程一之二（1-2）｜最舊往新｜受控執行入口 | production | f3cbadf020f2a27d88698100bda0e0d200842c92831a4c3350ffac1df2d613aa",
+      "path": ".github/workflows/jarvis-seven-01-twse-oldest-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T22:35:55Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41139184834"
+    },
+    {
+      "id": 41136826408,
+      "name": "JARVIS guarded twelve-source recovery watchdog",
+      "path": ".github/workflows/jarvis-seven-production-watchdog.yml",
+      "event": "schedule",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T22:14:50Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41136826408"
+    },
+    {
+      "id": 41135905302,
+      "name": "櫃買中心排程二之二（2-2）｜最舊往新｜受控執行入口 | production | dfc231f5c6735bf4dd5f1d240e146776a7e2e1bb79abf24ee00bc12a9d6703db",
+      "path": ".github/workflows/jarvis-seven-02-tpex-oldest-preview.yml",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-30T22:06:55Z",
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41135905302"
+    }
+  ],
+  "limits": [
+    "No full reread of all market RAW files",
+    "No complete export of all chats or all Actions logs",
+    "No new full numerical, PIT or universe acceptance",
+    "No claim all held tasks automatically redownload",
+    "No FinMind purchase or paid full-database download started"
+  ]
+}

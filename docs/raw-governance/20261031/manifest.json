@@ -1,0 +1,31 @@
+{
+  "schema": "JARVIS_RAW_PLAYBOOK_MANIFEST_V1",
+  "version": "20261031_V1",
+  "files": [
+    {
+      "name": "00_README.md",
+      "bytes": 3219,
+      "sha256": "2cdf1b4fb41a1155533ac9b58f081c403cd06066b02473398d00c1ac0f874141"
+    },
+    {
+      "name": "01_有效規則與端到端邏輯.md",
+      "bytes": 8920,
+      "sha256": "d8f7b672dec05663fd5df4862999bc236f008f14e11b0a037abaa286779839a9"
+    },
+    {
+      "name": "02_實測經驗與故障處理.md",
+      "bytes": 8248,
+      "sha256": "d857419acf99bf04996dcc7051a056be3fb055f590f1ae3065fc73c84f0d48d8"
+    },
+    {
+      "name": "03_未結事項與跨對話接續.md",
+      "bytes": 6035,
+      "sha256": "f9a1f1536588cd8884c404d68c3cba5efec78acf2e7c7dce60110e7789d18a47"
+    },
+    {
+      "name": "evidence_registry.json",
+      "bytes": 37889,
+      "sha256": "eef88f37bad85c3d7bde56108fabb3f09b2c0f19cd610b407c6ee7f33d668bc6"
+    }
+  ]
+}
