@@ -11,3 +11,9 @@
 - [舊20261029紀錄](20261029/registry.json)：按當時狀態保留，不改寫失敗與待辦歷史。
 
 下載、原件檢查、補下載、既有材料移交、全面驗收必須分開計數。成功原件不重抓，錯件先分類，未知請求先對帳，原件與累積嘗試次數保留。
+
+## 同版交付
+
+- [Google Drive完整紀錄](https://drive.google.com/drive/folders/1P_pohL-y_w9PzokprBenTOl66jXPMAKs)
+- [ChatGPT完整交付包](https://chatgpt.com/library?file_id=libfile_3d50507eed088191bc70db71df06235d&account_id=personal)
+- [三處同步收據](20261031/publication.json)
