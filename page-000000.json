@@ -1,1 +1,0 @@
-{"FOLLOWUP_METADATA|route-fa61840cc36e":{"attempts":1,"check_only":false,"definition":{"key":"FOLLOWUP_METADATA|route-fa61840cc36e","period":"2026-10-31","slot":"DESC","source":"TPEx"},"expires":1793440961.4388542,"fence":7615,"followup_metadata":"official-followup-20261031-v2","owner":"official-followup-20261031-v2","status":"REQUEST_INTENT"}}
