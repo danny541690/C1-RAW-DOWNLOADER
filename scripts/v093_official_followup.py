@@ -119,16 +119,20 @@ def discover(text,url):
  return dict(scripts=sorted(set(scripts)),forms=sorted(set(forms)),observed_routes=sorted(set(apis)),route_verified_for_download=False)
 
 def run_calendars(root,config):
+ budget=int(config.get('calendar_seconds',240))
+ if not 0<budget<=900:raise ValueError('CALENDAR_TIME_BUDGET')
  store=GitCAS(root,'jarvis-source-preflight/'+NAMESPACE+'-metadata');revision,state=store.read('TWSE');state=state or dict(source='TWSE',tasks={},calendars={})
  def checkpoint():
   nonlocal revision
   if not store.cas('TWSE',revision,state):raise ValueError('CALENDAR_CHECKPOINT_CONFLICT')
   revision,_=store.read('TWSE')
  started=time.monotonic()
- for year in range(2000,2027):
+ # Live verification showed queryYear is ignored by this API; date binds the
+ # response year. Prioritize recent periods and reuse older saved probes.
+ for year in range(2026,1999,-1):
   if str(year) in state['calendars']:continue
-  if time.monotonic()-started>900:break
-  for params in ({'response':'json','queryYear':year},{'response':'json','queryYear':year-1911},{'response':'json','date':str(year)+'0101'}):
+  if time.monotonic()-started>budget:break
+  for params in ({'response':'json','date':str(year)+'0101'},{'response':'json','queryYear':year},{'response':'json','queryYear':year-1911}):
    url='https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule?'+urllib.parse.urlencode(params)
    result=metadata(root,'TWSE',str(year)+'|calendar',url,state,store,checkpoint)
    if result.get('status')!='RESPONSE_SAVED':continue

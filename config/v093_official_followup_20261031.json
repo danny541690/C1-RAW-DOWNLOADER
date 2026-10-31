@@ -18,5 +18,7 @@
   "query_is_not_availability_proof": true,
   "source_attempt_limit": 4,
   "keep_original_raw": true,
-  "full_acceptance": false
+  "full_acceptance": false,
+  "calendar_query_revision": "DATE_PARAMETER_VERIFIED_RECENT_FIRST_20261031",
+  "calendar_seconds": 240
 }

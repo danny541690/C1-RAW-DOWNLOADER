@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
-  actions: read
+  actions: write
 concurrency:
-  group: jarvis-official-followup-v2
+  group: jarvis-official-followup-v3
   cancel-in-progress: false
 jobs:
   validate:
@@ -24,6 +24,28 @@ jobs:
       - if: github.event_name != 'schedule'
         run: python -m unittest discover -s tests -p 'test_*.py'
       - run: python -c "from pathlib import Path; from scripts.v093_admission_runtime import load_release; load_release(Path.cwd())"
+      - name: Replace only the superseded metadata-only calendar run
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request
+          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+          old='41189666971'
+          def get(path):
+            with urllib.request.urlopen(urllib.request.Request(base+path,headers=headers),timeout=30) as response:return json.load(response)
+          run=get('/actions/runs/'+old)
+          if run['head_sha']=='fe0af578d48d579a9aeea72e628dd3642134780b' and run['status']!='completed':
+            jobs=get('/actions/runs/'+old+'/jobs?per_page=100')['jobs']
+            active_data=any(job['name'].startswith('followup (') and job['status']!='queued' for job in jobs)
+            if not active_data:
+              request=urllib.request.Request(base+'/actions/runs/'+old+'/cancel',data=b'',headers=headers,method='POST')
+              with urllib.request.urlopen(request,timeout=30) as response:print('Superseded metadata run cancellation accepted:',response.status)
+            else:print('Existing source data worker preserved; source locks serialize continuation.')
+          else:print('No superseded metadata run to replace.')
+          PY
   publication-replay:
     if: github.event_name != 'schedule'
     needs: validate
