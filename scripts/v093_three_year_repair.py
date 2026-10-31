@@ -83,17 +83,19 @@ def tabular(obj):
 def validate(raw,source,cat,period):
  if source=='MOPS' and cat.startswith('revenue_'):
   text=None
-  for enc in ('cp950','utf-8-sig'):
+  # Older official HTML contains Big5 extension characters. Never discard bytes:
+  # strict CP950 alone rejected otherwise readable tables as NO_REVENUE_TABLE.
+  for enc in ('utf-8-sig','cp950','big5hkscs'):
    try:
     candidate=raw.decode(enc)
     if '<table' in candidate.lower():text=candidate;break
    except UnicodeDecodeError:pass
-  if text is None:raise ValueError('NO_REVENUE_TABLE')
+  if text is None:raise ValueError('REVENUE_ENCODING_OR_TABLE_UNPROVEN')
   y,m=map(int,period.split('-'));plain=html.unescape(re.sub('<[^>]+>',' ',text))
   if not re.search(str(y-1911)+r'\s*年\s*0?'+str(m)+r'\s*月',plain):raise ValueError('REVENUE_PERIOD_UNPROVEN')
   codes=set(re.findall(r'<td[^>]*>\s*([1-9]\d{3})\s*</td>',text,re.I))
   if not codes:raise ValueError('NO_COMPANY_ROWS')
-  return {'rows':len(codes),'codes':sorted(codes),'period':period}
+  return {'rows':len(codes),'codes':sorted(codes),'period':period,'encoding':enc}
  try:obj=json.loads(raw.decode('utf-8-sig'))
  except (ValueError,UnicodeDecodeError):
   if len(period)!=10:raise ValueError('NON_JSON_PERIOD_REQUIRES_SEPARATE_VALIDATION')

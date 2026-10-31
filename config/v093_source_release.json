@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "a167618635963792e9edf95db427d9d61a338eb17d27b69f68a54f070424db76",
+  "tested_code_sha256": "2cba1b5dad596b2ae2c248c06ce27be91dbe95a8caca9db2e8f29df05f1783af",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -75,9 +75,12 @@
   "candidate_scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
-  "recovery_update": "CHECKPOINT_ACK_READBACK_AND_COMPLETION_EVENT_20261030",
+  "recovery_update": "PINNED_4008_PROBLEM_RECHECK_AND_BOUNDED_MOPS_HISTORICAL_QUERIES_20261031",
   "recovery_validation": {
-    "regression_tests": 1139,
-    "result": "PASS"
+    "regression_tests": 1152,
+    "result": "PASS",
+    "native_mops_replay": 32,
+    "lossless_encoding_pass": 28,
+    "still_held": 4
   }
 }

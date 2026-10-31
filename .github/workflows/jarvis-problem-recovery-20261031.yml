@@ -1,0 +1,81 @@
+name: JARVIS pinned problem recovery and historical route repair
+on:
+  push:
+    branches: [main]
+    paths: [config/v093_problem_recovery_20261031.json]
+  schedule:
+    - cron: '7,17,27,37,47,57 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - if: github.event_name != 'schedule'
+        run: python -m unittest discover -s tests -p 'test_*.py'
+      - run: python -c "from pathlib import Path; from scripts.v093_admission_runtime import load_release; load_release(Path.cwd())"
+  recovery:
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx, MOPS, TAIFEX]
+    concurrency:
+      group: jarvis-v093-production-${{ matrix.source }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip completed recovery sources before dependency setup
+        id: gate
+        env:
+          RECOVERY_SOURCE: ${{ matrix.source }}
+        run: |
+          python - <<'PY'
+          import json,os,subprocess
+          ref='refs/heads/jarvis-source-preflight/problem-recovery-20261031-v1/'+os.environ['RECOVERY_SOURCE']
+          check=subprocess.run(['git','ls-remote','--exit-code','--heads','origin',ref],capture_output=True)
+          finished=False
+          if check.returncode==0:
+            sha=check.stdout.decode().split()[0]
+            subprocess.run(['git','fetch','--no-tags','--no-write-fetch-head','origin',sha],check=True)
+            raw=subprocess.check_output(['git','show',sha+':state.json'])
+            index=json.loads(raw);finished=index.get('state',index).get('finished') is True
+          elif check.returncode!=2:raise SystemExit('RECOVERY_GATE_REMOTE_READ_FAILED')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('needed='+str(not finished).lower()+'\n')
+          PY
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.needed == 'true'
+        with: {python-version: '3.11'}
+      - if: steps.gate.outputs.needed == 'true'
+        run: pip install -r requirements-qa.lock
+      - name: Recheck pinned held originals and repair only admitted historical gaps
+        if: steps.gate.outputs.needed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_problem_recovery --source '${{ matrix.source }}' --seconds 2100
+      - name: Preserve recovery evidence
+        if: always() && steps.gate.outputs.needed == 'true'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job problem-recovery --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.gate.outputs.needed == 'true'
+        with:
+          name: problem-recovery-${{ matrix.source }}
+          path: |
+            results
+            publication
+          retention-days: 90
