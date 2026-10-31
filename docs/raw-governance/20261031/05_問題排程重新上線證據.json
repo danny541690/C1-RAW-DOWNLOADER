@@ -1,0 +1,63 @@
+{
+  "schema": "JARVIS_PROBLEM_RECOVERY_DEPLOYMENT_V1",
+  "code_commit": "b0633f8c1da75295cd84761184075a548a37d6bd",
+  "workflow_run": 41185190364,
+  "watchdog_run": 41185190187,
+  "remote_regression_tests": 1152,
+  "remote_regression": "PASS",
+  "remote_release_fingerprint": "PASS",
+  "scope": "FROZEN_4008_HELD_TASKS_NOT_DATABASE_UNIVERSE",
+  "baseline_held": 4008,
+  "mops_remaining_quota_historical_candidates": 108,
+  "states": [
+    {
+      "source": "TAIFEX",
+      "baseline": 105,
+      "processed": 105,
+      "counts": {
+        "CONFIRMED_EXCEPTION": 104,
+        "RAW_BASIC_VERIFIED": 1
+      },
+      "finished": true,
+      "updated_at": "2026-10-31T08:36:03.999267+00:00"
+    },
+    {
+      "source": "MOPS",
+      "baseline": 268,
+      "processed": 268,
+      "counts": {
+        "RAW_BASIC_VERIFIED": 25,
+        "REVIEW_REQUIRED": 243
+      },
+      "finished": false,
+      "updated_at": "2026-10-31T08:37:06.188583+00:00"
+    },
+    {
+      "source": "TWSE",
+      "baseline": 802,
+      "processed": 380,
+      "counts": {
+        "CONFIRMED_EXCEPTION": 286,
+        "RAW_BASIC_VERIFIED": 1,
+        "REVIEW_REQUIRED": 93
+      },
+      "finished": false,
+      "updated_at": "2026-10-31T08:37:15.810604+00:00"
+    },
+    {
+      "source": "TPEx",
+      "baseline": 2833,
+      "processed": 120,
+      "counts": {
+        "CONFIRMED_EXCEPTION": 16,
+        "REVIEW_REQUIRED": 104
+      },
+      "finished": false,
+      "updated_at": "2026-10-31T08:37:14.905693+00:00"
+    }
+  ],
+  "drive_rule_file": "1i_H8_cnbqKrWPucqb_3boB3MEl-ikq8g",
+  "full_acceptance": false,
+  "numeric_verified": false,
+  "pit_verified": false
+}
