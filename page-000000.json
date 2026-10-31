@@ -1,1 +1,0 @@
-{"FOLLOWUP_METADATA|route-aa8c89b9270c":{"attempts":1,"check_only":false,"definition":{"key":"FOLLOWUP_METADATA|route-aa8c89b9270c","period":"2026-10-31","slot":"DESC","source":"TPEx"},"expires":1793441031.6360548,"fence":7620,"followup_metadata":"official-followup-20261031-v2","owner":"official-followup-20261031-v2","status":"REQUEST_INTENT"}}
