@@ -41,7 +41,8 @@ def parse(text,year,url):
    if not 0<=(days[1]-days[0]).days<=15:raise ValueError('LEGACY_CALENDAR_RANGE')
    days=[days[0]+dt.timedelta(days=i) for i in range((days[1]-days[0]).days+1)]
   if not days:continue
-  target=opened if any(value in label for value in ('開始交易','最後交易','開始買賣','最後買賣')) else closed if any(value in description for value in ('休市','放假','補假','市場無交易','不交易')) else None
+  notes=' '.join(value for i,value in enumerate(row) if i not in (ni,di))
+  target=closed if any(value in notes for value in ('市場無交易','僅辦理結算交割')) else opened if any(value in label for value in ('開始交易','最後交易','開始買賣','最後買賣')) else closed if any(value in description for value in ('休市','放假','補假','市場無交易','不交易')) else None
   if target is None:unknown.extend(day.isoformat() for day in days)
   else:target.update(day.isoformat() for day in days)
  if not closed or closed&opened:raise ValueError('LEGACY_CALENDAR_DATES_UNPROVEN')

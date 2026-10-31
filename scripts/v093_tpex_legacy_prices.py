@@ -18,6 +18,18 @@ def validate(raw,period):
  if not isinstance(payload,str) or '<tr' not in payload.lower():raise ValueError('TPEX_LEGACY_HTML_MISSING')
  response_date=actual_date(obj)
  if response_date and response_date!=period:raise ValueError('TPEX_LEGACY_WRONG_RESPONSE_DATE')
+ return validate_html(payload,period,'OFFICIAL_EARLY_2007_HTML_IN_JSON',response_date)
+
+def validate_archived(raw,period):
+ if not '2003-08-01'<=period<='2006-12-31':raise ValueError('TPEX_ARCHIVED_PERIOD_SCOPE')
+ text=None
+ for codec in ('utf-8-sig','cp950','big5hkscs'):
+  try:text=raw.decode(codec);break
+  except UnicodeDecodeError:pass
+ if text is None:raise ValueError('TPEX_ARCHIVED_ENCODING_UNPROVEN')
+ return validate_html(text,period,'OFFICIAL_ARCHIVED_STATIC_HTML')
+
+def validate_html(payload,period,format_name,response_date=None):
  document=lh.fromstring(payload);trs=document.xpath('//tr');fields=None;header_at=None;code_index=None
  for index,tr in enumerate(trs):
   cells=[clean(cell.text_content()) for cell in tr.xpath('./th|./td')]
@@ -41,20 +53,25 @@ def validate(raw,period):
  volume=next((i for i,value in enumerate(fields) if value.startswith(('成交股數','成交量'))),None)
  amount=next((i for i,value in enumerate(fields) if value.startswith('成交金額')),None)
  if volume is None or amount is None:raise ValueError('TPEX_LEGACY_VOLUME_AMOUNT_HEADERS_MISSING')
- def number(value):
+ def number(value,price=False):
   text=clean(value).replace(',','')
+  if price:text=re.sub(r'^[♁☉]','',text)
   if text in ('','-','--','---','--.--'):return None
   value=float(text)
   if not math.isfinite(value):raise ValueError('TPEX_LEGACY_NONFINITE_NUMBER')
   return value
- codes=set();rows=0;price_checks=0;missing_price_rows=0
+ codes=set();rows=0;price_checks=0;missing_price_rows=0;zero_quote_rows=0;marked_price_cells=0
  for tr in trs[header_at+1:]:
   cells=[clean(cell.text_content()) for cell in tr.xpath('./th|./td')]
   if len(cells)<=code_index or not re.fullmatch('[1-9][0-9]{3}',cells[code_index]):continue
   if len(cells)!=len(fields):raise ValueError('TPEX_LEGACY_ROW_WIDTH')
+  if '\ufffd' in ''.join(cells):raise ValueError('TPEX_LEGACY_SOURCE_REPLACEMENT_CHARACTER')
   code=cells[code_index]
   if code in codes:raise ValueError('TPEX_LEGACY_DUPLICATE_CODE')
-  codes.add(code);rows+=1;prices=[number(cells[i]) for i in price_indexes]
+  codes.add(code);rows+=1;prices=[number(cells[i],True) for i in price_indexes]
+  marked_price_cells+=sum(cells[i].startswith(('♁','☉')) for i in price_indexes)
+  if prices==[0.0]*4 and column(('漲跌',)) is not None and cells[column(('漲跌',))]=='---':
+   prices=[None]*4;zero_quote_rows+=1
   if all(value is not None for value in prices):
    op,hi,lo,close=prices
    if min(prices)<=0 or not lo<=op<=hi or not lo<=close<=hi:raise ValueError('TPEX_LEGACY_OHLC_RELATIONSHIP')
@@ -65,4 +82,4 @@ def validate(raw,period):
    if value is None or value<0:raise ValueError('TPEX_LEGACY_VOLUME_OR_AMOUNT')
    if index==volume and '股數' in fields[index] and not any(unit in fields[index] for unit in ('千','仟')) and not value.is_integer():raise ValueError('TPEX_LEGACY_FRACTIONAL_SHARES')
  if len(codes)<300:raise ValueError('TPEX_LEGACY_MARKET_SCOPE_UNPROVEN')
- return dict(basic_verified=True,native=dict(period=period,rows=rows,codes=sorted(codes),fields=fields,price_relationship_rows_checked=price_checks,missing_price_rows=missing_price_rows,format='OFFICIAL_EARLY_2007_HTML_IN_JSON',period_evidence='TITLE_AND_JSON' if dates and response_date else 'TITLE' if dates else 'JSON_PAYLOAD_DATE'),units='AS_PUBLISHED_NO_CONVERSION',numeric_verified=False,pit_verified=False,full_acceptance=False)
+ return dict(basic_verified=True,native=dict(period=period,rows=rows,codes=sorted(codes),fields=fields,price_relationship_rows_checked=price_checks,missing_price_rows=missing_price_rows,zero_quote_rows=zero_quote_rows,marked_price_cells=marked_price_cells,format=format_name,period_evidence='TITLE_AND_JSON' if dates and response_date else 'TITLE' if dates else 'JSON_PAYLOAD_DATE'),units='AS_PUBLISHED_NO_CONVERSION',numeric_verified=False,pit_verified=False,full_acceptance=False)

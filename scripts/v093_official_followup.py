@@ -16,7 +16,7 @@ from scripts.v093_problem_recovery import load_rows,PLAN as ORIGINAL_PLAN
 
 PLAN='config/v093_official_followup_20261031.json'
 NAMESPACE='official-followup-20261031-v2'
-CALENDAR_PARSER_REVISION='SUPPLEMENTARY_HOLIDAYS_AND_LEGACY_V3'
+CALENDAR_PARSER_REVISION='SETTLEMENT_ONLY_OVERRIDES_CARRIED_LABEL_V4'
 HOSTS={'TWSE':{'www.twse.com.tw'},'TPEx':{'www.tpex.org.tw','hist.tpex.org.tw'}}
 
 def sha(raw):return hashlib.sha256(raw).hexdigest()
@@ -43,8 +43,10 @@ def calendar(raw,year,url):
   if not isinstance(row,list) or len(row)<2:raise ValueError('CALENDAR_ROW')
   day=dt.date.fromisoformat(str(row[0]));label=html.unescape(re.sub('<[^>]+>',' ',str(row[1])));description=html.unescape(re.sub('<[^>]+>',' ',' '.join(map(str,row[2:]))))
   if day.year!=year:raise ValueError('CALENDAR_ROW_YEAR_MISMATCH')
-  # Last/new trading dates must take precedence over holiday words in notes.
-  if any(s in label for s in ('開始交易','最後交易','開始買賣','最後買賣')):opened.append(day.isoformat())
+  # The official API carries the last-trading-day label into settlement-only
+  # rows. An explicit no-market/settlement-only description overrides it.
+  if any(s in description for s in ('市場無交易','僅辦理結算交割')):closed.append(day.isoformat())
+  elif any(s in label for s in ('開始交易','最後交易','開始買賣','最後買賣')):opened.append(day.isoformat())
   elif any(s in label+' '+description for s in ('休市','放假','補假','市場無交易','不交易')):closed.append(day.isoformat())
   else:unknown.append(day.isoformat())
  if set(closed)&set(opened):raise ValueError('CALENDAR_CONFLICTING_DATE')
@@ -187,12 +189,16 @@ def early_2007(task,config):
  proof=config.get('tpex_early_2007') or {};period=task['definition']['period']
  return task['definition']['source']=='TPEx' and proof.get('endpoint')=='https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotesHis' and '2007-01-02'<=period<='2007-04-20' and proof.get('method')=='POST' and all(re.fullmatch('[0-9a-f]{64}',proof.get(key,'')) for key in ('page_sha256','api_pattern_sha256','form_script_sha256'))
 
+def archived_html(task,config):
+ proof=config.get('tpex_archived_html') or {};period=task['definition']['period']
+ return task['definition']['source']=='TPEx' and '2003-08-01'<=period<='2006-12-31' and proof.get('base_url')=='https://hist.tpex.org.tw/Hist/STOCK/AFTERTRADING/DAILY_CLOSE_QUOTES/' and proof.get('filename')=='RSTA3104_{roc_year}{month:02d}{day:02d}.HTML' and proof.get('query_page_sha256')=='77e90192fca7a7538421c1f4122a95373c0895f4e15f778c7c1a377c3a1afeec'
+
 def eligible(task,prior,calendars,config=None):
  source=task['definition']['source'];period=task['definition']['period'];case=task.get('execution_contract') or {}
  if prior.get('status')!='REVIEW_REQUIRED' or prior.get('reason')!='OFFICIAL_EMPTY_UNCONFIRMED' or prior['attempts']>=4:return False
  # A proved calendar allows a bounded query, not a claim that every unlisted
  # weekday traded. Emergency closures can still return an unresolved empty.
- historic=early_2007(task,config or {})
+ historic=early_2007(task,config or {}) or archived_html(task,config or {})
  if (period[:4] not in calendars and not historic) or dt.date.fromisoformat(period).weekday()>=5:return False
  if case.get('mode')=='RETAINED':
   if not case.get('reference') or prior.get('raw_sha256')!=case.get('sha256'):return False
@@ -204,12 +210,21 @@ def eligible(task,prior,calendars,config=None):
 
 class EmptyQueryAdapter(NativeAdapter):
  def fetch(self):
+  archive=self.case.get('official_archived_html')
+  if archive:
+   task=dict(definition=dict(source=self.case['source'],period=self.case['period']))
+   if not archived_html(task,dict(tpex_archived_html=archive)):raise ValueError('FOLLOWUP_ARCHIVED_ROUTE_SCOPE')
+   day=dt.date.fromisoformat(self.case['period']);url=archive['base_url']+archive['filename'].format(roc_year=day.year-1911,month=day.month,day=day.day)
+   return self.http(url)
   proof=self.case.get('official_historical_query')
   if proof:
    if self.case['source']!='TPEx' or not '2007-01-02'<=self.case['period']<='2007-04-20' or proof.get('endpoint')!='https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotesHis':raise ValueError('FOLLOWUP_HISTORICAL_ROUTE_SCOPE')
    return self.http(proof['endpoint'],{'date':self.case['period'].replace('-','/')})
   return super().fetch()
  def validate(self,raw):
+  if self.case.get('official_archived_html') and raw.lstrip().startswith(b'<'):
+   from scripts.v093_tpex_legacy_prices import validate_archived
+   return validate_archived(raw,self.case['period'])
   if self.case.get('official_historical_query'):
    try:obj=json.loads(raw.decode('utf-8-sig'))
    except (ValueError,UnicodeDecodeError):obj={}
@@ -241,6 +256,9 @@ def repair_row(task,prior,calendar_proof):
  if calendar_proof.get('kind')=='OFFICIAL_HISTORICAL_ROUTE':
   case['official_historical_query']=calendar_proof['route']
   if case.get('repair_evidence'):case['repair_evidence']['official_evidence_id']='OFFICIAL_HISTORICAL_ROUTE:'+calendar_proof['raw_sha256']
+ if calendar_proof.get('kind')=='OFFICIAL_ARCHIVED_HTML_ROUTE':
+  case['official_archived_html']=calendar_proof['route']
+  if case.get('repair_evidence'):case['repair_evidence']['official_evidence_id']='OFFICIAL_ARCHIVED_HTML_ROUTE:'+calendar_proof['raw_sha256']
  row.update(attempts=prior['attempts'],status='READY',check_only=False,owner=None,followup_repair=NAMESPACE)
  for field in ('save_intent','raw_reference','raw_sha256','reused_existing'):row.pop(field,None)
  return row
@@ -310,12 +328,28 @@ def run_source(root,source,config):
  state['analysis_complete']=True;checkpoint()
  rows=load_rows(store,json.loads((root/ORIGINAL_PLAN).read_text()),source);started=time.monotonic()
  if source=='TPEx' and config.get('tpex_early_2007'):
-  canary=config['tpex_early_2007']['canary_date'];rows.sort(key=lambda task:(task['definition']['period']!=canary,task['definition']['period'],task['definition']['key']))
+  canaries={config['tpex_early_2007']['canary_date'],(config.get('tpex_archived_html') or {}).get('canary_date')};rows.sort(key=lambda task:(task['definition']['period'] not in canaries,task['definition']['period'],task['definition']['key']))
  from scripts.annual_actual_firstpass import Drive,service
  drive=Drive(service());more=False
+ # Reparse the saved failed canary after a validator change. Never download
+ # it again just to discover a more specific source-content error.
+ if source=='TPEx':
+  for task in rows:
+   prior=state['tasks'][task['definition']['key']];evidence=prior.get('followup_rejected_evidence')
+   if not early_2007(task,config) or not evidence or prior.get('rejected_reparse_revision')=='LEGACY_PRICE_MARKERS_ZERO_QUOTES_REPLACEMENT_V4':continue
+   from scripts.v093_problem_recovery import RecheckAdapter
+   reader=object.__new__(RecheckAdapter);reader.d=drive;reader.rejected=evidence;reader.raw_cache={}
+   try:
+    from scripts.v093_tpex_legacy_prices import validate
+    stats=validate(reader.read_rejected(),task['definition']['period'])
+    prior.update(rejected_reparse_result='VALID_REJECTED_RAW_REQUIRES_PROMOTION',rejected_reparse_stats=stats)
+   except (ValueError,UnicodeError) as exc:
+    prior.update(rejected_reparse_result='REVIEW_REQUIRED',rejected_reparse_error=str(exc).split(':',1)[0])
+   prior['rejected_reparse_revision']='LEGACY_PRICE_MARKERS_ZERO_QUOTES_REPLACEMENT_V4';checkpoint()
  for task in rows:
   key=task['definition']['key'];prior=state['tasks'][key]
-  historic=early_2007(task,config)
+  historic=early_2007(task,config);archived=archived_html(task,config)
+  if archived and not state.get('archived_html_canary_verified') and task['definition']['period']!=config['tpex_archived_html']['canary_date']:continue
   if historic and not state.get('early_2007_canary_verified') and task['definition']['period']!=config['tpex_early_2007']['canary_date']:continue
   if prior.get('followup_terminal'):continue
   if not prior.get('followup_pending_status') and not eligible(task,prior,calendars,config):continue
@@ -325,11 +359,15 @@ def run_source(root,source,config):
   delay=max(0,(shared or {}).get('http_budget',{}).get('next_at',0)-time.time())
   if 0<delay<=5:time.sleep(delay)
   proof=calendars.get(task['definition']['period'][:4])
+  if archived:proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=config['tpex_archived_html']['query_page_sha256'],route=config['tpex_archived_html'])
   if historic:proof=dict(kind='OFFICIAL_HISTORICAL_ROUTE',raw_sha256=config['tpex_early_2007']['page_sha256'],route=config['tpex_early_2007'])
   before=prior['attempts'];result=requery(root,source,task,prior,proof,drive)
   if historic and task['definition']['period']==config['tpex_early_2007']['canary_date']:
    state['early_2007_canary_attempted']=True
    if result['status']=='RAW_BASIC_VERIFIED':state['early_2007_canary_verified']=dict(key=key,raw_sha256=result['raw_sha256'],raw_reference=result['raw_reference'])
+  if archived and task['definition']['period']==config['tpex_archived_html']['canary_date']:
+   state['archived_html_canary_attempted']=True
+   if result['status']=='RAW_BASIC_VERIFIED':state['archived_html_canary_verified']=dict(key=key,raw_sha256=result['raw_sha256'],raw_reference=result['raw_reference'])
   state['source_requests']+=result['attempts']-before;state['tasks'][key]=result;checkpoint()
   if result.get('followup_terminal'):
    def cleanup(s):

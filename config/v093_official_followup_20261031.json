@@ -38,5 +38,16 @@
     "form_script_sha256": "085fd65b4e15e2af4f3adb3f256f0058d0176dd2d98ce53217ede16667a04a90",
     "canary_required_before_bulk": true
   },
-  "legacy_calendar_template": "https://www.twse.com.tw/docs1/data01/market/public_html/{roc_year}.htm"
+  "legacy_calendar_template": "https://www.twse.com.tw/docs1/data01/market/public_html/{roc_year}.htm",
+  "calendar_recheck_revision": "SETTLEMENT_ONLY_V4",
+  "tpex_archived_html": {
+    "base_url": "https://hist.tpex.org.tw/Hist/STOCK/AFTERTRADING/DAILY_CLOSE_QUOTES/",
+    "query_page_sha256": "77e90192fca7a7538421c1f4122a95373c0895f4e15f778c7c1a377c3a1afeec",
+    "query_page_url": "https://hist.tpex.org.tw/Hist/STOCK/AFTERTRADING/DAILY_CLOSE_QUOTES/RSTA3104QRY.HTML",
+    "filename": "RSTA3104_{roc_year}{month:02d}{day:02d}.HTML",
+    "start": "2003-08-01",
+    "end": "2006-12-31",
+    "canary_date": "2003-08-01",
+    "canary_required_before_bulk": true
+  }
 }

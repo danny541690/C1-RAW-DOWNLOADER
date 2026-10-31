@@ -9,6 +9,11 @@ from test_native_repair import FakeDrive
 from test_problem_recovery import retained,sha
 
 class OfficialFollowupTests(unittest.TestCase):
+ def test_live_carried_last_trading_label_does_not_override_settlement_only(self):
+  obj=self.payload(2021);obj['data'].extend([['2021-02-08','農曆春節前最後交易日','2月8日市場無交易，僅辦理結算交割作業。'],['2021-02-09','農曆春節前最後交易日','2月9日市場無交易，僅辦理結算交割作業。']])
+  proof=calendar(json.dumps(obj).encode(),2021,'official')
+  for day in ('2021-02-08','2021-02-09'):
+   self.assertIn(day,proof['closed']);self.assertNotIn(day,proof['opened'])
  def test_compensatory_holiday_does_not_require_the_word_fangjia(self):
   obj=self.payload();obj['data'].append(['2026-10-09','國慶日補假','10月10日適逢星期六，於10月9日補假。'])
   self.assertIn('2026-10-09',calendar(json.dumps(obj).encode(),2026,'official')['closed'])
