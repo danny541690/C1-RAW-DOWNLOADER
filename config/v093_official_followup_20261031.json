@@ -1,0 +1,22 @@
+{
+  "schema": "JARVIS_OFFICIAL_FOLLOWUP_V2",
+  "enabled": true,
+  "baseline_pins": {
+    "TWSE": "c3c36bd82676d259cdbba77052fca094616b10c9",
+    "TPEx": "4ea0d05d8ebdb910a2f4402061328b19140824b8"
+  },
+  "baseline_counts": {
+    "TWSE": 802,
+    "TPEx": 2833
+  },
+  "national_weekend_evidence": "https://twse-regulation.twse.com.tw/TW/int/DAT01_print.aspx?FLCODE=FE063588",
+  "tpex_official_pages": [
+    "https://www.tpex.org.tw/zh-tw/mainboard/trading/info/pricing_hist96.html",
+    "https://hist.tpex.org.tw/Hist/STOCK/AFTERTRADING/DAILY_CLOSE_QUOTES/param_3104.html",
+    "https://www.tpex.org.tw/zh-tw/announce/market/holiday.html"
+  ],
+  "query_is_not_availability_proof": true,
+  "source_attempt_limit": 4,
+  "keep_original_raw": true,
+  "full_acceptance": false
+}

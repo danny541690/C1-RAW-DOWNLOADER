@@ -12,14 +12,35 @@ ROOT='1U5VHn3iPxnGbm2baUf27qYqt0Cq8wvBA'
 def encode(value):return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
 
 def collect(folder):
- root=folder.resolve();files={};total=0
+ root=folder.resolve();files={};total=0;manifest={}
  for path in sorted(folder.rglob('*')):
   if not path.is_file() or path.suffix not in ('.json','.md','.log'):continue
   if path.is_symlink() or not path.resolve().is_relative_to(root):raise ValueError('REPORT_PATH_BOUNDARY')
   raw=path.read_bytes();total+=len(raw)
-  if len(raw)>700000 or total>10000000:raise ValueError('REPORT_SIZE_REQUIRES_SPLIT')
+  if total>10000000:raise ValueError('REPORT_TOTAL_SIZE_LIMIT')
   # Only configured result directories are collected, never runner/environment logs.
-  files[str(path.relative_to(folder))]=dict(sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw),text=raw.decode('utf-8'))
+  name=str(path.relative_to(folder));text=raw.decode('utf-8');entry=dict(sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw),text=text)
+  if name in files:raise ValueError('REPORT_PATH_COLLISION')
+  if len(encode(entry))<=600000:files[name]=entry;continue
+  # Split on Unicode character boundaries, bounding the encoded GitCAS entry
+  # including JSON escaping, rather than dropping text or raising at 700 kB.
+  prefix='__report_parts__/'+hashlib.sha256(name.encode()).hexdigest();parts=[];offset=0
+  while offset<len(text):
+   size=min(len(text)-offset,350000)
+   while True:
+    part=text[offset:offset+size];body=part.encode('utf-8');item=dict(sha256=hashlib.sha256(body).hexdigest(),bytes=len(body),text=part)
+    if len(encode(item))<=600000:break
+    size//=2
+    if not size:raise ValueError('REPORT_CHARACTER_LIMIT')
+   key=prefix+'/'+str(len(parts)).zfill(6)
+   if key in files:raise ValueError('REPORT_PART_COLLISION')
+   files[key]=item;parts.append(key);offset+=size
+  if ''.join(files[key]['text'] for key in parts).encode()!=raw:raise ValueError('REPORT_SPLIT_ROUNDTRIP')
+  manifest[name]=dict(sha256=entry['sha256'],bytes=len(raw),parts=parts)
+ if manifest:
+  key='__report_parts_manifest__.json'
+  if key in files:raise ValueError('REPORT_MANIFEST_COLLISION')
+  raw=encode(dict(schema='JARVIS_REPORT_PARTS_V1',originals=manifest));files[key]=dict(sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw),text=raw.decode())
  return files
 
 def publish(coordinator,record,archive):
@@ -49,13 +70,36 @@ class DriveArchive:
   from scripts.annual_actual_firstpass import Drive,service
   d=Drive(service());d.direct_readback=True
   folder=d.folder(ROOT,'RUN_'+self.identity)
-  name='acceptance_'+digest+'.json'
-  d.put(folder,name,raw,'application/json',overwrite=False)
-  found=d.find(folder,name)
-  if not found:raise ValueError('PUBLICATION_FILE_NOT_FOUND')
-  restored=d.call(lambda:d.api.files().get_media(fileId=found['id']))
-  if hashlib.sha256(restored).hexdigest()!=digest:raise ValueError('PUBLICATION_DRIVE_SHA_MISMATCH')
-  return dict(file_id=found['id'],folder_id=folder,sha256=digest,readback_verified=True)
+  def save_piece(name,payload):
+   d.put(folder,name,payload,'application/json',overwrite=False)
+   found=d.find(folder,name)
+   if not found:raise ValueError('PUBLICATION_FILE_NOT_FOUND')
+   restored=d.call(lambda:d.api.files().get_media(fileId=found['id']))
+   if restored!=payload:raise ValueError('PUBLICATION_DRIVE_SHA_MISMATCH')
+   return dict(file_id=found['id'],sha256=hashlib.sha256(payload).hexdigest(),bytes=len(payload))
+  if len(raw)<=650000:
+   receipt=save_piece('acceptance_'+digest+'.json',raw)
+   return dict(receipt,folder_id=folder,readback_verified=True)
+  record=json.loads(raw);header={k:v for k,v in record.items() if k!='files'};pieces=[];batch={}
+  def flush():
+   if not batch:return
+   payload=encode(dict(header,files=dict(batch)));number=len(pieces)
+   if len(payload)>650000:raise ValueError('PUBLICATION_PART_TOO_LARGE')
+   receipt=save_piece('acceptance_'+digest+'.part_'+str(number).zfill(6)+'.json',payload)
+   pieces.append(dict(receipt,keys=list(batch)));batch.clear()
+  for name,entry in record['files'].items():
+   batch[name]=entry
+   if len(encode(dict(header,files=batch)))>650000:
+    batch.pop(name);flush();batch[name]=entry
+  flush();restored_files={}
+  for piece in pieces:
+   restored=json.loads(d.call(lambda:d.api.files().get_media(fileId=piece['file_id'])))
+   if set(restored_files)&set(restored['files']):raise ValueError('PUBLICATION_DUPLICATE_PART_KEYS')
+   restored_files.update(restored['files'])
+  if encode(dict(header,files=restored_files))!=raw:raise ValueError('PUBLICATION_PART_RECONSTRUCTION')
+  index=encode(dict(schema='JARVIS_ACCEPTANCE_MULTIPART_V1',record_sha256=digest,record_bytes=len(raw),parts=pieces))
+  receipt=save_piece('acceptance_'+digest+'.index.json',index)
+  return dict(file_id=receipt['file_id'],folder_id=folder,sha256=digest,manifest_sha256=receipt['sha256'],parts=len(pieces),readback_verified=True)
 
 def main():
  p=argparse.ArgumentParser();p.add_argument('--source',choices=sorted(SOURCES),required=True);p.add_argument('--job',required=True);p.add_argument('--input',type=Path,default=Path('results'));p.add_argument('--status',choices=('success','failure','cancelled','skipped'),required=True);a=p.parse_args()

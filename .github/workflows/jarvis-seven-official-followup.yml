@@ -1,0 +1,121 @@
+name: JARVIS official calendar and empty-response followup
+on:
+  push:
+    branches: [main]
+    paths: [config/v093_official_followup_20261031.json]
+  schedule:
+    - cron: '9,19,29,39,49,59 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: jarvis-official-followup-v2
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - if: github.event_name != 'schedule'
+        run: python -m unittest discover -s tests -p 'test_*.py'
+      - run: python -c "from pathlib import Path; from scripts.v093_admission_runtime import load_release; load_release(Path.cwd())"
+  publication-replay:
+    if: github.event_name != 'schedule'
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - uses: actions/download-artifact@v4
+        with:
+          name: problem-recovery-${{ matrix.source }}
+          run-id: '41185190364'
+          github-token: ${{ github.token }}
+          path: replay
+      - name: Verify large original report through multipart Git and Drive publication
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --input replay/results --job report-replay --status success
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: publication-replay-${{ matrix.source }}
+          path: publication
+  calendars:
+    needs: validate
+    concurrency:
+      group: jarvis-v093-production-TWSE
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Verify official calendar years without inferring emergency trading days
+        run: python -m scripts.v093_official_followup --source calendar
+      - name: Save official calendar evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source TWSE --job calendar-followup --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-calendars
+          path: |
+            results
+            publication
+  followup:
+    needs: calendars
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx]
+    concurrency:
+      group: jarvis-v093-production-${{ matrix.source }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Classify proven closures and re-query only admitted empty originals
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_official_followup --source '${{ matrix.source }}'
+      - name: Save full followup report automatically in bounded parts
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job official-followup --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-followup-${{ matrix.source }}
+          path: |
+            results
+            publication

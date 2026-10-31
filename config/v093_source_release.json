@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "2cba1b5dad596b2ae2c248c06ce27be91dbe95a8caca9db2e8f29df05f1783af",
+  "tested_code_sha256": "22c017a1d0d4ede2f55ec2971b3137cab5912ed7f5b431c1d83aacd9407c6f10",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -75,12 +75,15 @@
   "candidate_scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
-  "recovery_update": "PINNED_4008_PROBLEM_RECHECK_AND_BOUNDED_MOPS_HISTORICAL_QUERIES_20261031",
+  "recovery_update": "OFFICIAL_CALENDAR_AND_BOUNDED_EMPTY_REQUERY_WITH_MULTIPART_REPORTS_20261031",
   "recovery_validation": {
-    "regression_tests": 1152,
+    "regression_tests": 1166,
     "result": "PASS",
-    "native_mops_replay": 32,
-    "lossless_encoding_pass": 28,
-    "still_held": 4
+    "actual_large_report_replays": [
+      "TWSE:802",
+      "TPEx:2833"
+    ],
+    "original_raw_preserved": true,
+    "request_attempts_preserved": true
   }
 }
