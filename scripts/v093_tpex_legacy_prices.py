@@ -44,6 +44,12 @@ def validate_html(payload,period,format_name,response_date=None):
   year,month,day=map(int,match.groups());year=year+1911 if year<1911 else year
   try:dates.append(dt.date(year,month,day).isoformat())
   except ValueError:raise ValueError('TPEX_LEGACY_TITLE_DATE_INVALID') from None
+ # Oracle Reports repeats a compact ROC date under the explicit 資料日期
+ # label on every page. Ignore generation timestamps; bind all report dates.
+ for value in re.findall(r'資料日期\s*[:：]\s*(\d{6,8})(?!\d)',document.text_content()):
+  year=int(value[:-4]);year=year+1911 if len(value)<8 else year
+  try:dates.append(dt.date(year,int(value[-4:-2]),int(value[-2:])).isoformat())
+  except ValueError:raise ValueError('TPEX_LEGACY_TITLE_DATE_INVALID') from None
  if any(day!=period for day in dates):raise ValueError('TPEX_LEGACY_WRONG_TITLE_DATE')
  if not dates and not response_date:raise ValueError('TPEX_LEGACY_PAYLOAD_DATE_UNPROVEN')
  def column(names):
@@ -60,7 +66,7 @@ def validate_html(payload,period,format_name,response_date=None):
   value=float(text)
   if not math.isfinite(value):raise ValueError('TPEX_LEGACY_NONFINITE_NUMBER')
   return value
- codes=set();rows=0;price_checks=0;missing_price_rows=0;zero_quote_rows=0;marked_price_cells=0
+ codes=set();rows=0;price_checks=0;missing_price_rows=0;zero_quote_rows=0;marked_price_cells=0;unquoted_ohl_rows=0
  for tr in trs[header_at+1:]:
   cells=[clean(cell.text_content()) for cell in tr.xpath('./th|./td')]
   if len(cells)<=code_index or not re.fullmatch('[1-9][0-9]{3}',cells[code_index]):continue
@@ -72,6 +78,11 @@ def validate_html(payload,period,format_name,response_date=None):
   marked_price_cells+=sum(cells[i].startswith(('♁','☉')) for i in price_indexes)
   if prices==[0.0]*4 and column(('漲跌',)) is not None and cells[column(('漲跌',))]=='---':
    prices=[None]*4;zero_quote_rows+=1
+  elif format_name=='OFFICIAL_ARCHIVED_STATIC_HTML' and all(cells[i]=='.00' for i in price_indexes[:3]) and column(('漲跌',)) is not None and cells[column(('漲跌',))]=='0':
+   if prices[3] is not None and prices[3]<0:raise ValueError('TPEX_LEGACY_NEGATIVE_CLOSE')
+   # The observed Oracle report has no O/H/L quote in these rows, even when
+   # a closing field or small trade exists. Preserve it; do not certify OHLC.
+   prices[:3]=[None]*3;unquoted_ohl_rows+=1
   if all(value is not None for value in prices):
    op,hi,lo,close=prices
    if min(prices)<=0 or not lo<=op<=hi or not lo<=close<=hi:raise ValueError('TPEX_LEGACY_OHLC_RELATIONSHIP')
@@ -82,4 +93,4 @@ def validate_html(payload,period,format_name,response_date=None):
    if value is None or value<0:raise ValueError('TPEX_LEGACY_VOLUME_OR_AMOUNT')
    if index==volume and '股數' in fields[index] and not any(unit in fields[index] for unit in ('千','仟')) and not value.is_integer():raise ValueError('TPEX_LEGACY_FRACTIONAL_SHARES')
  if len(codes)<300:raise ValueError('TPEX_LEGACY_MARKET_SCOPE_UNPROVEN')
- return dict(basic_verified=True,native=dict(period=period,rows=rows,codes=sorted(codes),fields=fields,price_relationship_rows_checked=price_checks,missing_price_rows=missing_price_rows,zero_quote_rows=zero_quote_rows,marked_price_cells=marked_price_cells,format=format_name,period_evidence='TITLE_AND_JSON' if dates and response_date else 'TITLE' if dates else 'JSON_PAYLOAD_DATE'),units='AS_PUBLISHED_NO_CONVERSION',numeric_verified=False,pit_verified=False,full_acceptance=False)
+ return dict(basic_verified=True,native=dict(period=period,rows=rows,codes=sorted(codes),fields=fields,price_relationship_rows_checked=price_checks,missing_price_rows=missing_price_rows,zero_quote_rows=zero_quote_rows,unquoted_open_high_low_rows=unquoted_ohl_rows,marked_price_cells=marked_price_cells,format=format_name,period_evidence='TITLE_AND_JSON' if dates and response_date else 'TITLE' if dates else 'JSON_PAYLOAD_DATE'),units='AS_PUBLISHED_NO_CONVERSION',numeric_verified=False,pit_verified=False,full_acceptance=False)

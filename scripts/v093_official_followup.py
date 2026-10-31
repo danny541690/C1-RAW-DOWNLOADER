@@ -210,6 +210,7 @@ def eligible(task,prior,calendars,config=None):
 
 class EmptyQueryAdapter(NativeAdapter):
  def fetch(self):
+  if self.case.get('mode')=='PROMOTE':return super().fetch()
   archive=self.case.get('official_archived_html')
   if archive:
    task=dict(definition=dict(source=self.case['source'],period=self.case['period']))
@@ -233,7 +234,7 @@ class EmptyQueryAdapter(NativeAdapter):
     return validate(raw,self.case['period'])
   return super().validate(raw)
  def read(self,reference):
-  proof=self.case.get('repair_evidence') or {};evidence=proof.get('rejected_evidence') or {}
+  proof=self.case.get('repair_evidence') or self.case.get('promotion_evidence') or {};evidence=proof.get('rejected_evidence') or {}
   if reference==proof.get('reference') and evidence.get('readback_verified') is True and evidence.get('raw_sha256')==proof.get('sha256'):
    from scripts.v093_problem_recovery import RecheckAdapter
    reader=object.__new__(RecheckAdapter);reader.d=self.d;reader.rejected=evidence;reader.raw_cache={};return reader.read_rejected()
@@ -247,9 +248,14 @@ class EmptyQueryAdapter(NativeAdapter):
    raise
   raise ApplicabilityUnproven('FOLLOWUP_EXISTING_VALID_OR_NOT_EMPTY')
 
-def repair_row(task,prior,calendar_proof):
- row=copy.deepcopy(task);case=row['execution_contract']
- if case['mode']=='RETAINED':
+def repair_row(task,prior,calendar_proof,promotion=None):
+ if promotion:
+  from scripts.v093_problem_recovery import promotion_task
+  row=promotion_task(task,promotion)
+ else:row=copy.deepcopy(task)
+ case=row['execution_contract']
+ if promotion:pass
+ elif case['mode']=='RETAINED':
   old_ref=case['reference'];old_sha=case['sha256']
   case.update(mode='REPAIR',reference=None,sha256=None,repair_evidence=dict(source=case['source'],key=case['key'],period=case['period'],reference=old_ref,sha256=old_sha,download_approved=True,reason='NATIVE_CONTENT_REJECTED',official_evidence_id='CALENDAR:'+calendar_proof['raw_sha256'],empty_response_requery=True,query_is_not_availability_proof=True,calendar_evidence=calendar_proof,rejected_evidence=task.get('rejected_evidence')))
  elif case['mode']!='MISSING':raise ValueError('FOLLOWUP_REPAIR_MODE')
@@ -260,14 +266,15 @@ def repair_row(task,prior,calendar_proof):
   case['official_archived_html']=calendar_proof['route']
   if case.get('repair_evidence'):case['repair_evidence']['official_evidence_id']='OFFICIAL_ARCHIVED_HTML_ROUTE:'+calendar_proof['raw_sha256']
  row.update(attempts=prior['attempts'],status='READY',check_only=False,owner=None,followup_repair=NAMESPACE)
+ if promotion:row['local_only']=True
  for field in ('save_intent','raw_reference','raw_sha256','reused_existing'):row.pop(field,None)
  return row
 
-def requery(root,source,task,prior,calendar_proof,drive):
+def requery(root,source,task,prior,calendar_proof,drive,promotion=None):
  c=Coordinator(GitCAS(root),source,ttl=600);key=task['definition']['key'];_,shared=c.store.read(source);existing=(shared or {}).get('tasks',{}).get(key)
  if existing and existing.get('followup_repair')!=NAMESPACE:raise ValueError('FOLLOWUP_TASK_COLLISION')
  if not existing:
-  row=repair_row(task,prior,calendar_proof)
+  row=repair_row(task,prior,calendar_proof,promotion)
   def seed(s):
    if key in s['tasks']:raise ValueError('FOLLOWUP_TASK_COLLISION')
    s['tasks'][key]=row
@@ -298,6 +305,7 @@ def run_source(root,source,config):
   baseline=read_pin(store,config['baseline_pins'][source])
   if baseline.get('source')!=source or len(baseline['tasks'])!=config['baseline_counts'][source]:raise ValueError('FOLLOWUP_BASELINE_SCOPE')
   state=dict(source=source,tasks=copy.deepcopy(baseline['tasks']),baseline_commit=config['baseline_pins'][source],phase='OFFICIAL_FOLLOWUP',source_requests=0)
+ state.update(finished=False,processing_pass_finished=False)
  metadata_store=GitCAS(root,'jarvis-source-preflight/'+NAMESPACE+'-metadata');_,meta=metadata_store.read('TWSE');calendars=(meta or {}).get('calendars',{})
  def checkpoint():
   nonlocal revision
@@ -331,21 +339,35 @@ def run_source(root,source,config):
   canaries={config['tpex_early_2007']['canary_date'],(config.get('tpex_archived_html') or {}).get('canary_date')};rows.sort(key=lambda task:(task['definition']['period'] not in canaries,task['definition']['period'],task['definition']['key']))
  from scripts.annual_actual_firstpass import Drive,service
  drive=Drive(service());more=False
- # Reparse the saved failed canary after a validator change. Never download
- # it again just to discover a more specific source-content error.
+ # Reparse saved failed originals after a validator change, promoting only
+ # verified original bytes through the native zero-request storage path.
  if source=='TPEx':
   for task in rows:
-   prior=state['tasks'][task['definition']['key']];evidence=prior.get('followup_rejected_evidence')
-   if not early_2007(task,config) or not evidence or prior.get('rejected_reparse_revision')=='LEGACY_PRICE_MARKERS_ZERO_QUOTES_REPLACEMENT_V4':continue
+   key=task['definition']['key'];prior=state['tasks'][key];evidence=prior.get('followup_rejected_evidence');archived=archived_html(task,config)
+   if not (early_2007(task,config) or archived) or not evidence or prior.get('status')=='RAW_BASIC_VERIFIED' or prior.get('rejected_reparse_revision')=='ORACLE_COMPACT_ROC_AND_ZERO_REQUEST_PROMOTION_V5':continue
    from scripts.v093_problem_recovery import RecheckAdapter
    reader=object.__new__(RecheckAdapter);reader.d=drive;reader.rejected=evidence;reader.raw_cache={}
    try:
-    from scripts.v093_tpex_legacy_prices import validate
-    stats=validate(reader.read_rejected(),task['definition']['period'])
+    from scripts.v093_tpex_legacy_prices import validate,validate_archived
+    stats=(validate_archived if archived else validate)(reader.read_rejected(),task['definition']['period'])
     prior.update(rejected_reparse_result='VALID_REJECTED_RAW_REQUIRES_PROMOTION',rejected_reparse_stats=stats)
    except (ValueError,UnicodeError) as exc:
     prior.update(rejected_reparse_result='REVIEW_REQUIRED',rejected_reparse_error=str(exc).split(':',1)[0])
-   prior['rejected_reparse_revision']='LEGACY_PRICE_MARKERS_ZERO_QUOTES_REPLACEMENT_V4';checkpoint()
+   prior['rejected_reparse_revision']='ORACLE_COMPACT_ROC_AND_ZERO_REQUEST_PROMOTION_V5';checkpoint()
+   if prior.get('rejected_reparse_result')=='VALID_REJECTED_RAW_REQUIRES_PROMOTION' and archived:
+    proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=config['tpex_archived_html']['query_page_sha256'],route=config['tpex_archived_html'])
+    promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=evidence['raw_sha256'],rejected_evidence=evidence)
+    before=prior['attempts'];result=requery(root,source,task,prior,proof,drive,promotion=promotion)
+    state['source_requests']+=result['attempts']-before;state['tasks'][key]=result
+    if result['status']=='RAW_BASIC_VERIFIED' and task['definition']['period']==config['tpex_archived_html']['canary_date']:
+     state['archived_html_canary_verified']=dict(key=key,raw_sha256=result['raw_sha256'],raw_reference=result['raw_reference'],promoted_from_saved_rejection=True)
+    checkpoint()
+    if result.get('followup_terminal'):
+     def clean_promoted(shared):
+      current=shared['tasks'].get(key)
+      if current and current.get('followup_repair')==NAMESPACE and not current.get('owner'):del shared['tasks'][key]
+     Coordinator(GitCAS(root),source).update(clean_promoted)
+    else:more=True;break
  for task in rows:
   key=task['definition']['key'];prior=state['tasks'][key]
   historic=early_2007(task,config);archived=archived_html(task,config)

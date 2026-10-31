@@ -14,6 +14,37 @@ def fixture(period='2007-01-02',title='96年1月2日',change=None):
  return json.dumps(dict(stat='ok',date=period.replace('-',''),html=text),ensure_ascii=False).encode()
 
 class LegacyPricesTests(unittest.TestCase):
+ def test_oracle_compact_roc_date_is_bound_to_report_date_not_generation_time(self):
+  text=json.loads(fixture(title='資料日期：920801'))['html'];raw=('<!-- generated 2003-08-05 -->'+text).encode('cp950')
+  self.assertTrue(validate_archived(raw,'2003-08-01')['basic_verified'])
+  with self.assertRaisesRegex(ValueError,'WRONG_TITLE_DATE'):validate_archived(raw,'2003-08-04')
+  with self.assertRaisesRegex(ValueError,'WRONG_TITLE_DATE'):validate_archived(raw+'<div>資料日期:920804</div>'.encode('cp950'),'2003-08-01')
+ def test_observed_oracle_unquoted_ohl_preserves_positive_close_without_certifying_it(self):
+  obj=json.loads(fixture(title='資料日期：920801',change=lambda r:r[:3]+['0','.00','.00','.00']+r[7:]));result=validate_archived(obj['html'].encode('cp950'),'2003-08-01')
+  self.assertEqual(result['native']['unquoted_open_high_low_rows'],1);self.assertEqual(result['native']['price_relationship_rows_checked'],299);self.assertFalse(result['numeric_verified'])
+ def test_saved_archived_response_promotes_original_without_resetting_attempts(self):
+  from test_problem_recovery import retained,sha
+  cfg=json.loads(Path('config/v093_official_followup_20261031.json').read_text());task=retained(b'old',source='TPEx',period='2003-08-01',category='prices');task['recovery_archive']=dict(commit='a'*40)
+  evidence=dict(reference='quarantine',raw_sha256=sha(b'valid'),stored_sha256=sha(b'zip'),readback_verified=True,accepted_as_raw=False,encoding='gzip')
+  proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',route=cfg['tpex_archived_html'],raw_sha256=cfg['tpex_archived_html']['query_page_sha256'])
+  row=repair_row(task,dict(attempts=2),proof,promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=sha(b'valid'),rejected_evidence=evidence))
+  self.assertEqual(row['attempts'],2);self.assertTrue(row['local_only']);self.assertEqual(row['execution_contract']['mode'],'PROMOTE');self.assertEqual(row['execution_contract']['promotion_evidence']['reference'],'quarantine')
+ def test_native_promotion_saves_same_bytes_at_four_attempts_with_no_http(self):
+  import gzip,tempfile
+  from unittest.mock import patch
+  from test_problem_recovery import retained,sha
+  from test_native_repair import FakeDrive
+  from test_source_coordination import SQLiteCAS
+  from scripts.v093_source_coordination import Coordinator
+  from scripts.v093_source_executor import Executor
+  cfg=json.loads(Path('config/v093_official_followup_20261031.json').read_text());raw=json.loads(fixture(title='資料日期：920801'))['html'].encode('cp950');compressed=gzip.compress(raw);task=retained(b'old',source='TPEx',period='2003-08-01',category='prices')
+  evidence=dict(reference='quarantine',raw_sha256=sha(raw),raw_bytes=len(raw),stored_sha256=sha(compressed),readback_verified=True,accepted_as_raw=False,encoding='gzip')
+  row=repair_row(task,dict(attempts=4),dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',route=cfg['tpex_archived_html'],raw_sha256=cfg['tpex_archived_html']['query_page_sha256']),promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=sha(raw),rejected_evidence=evidence))
+  with tempfile.TemporaryDirectory() as tmp:
+   c=Coordinator(SQLiteCAS(Path(tmp)/'db'),'TPEx',ttl=600);key=row['definition']['key'];c.update(lambda s:s['tasks'].update({key:row}));drive=FakeDrive();drive.data['quarantine']=compressed
+   adapter=EmptyQueryAdapter(c,drive,dict(source='TPEx',key=key),row)
+   with patch.object(adapter,'http',side_effect=AssertionError('must not download')) as http:result=Executor(c,adapter).one('DESC','promote')
+   current=c.store.read('TPEx')[1]['tasks'][key];self.assertEqual(current['status'],'RAW_BASIC_VERIFIED');self.assertEqual(current['attempts'],4);http.assert_not_called();self.assertEqual(drive.data[result['reference']],raw);self.assertEqual(drive.data['quarantine'],compressed);self.assertTrue(current['storage_receipt']['readback_verified'])
  def test_only_observed_price_markers_are_parsed_and_original_raw_is_unchanged(self):
   raw=fixture(change=lambda r:r[:2]+['♁10']+r[3:]);before=bytes(raw);result=validate(raw,'2007-01-02');self.assertEqual(raw,before);self.assertEqual(result['native']['marked_price_cells'],1)
   with self.assertRaises(ValueError):validate(fixture(change=lambda r:r[:2]+['?10']+r[3:]),'2007-01-02')

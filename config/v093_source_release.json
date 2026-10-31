@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "1f01fe2bd5a50168d54bafdc27480e3f4be4be90936d72a3660f29217b9e9cac",
+  "tested_code_sha256": "196a5b4cb31344af1bf9d3d8d7436b8f5b9406c9150a02e734e45e80129ca77c",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -75,9 +75,9 @@
   "candidate_scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
-  "recovery_update": "STATIC_TPEX_ARCHIVE_CANARY_SETTLEMENT_ONLY_AND_SOURCE_ENCODING_V4_20261031",
+  "recovery_update": "ORACLE_COMPACT_ROC_ZERO_REQUEST_PROMOTION_V5_20261031",
   "recovery_validation": {
-    "regression_tests": 1187,
+    "regression_tests": 1191,
     "result": "PASS",
     "actual_large_report_replays": [
       "TWSE:802",
@@ -87,6 +87,7 @@
     "request_attempts_preserved": true,
     "early_tpex_canary_required": true,
     "source_attempts_preserved": true,
-    "source_corruption_not_accepted": true
+    "source_corruption_not_accepted": true,
+    "zero_http_promotion_at_attempt_limit": true
   }
 }
