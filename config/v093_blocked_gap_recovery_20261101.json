@@ -804,5 +804,6 @@
     "MOPS": {
       "keys": []
     }
-  }
+  },
+  "dispatch_revision": "SERIALIZED_TWSE_RECHECK_THEN_RETRY_V9_1"
 }

@@ -41,7 +41,9 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_blocked_gap_recovery --source '${{ matrix.source }}'
+        run: |
+          python -m scripts.v093_unresolved_recheck --source '${{ matrix.source }}' --seconds 1200
+          python -m scripts.v093_blocked_gap_recovery --source '${{ matrix.source }}' --seconds 1800
       - name: Preserve blocked-gap recovery evidence
         if: always()
         env:

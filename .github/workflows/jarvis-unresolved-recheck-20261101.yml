@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        source: [TWSE, MOPS]
+        source: [MOPS]
     concurrency:
       group: jarvis-v093-production-${{ matrix.source }}
       cancel-in-progress: false

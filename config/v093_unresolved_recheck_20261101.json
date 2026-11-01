@@ -13,5 +13,6 @@
     }
   },
   "official_closure_evidence_revision": "TWSE_20241002_20241031_REVIEWED_PRIMARY_PDFS",
-  "latest_quarantine_evidence_first": true
+  "latest_quarantine_evidence_first": true,
+  "dispatch_revision": "SERIALIZED_TWSE_RECHECK_THEN_RETRY_V9_1"
 }
