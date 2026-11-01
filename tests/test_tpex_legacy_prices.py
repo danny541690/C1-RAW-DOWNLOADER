@@ -14,6 +14,9 @@ def fixture(period='2007-01-02',title='96年1月2日',change=None):
  return json.dumps(dict(stat='ok',date=period.replace('-',''),html=text),ensure_ascii=False).encode()
 
 class LegacyPricesTests(unittest.TestCase):
+ def test_management_section_caption_does_not_shift_or_pad_stock_rows(self):
+  obj=json.loads(fixture());text=obj['html'].replace('96年1月2日','').replace('<table>','<p>交易日期:93年11月16日</p><table>').replace('<th>漲跌</th>','<th colspan="2">漲跌</th>').replace('<td>0</td>','<td>▽</td><td>0</td>').replace('</table>','<tr><td colspan="10">管理股票</td></tr></table>')
+  self.assertEqual(validate_archived(text.encode('cp950'),'2004-11-16')['native']['rows'],300)
  def test_caption_outside_rows_and_split_change_columns_bind_actual_prices(self):
   obj=json.loads(fixture());text=obj['html'];text=text.replace('96年1月2日','').replace('<table>','<p>交易日期:93年10月29日</p><table>').replace('<th>漲跌</th>','<th colspan="2">漲跌</th>').replace('<td>0</td>','<td>▽</td><td>0</td>')
   self.assertTrue(validate_archived(text.encode('cp950'),'2004-10-29')['basic_verified'])

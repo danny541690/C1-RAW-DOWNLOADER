@@ -1,6 +1,6 @@
 import copy,json,tempfile,unittest
 from pathlib import Path
-from scripts.v093_blocked_gap_recovery import valid_saved_result,settle_probe
+from scripts.v093_blocked_gap_recovery import valid_saved_result,settle_probe,release_saved_probe
 from scripts.v093_official_followup import reviewed_mops_route,repair_row,EmptyQueryAdapter
 from scripts.v093_source_coordination import Coordinator
 from test_source_coordination import SQLiteCAS
@@ -32,7 +32,14 @@ class BlockedGapRecoveryTests(unittest.TestCase):
   row=repair_row(task,dict(attempts=3),dict(kind='REVIEWED_MOPS_HISTORICAL_ROUTE'));self.assertEqual(row['attempts'],3);self.assertFalse(row['local_only'])
   a=object.__new__(EmptyQueryAdapter);a.case=row['execution_contract'];a.http=Mock(return_value=b'raw');self.assertEqual(a.fetch(),b'raw');a.http.assert_called_once_with(reviewed_mops_route(a.case))
  def test_one_shot_targets_are_existing_keys_not_a_new_dataset(self):
-  cfg=json.loads(Path('config/v093_blocked_gap_recovery_20261101.json').read_text());self.assertTrue(cfg['one_shot']);self.assertEqual(len(cfg['targets']['TPEx']['keys']),1);self.assertEqual(len(cfg['targets']['MOPS']['keys']),8)
+  cfg=json.loads(Path('config/v093_blocked_gap_recovery_20261101.json').read_text());self.assertTrue(cfg['one_shot']);self.assertEqual(len(cfg['targets']['TPEx']['keys']),1);self.assertEqual(len(cfg['reviewed_mops_keys_history']),8);self.assertEqual(cfg['targets']['TPEx']['mode'],'PROMOTE_SAVED_PROBE');self.assertEqual(cfg['targets']['MOPS']['keys'],[])
+ def test_saved_probe_release_requires_native_state_same_receipt_and_same_bytes(self):
+  good=self.good();s=dict(hold='HTTPError_403',hold_probe_history=dict(identity='old',key='key',sent=True),tasks=dict(key=copy.deepcopy(good)))
+  self.assertFalse(release_saved_probe(s,'old','key',good,'b'*64));self.assertEqual(s['hold'],'HTTPError_403')
+  self.assertTrue(release_saved_probe(s,'old','key',good,'a'*64));self.assertNotIn('hold',s);self.assertTrue(s['hold_probe_history']['release_via_saved_response'])
+ def test_saved_probe_without_matching_native_receipt_keeps_hold(self):
+  good=self.good();s=dict(hold='HTTPError_403',hold_probe_history=dict(identity='old',key='key',sent=True),tasks=dict(key=dict(status='RAW_BASIC_VERIFIED',raw_sha256='a'*64)))
+  self.assertFalse(release_saved_probe(s,'old','key',good,'a'*64));self.assertEqual(s['hold'],'HTTPError_403')
  def test_review_probe_keeps_403_and_spends_at_most_one_budgeted_request(self):
   from scripts.v093_source_rate import reserve
   with tempfile.TemporaryDirectory() as folder:

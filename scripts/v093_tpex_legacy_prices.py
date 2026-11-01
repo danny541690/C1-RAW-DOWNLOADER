@@ -84,6 +84,7 @@ def validate_html(payload,period,format_name,response_date=None):
  codes=set();rows=0;price_checks=0;missing_price_rows=0;zero_quote_rows=0;marked_price_cells=0;unquoted_ohl_rows=0
  for tr in trs[header_at+1:]:
   cells=[clean(cell.text_content()) for cell in tr.xpath('./th|./td')]
+  if len(cells)<=code_index or not re.fullmatch('[1-9][0-9]{3}',cells[code_index]):continue
   if split_change:
    expanded=[]
    for node,value in zip(tr.xpath('./th|./td'),cells):

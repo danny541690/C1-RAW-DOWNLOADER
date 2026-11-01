@@ -1,5 +1,5 @@
 {
-  "identity": "blocked-gap-recovery-20261101-v1",
+  "identity": "saved-probe-recovery-20261101-v2",
   "one_shot": true,
   "keep_original_raw": true,
   "source_attempt_limit": 4,
@@ -7,24 +7,27 @@
     "TPEx": {
       "keys": [
         "TPEx|2004-11|b3292033de65341e53331adf"
-      ]
+      ],
+      "mode": "PROMOTE_SAVED_PROBE"
     },
     "MOPS": {
-      "keys": [
-        "MOPS|2000-05|71a05d37c48b391571dda650",
-        "MOPS|2000-08|897edc0a1db5e770f8d97424",
-        "MOPS|2000-10|5144aa0f5c72753fa07d4819",
-        "MOPS|2000-11|3c1e77ceb9dc7937eb124a5b",
-        "MOPS|2000-11|f36d8109b2d7e4b6ac2ce344",
-        "MOPS|2001-05|5e59d762720ca8b28ef68b1d",
-        "MOPS|2001-05|d4dc530ba7b0e9d58b6e52af",
-        "MOPS|2004-09|fc3d9c6e732e9fa74aa7cb0c"
-      ]
+      "keys": []
     }
   },
   "mops_route_review": {
     "prior_successful_recovery_commit": "57e2b03c66d7c37983f527b213af9d35731e9c35",
     "evidence": "Existing verified domestic t21sc03_ROCYEAR_MONTH.html query route used for 107 successful historical downloads; explicit missing domestic partitions only.",
     "query_is_not_availability_proof": true
-  }
+  },
+  "previous_probe_identity": "blocked-gap-recovery-20261101-v1",
+  "reviewed_mops_keys_history": [
+    "MOPS|2000-05|71a05d37c48b391571dda650",
+    "MOPS|2000-08|897edc0a1db5e770f8d97424",
+    "MOPS|2000-10|5144aa0f5c72753fa07d4819",
+    "MOPS|2000-11|3c1e77ceb9dc7937eb124a5b",
+    "MOPS|2000-11|f36d8109b2d7e4b6ac2ce344",
+    "MOPS|2001-05|5e59d762720ca8b28ef68b1d",
+    "MOPS|2001-05|d4dc530ba7b0e9d58b6e52af",
+    "MOPS|2004-09|fc3d9c6e732e9fa74aa7cb0c"
+  ]
 }

@@ -28,6 +28,14 @@ def settle_probe(shared,identity,result):
  shared['hold_probe_history']=dict(probe,completed_at=dt.datetime.now(dt.timezone.utc).isoformat(),released=released,result_status=(result or {}).get('status','INTERRUPTED'))
  shared.pop('hold_probe',None)
 
+def release_saved_probe(shared,previous_identity,key,result,evidence_sha):
+ history=shared.get('hold_probe_history') or {};task=shared.get('tasks',{}).get(key,{})
+ if not valid_saved_result(result) or result['raw_sha256']!=evidence_sha:return False
+ if history.get('identity')!=previous_identity or history.get('key')!=key or history.get('sent') is not True:return False
+ if shared.get('hold')!='HTTPError_403' or shared.get('hold_probe'):return False
+ if task.get('status')!='RAW_BASIC_VERIFIED' or task.get('raw_sha256')!=evidence_sha or task.get('storage_receipt')!=result['storage_receipt']:return False
+ shared.pop('hold');history.update(released=True,result_status='RAW_BASIC_VERIFIED',release_via_saved_response=True,raw_sha256=evidence_sha,raw_reference=result['raw_reference'],completed_at=dt.datetime.now(dt.timezone.utc).isoformat());return True
+
 def main():
  parser=argparse.ArgumentParser();parser.add_argument('--source',choices=('TPEx','MOPS'),required=True);args=parser.parse_args()
  root=Path.cwd();load_release(root);cfg=json.loads((root/PLAN).read_text());source=args.source;identity=cfg['identity'];target=cfg['targets'][source]
@@ -47,9 +55,20 @@ def main():
   for key in target['keys']:
    if key in journal['tasks']:continue
    task=rows[key];prior=copy.deepcopy(out_state['tasks'][key]);_,shared=production.store.read(source)
-   if prior['status']!='REVIEW_REQUIRED' or prior['attempts']>=4:
+   local=target.get('mode')=='PROMOTE_SAVED_PROBE'
+   if prior['status']!='REVIEW_REQUIRED' or prior['attempts']>=4 and not local:
     journal['tasks'][key]=dict(status='SKIPPED_VERIFIED_OR_EXHAUSTED',attempts=prior['attempts']);checkpoint();continue
-   if source=='MOPS':
+   promotion=None
+   if local:
+    if source!='TPEx' or key!='TPEx|2004-11|b3292033de65341e53331adf':raise ValueError('SAVED_PROBE_SCOPE')
+    from scripts.v093_problem_recovery import RecheckAdapter
+    from scripts.v093_tpex_legacy_prices import validate_archived
+    evidence=prior.get('followup_rejected_evidence') or {}
+    reader=object.__new__(RecheckAdapter);reader.d=drive;reader.rejected=evidence;reader.raw_cache={}
+    validate_archived(reader.read_rejected(),task['definition']['period'])
+    promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=evidence['raw_sha256'],rejected_evidence=evidence)
+    proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=follow_cfg['tpex_archived_html']['query_page_sha256'],route=follow_cfg['tpex_archived_html'])
+   elif source=='MOPS':
     case=task['execution_contract']
     if case.get('mode')!='MISSING' or case.get('reference') or task.get('rejected_evidence'):raise ValueError('MOPS_REVIEWED_MISSING_SCOPE')
     reviewed_mops_route(case)
@@ -69,9 +88,10 @@ def main():
     production.update(begin)
     proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=follow_cfg['tpex_archived_html']['query_page_sha256'],route=follow_cfg['tpex_archived_html'])
    result=None
-   try:result=requery(root,source,task,prior,proof,drive)
+   try:result=requery(root,source,task,prior,proof,drive,promotion=promotion)
    finally:
-    if source=='TPEx':production.update(lambda s:settle_probe(s,identity,result))
+    if source=='TPEx' and not local:production.update(lambda s:settle_probe(s,identity,result))
+   if local:journal['released_from_saved_response']=production.update(lambda s:release_saved_probe(s,cfg['previous_probe_identity'],key,result,evidence['raw_sha256']))
    delta=result['attempts']-prior['attempts']
    if not 0<=delta<=1:raise ValueError('ONE_SHOT_REQUEST_LIMIT')
    result['reviewed_recovery_identity']=identity

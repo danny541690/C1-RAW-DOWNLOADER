@@ -50,7 +50,7 @@
     "canary_date": "2003-08-01",
     "canary_required_before_bulk": true
   },
-  "legacy_reparse_revision": "CAPTION_DATE_SPLIT_CHANGE_AND_SOURCE_DIAGNOSIS_V7",
+  "legacy_reparse_revision": "SECTION_LABELS_AND_SAVED_PROBE_V8",
   "reviewed_emergency_closures": [
     {
       "source": "TWSE",
