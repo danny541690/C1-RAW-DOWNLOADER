@@ -1,0 +1,60 @@
+name: JARVIS unresolved original evidence recheck
+on:
+  push:
+    branches: [main]
+    paths: [config/v093_unresolved_recheck_20261101.json]
+  schedule:
+    - cron: '11,41 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - if: github.event_name != 'schedule'
+        run: python -m unittest discover -s tests -p 'test_*.py'
+      - run: python -c "from pathlib import Path; from scripts.v093_admission_runtime import load_release; load_release(Path.cwd())"
+  recheck:
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, MOPS]
+    concurrency:
+      group: jarvis-v093-production-${{ matrix.source }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Recheck only the pinned unresolved originals without market downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_unresolved_recheck --source '${{ matrix.source }}' --seconds 1800
+      - name: Preserve original recheck evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job unresolved-recheck --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unresolved-recheck-${{ matrix.source }}
+          path: |
+            results
+            publication
+          retention-days: 90

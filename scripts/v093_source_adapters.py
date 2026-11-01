@@ -93,11 +93,13 @@ class NativeAdapter(Retained):
   if self.case['mode']=='PROMOTE':return dict(source=self.case['source'],task_key=key,period=self.case['period'],reference=self.destination_reference,sha256=self.case['promotion_evidence']['sha256'])
   return dict(source=self.case['source'],task_key=self.case['key'],period=self.case['period'],reference=self.case.get('reference'),sha256=self.case.get('sha256'))
  def before_request(self,ticket):
+  if self.case['mode']=='PROMOTE':return # Verified stored bytes; no source HTTP admission.
   if self.case['mode']=='REPAIR':self.verify_repair_needed()
   source=self.case['source'];cost=2 if source=='TDCC' else 0 if source=='NDC' else 1
   if self.case['mode']=='PROMOTE' or self.case['mode']=='REPAIR' and self.case['repair_evidence'].get('replacement_reference'):cost=0
   reserve(self.c,ticket,cost=cost,limit=200 if source=='FinMind' else 30,window=3600 if source=='FinMind' else 60,spacing=2)
  def http(self,url,params=None,headers=None):
+  if self.case['mode']=='PROMOTE':raise ValueError('PROMOTION_SOURCE_HTTP_FORBIDDEN')
   source=self.case['source'];allowed={'TWSE':{'www.twse.com.tw'},'TPEx':{'www.tpex.org.tw','hist.tpex.org.tw'},'MOPS':{'mopsov.twse.com.tw','mops.twse.com.tw','mopsfin.twse.com.tw'},'TAIFEX':{'www.taifex.com.tw','openapi.taifex.com.tw'},'FinMind':{'api.finmindtrade.com'}}
   if urllib.parse.urlsplit(url).scheme!='https' or urllib.parse.urlsplit(url).hostname not in allowed.get(source,set()):raise ValueError('NATIVE_SOURCE_HOST')
   data=urllib.parse.urlencode(params).encode() if params is not None else None

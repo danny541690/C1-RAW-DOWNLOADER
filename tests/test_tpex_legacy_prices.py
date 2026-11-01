@@ -14,6 +14,10 @@ def fixture(period='2007-01-02',title='96年1月2日',change=None):
  return json.dumps(dict(stat='ok',date=period.replace('-',''),html=text),ensure_ascii=False).encode()
 
 class LegacyPricesTests(unittest.TestCase):
+ def test_archived_unquoted_ohl_does_not_assume_zero_change(self):
+  for change in ('-5.90','-0.29','+1.00'):
+   obj=json.loads(fixture(title='資料日期：920815',change=lambda r:r[:3]+[change,'.00','.00','.00']+r[7:]));result=validate_archived(obj['html'].encode('cp950'),'2003-08-15')
+   self.assertEqual(result['native']['unquoted_open_high_low_rows'],1);self.assertEqual(result['native']['price_relationship_rows_checked'],299);self.assertFalse(result['numeric_verified'])
  def test_oracle_compact_roc_date_is_bound_to_report_date_not_generation_time(self):
   text=json.loads(fixture(title='資料日期：920801'))['html'];raw=('<!-- generated 2003-08-05 -->'+text).encode('cp950')
   self.assertTrue(validate_archived(raw,'2003-08-01')['basic_verified'])
@@ -41,10 +45,23 @@ class LegacyPricesTests(unittest.TestCase):
   evidence=dict(reference='quarantine',raw_sha256=sha(raw),raw_bytes=len(raw),stored_sha256=sha(compressed),readback_verified=True,accepted_as_raw=False,encoding='gzip')
   row=repair_row(task,dict(attempts=4),dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',route=cfg['tpex_archived_html'],raw_sha256=cfg['tpex_archived_html']['query_page_sha256']),promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=sha(raw),rejected_evidence=evidence))
   with tempfile.TemporaryDirectory() as tmp:
-   c=Coordinator(SQLiteCAS(Path(tmp)/'db'),'TPEx',ttl=600);key=row['definition']['key'];c.update(lambda s:s['tasks'].update({key:row}));drive=FakeDrive();drive.data['quarantine']=compressed
+   c=Coordinator(SQLiteCAS(Path(tmp)/'db'),'TPEx',ttl=600);key=row['definition']['key'];c.update(lambda s:s['tasks'].update({key:row}));c.update(lambda s:s.update(hold='HTTPError_403',cooldown_until=c.clock()+3600));drive=FakeDrive();drive.data['quarantine']=compressed
    adapter=EmptyQueryAdapter(c,drive,dict(source='TPEx',key=key),row)
    with patch.object(adapter,'http',side_effect=AssertionError('must not download')) as http:result=Executor(c,adapter).one('DESC','promote')
    current=c.store.read('TPEx')[1]['tasks'][key];self.assertEqual(current['status'],'RAW_BASIC_VERIFIED');self.assertEqual(current['attempts'],4);http.assert_not_called();self.assertEqual(drive.data[result['reference']],raw);self.assertEqual(drive.data['quarantine'],compressed);self.assertTrue(current['storage_receipt']['readback_verified'])
+   self.assertEqual(c.store.read('TPEx')[1]['hold'],'HTTPError_403');self.assertNotIn('http_budget',c.store.read('TPEx')[1])
+ def test_promotion_http_is_forbidden_even_without_a_source_hold(self):
+  from scripts.v093_source_adapters import NativeAdapter
+  adapter=object.__new__(NativeAdapter);adapter.case=dict(mode='PROMOTE')
+  with self.assertRaisesRegex(ValueError,'SOURCE_HTTP_FORBIDDEN'):adapter.http('https://www.tpex.org.tw/')
+ def test_forged_local_flag_cannot_admit_source_download_under_403(self):
+  import tempfile
+  from scripts.v093_source_coordination import Coordinator
+  from test_source_coordination import SQLiteCAS
+  with tempfile.TemporaryDirectory() as tmp:
+   c=Coordinator(SQLiteCAS(Path(tmp)/'db'),'TPEx');c.add([dict(source='TPEx',key='a',slot='DESC',period='2003-08-15')]);c.update(lambda s:s.update(hold='HTTPError_403'))
+   def forge(s):s['tasks']['a'].update(local_only=True,execution_contract=dict(mode='MISSING'))
+   c.update(forge);self.assertIsNone(c.claim('DESC','test'));self.assertEqual(c.store.read('TPEx')[1]['tasks']['a']['attempts'],0)
  def test_only_observed_price_markers_are_parsed_and_original_raw_is_unchanged(self):
   raw=fixture(change=lambda r:r[:2]+['♁10']+r[3:]);before=bytes(raw);result=validate(raw,'2007-01-02');self.assertEqual(raw,before);self.assertEqual(result['native']['marked_price_cells'],1)
   with self.assertRaises(ValueError):validate(fixture(change=lambda r:r[:2]+['?10']+r[3:]),'2007-01-02')

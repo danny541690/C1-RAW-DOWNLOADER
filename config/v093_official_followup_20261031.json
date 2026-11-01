@@ -50,5 +50,5 @@
     "canary_date": "2003-08-01",
     "canary_required_before_bulk": true
   },
-  "legacy_reparse_revision": "ORACLE_COMPACT_ROC_AND_ZERO_REQUEST_PROMOTION_V5"
+  "legacy_reparse_revision": "ORACLE_UNQUOTED_OHL_NONZERO_CHANGE_V6"
 }

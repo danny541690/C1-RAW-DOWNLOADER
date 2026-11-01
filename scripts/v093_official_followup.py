@@ -296,7 +296,11 @@ def requery(root,source,task,prior,calendar_proof,drive,promotion=None):
  else:result['followup_pending_status']=status
  for name in ('raw_reference','raw_sha256','storage_receipt','error'):
   if name in current:result[name]=current[name]
- if current.get('rejected_evidence'):result['followup_rejected_evidence']=current['rejected_evidence']
+ if current.get('rejected_evidence') and status!='RAW_BASIC_VERIFIED':result['followup_rejected_evidence']=current['rejected_evidence']
+ if status=='RAW_BASIC_VERIFIED':
+  if result.get('error'):result['resolved_error']=result.pop('error')
+  result.pop('followup_pending_status',None)
+  result['followup_raw_writes']=int(not current.get('reused_existing'))
  return result
 
 def run_source(root,source,config):
@@ -344,16 +348,18 @@ def run_source(root,source,config):
  if source=='TPEx':
   for task in rows:
    key=task['definition']['key'];prior=state['tasks'][key];evidence=prior.get('followup_rejected_evidence');archived=archived_html(task,config)
-   if not (early_2007(task,config) or archived) or not evidence or prior.get('status')=='RAW_BASIC_VERIFIED' or prior.get('rejected_reparse_revision')=='ORACLE_COMPACT_ROC_AND_ZERO_REQUEST_PROMOTION_V5':continue
+   if not (early_2007(task,config) or archived) or not evidence or prior.get('status')=='RAW_BASIC_VERIFIED' or prior.get('rejected_reparse_revision')=='ORACLE_UNQUOTED_OHL_NONZERO_CHANGE_V6':continue
+   if time.monotonic()-started>1500:more=True;break
    from scripts.v093_problem_recovery import RecheckAdapter
    reader=object.__new__(RecheckAdapter);reader.d=drive;reader.rejected=evidence;reader.raw_cache={}
    try:
     from scripts.v093_tpex_legacy_prices import validate,validate_archived
     stats=(validate_archived if archived else validate)(reader.read_rejected(),task['definition']['period'])
+    if prior.get('rejected_reparse_error'):prior['resolved_reparse_error']=prior.pop('rejected_reparse_error')
     prior.update(rejected_reparse_result='VALID_REJECTED_RAW_REQUIRES_PROMOTION',rejected_reparse_stats=stats)
    except (ValueError,UnicodeError) as exc:
     prior.update(rejected_reparse_result='REVIEW_REQUIRED',rejected_reparse_error=str(exc).split(':',1)[0])
-   prior['rejected_reparse_revision']='ORACLE_COMPACT_ROC_AND_ZERO_REQUEST_PROMOTION_V5';checkpoint()
+   prior['rejected_reparse_revision']='ORACLE_UNQUOTED_OHL_NONZERO_CHANGE_V6';checkpoint()
    if prior.get('rejected_reparse_result')=='VALID_REJECTED_RAW_REQUIRES_PROMOTION' and archived:
     proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=config['tpex_archived_html']['query_page_sha256'],route=config['tpex_archived_html'])
     promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=evidence['raw_sha256'],rejected_evidence=evidence)

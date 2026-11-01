@@ -1,0 +1,9 @@
+{
+  "revision": "unresolved-recheck-20261101-v1",
+  "market_source_requests": false,
+  "original_raw_immutable": true,
+  "targets": {
+    "TWSE": {"commit": "29d00372d9b74b1497be2b7afa0f5cc9338961c9", "unresolved": 154},
+    "MOPS": {"commit": "57e2b03c66d7c37983f527b213af9d35731e9c35", "unresolved": 133}
+  }
+}

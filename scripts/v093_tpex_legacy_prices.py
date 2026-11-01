@@ -78,7 +78,7 @@ def validate_html(payload,period,format_name,response_date=None):
   marked_price_cells+=sum(cells[i].startswith(('♁','☉')) for i in price_indexes)
   if prices==[0.0]*4 and column(('漲跌',)) is not None and cells[column(('漲跌',))]=='---':
    prices=[None]*4;zero_quote_rows+=1
-  elif format_name=='OFFICIAL_ARCHIVED_STATIC_HTML' and all(cells[i]=='.00' for i in price_indexes[:3]) and column(('漲跌',)) is not None and cells[column(('漲跌',))]=='0':
+  elif format_name=='OFFICIAL_ARCHIVED_STATIC_HTML' and all(cells[i]=='.00' for i in price_indexes[:3]):
    if prices[3] is not None and prices[3]<0:raise ValueError('TPEX_LEGACY_NEGATIVE_CLOSE')
    # The observed Oracle report has no O/H/L quote in these rows, even when
    # a closing field or small trade exists. Preserve it; do not certify OHLC.

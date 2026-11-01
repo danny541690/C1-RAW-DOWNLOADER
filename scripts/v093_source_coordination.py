@@ -9,6 +9,9 @@ SOURCES={'TWSE','TPEx','MOPS','TAIFEX','TDCC','NDC','FinMind'}
 class Conflict(RuntimeError):pass
 class StaleOwner(RuntimeError):pass
 
+def offline_promotion(task):
+ return task.get('local_only') is True and (task.get('execution_contract') or {}).get('mode')=='PROMOTE'
+
 class Coordinator:
  def __init__(self,store,source,clock=time.time,ttl=300):
   if source not in SOURCES or ttl<=0:raise ValueError('SOURCE_OR_LEASE')
@@ -36,13 +39,14 @@ class Coordinator:
   if direction not in ('ASC','DESC') or not owner:raise ValueError('OWNER_DIRECTION')
   now=self.clock()
   def change(state):
-   if state.get('hold') or state.get('cooldown_until',0)>now:return None
+   paused=bool(state.get('hold') or state.get('cooldown_until',0)>now)
    for task in state['tasks'].values():
     if task.get('owner') and task['expires']<=now:
      uncertain=task['status'] in ('REQUEST_INTENT','STORED','RETAINED_CHECK')
      task.update(owner=None,status='RECONCILE' if uncertain else 'READY_CHECK' if task.get('check_only') else 'READY')
      if uncertain:task['next_action']='VERIFY_SAVE_INTENT' if task.get('save_intent') else 'RECONCILE_SOURCE_AND_STORAGE'
    available=[(key,t) for key,t in state['tasks'].items() if key not in exclude and t['definition']['slot']==slot
+    and (not paused or offline_promotion(t) and state.get('hold') in (None,'HTTPError_403'))
     and (t['status'] in ('READY','READY_CHECK') or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now)]
    available.sort(key=lambda x:(x[1]['definition']['period'],x[0]),reverse=direction=='DESC')
    for key,task in available:
@@ -77,7 +81,8 @@ class Coordinator:
  def begin_materialization(self,ticket):
   def change(s):
    t=self.owned(s,ticket)
-   if s.get('hold') or s.get('cooldown_until',0)>self.clock():raise ValueError('SOURCE_ON_HOLD')
+   paused=s.get('hold') or s.get('cooldown_until',0)>self.clock()
+   if paused and not (offline_promotion(t) and s.get('hold') in (None,'HTTPError_403')):raise ValueError('SOURCE_ON_HOLD')
    if not t.get('local_only') or t.get('check_only') or t['status']!='LEASED' or t.get('materializations',0)>=4:raise ValueError('LOCAL_MATERIALIZATION_NOT_ADMITTED')
    t.update(status='REQUEST_INTENT',materializations=t.get('materializations',0)+1)
    return t['materializations']
