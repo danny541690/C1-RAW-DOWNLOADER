@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "5d8ed8391d9ae43a4c403b883ad899fd56cc3078c2e469e608e3032e2d60b60e",
+  "tested_code_sha256": "9b13a09c3f09041b6964b65d6d92ab8bd7b27260fae8a1e8d91213efe90e58ca",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -77,7 +77,7 @@
   "activation_evidence_run": "41002625767",
   "recovery_update": "UNRESOLVED_RECHECK_ORACLE_NONZERO_CHANGE_OFFLINE_PROMOTION_V6_20261101",
   "recovery_validation": {
-    "regression_tests": 1197,
+    "regression_tests": 1200,
     "result": "PASS",
     "actual_large_report_replays": [
       "TWSE:802",
@@ -89,6 +89,7 @@
     "source_attempts_preserved": true,
     "source_corruption_not_accepted": true,
     "zero_http_promotion_at_attempt_limit": true,
-    "offline_promotion_keeps_http403_hold": true
+    "offline_promotion_keeps_http403_hold": true,
+    "official_emergency_extract_scope_bound": true
   }
 }

@@ -50,5 +50,27 @@
     "canary_date": "2003-08-01",
     "canary_required_before_bulk": true
   },
-  "legacy_reparse_revision": "ORACLE_UNQUOTED_OHL_NONZERO_CHANGE_V6"
+  "legacy_reparse_revision": "ORACLE_UNQUOTED_OHL_NONZERO_CHANGE_V6",
+  "reviewed_emergency_closures": [
+    {
+      "source": "TWSE",
+      "date": "2024-10-02",
+      "url": "https://www.twse.com.tw/staticFiles/news/news/tsecnews/8a8216d69236c2e3019248073ed90050.pdf",
+      "evidence_kind": "REVIEWED_OFFICIAL_PDF_TEXT_EXTRACT",
+      "excerpt": "The Taiwan Stock Exchange and its market will be closed on October 2, 2024.",
+      "excerpt_sha256": "2a7b341f24f59856635982297a544a724721cf76fe86426bdec9a224e09f1087",
+      "reviewed_at": "2026-11-01T12:04:00+08:00",
+      "scope": "TWSE_CENTRALIZED_STOCK_MARKET_ONLY"
+    },
+    {
+      "source": "TWSE",
+      "date": "2024-10-31",
+      "url": "https://www.twse.com.tw/staticFiles/news/news/tsecnews/8a8216d69236c2e30192dd523eb10329.pdf",
+      "evidence_kind": "REVIEWED_OFFICIAL_PDF_TEXT_EXTRACT",
+      "excerpt": "The Taiwan Stock Exchange and its market will be closed on October 31, 2024.",
+      "excerpt_sha256": "a15b2e0110523b00ce0449d1900e948f21274818590e24ad878b73709c53d421",
+      "reviewed_at": "2026-11-01T12:04:00+08:00",
+      "scope": "TWSE_CENTRALIZED_STOCK_MARKET_ONLY"
+    }
+  ]
 }

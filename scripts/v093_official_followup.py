@@ -178,6 +178,13 @@ def classify(prior,calendars,config):
  empty=prior.get('reason')=='OFFICIAL_EMPTY_UNCONFIRMED' or prior.get('reason')=='REQUERY_APPLICABILITY_HOLD' and (prior.get('error') or {})==dict(code='ApplicabilityUnproven',phase='VALIDATE')
  if prior.get('status')!='REVIEW_REQUIRED' or not empty:return None
  definition=prior['definition'];source=definition['source'];period=definition['period'];date=dt.date.fromisoformat(period)
+ for proof in config.get('reviewed_emergency_closures',[]):
+  if source!='TWSE' or proof.get('source')!=source or proof.get('date')!=period:continue
+  url=urllib.parse.urlsplit(proof.get('url',''));excerpt=proof.get('excerpt','')
+  expected=f'The Taiwan Stock Exchange and its market will be closed on {date.strftime("%B")} {date.day}, {date.year}.'
+  if url.scheme!='https' or url.hostname!='www.twse.com.tw' or not url.path.startswith('/staticFiles/news/news/tsecnews/') or not url.path.endswith('.pdf'):continue
+  if proof.get('evidence_kind')!='REVIEWED_OFFICIAL_PDF_TEXT_EXTRACT' or excerpt!=expected or sha(excerpt.encode())!=proof.get('excerpt_sha256'):continue
+  return dict(reason='OFFICIAL_EMERGENCY_NONTRADING_DATE',**proof)
  if source=='TPEx' and period>='2001-01-01' and date.weekday()==5:
   return dict(reason='NATIONAL_STOCK_MARKET_SATURDAY_CLOSED',url=config['national_weekend_evidence'],date=period)
  proof=calendars.get(period[:4])

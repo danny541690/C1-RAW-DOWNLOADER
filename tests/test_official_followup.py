@@ -9,6 +9,19 @@ from test_native_repair import FakeDrive
 from test_problem_recovery import retained,sha
 
 class OfficialFollowupTests(unittest.TestCase):
+ def test_reviewed_official_emergency_notice_is_date_and_market_bound(self):
+  cfg=json.loads(Path('config/v093_official_followup_20261031.json').read_text())
+  for date in ('2024-10-02','2024-10-31'):
+   prior=dict(status='REVIEW_REQUIRED',reason='REQUERY_APPLICABILITY_HOLD',error=dict(code='ApplicabilityUnproven',phase='VALIDATE'),definition=dict(source='TWSE',period=date))
+   self.assertEqual(classify(prior,{},cfg)['reason'],'OFFICIAL_EMERGENCY_NONTRADING_DATE')
+   prior['definition']['source']='TPEx';self.assertIsNone(classify(prior,{},cfg))
+ def test_unbound_emergency_extract_cannot_close_an_empty_response(self):
+  cfg=json.loads(Path('config/v093_official_followup_20261031.json').read_text());prior=dict(status='REVIEW_REQUIRED',reason='OFFICIAL_EMPTY_UNCONFIRMED',definition=dict(source='TWSE',period='2024-10-02'))
+  cfg['reviewed_emergency_closures'][0]['excerpt_sha256']='0'*64;self.assertIsNone(classify(prior,{},cfg))
+ def test_wrong_emergency_notice_host_or_date_does_not_close_a_gap(self):
+  cfg=json.loads(Path('config/v093_official_followup_20261031.json').read_text());prior=dict(status='REVIEW_REQUIRED',reason='OFFICIAL_EMPTY_UNCONFIRMED',definition=dict(source='TWSE',period='2024-10-02'))
+  cfg['reviewed_emergency_closures'][0]['url']='https://example.invalid/a.pdf';self.assertIsNone(classify(prior,{},cfg))
+  cfg=json.loads(Path('config/v093_official_followup_20261031.json').read_text());prior['definition']['period']='2024-10-03';self.assertIsNone(classify(prior,{},cfg))
  def test_live_carried_last_trading_label_does_not_override_settlement_only(self):
   obj=self.payload(2021);obj['data'].extend([['2021-02-08','農曆春節前最後交易日','2月8日市場無交易，僅辦理結算交割作業。'],['2021-02-09','農曆春節前最後交易日','2月9日市場無交易，僅辦理結算交割作業。']])
   proof=calendar(json.dumps(obj).encode(),2021,'official')
