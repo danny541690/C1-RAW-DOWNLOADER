@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths: [config/v093_blocked_gap_recovery_20261101.json]
   workflow_dispatch:
+  schedule:
+    - cron: '7,37 * * * *'
 permissions:
   contents: write
 jobs:
@@ -22,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        source: [TPEx, MOPS]
+        source: [TWSE]
     concurrency:
       group: jarvis-v093-production-${{ matrix.source }}
       cancel-in-progress: false

@@ -1,6 +1,6 @@
 import copy,json,tempfile,unittest
 from pathlib import Path
-from scripts.v093_blocked_gap_recovery import valid_saved_result,settle_probe,release_saved_probe
+from scripts.v093_blocked_gap_recovery import valid_saved_result,settle_probe,release_saved_probe,reviewed_twse_retry
 from scripts.v093_official_followup import reviewed_mops_route,repair_row,EmptyQueryAdapter
 from scripts.v093_source_coordination import Coordinator
 from test_source_coordination import SQLiteCAS
@@ -32,7 +32,25 @@ class BlockedGapRecoveryTests(unittest.TestCase):
   row=repair_row(task,dict(attempts=3),dict(kind='REVIEWED_MOPS_HISTORICAL_ROUTE'));self.assertEqual(row['attempts'],3);self.assertFalse(row['local_only'])
   a=object.__new__(EmptyQueryAdapter);a.case=row['execution_contract'];a.http=Mock(return_value=b'raw');self.assertEqual(a.fetch(),b'raw');a.http.assert_called_once_with(reviewed_mops_route(a.case))
  def test_one_shot_targets_are_existing_keys_not_a_new_dataset(self):
-  cfg=json.loads(Path('config/v093_blocked_gap_recovery_20261101.json').read_text());self.assertTrue(cfg['one_shot']);self.assertEqual(len(cfg['targets']['TPEx']['keys']),1);self.assertEqual(len(cfg['reviewed_mops_keys_history']),8);self.assertEqual(cfg['targets']['TPEx']['mode'],'PROMOTE_SAVED_PROBE');self.assertEqual(cfg['targets']['MOPS']['keys'],[])
+  cfg=json.loads(Path('config/v093_blocked_gap_recovery_20261101.json').read_text());self.assertTrue(cfg['one_shot']);self.assertEqual(cfg['targets']['TPEx']['keys'],[]);self.assertEqual(len(cfg['reviewed_mops_keys_history']),8);self.assertEqual(cfg['prior_recovery_targets']['TPEx']['mode'],'PROMOTE_SAVED_PROBE');self.assertEqual(cfg['targets']['MOPS']['keys'],[]);self.assertEqual(len(cfg['targets']['TWSE']['keys']),151)
+ def twse_review(self):
+  from test_problem_recovery import sha
+  task=retained(b'empty',source='TWSE',period='2004-06-22',category='prices_indices');key=task['definition']['key']
+  prior=dict(status='REVIEW_REQUIRED',reason='OFFICIAL_EMPTY_UNCONFIRMED',attempts=1,raw_sha256=sha(b'empty'))
+  target=dict(reviewed_tasks={key:dict(period='2004-06-22',attempts=1)})
+  return task,prior,target
+ def test_reviewed_twse_can_query_without_certifying_missing_calendar(self):
+  task,prior,target=self.twse_review();self.assertTrue(reviewed_twse_retry(task,prior,target))
+  for changed in (dict(attempts=2),dict(attempts=4),dict(status='RAW_BASIC_VERIFIED'),dict(raw_sha256='0'*64),dict(reason='UNRELATED_ERROR')):
+   self.assertFalse(reviewed_twse_retry(task,dict(prior,**changed),target))
+ def test_reviewed_twse_scope_cannot_expand_to_other_source_date_category_or_key(self):
+  task,prior,target=self.twse_review()
+  for field,value in (('source','TPEx'),('period','2004-06-23'),('key','unreviewed')):
+   changed=copy.deepcopy(task);changed['definition'][field]=value;self.assertFalse(reviewed_twse_retry(changed,prior,target))
+  changed=copy.deepcopy(task);changed['execution_contract']['category']='institutional';self.assertFalse(reviewed_twse_retry(changed,prior,target))
+ def test_already_requeried_empty_requires_the_exact_empty_validation_error(self):
+  task,prior,target=self.twse_review();prior.update(reason='REQUERY_APPLICABILITY_HOLD',error=dict(code='ApplicabilityUnproven',phase='VALIDATE'));self.assertTrue(reviewed_twse_retry(task,prior,target))
+  prior['error']['phase']='AUTHORIZE';self.assertFalse(reviewed_twse_retry(task,prior,target))
  def test_saved_probe_release_requires_native_state_same_receipt_and_same_bytes(self):
   good=self.good();s=dict(hold='HTTPError_403',hold_probe_history=dict(identity='old',key='key',sent=True),tasks=dict(key=copy.deepcopy(good)))
   self.assertFalse(release_saved_probe(s,'old','key',good,'b'*64));self.assertEqual(s['hold'],'HTTPError_403')

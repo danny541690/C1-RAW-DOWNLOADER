@@ -1,16 +1,779 @@
 {
-  "identity": "saved-probe-recovery-20261101-v2",
+  "identity": "reviewed-empty-retry-20261101-v9",
   "one_shot": true,
   "keep_original_raw": true,
   "source_attempt_limit": 4,
   "targets": {
-    "TPEx": {
+    "TWSE": {
       "keys": [
-        "TPEx|2004-11|b3292033de65341e53331adf"
+        "TWSE|2004-06|09350fa4f63df3521603c452",
+        "TWSE|2004-08|21433bd31ee32aa04af42a12",
+        "TWSE|2004-08|28fedbec9e4e4d8cb4b13809",
+        "TWSE|2004-09|aa0a981932c5208495f9e15d",
+        "TWSE|2004-10|e64cf508d0640dd6199917cd",
+        "TWSE|2005-02|2677120b3419606614c1929c",
+        "TWSE|2005-02|796ed4d45dbcfaf682b6b88c",
+        "TWSE|2005-02|89928428f18f988ade44f302",
+        "TWSE|2005-02|924e829aee491585e58dd8d8",
+        "TWSE|2005-02|e3d8be4f6eccea316c96d6dd",
+        "TWSE|2005-02|f2ee4cf0494d630e31721ea2",
+        "TWSE|2005-02|f52678b6fc9d11d8f8c2b65b",
+        "TWSE|2005-04|01df5126e9daec6673464125",
+        "TWSE|2005-05|5d0600a76e04291601c0b41b",
+        "TWSE|2005-07|2ce4bd25243c671b89636320",
+        "TWSE|2005-08|cd29b952cc7c0a1e8bf7f558",
+        "TWSE|2005-09|7e6043058fb4b6bfe533b3df",
+        "TWSE|2005-10|1927de94e46023166d4a8705",
+        "TWSE|2006-01|02436c8fac5cc4420698c04b",
+        "TWSE|2006-01|1ad9ee3793530515705c675a",
+        "TWSE|2006-01|5c77d398e52e9e057f1ac495",
+        "TWSE|2006-01|e5b4035a2b4737a5d7679a5e",
+        "TWSE|2006-02|160f4eee4490c49bb932303a",
+        "TWSE|2006-02|6c53f5b773ac0b2c3e0cdb84",
+        "TWSE|2006-02|701da7b1dea404c08dd54aa3",
+        "TWSE|2006-04|c746f4b544418c9defebe2ca",
+        "TWSE|2006-05|40d235a3113988699af63dde",
+        "TWSE|2006-05|803a7435dbdbe71f7f37d0ea",
+        "TWSE|2006-10|537848160a188d1bb7745cfd",
+        "TWSE|2006-10|de14ab24446c955f78f8a0bb",
+        "TWSE|2006-10|e061177de33bd602a60fa06a",
+        "TWSE|2007-01|5ab35ab5abf9e5d83b116414",
+        "TWSE|2007-02|6153decd60cbaff26c5fbbaf",
+        "TWSE|2007-02|6603f6cf7bb2e8ac2e513517",
+        "TWSE|2007-02|882e1dd9cd5fd59bf74be9f8",
+        "TWSE|2007-02|b383c742d6ffe5126b34cd33",
+        "TWSE|2007-02|c40f6dd00c4d46a2e8e48336",
+        "TWSE|2007-02|c62275a4813dbcf7d1121aea",
+        "TWSE|2007-02|f5dab99f809c9f6c8e999248",
+        "TWSE|2007-02|f8f63ccd26b1c9eba5bf17dd",
+        "TWSE|2007-04|036cdf35d0b79f55092855f5",
+        "TWSE|2007-04|26aef5e06fe4d6944a4099d7",
+        "TWSE|2007-05|eaa3737288c2e7c818ad5ffe",
+        "TWSE|2007-06|23ae05b5e75757168e3833a2",
+        "TWSE|2007-06|d482920c5846a89cdea8068b",
+        "TWSE|2007-09|22e7ac0607ba5abdeb973c2d",
+        "TWSE|2007-09|2b359dc9b624b58341297afe",
+        "TWSE|2007-09|835f9e3e6228146dca055c39",
+        "TWSE|2007-10|bfd66657c4dd3711574a7a6e",
+        "TWSE|2008-01|81fc53181a3789ea1d28f18d",
+        "TWSE|2008-02|302a74e2cf3bef2c056db840",
+        "TWSE|2008-02|4217c0ae4ec99dca7649b062",
+        "TWSE|2008-02|842b24b57081b713ffa23568",
+        "TWSE|2008-02|886b055b59c73c49306befba",
+        "TWSE|2008-02|9889eb48304ecead9f5f8ffd",
+        "TWSE|2008-02|e57c62bae85c19d6a57140c1",
+        "TWSE|2008-02|ef981b7dff2b8d3d7c614ffe",
+        "TWSE|2008-04|8284935b2156cd6163cc3851",
+        "TWSE|2008-05|116412f7b076d21c6dbb4a83",
+        "TWSE|2008-07|9ddfddae44e26cedb9afe5a0",
+        "TWSE|2008-09|89df643646efde25153f300d",
+        "TWSE|2008-10|c3201355d460e40571b1c162",
+        "TWSE|2009-01|09cf534767373a055c73b4a9",
+        "TWSE|2009-01|0cdb71d7b4cf7308ed2c9b63",
+        "TWSE|2009-01|44f8aaff3e0c8d47e4bf5e72",
+        "TWSE|2009-01|5fd655883ad01dde59794429",
+        "TWSE|2009-01|81b6fdce1efdde84c6a89d10",
+        "TWSE|2009-01|94b68691d7c8e490fc45c84d",
+        "TWSE|2009-01|b0b842b6674395662a8e45dc",
+        "TWSE|2009-01|d10e9d419c646366dd3b5a82",
+        "TWSE|2009-01|e7f048237dc29946f168bc44",
+        "TWSE|2009-05|80062ece6db336c0d616a1c0",
+        "TWSE|2009-05|b35bfa43df27186f497e713b",
+        "TWSE|2009-05|f43105fb9e77f6d4d06fc168",
+        "TWSE|2009-08|3fe83bf84f0d26adfb6188f7",
+        "TWSE|2010-01|903bbe60b39f376ee552266f",
+        "TWSE|2010-02|111be772f54bb15381cf00b8",
+        "TWSE|2010-02|393e1ee322ae98e5d3795c8d",
+        "TWSE|2010-02|55692684d6fad46137841f0d",
+        "TWSE|2010-02|56a1eb3c382d4bd87ae2172d",
+        "TWSE|2010-02|79ad9bb469d5b7ed989481b6",
+        "TWSE|2010-02|c4492cb58d02c4cbc2691827",
+        "TWSE|2010-02|d4ab149a848d44978bd338e0",
+        "TWSE|2010-04|636cdbba0191f6328c44e848",
+        "TWSE|2010-06|66ed261e1e9fd217717b21c0",
+        "TWSE|2010-09|c8810d94f0fc343d933787a8",
+        "TWSE|2011-01|af86cd2d0711ec6610078005",
+        "TWSE|2011-02|0b18137fc6279bb229a65cbb",
+        "TWSE|2011-02|5698a0ea77e1a79f816a79b1",
+        "TWSE|2011-02|59b5e798eb95c6185bef1a7f",
+        "TWSE|2011-02|7a081aadbebdd6fcefe4b714",
+        "TWSE|2011-02|7b1b3d9f9713f9126c6a3d11",
+        "TWSE|2011-02|9f785f941540a6e0d80270e9",
+        "TWSE|2011-04|43661cff404b9494a56b3a34",
+        "TWSE|2011-04|f2926d2935b39c9ed0ecb7df",
+        "TWSE|2011-05|0eaaf546667c5c0e60029d49",
+        "TWSE|2011-06|bcb3a458a3d690ccb05ac2bd",
+        "TWSE|2011-09|e4a9ceccf1fff2146643189f",
+        "TWSE|2011-10|a78960240c958fb371e5b468",
+        "TWSE|2012-01|0233f62e4a6687bb0d83ae0d",
+        "TWSE|2012-01|2be1a8067ecbd316d2254846",
+        "TWSE|2012-01|516e1cf23a9db402d1b1778e",
+        "TWSE|2012-01|5a61197fda6d1dab3c3c8ed3",
+        "TWSE|2012-01|75acadbb9d9d11d79e34dc89",
+        "TWSE|2012-01|a8d5b8c0896d3aead4c199b7",
+        "TWSE|2012-01|f10499af69e05680a68dfbdb",
+        "TWSE|2012-02|7e65dfa5f70f2b945b9778c9",
+        "TWSE|2012-02|a466d2f80dde9723d718d1e4",
+        "TWSE|2012-04|13fec6eae6dd2420177dbfaa",
+        "TWSE|2012-05|46fe73c41b7a6028219dcab6",
+        "TWSE|2012-08|b4490518137134499e65538f",
+        "TWSE|2012-10|16ca7fc49c98f934ae03f3d7",
+        "TWSE|2012-12|b51ac083d656deaf9d445939",
+        "TWSE|2013-01|82f29b23231e2e182c82b90d",
+        "TWSE|2013-02|39e5e51260dd39666b4ded7e",
+        "TWSE|2013-02|3bf1c4e93bc746786e41dbe1",
+        "TWSE|2013-02|59e1b1eabd77c130d8779642",
+        "TWSE|2013-02|733fae7d5bfbc18e80211152",
+        "TWSE|2013-02|c00d7b8252efef5f884f43d7",
+        "TWSE|2013-02|c6ced8a598bec4d6208e461e",
+        "TWSE|2013-02|d5018565513458035c3aa5a4",
+        "TWSE|2013-02|e496a2d418d873a43bb23abf",
+        "TWSE|2013-04|0246c16974d8eb9856cb34e2",
+        "TWSE|2013-04|b85d4c0ae1e3bc7cf8af8805",
+        "TWSE|2013-05|a442c21bb80ad4f44dab2378",
+        "TWSE|2013-06|2dff6e540d3c8a19511da68c",
+        "TWSE|2013-08|50a7dc1208f8dc4ffb07475a",
+        "TWSE|2013-09|0951d32869ff88658d6aa96e",
+        "TWSE|2013-09|2b2ad05e031a527b5ddfabd8",
+        "TWSE|2013-10|c727ec19f52cf2a38259419d",
+        "TWSE|2014-01|51845934ed37118d7fac99ad",
+        "TWSE|2014-01|87e5452195258a3f2e8c1a40",
+        "TWSE|2014-01|c092fea2628e410ff816c294",
+        "TWSE|2014-01|e5be9a359890224f5e0d5b31",
+        "TWSE|2014-01|f2b853570e709fe8dc5d979d",
+        "TWSE|2014-02|0dc637866ac73f9b0d89b282",
+        "TWSE|2014-02|3ab4b6d1d95c5263b28d5437",
+        "TWSE|2014-02|919c5ad1183dfe2315206d5d",
+        "TWSE|2015-02|a7d1b8d7f5a8e1fb3e93ae90",
+        "TWSE|2016-02|2a6f457ad1bb738b4653ea7a",
+        "TWSE|2016-02|e8b18182bea8056af8b4ffae",
+        "TWSE|2017-04|fb703cc60e192592cbe26ecc",
+        "TWSE|2017-05|63cbbb79212456c5e62f22d3",
+        "TWSE|2018-10|efd0f5ae06ee56cc878931a1",
+        "TWSE|2019-03|f0226d7f800acb514ddcb3cf",
+        "TWSE|2019-08|1f3316f0bee2bdedd7cd84f3",
+        "TWSE|2023-08|b0a38e2255c202271b91e055",
+        "TWSE|2024-07|b86465931b11f985967bb764",
+        "TWSE|2024-07|e2dd0aedc77b18739036f63d",
+        "TWSE|2024-10|b32a5b009f36826cfcf52989",
+        "TWSE|2026-07|2bb0c616a410c50289b3fc49"
       ],
-      "mode": "PROMOTE_SAVED_PROBE"
+      "reviewed_tasks": {
+        "TWSE|2004-06|09350fa4f63df3521603c452": {
+          "period": "2004-06-22",
+          "attempts": 1
+        },
+        "TWSE|2004-08|21433bd31ee32aa04af42a12": {
+          "period": "2004-08-25",
+          "attempts": 1
+        },
+        "TWSE|2004-08|28fedbec9e4e4d8cb4b13809": {
+          "period": "2004-08-24",
+          "attempts": 1
+        },
+        "TWSE|2004-09|aa0a981932c5208495f9e15d": {
+          "period": "2004-09-28",
+          "attempts": 1
+        },
+        "TWSE|2004-10|e64cf508d0640dd6199917cd": {
+          "period": "2004-10-25",
+          "attempts": 1
+        },
+        "TWSE|2005-02|2677120b3419606614c1929c": {
+          "period": "2005-02-28",
+          "attempts": 1
+        },
+        "TWSE|2005-02|796ed4d45dbcfaf682b6b88c": {
+          "period": "2005-02-07",
+          "attempts": 1
+        },
+        "TWSE|2005-02|89928428f18f988ade44f302": {
+          "period": "2005-02-04",
+          "attempts": 1
+        },
+        "TWSE|2005-02|924e829aee491585e58dd8d8": {
+          "period": "2005-02-10",
+          "attempts": 1
+        },
+        "TWSE|2005-02|e3d8be4f6eccea316c96d6dd": {
+          "period": "2005-02-09",
+          "attempts": 1
+        },
+        "TWSE|2005-02|f2ee4cf0494d630e31721ea2": {
+          "period": "2005-02-11",
+          "attempts": 1
+        },
+        "TWSE|2005-02|f52678b6fc9d11d8f8c2b65b": {
+          "period": "2005-02-08",
+          "attempts": 1
+        },
+        "TWSE|2005-04|01df5126e9daec6673464125": {
+          "period": "2005-04-05",
+          "attempts": 1
+        },
+        "TWSE|2005-05|5d0600a76e04291601c0b41b": {
+          "period": "2005-05-02",
+          "attempts": 1
+        },
+        "TWSE|2005-07|2ce4bd25243c671b89636320": {
+          "period": "2005-07-18",
+          "attempts": 1
+        },
+        "TWSE|2005-08|cd29b952cc7c0a1e8bf7f558": {
+          "period": "2005-08-05",
+          "attempts": 1
+        },
+        "TWSE|2005-09|7e6043058fb4b6bfe533b3df": {
+          "period": "2005-09-01",
+          "attempts": 1
+        },
+        "TWSE|2005-10|1927de94e46023166d4a8705": {
+          "period": "2005-10-10",
+          "attempts": 1
+        },
+        "TWSE|2006-01|02436c8fac5cc4420698c04b": {
+          "period": "2006-01-30",
+          "attempts": 1
+        },
+        "TWSE|2006-01|1ad9ee3793530515705c675a": {
+          "period": "2006-01-26",
+          "attempts": 1
+        },
+        "TWSE|2006-01|5c77d398e52e9e057f1ac495": {
+          "period": "2006-01-31",
+          "attempts": 2
+        },
+        "TWSE|2006-01|e5b4035a2b4737a5d7679a5e": {
+          "period": "2006-01-27",
+          "attempts": 1
+        },
+        "TWSE|2006-02|160f4eee4490c49bb932303a": {
+          "period": "2006-02-28",
+          "attempts": 1
+        },
+        "TWSE|2006-02|6c53f5b773ac0b2c3e0cdb84": {
+          "period": "2006-02-01",
+          "attempts": 1
+        },
+        "TWSE|2006-02|701da7b1dea404c08dd54aa3": {
+          "period": "2006-02-02",
+          "attempts": 1
+        },
+        "TWSE|2006-04|c746f4b544418c9defebe2ca": {
+          "period": "2006-04-05",
+          "attempts": 1
+        },
+        "TWSE|2006-05|40d235a3113988699af63dde": {
+          "period": "2006-05-31",
+          "attempts": 1
+        },
+        "TWSE|2006-05|803a7435dbdbe71f7f37d0ea": {
+          "period": "2006-05-01",
+          "attempts": 1
+        },
+        "TWSE|2006-10|537848160a188d1bb7745cfd": {
+          "period": "2006-10-09",
+          "attempts": 1
+        },
+        "TWSE|2006-10|de14ab24446c955f78f8a0bb": {
+          "period": "2006-10-06",
+          "attempts": 1
+        },
+        "TWSE|2006-10|e061177de33bd602a60fa06a": {
+          "period": "2006-10-10",
+          "attempts": 1
+        },
+        "TWSE|2007-01|5ab35ab5abf9e5d83b116414": {
+          "period": "2007-01-01",
+          "attempts": 1
+        },
+        "TWSE|2007-02|6153decd60cbaff26c5fbbaf": {
+          "period": "2007-02-22",
+          "attempts": 1
+        },
+        "TWSE|2007-02|6603f6cf7bb2e8ac2e513517": {
+          "period": "2007-02-23",
+          "attempts": 1
+        },
+        "TWSE|2007-02|882e1dd9cd5fd59bf74be9f8": {
+          "period": "2007-02-20",
+          "attempts": 1
+        },
+        "TWSE|2007-02|b383c742d6ffe5126b34cd33": {
+          "period": "2007-02-28",
+          "attempts": 1
+        },
+        "TWSE|2007-02|c40f6dd00c4d46a2e8e48336": {
+          "period": "2007-02-15",
+          "attempts": 1
+        },
+        "TWSE|2007-02|c62275a4813dbcf7d1121aea": {
+          "period": "2007-02-16",
+          "attempts": 1
+        },
+        "TWSE|2007-02|f5dab99f809c9f6c8e999248": {
+          "period": "2007-02-21",
+          "attempts": 1
+        },
+        "TWSE|2007-02|f8f63ccd26b1c9eba5bf17dd": {
+          "period": "2007-02-19",
+          "attempts": 1
+        },
+        "TWSE|2007-04|036cdf35d0b79f55092855f5": {
+          "period": "2007-04-05",
+          "attempts": 1
+        },
+        "TWSE|2007-04|26aef5e06fe4d6944a4099d7": {
+          "period": "2007-04-06",
+          "attempts": 1
+        },
+        "TWSE|2007-05|eaa3737288c2e7c818ad5ffe": {
+          "period": "2007-05-01",
+          "attempts": 1
+        },
+        "TWSE|2007-06|23ae05b5e75757168e3833a2": {
+          "period": "2007-06-18",
+          "attempts": 1
+        },
+        "TWSE|2007-06|d482920c5846a89cdea8068b": {
+          "period": "2007-06-19",
+          "attempts": 1
+        },
+        "TWSE|2007-09|22e7ac0607ba5abdeb973c2d": {
+          "period": "2007-09-25",
+          "attempts": 1
+        },
+        "TWSE|2007-09|2b359dc9b624b58341297afe": {
+          "period": "2007-09-24",
+          "attempts": 1
+        },
+        "TWSE|2007-09|835f9e3e6228146dca055c39": {
+          "period": "2007-09-18",
+          "attempts": 1
+        },
+        "TWSE|2007-10|bfd66657c4dd3711574a7a6e": {
+          "period": "2007-10-10",
+          "attempts": 1
+        },
+        "TWSE|2008-01|81fc53181a3789ea1d28f18d": {
+          "period": "2008-01-01",
+          "attempts": 1
+        },
+        "TWSE|2008-02|302a74e2cf3bef2c056db840": {
+          "period": "2008-02-05",
+          "attempts": 1
+        },
+        "TWSE|2008-02|4217c0ae4ec99dca7649b062": {
+          "period": "2008-02-07",
+          "attempts": 1
+        },
+        "TWSE|2008-02|842b24b57081b713ffa23568": {
+          "period": "2008-02-06",
+          "attempts": 1
+        },
+        "TWSE|2008-02|886b055b59c73c49306befba": {
+          "period": "2008-02-28",
+          "attempts": 1
+        },
+        "TWSE|2008-02|9889eb48304ecead9f5f8ffd": {
+          "period": "2008-02-08",
+          "attempts": 1
+        },
+        "TWSE|2008-02|e57c62bae85c19d6a57140c1": {
+          "period": "2008-02-11",
+          "attempts": 1
+        },
+        "TWSE|2008-02|ef981b7dff2b8d3d7c614ffe": {
+          "period": "2008-02-04",
+          "attempts": 1
+        },
+        "TWSE|2008-04|8284935b2156cd6163cc3851": {
+          "period": "2008-04-04",
+          "attempts": 1
+        },
+        "TWSE|2008-05|116412f7b076d21c6dbb4a83": {
+          "period": "2008-05-01",
+          "attempts": 1
+        },
+        "TWSE|2008-07|9ddfddae44e26cedb9afe5a0": {
+          "period": "2008-07-28",
+          "attempts": 1
+        },
+        "TWSE|2008-09|89df643646efde25153f300d": {
+          "period": "2008-09-29",
+          "attempts": 1
+        },
+        "TWSE|2008-10|c3201355d460e40571b1c162": {
+          "period": "2008-10-10",
+          "attempts": 1
+        },
+        "TWSE|2009-01|09cf534767373a055c73b4a9": {
+          "period": "2009-01-29",
+          "attempts": 1
+        },
+        "TWSE|2009-01|0cdb71d7b4cf7308ed2c9b63": {
+          "period": "2009-01-22",
+          "attempts": 1
+        },
+        "TWSE|2009-01|44f8aaff3e0c8d47e4bf5e72": {
+          "period": "2009-01-26",
+          "attempts": 1
+        },
+        "TWSE|2009-01|5fd655883ad01dde59794429": {
+          "period": "2009-01-23",
+          "attempts": 1
+        },
+        "TWSE|2009-01|81b6fdce1efdde84c6a89d10": {
+          "period": "2009-01-01",
+          "attempts": 1
+        },
+        "TWSE|2009-01|94b68691d7c8e490fc45c84d": {
+          "period": "2009-01-28",
+          "attempts": 1
+        },
+        "TWSE|2009-01|b0b842b6674395662a8e45dc": {
+          "period": "2009-01-30",
+          "attempts": 1
+        },
+        "TWSE|2009-01|d10e9d419c646366dd3b5a82": {
+          "period": "2009-01-02",
+          "attempts": 1
+        },
+        "TWSE|2009-01|e7f048237dc29946f168bc44": {
+          "period": "2009-01-27",
+          "attempts": 1
+        },
+        "TWSE|2009-05|80062ece6db336c0d616a1c0": {
+          "period": "2009-05-28",
+          "attempts": 1
+        },
+        "TWSE|2009-05|b35bfa43df27186f497e713b": {
+          "period": "2009-05-01",
+          "attempts": 1
+        },
+        "TWSE|2009-05|f43105fb9e77f6d4d06fc168": {
+          "period": "2009-05-29",
+          "attempts": 1
+        },
+        "TWSE|2009-08|3fe83bf84f0d26adfb6188f7": {
+          "period": "2009-08-07",
+          "attempts": 1
+        },
+        "TWSE|2010-01|903bbe60b39f376ee552266f": {
+          "period": "2010-01-01",
+          "attempts": 1
+        },
+        "TWSE|2010-02|111be772f54bb15381cf00b8": {
+          "period": "2010-02-18",
+          "attempts": 1
+        },
+        "TWSE|2010-02|393e1ee322ae98e5d3795c8d": {
+          "period": "2010-02-11",
+          "attempts": 1
+        },
+        "TWSE|2010-02|55692684d6fad46137841f0d": {
+          "period": "2010-02-15",
+          "attempts": 1
+        },
+        "TWSE|2010-02|56a1eb3c382d4bd87ae2172d": {
+          "period": "2010-02-17",
+          "attempts": 1
+        },
+        "TWSE|2010-02|79ad9bb469d5b7ed989481b6": {
+          "period": "2010-02-19",
+          "attempts": 1
+        },
+        "TWSE|2010-02|c4492cb58d02c4cbc2691827": {
+          "period": "2010-02-16",
+          "attempts": 1
+        },
+        "TWSE|2010-02|d4ab149a848d44978bd338e0": {
+          "period": "2010-02-12",
+          "attempts": 1
+        },
+        "TWSE|2010-04|636cdbba0191f6328c44e848": {
+          "period": "2010-04-05",
+          "attempts": 1
+        },
+        "TWSE|2010-06|66ed261e1e9fd217717b21c0": {
+          "period": "2010-06-16",
+          "attempts": 1
+        },
+        "TWSE|2010-09|c8810d94f0fc343d933787a8": {
+          "period": "2010-09-22",
+          "attempts": 1
+        },
+        "TWSE|2011-01|af86cd2d0711ec6610078005": {
+          "period": "2011-01-31",
+          "attempts": 1
+        },
+        "TWSE|2011-02|0b18137fc6279bb229a65cbb": {
+          "period": "2011-02-03",
+          "attempts": 1
+        },
+        "TWSE|2011-02|5698a0ea77e1a79f816a79b1": {
+          "period": "2011-02-02",
+          "attempts": 1
+        },
+        "TWSE|2011-02|59b5e798eb95c6185bef1a7f": {
+          "period": "2011-02-07",
+          "attempts": 1
+        },
+        "TWSE|2011-02|7a081aadbebdd6fcefe4b714": {
+          "period": "2011-02-28",
+          "attempts": 1
+        },
+        "TWSE|2011-02|7b1b3d9f9713f9126c6a3d11": {
+          "period": "2011-02-01",
+          "attempts": 1
+        },
+        "TWSE|2011-02|9f785f941540a6e0d80270e9": {
+          "period": "2011-02-04",
+          "attempts": 1
+        },
+        "TWSE|2011-04|43661cff404b9494a56b3a34": {
+          "period": "2011-04-04",
+          "attempts": 1
+        },
+        "TWSE|2011-04|f2926d2935b39c9ed0ecb7df": {
+          "period": "2011-04-05",
+          "attempts": 1
+        },
+        "TWSE|2011-05|0eaaf546667c5c0e60029d49": {
+          "period": "2011-05-02",
+          "attempts": 1
+        },
+        "TWSE|2011-06|bcb3a458a3d690ccb05ac2bd": {
+          "period": "2011-06-06",
+          "attempts": 1
+        },
+        "TWSE|2011-09|e4a9ceccf1fff2146643189f": {
+          "period": "2011-09-12",
+          "attempts": 1
+        },
+        "TWSE|2011-10|a78960240c958fb371e5b468": {
+          "period": "2011-10-10",
+          "attempts": 1
+        },
+        "TWSE|2012-01|0233f62e4a6687bb0d83ae0d": {
+          "period": "2012-01-27",
+          "attempts": 1
+        },
+        "TWSE|2012-01|2be1a8067ecbd316d2254846": {
+          "period": "2012-01-19",
+          "attempts": 1
+        },
+        "TWSE|2012-01|516e1cf23a9db402d1b1778e": {
+          "period": "2012-01-23",
+          "attempts": 1
+        },
+        "TWSE|2012-01|5a61197fda6d1dab3c3c8ed3": {
+          "period": "2012-01-24",
+          "attempts": 1
+        },
+        "TWSE|2012-01|75acadbb9d9d11d79e34dc89": {
+          "period": "2012-01-26",
+          "attempts": 1
+        },
+        "TWSE|2012-01|a8d5b8c0896d3aead4c199b7": {
+          "period": "2012-01-20",
+          "attempts": 1
+        },
+        "TWSE|2012-01|f10499af69e05680a68dfbdb": {
+          "period": "2012-01-25",
+          "attempts": 1
+        },
+        "TWSE|2012-02|7e65dfa5f70f2b945b9778c9": {
+          "period": "2012-02-27",
+          "attempts": 1
+        },
+        "TWSE|2012-02|a466d2f80dde9723d718d1e4": {
+          "period": "2012-02-28",
+          "attempts": 1
+        },
+        "TWSE|2012-04|13fec6eae6dd2420177dbfaa": {
+          "period": "2012-04-04",
+          "attempts": 1
+        },
+        "TWSE|2012-05|46fe73c41b7a6028219dcab6": {
+          "period": "2012-05-01",
+          "attempts": 1
+        },
+        "TWSE|2012-08|b4490518137134499e65538f": {
+          "period": "2012-08-02",
+          "attempts": 1
+        },
+        "TWSE|2012-10|16ca7fc49c98f934ae03f3d7": {
+          "period": "2012-10-10",
+          "attempts": 1
+        },
+        "TWSE|2012-12|b51ac083d656deaf9d445939": {
+          "period": "2012-12-31",
+          "attempts": 1
+        },
+        "TWSE|2013-01|82f29b23231e2e182c82b90d": {
+          "period": "2013-01-01",
+          "attempts": 1
+        },
+        "TWSE|2013-02|39e5e51260dd39666b4ded7e": {
+          "period": "2013-02-15",
+          "attempts": 1
+        },
+        "TWSE|2013-02|3bf1c4e93bc746786e41dbe1": {
+          "period": "2013-02-14",
+          "attempts": 1
+        },
+        "TWSE|2013-02|59e1b1eabd77c130d8779642": {
+          "period": "2013-02-08",
+          "attempts": 1
+        },
+        "TWSE|2013-02|733fae7d5bfbc18e80211152": {
+          "period": "2013-02-28",
+          "attempts": 1
+        },
+        "TWSE|2013-02|c00d7b8252efef5f884f43d7": {
+          "period": "2013-02-07",
+          "attempts": 1
+        },
+        "TWSE|2013-02|c6ced8a598bec4d6208e461e": {
+          "period": "2013-02-13",
+          "attempts": 1
+        },
+        "TWSE|2013-02|d5018565513458035c3aa5a4": {
+          "period": "2013-02-11",
+          "attempts": 1
+        },
+        "TWSE|2013-02|e496a2d418d873a43bb23abf": {
+          "period": "2013-02-12",
+          "attempts": 1
+        },
+        "TWSE|2013-04|0246c16974d8eb9856cb34e2": {
+          "period": "2013-04-04",
+          "attempts": 1
+        },
+        "TWSE|2013-04|b85d4c0ae1e3bc7cf8af8805": {
+          "period": "2013-04-05",
+          "attempts": 1
+        },
+        "TWSE|2013-05|a442c21bb80ad4f44dab2378": {
+          "period": "2013-05-01",
+          "attempts": 1
+        },
+        "TWSE|2013-06|2dff6e540d3c8a19511da68c": {
+          "period": "2013-06-12",
+          "attempts": 1
+        },
+        "TWSE|2013-08|50a7dc1208f8dc4ffb07475a": {
+          "period": "2013-08-21",
+          "attempts": 1
+        },
+        "TWSE|2013-09|0951d32869ff88658d6aa96e": {
+          "period": "2013-09-19",
+          "attempts": 1
+        },
+        "TWSE|2013-09|2b2ad05e031a527b5ddfabd8": {
+          "period": "2013-09-20",
+          "attempts": 1
+        },
+        "TWSE|2013-10|c727ec19f52cf2a38259419d": {
+          "period": "2013-10-10",
+          "attempts": 1
+        },
+        "TWSE|2014-01|51845934ed37118d7fac99ad": {
+          "period": "2014-01-28",
+          "attempts": 1
+        },
+        "TWSE|2014-01|87e5452195258a3f2e8c1a40": {
+          "period": "2014-01-01",
+          "attempts": 1
+        },
+        "TWSE|2014-01|c092fea2628e410ff816c294": {
+          "period": "2014-01-29",
+          "attempts": 1
+        },
+        "TWSE|2014-01|e5be9a359890224f5e0d5b31": {
+          "period": "2014-01-31",
+          "attempts": 1
+        },
+        "TWSE|2014-01|f2b853570e709fe8dc5d979d": {
+          "period": "2014-01-30",
+          "attempts": 1
+        },
+        "TWSE|2014-02|0dc637866ac73f9b0d89b282": {
+          "period": "2014-02-03",
+          "attempts": 1
+        },
+        "TWSE|2014-02|3ab4b6d1d95c5263b28d5437": {
+          "period": "2014-02-04",
+          "attempts": 1
+        },
+        "TWSE|2014-02|919c5ad1183dfe2315206d5d": {
+          "period": "2014-02-28",
+          "attempts": 1
+        },
+        "TWSE|2015-02|a7d1b8d7f5a8e1fb3e93ae90": {
+          "period": "2015-02-19",
+          "attempts": 1
+        },
+        "TWSE|2016-02|2a6f457ad1bb738b4653ea7a": {
+          "period": "2016-02-04",
+          "attempts": 1
+        },
+        "TWSE|2016-02|e8b18182bea8056af8b4ffae": {
+          "period": "2016-02-05",
+          "attempts": 1
+        },
+        "TWSE|2017-04|fb703cc60e192592cbe26ecc": {
+          "period": "2017-04-03",
+          "attempts": 1
+        },
+        "TWSE|2017-05|63cbbb79212456c5e62f22d3": {
+          "period": "2017-05-01",
+          "attempts": 1
+        },
+        "TWSE|2018-10|efd0f5ae06ee56cc878931a1": {
+          "period": "2018-10-10",
+          "attempts": 1
+        },
+        "TWSE|2019-03|f0226d7f800acb514ddcb3cf": {
+          "period": "2019-03-01",
+          "attempts": 1
+        },
+        "TWSE|2019-08|1f3316f0bee2bdedd7cd84f3": {
+          "period": "2019-08-09",
+          "attempts": 1
+        },
+        "TWSE|2023-08|b0a38e2255c202271b91e055": {
+          "period": "2023-08-03",
+          "attempts": 2
+        },
+        "TWSE|2024-07|b86465931b11f985967bb764": {
+          "period": "2024-07-25",
+          "attempts": 2
+        },
+        "TWSE|2024-07|e2dd0aedc77b18739036f63d": {
+          "period": "2024-07-24",
+          "attempts": 2
+        },
+        "TWSE|2024-10|b32a5b009f36826cfcf52989": {
+          "period": "2024-10-03",
+          "attempts": 2
+        },
+        "TWSE|2026-07|2bb0c616a410c50289b3fc49": {
+          "period": "2026-07-10",
+          "attempts": 2
+        }
+      },
+      "baseline_commit": "d17738f2ad3d7105befe864b869e87367297a113",
+      "official_page": "https://www.twse.com.tw/zh/trading/historical/mi-index.html",
+      "official_declared_start": "2004-02-11",
+      "query_is_not_availability_proof": true,
+      "max_additional_requests_per_key": 1
     },
     "MOPS": {
+      "keys": []
+    },
+    "TPEx": {
       "keys": []
     }
   },
@@ -29,5 +792,17 @@
     "MOPS|2001-05|5e59d762720ca8b28ef68b1d",
     "MOPS|2001-05|d4dc530ba7b0e9d58b6e52af",
     "MOPS|2004-09|fc3d9c6e732e9fa74aa7cb0c"
-  ]
+  ],
+  "prior_recovery_identity": "saved-probe-recovery-20261101-v2",
+  "prior_recovery_targets": {
+    "TPEx": {
+      "keys": [
+        "TPEx|2004-11|b3292033de65341e53331adf"
+      ],
+      "mode": "PROMOTE_SAVED_PROBE"
+    },
+    "MOPS": {
+      "keys": []
+    }
+  }
 }

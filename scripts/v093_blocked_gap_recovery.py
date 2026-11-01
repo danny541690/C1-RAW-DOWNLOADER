@@ -5,7 +5,7 @@ The original 403 hold is released only after RAW validation/save/readback.
 MOPS only queries explicitly reviewed domestic historical missing keys.
 All source requests use the existing coordinator, rate budget and attempt cap.
 """
-import argparse,collections,copy,datetime as dt,json,re
+import argparse,collections,copy,datetime as dt,hashlib,json,re,time
 from pathlib import Path
 from scripts.v093_admission_runtime import load_release
 from scripts.v093_source_git_store import GitCAS
@@ -14,6 +14,21 @@ from scripts.v093_official_followup import requery,reviewed_mops_route,NAMESPACE
 from scripts.v093_problem_recovery import load_rows,PLAN as ORIGINAL_PLAN
 
 PLAN='config/v093_blocked_gap_recovery_20261101.json'
+
+def reviewed_twse_retry(task,prior,target):
+ definition=task['definition'];case=task.get('execution_contract') or {};entry=target.get('reviewed_tasks',{}).get(definition['key'])
+ if not entry or definition['source']!='TWSE' or definition['period']!=entry['period']:return False
+ if any(case.get(k)!=definition[k] for k in ('source','key','period')) or case.get('category')!='prices_indices':return False
+ if not '2004-02-11'<=definition['period']<='2026-10-31':return False
+ if prior['status']!='REVIEW_REQUIRED' or not entry['attempts']<=prior['attempts']<min(4,entry['attempts']+1):return False
+ if prior.get('reason')=='REQUERY_APPLICABILITY_HOLD':
+  if prior.get('error')!=dict(code='ApplicabilityUnproven',phase='VALIDATE'):return False
+ elif prior.get('reason')!='OFFICIAL_EMPTY_UNCONFIRMED':return False
+ if case.get('mode')=='RETAINED':return bool(case.get('reference') and prior.get('raw_sha256')==case.get('sha256'))
+ if case.get('mode')=='MISSING':
+  evidence=task.get('rejected_evidence') or {}
+  return bool(not case.get('reference') and evidence.get('readback_verified') is True and evidence.get('accepted_as_raw') is False and evidence.get('raw_sha256')==prior.get('raw_sha256'))
+ return False
 
 def valid_saved_result(result):
  receipt=(result or {}).get('storage_receipt') or {}
@@ -37,7 +52,7 @@ def release_saved_probe(shared,previous_identity,key,result,evidence_sha):
  shared.pop('hold');history.update(released=True,result_status='RAW_BASIC_VERIFIED',release_via_saved_response=True,raw_sha256=evidence_sha,raw_reference=result['raw_reference'],completed_at=dt.datetime.now(dt.timezone.utc).isoformat());return True
 
 def main():
- parser=argparse.ArgumentParser();parser.add_argument('--source',choices=('TPEx','MOPS'),required=True);args=parser.parse_args()
+ parser=argparse.ArgumentParser();parser.add_argument('--source',choices=('TPEx','MOPS','TWSE'),required=True);parser.add_argument('--seconds',type=int,default=2100);args=parser.parse_args()
  root=Path.cwd();load_release(root);cfg=json.loads((root/PLAN).read_text());source=args.source;identity=cfg['identity'];target=cfg['targets'][source]
  store=GitCAS(root,'jarvis-source-preflight/'+identity);revision,journal=store.read(source);journal=journal or dict(source=source,tasks={},identity=identity)
  def checkpoint():
@@ -47,19 +62,26 @@ def main():
   revision,_=store.read(source)
  if not journal.get('finished'):
   production=Coordinator(GitCAS(root),source,ttl=600)
-  campaign=FOLLOWUP if source=='TPEx' else 'problem-recovery-20261031-v1'
+  campaign=FOLLOWUP if source in ('TPEx','TWSE') else 'problem-recovery-20261031-v1'
   outcomes=GitCAS(root,'jarvis-source-preflight/'+campaign);out_rev,out_state=outcomes.read(source)
   original=json.loads((root/ORIGINAL_PLAN).read_text());rows={t['definition']['key']:t for t in load_rows(store,original,source)}
   from scripts.annual_actual_firstpass import Drive,service
   drive=Drive(service());follow_cfg=json.loads((root/'config/v093_official_followup_20261031.json').read_text())
+  started=time.monotonic();more=False
   for key in target['keys']:
    if key in journal['tasks']:continue
+   if time.monotonic()-started>args.seconds:more=True;break
    task=rows[key];prior=copy.deepcopy(out_state['tasks'][key]);_,shared=production.store.read(source)
    local=target.get('mode')=='PROMOTE_SAVED_PROBE'
    if prior['status']!='REVIEW_REQUIRED' or prior['attempts']>=4 and not local:
     journal['tasks'][key]=dict(status='SKIPPED_VERIFIED_OR_EXHAUSTED',attempts=prior['attempts']);checkpoint();continue
    promotion=None
-   if local:
+   if source=='TWSE':
+    if (shared or {}).get('hold') or (shared or {}).get('cooldown_until',0)>production.clock():more=True;break
+    if not reviewed_twse_retry(task,prior,target):
+     journal['tasks'][key]=dict(status='SKIPPED_SCOPE_CHANGED_OR_REVIEW_ATTEMPT_SPENT',attempts=prior['attempts']);checkpoint();continue
+    proof=dict(kind='REVIEWED_EXISTING_TWSE_EMPTY',raw_sha256=hashlib.sha256(json.dumps(target,sort_keys=True).encode()).hexdigest(),official_page=target['official_page'],endpoint_start='2004-02-11',query_is_not_availability_proof=True,calendar_not_required_to_attempt_existing_query=True)
+   elif local:
     if source!='TPEx' or key!='TPEx|2004-11|b3292033de65341e53331adf':raise ValueError('SAVED_PROBE_SCOPE')
     from scripts.v093_problem_recovery import RecheckAdapter
     from scripts.v093_tpex_legacy_prices import validate_archived
@@ -108,7 +130,7 @@ def main():
     out_state['raw_writes']=sum(t.get('raw_writes',0) for t in out_state['tasks'].values())
    if not outcomes.cas(source,out_rev,out_state):raise ValueError('RECOVERY_OUTCOME_CONFLICT')
    out_rev,_=outcomes.read(source)
-   field='problem_followup' if source=='TPEx' else 'problem_recovery'
+   field='problem_followup' if source in ('TPEx','TWSE') else 'problem_recovery'
    def publish(s):
     summary=s[field][campaign];summary.update(counts=out_state['counts'],source_requests=out_state['source_requests'],updated_at=out_state['updated_at'],state_commit=out_rev)
     if source=='MOPS':summary['raw_writes']=out_state['raw_writes']
@@ -119,7 +141,7 @@ def main():
      row=s['tasks'].get(key)
      if row and row.get('followup_repair')==FOLLOWUP and not row.get('owner'):del s['tasks'][key]
     production.update(clean)
-  journal['finished']=True;checkpoint()
+  journal['finished']=not more;checkpoint()
  Path('results').mkdir(exist_ok=True);Path('results/blocked-gap-recovery.json').write_text(json.dumps(journal,ensure_ascii=False,indent=2)+'\n');print(json.dumps(journal),flush=True)
 
 if __name__=='__main__':main()

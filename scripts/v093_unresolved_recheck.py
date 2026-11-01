@@ -15,7 +15,20 @@ PLAN='config/v093_unresolved_recheck_20261101.json'
 
 def review(task,previous,plan,drive,cache):
  row=copy.deepcopy(task);row['attempts']=max(row['attempts'],previous['attempts'])
+ # Revalidation must examine the newest saved response, not silently fall back
+ # to the original missing contract or an older empty body.
+ evidence=previous.get('followup_rejected_evidence') or previous.get('rejected_evidence')
+ if evidence:
+  if previous.get('definition')!=task['definition']:raise ValueError('RECHECK_LATEST_IDENTITY_CHANGED')
+  row['rejected_evidence']=copy.deepcopy(evidence)
+  case=row['execution_contract'];case.update(mode='RETAINED',reference=evidence['reference'],sha256=evidence['raw_sha256'])
+  row['legacy_review']['provenance'].append(dict(period=case['period'],raw_reference=evidence['reference'],sha256=evidence['raw_sha256'],status='QUARANTINE_REVIEW_ONLY'))
  result=recheck(row,plan,drive,cache)
+ if evidence:
+  result.update(reviewed_latest_rejected_evidence=True,rejected_evidence=evidence,accepted_as_raw=False)
+  result.pop('raw_reference',None)
+  if result['status']=='RAW_BASIC_VERIFIED':
+   result.update(status='REVIEW_REQUIRED',reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',reused_existing=False)
  result.update(previous_reason=previous.get('reason'),previous_status=previous['status'],source_requests=0,raw_writes=0,request_attempts_preserved=previous['attempts'],reviewed_at=dt.datetime.now(dt.timezone.utc).isoformat())
  if result['status']=='REVIEW_REQUIRED':
   reason=result.get('reason','UNCLASSIFIED')

@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "6c9f9f81f43432133831274e3f2a5be7b5f65f0b7a0326e2f65938611c45a15b",
+  "tested_code_sha256": "3f02c263b7c1df409f7b52b070f4705fd9eedc200c6a5446fd8f1347ab50b20a",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -75,23 +75,6 @@
   "candidate_scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
-  "recovery_update": "SECTION_LABELS_VERIFIED_SAVED_PROBE_V8_20261101",
-  "recovery_validation": {
-    "regression_tests": 1216,
-    "result": "PASS",
-    "actual_large_report_replays": [
-      "TWSE:802",
-      "TPEx:2833"
-    ],
-    "original_raw_preserved": true,
-    "request_attempts_preserved": true,
-    "early_tpex_canary_required": true,
-    "source_attempts_preserved": true,
-    "source_corruption_not_accepted": true,
-    "zero_http_promotion_at_attempt_limit": true,
-    "offline_promotion_keeps_http403_hold": true,
-    "official_emergency_extract_scope_bound": true,
-    "one_shot_probe_preserves_hold_until_verified": true,
-    "saved_probe_release_native_receipt_bound": true
-  }
+  "recovery_update": "LATEST_QUARANTINE_AND_BOUNDED_TWSE_RETRY_V9_20261101",
+  "recovery_validation": "Full regression 1222 tests; latest quarantine SHA verification, no quarantine RAW acceptance, exact existing TWSE scope and one additional request maximum."
 }
