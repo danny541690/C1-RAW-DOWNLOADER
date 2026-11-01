@@ -50,7 +50,7 @@
     "canary_date": "2003-08-01",
     "canary_required_before_bulk": true
   },
-  "legacy_reparse_revision": "ORACLE_UNQUOTED_OHL_NONZERO_CHANGE_V6",
+  "legacy_reparse_revision": "CAPTION_DATE_SPLIT_CHANGE_AND_SOURCE_DIAGNOSIS_V7",
   "reviewed_emergency_closures": [
     {
       "source": "TWSE",

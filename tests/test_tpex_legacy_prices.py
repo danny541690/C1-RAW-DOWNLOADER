@@ -14,6 +14,19 @@ def fixture(period='2007-01-02',title='96年1月2日',change=None):
  return json.dumps(dict(stat='ok',date=period.replace('-',''),html=text),ensure_ascii=False).encode()
 
 class LegacyPricesTests(unittest.TestCase):
+ def test_caption_outside_rows_and_split_change_columns_bind_actual_prices(self):
+  obj=json.loads(fixture());text=obj['html'];text=text.replace('96年1月2日','').replace('<table>','<p>交易日期:93年10月29日</p><table>').replace('<th>漲跌</th>','<th colspan="2">漲跌</th>').replace('<td>0</td>','<td>▽</td><td>0</td>')
+  self.assertTrue(validate_archived(text.encode('cp950'),'2004-10-29')['basic_verified'])
+  with self.assertRaisesRegex(ValueError,'WRONG_TITLE_DATE'):validate_archived(text.replace('29日','28日').encode('cp950'),'2004-10-29')
+ def test_observed_circle_markers_and_four_dash_quotes_preserve_missing_flags(self):
+  obj=json.loads(fixture(title='資料日期：931029',change=lambda r:r[:2]+['⊙10']+r[3:]));result=validate_archived(obj['html'].encode('cp950'),'2004-10-29');self.assertEqual(result['native']['marked_price_cells'],1)
+  obj=json.loads(fixture(title='資料日期：931029',change=lambda r:r[:2]+['----']+r[3:]));self.assertEqual(validate_archived(obj['html'].encode('cp950'),'2004-10-29')['native']['missing_price_rows'],1)
+ def test_truncated_html_is_never_padded_into_a_complete_row(self):
+  with self.assertRaisesRegex(ValueError,'SOURCE_TRUNCATED_HTML'):validate_archived(b'<table><tr><td width="Aria','2004-08-12')
+ def test_mixed_replacement_bytes_are_diagnosed_without_ignoring_them(self):
+  with self.assertRaisesRegex(ValueError,'SOURCE_MIXED_REPLACEMENT_BYTES'):validate_archived(b'\xff\xef\xbf\xbd','2004-02-13')
+ def test_official_error_page_does_not_prove_historical_absence(self):
+  with self.assertRaisesRegex(ValueError,'NOT_ABSENCE_PROOF'):validate_archived('<html>您所輸入的網址並不存在</html>'.encode(),'2003-09-11')
  def test_archived_unquoted_ohl_does_not_assume_zero_change(self):
   for change in ('-5.90','-0.29','+1.00'):
    obj=json.loads(fixture(title='資料日期：920815',change=lambda r:r[:3]+[change,'.00','.00','.00']+r[7:]));result=validate_archived(obj['html'].encode('cp950'),'2003-08-15')

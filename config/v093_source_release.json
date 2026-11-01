@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "9b13a09c3f09041b6964b65d6d92ab8bd7b27260fae8a1e8d91213efe90e58ca",
+  "tested_code_sha256": "a291fbe5ce3610c976364484916111dc67da6d56094ba4e26c74228ba7af8cf0",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -75,9 +75,9 @@
   "candidate_scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
-  "recovery_update": "UNRESOLVED_RECHECK_ORACLE_NONZERO_CHANGE_OFFLINE_PROMOTION_V6_20261101",
+  "recovery_update": "CAPTION_SPLIT_CHANGE_REVIEWED_403_PROBE_MOPS_MISSING_V7_20261101",
   "recovery_validation": {
-    "regression_tests": 1200,
+    "regression_tests": 1213,
     "result": "PASS",
     "actual_large_report_replays": [
       "TWSE:802",
@@ -90,6 +90,7 @@
     "source_corruption_not_accepted": true,
     "zero_http_promotion_at_attempt_limit": true,
     "offline_promotion_keeps_http403_hold": true,
-    "official_emergency_extract_scope_bound": true
+    "official_emergency_extract_scope_bound": true,
+    "one_shot_probe_preserves_hold_until_verified": true
   }
 }

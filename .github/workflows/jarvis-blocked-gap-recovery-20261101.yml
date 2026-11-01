@@ -1,0 +1,57 @@
+name: JARVIS reviewed blocked-gap recovery
+on:
+  push:
+    branches: [main]
+    paths: [config/v093_blocked_gap_recovery_20261101.json]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - run: python -m unittest discover -s tests -p 'test_*.py'
+      - run: python -c "from pathlib import Path; from scripts.v093_admission_runtime import load_release; load_release(Path.cwd())"
+  recover:
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TPEx, MOPS]
+    concurrency:
+      group: jarvis-v093-production-${{ matrix.source }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r requirements-qa.lock
+      - name: Recover only the reviewed existing blocked or missing keys
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_blocked_gap_recovery --source '${{ matrix.source }}'
+      - name: Preserve blocked-gap recovery evidence
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job blocked-gap-recovery --status '${{ job.status }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: blocked-gap-recovery-${{ matrix.source }}
+          path: |
+            results
+            publication
+          retention-days: 90

@@ -12,6 +12,10 @@ class StaleOwner(RuntimeError):pass
 def offline_promotion(task):
  return task.get('local_only') is True and (task.get('execution_contract') or {}).get('mode')=='PROMOTE'
 
+def reviewed_hold_probe(state,key):
+ probe=state.get('hold_probe') or {}
+ return state.get('source')=='TPEx' and state.get('hold')=='HTTPError_403' and probe.get('key')==key and bool(probe.get('identity')) and probe.get('sent') is not True
+
 class Coordinator:
  def __init__(self,store,source,clock=time.time,ttl=300):
   if source not in SOURCES or ttl<=0:raise ValueError('SOURCE_OR_LEASE')
@@ -46,7 +50,8 @@ class Coordinator:
      task.update(owner=None,status='RECONCILE' if uncertain else 'READY_CHECK' if task.get('check_only') else 'READY')
      if uncertain:task['next_action']='VERIFY_SAVE_INTENT' if task.get('save_intent') else 'RECONCILE_SOURCE_AND_STORAGE'
    available=[(key,t) for key,t in state['tasks'].items() if key not in exclude and t['definition']['slot']==slot
-    and (not paused or offline_promotion(t) and state.get('hold') in (None,'HTTPError_403'))
+    and (not state.get('hold_probe') or state['hold_probe']['key']==key)
+    and (not paused or offline_promotion(t) and state.get('hold') in (None,'HTTPError_403') or reviewed_hold_probe(state,key) and state.get('cooldown_until',0)<=now)
     and (t['status'] in ('READY','READY_CHECK') or t['status']=='RETRY_WAIT' and t.get('next_at',0)<=now)]
    available.sort(key=lambda x:(x[1]['definition']['period'],x[0]),reverse=direction=='DESC')
    for key,task in available:
@@ -74,8 +79,10 @@ class Coordinator:
  def begin_request(self,ticket):
   def change(s):
    t=self.owned(s,ticket)
-   if s.get('hold') or s.get('cooldown_until',0)>self.clock():raise ValueError('SOURCE_ON_HOLD')
+   if s.get('hold_probe') and s['hold_probe']['key']!=ticket['key']:raise ValueError('SOURCE_PROBE_ONLY')
+   if s.get('hold') and not reviewed_hold_probe(s,ticket['key']) or s.get('cooldown_until',0)>self.clock():raise ValueError('SOURCE_ON_HOLD')
    if t.get('check_only') or t['status']!='LEASED' or t['attempts']>=4:raise ValueError('REQUEST_NOT_ADMITTED')
+   if reviewed_hold_probe(s,ticket['key']):s['hold_probe']['sent']=True
    t.update(status='REQUEST_INTENT',attempts=t['attempts']+1);return t['attempts']
   return self.update(change)
  def begin_materialization(self,ticket):

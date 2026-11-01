@@ -10,7 +10,8 @@ def reserve(coordinator,ticket,cost=1,limit=30,window=60,spacing=2):
  def change(state):
   task=coordinator.owned(state,ticket)
   if task['status']!='LEASED':raise ValueError('RATE_RESERVATION_REQUIRES_LEASE')
-  if state.get('hold'):return max(60,state.get('cooldown_until',0)-now)
+  from scripts.v093_source_coordination import reviewed_hold_probe
+  if state.get('hold') and not reviewed_hold_probe(state,ticket['key']):return max(60,state.get('cooldown_until',0)-now)
   if state.get('cooldown_until',0)>now:return state['cooldown_until']-now
   rate=state.setdefault('http_budget',dict(intents=[],next_at=0,policy=dict(limit=limit,window=window,spacing=spacing)))
   if rate['policy']!=dict(limit=limit,window=window,spacing=spacing):raise ValueError('SHARED_RATE_POLICY_CHANGED')

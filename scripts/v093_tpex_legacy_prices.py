@@ -26,10 +26,14 @@ def validate_archived(raw,period):
  for codec in ('utf-8-sig','cp950','big5hkscs'):
   try:text=raw.decode(codec);break
   except UnicodeDecodeError:pass
- if text is None:raise ValueError('TPEX_ARCHIVED_ENCODING_UNPROVEN')
+ if text is None:
+  if b'\xef\xbf\xbd' in raw:raise ValueError('TPEX_SOURCE_MIXED_REPLACEMENT_BYTES')
+  raise ValueError('TPEX_ARCHIVED_ENCODING_UNPROVEN')
  return validate_html(text,period,'OFFICIAL_ARCHIVED_STATIC_HTML')
 
 def validate_html(payload,period,format_name,response_date=None):
+ if payload.rfind('<')>payload.rfind('>'):raise ValueError('TPEX_SOURCE_TRUNCATED_HTML')
+ if '您所輸入的網址並不存在' in payload:raise ValueError('TPEX_SOURCE_ERROR_PAGE_NOT_ABSENCE_PROOF')
  document=lh.fromstring(payload);trs=document.xpath('//tr');fields=None;header_at=None;code_index=None
  for index,tr in enumerate(trs):
   cells=[clean(cell.text_content()) for cell in tr.xpath('./th|./td')]
@@ -38,8 +42,19 @@ def validate_html(payload,period,format_name,response_date=None):
     fields=cells;code_index=i;header_at=index;break
   if fields:break
  if fields is None:raise ValueError('TPEX_LEGACY_CODE_HEADER_MISSING')
+ # The compact 2004 table gives the change field two cells (symbol/value).
+ # Bind offsets to the actual header span; never shift prices by guessing.
+ nodes=trs[header_at].xpath('./th|./td');split_change=False
+ if '' not in fields and '漲跌' in fields:
+  ci=fields.index('漲跌');spans=[node.get('colspan','1') for node in nodes]
+  if spans[ci]=='2' and all(span=='1' for i,span in enumerate(spans) if i!=ci):
+   fields=fields[:ci+1]+['漲跌數值']+fields[ci+1:];split_change=True
  title=' '.join(tr.text_content() for tr in trs[:header_at])
  dates=[]
+ for match in re.finditer(r'(?:交易|資料)日期\s*[:：]\s*(\d{2,4})\s*[/年]\s*(\d{1,2})\s*[/月]\s*(\d{1,2})',document.text_content()):
+  year,month,day=map(int,match.groups());year=year+1911 if year<1911 else year
+  try:dates.append(dt.date(year,month,day).isoformat())
+  except ValueError:raise ValueError('TPEX_LEGACY_TITLE_DATE_INVALID') from None
  for match in re.finditer(r'(\d{2,4})\s*[/年]\s*(\d{1,2})\s*[/月]\s*(\d{1,2})',title):
   year,month,day=map(int,match.groups());year=year+1911 if year<1911 else year
   try:dates.append(dt.date(year,month,day).isoformat())
@@ -61,21 +76,29 @@ def validate_html(payload,period,format_name,response_date=None):
  if volume is None or amount is None:raise ValueError('TPEX_LEGACY_VOLUME_AMOUNT_HEADERS_MISSING')
  def number(value,price=False):
   text=clean(value).replace(',','')
-  if price:text=re.sub(r'^[♁☉]','',text)
-  if text in ('','-','--','---','--.--'):return None
+  if price:text=re.sub(r'^[♁☉⊕⊙]','',text)
+  if text in ('','-','--','---','----','--.--'):return None
   value=float(text)
   if not math.isfinite(value):raise ValueError('TPEX_LEGACY_NONFINITE_NUMBER')
   return value
  codes=set();rows=0;price_checks=0;missing_price_rows=0;zero_quote_rows=0;marked_price_cells=0;unquoted_ohl_rows=0
  for tr in trs[header_at+1:]:
   cells=[clean(cell.text_content()) for cell in tr.xpath('./th|./td')]
+  if split_change:
+   expanded=[]
+   for node,value in zip(tr.xpath('./th|./td'),cells):
+    span=node.get('colspan','1')
+    if span=='2' and len(expanded)==ci:expanded.extend([value,''])
+    elif span=='1':expanded.append(value)
+    else:raise ValueError('TPEX_LEGACY_UNPROVEN_COLUMN_SPAN')
+   cells=expanded
   if len(cells)<=code_index or not re.fullmatch('[1-9][0-9]{3}',cells[code_index]):continue
   if len(cells)!=len(fields):raise ValueError('TPEX_LEGACY_ROW_WIDTH')
   if '\ufffd' in ''.join(cells):raise ValueError('TPEX_LEGACY_SOURCE_REPLACEMENT_CHARACTER')
   code=cells[code_index]
   if code in codes:raise ValueError('TPEX_LEGACY_DUPLICATE_CODE')
   codes.add(code);rows+=1;prices=[number(cells[i],True) for i in price_indexes]
-  marked_price_cells+=sum(cells[i].startswith(('♁','☉')) for i in price_indexes)
+  marked_price_cells+=sum(cells[i].startswith(('♁','☉','⊕','⊙')) for i in price_indexes)
   if prices==[0.0]*4 and column(('漲跌',)) is not None and cells[column(('漲跌',))]=='---':
    prices=[None]*4;zero_quote_rows+=1
   elif format_name=='OFFICIAL_ARCHIVED_STATIC_HTML' and all(cells[i]=='.00' for i in price_indexes[:3]):

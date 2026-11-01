@@ -215,9 +215,20 @@ def eligible(task,prior,calendars,config=None):
  else:return False
  return historic or source=='TWSE' and period>='2004-02-11' or source=='TPEx' and period>='2007-04-21'
 
+def reviewed_mops_route(case):
+ if case.get('source')!='MOPS' or not re.fullmatch(r'revenue_(sii|otc)_0',case.get('category','')) or not re.fullmatch(r'200\d-\d{2}',case.get('period','')):raise ValueError('MOPS_REVIEWED_ROUTE_SCOPE')
+ year,month=map(int,case['period'].split('-'))
+ if not 1<=month<=12:raise ValueError('MOPS_REVIEWED_MONTH')
+ return f"https://mopsov.twse.com.tw/nas/t21/{case['category'].split('_')[1]}/t21sc03_{year-1911}_{month}.html"
+
 class EmptyQueryAdapter(NativeAdapter):
  def fetch(self):
   if self.case.get('mode')=='PROMOTE':return super().fetch()
+  route=self.case.get('reviewed_mops_historical_route')
+  if route:
+   expected=reviewed_mops_route(self.case)
+   if route!=expected:raise ValueError('MOPS_REVIEWED_ROUTE_BINDING')
+   return self.http(route)
   archive=self.case.get('official_archived_html')
   if archive:
    task=dict(definition=dict(source=self.case['source'],period=self.case['period']))
@@ -272,8 +283,9 @@ def repair_row(task,prior,calendar_proof,promotion=None):
  if calendar_proof.get('kind')=='OFFICIAL_ARCHIVED_HTML_ROUTE':
   case['official_archived_html']=calendar_proof['route']
   if case.get('repair_evidence'):case['repair_evidence']['official_evidence_id']='OFFICIAL_ARCHIVED_HTML_ROUTE:'+calendar_proof['raw_sha256']
- row.update(attempts=prior['attempts'],status='READY',check_only=False,owner=None,followup_repair=NAMESPACE)
- if promotion:row['local_only']=True
+ if calendar_proof.get('kind')=='REVIEWED_MOPS_HISTORICAL_ROUTE':case['reviewed_mops_historical_route']=reviewed_mops_route(case)
+ row.update(attempts=prior['attempts'],status='READY',check_only=False,local_only=bool(promotion),owner=None,followup_repair=NAMESPACE)
+ if promotion:row['materializations']=prior.get('materializations',0)
  for field in ('save_intent','raw_reference','raw_sha256','reused_existing'):row.pop(field,None)
  return row
 
@@ -301,7 +313,7 @@ def requery(root,source,task,prior,calendar_proof,drive,promotion=None):
  result['followup_terminal']=status in ('RAW_BASIC_VERIFIED','CONTENT_BLOCKED','APPLICABILITY_HOLD','SOURCE_HOLD','STORAGE_HOLD','BLOCKED')
  if result['followup_terminal']:result.update(status='RAW_BASIC_VERIFIED' if status=='RAW_BASIC_VERIFIED' else 'REVIEW_REQUIRED',reason=None if status=='RAW_BASIC_VERIFIED' else 'REQUERY_'+status)
  else:result['followup_pending_status']=status
- for name in ('raw_reference','raw_sha256','storage_receipt','error'):
+ for name in ('raw_reference','raw_sha256','storage_receipt','error','materializations'):
   if name in current:result[name]=current[name]
  if current.get('rejected_evidence') and status!='RAW_BASIC_VERIFIED':result['followup_rejected_evidence']=current['rejected_evidence']
  if status=='RAW_BASIC_VERIFIED':
@@ -355,7 +367,7 @@ def run_source(root,source,config):
  if source=='TPEx':
   for task in rows:
    key=task['definition']['key'];prior=state['tasks'][key];evidence=prior.get('followup_rejected_evidence');archived=archived_html(task,config)
-   if not (early_2007(task,config) or archived) or not evidence or prior.get('status')=='RAW_BASIC_VERIFIED' or prior.get('rejected_reparse_revision')=='ORACLE_UNQUOTED_OHL_NONZERO_CHANGE_V6':continue
+   if not (early_2007(task,config) or archived) or not evidence or prior.get('status')=='RAW_BASIC_VERIFIED' or prior.get('rejected_reparse_revision')=='CAPTION_DATE_SPLIT_CHANGE_AND_SOURCE_DIAGNOSIS_V7':continue
    if time.monotonic()-started>1500:more=True;break
    from scripts.v093_problem_recovery import RecheckAdapter
    reader=object.__new__(RecheckAdapter);reader.d=drive;reader.rejected=evidence;reader.raw_cache={}
@@ -366,7 +378,7 @@ def run_source(root,source,config):
     prior.update(rejected_reparse_result='VALID_REJECTED_RAW_REQUIRES_PROMOTION',rejected_reparse_stats=stats)
    except (ValueError,UnicodeError) as exc:
     prior.update(rejected_reparse_result='REVIEW_REQUIRED',rejected_reparse_error=str(exc).split(':',1)[0])
-   prior['rejected_reparse_revision']='ORACLE_UNQUOTED_OHL_NONZERO_CHANGE_V6';checkpoint()
+   prior['rejected_reparse_revision']='CAPTION_DATE_SPLIT_CHANGE_AND_SOURCE_DIAGNOSIS_V7';checkpoint()
    if prior.get('rejected_reparse_result')=='VALID_REJECTED_RAW_REQUIRES_PROMOTION' and archived:
     proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=config['tpex_archived_html']['query_page_sha256'],route=config['tpex_archived_html'])
     promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=evidence['raw_sha256'],rejected_evidence=evidence)
