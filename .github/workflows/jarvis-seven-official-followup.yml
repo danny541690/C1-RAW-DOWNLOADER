@@ -4,7 +4,7 @@ on:
     branches: [main]
     paths: [config/v093_official_followup_20261031.json]
   schedule:
-    - cron: '17 2 * * *'
+    - cron: '9,19,29,39,49,59 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -133,7 +133,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job official-followup --status '${{ job.status }}'
+        run: python -m scripts.v093_partitioned_acceptance_publish --source '${{ matrix.source }}' --job official-followup --status '${{ job.status }}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
