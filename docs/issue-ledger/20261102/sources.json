@@ -1,0 +1,1334 @@
+[
+  {
+    "source_id": "SRC-f7de3266c664",
+    "path": "docs/CHATGPT_MEMORY_POINT_V093_20261021.md",
+    "version_date_hint": "2026-10-21",
+    "source_sha256": "4510d58b63beba6c51c8e9077f7fe2472945943148014e52f4a9c67249141817",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/CHATGPT_MEMORY_POINT_V093_20261021.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2005
+  },
+  {
+    "source_id": "SRC-1bba18ede61a",
+    "path": "docs/GOOGLE_DRIVE_OAUTH_MINIMUM_SETUP_ZH_TW.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "2a3feda90aa8a035bfbb32923e9e71444cb15e7a2d8bc619ea5c21a44f1dc35b",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/GOOGLE_DRIVE_OAUTH_MINIMUM_SETUP_ZH_TW.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1867
+  },
+  {
+    "source_id": "SRC-49b29ac1d91e",
+    "path": "docs/TAIFEX_STAGE06.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "387b89c336acd8d7415b7a4ab63a98bef7b1a81956dbece6322a306eb338c600",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/TAIFEX_STAGE06.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3356
+  },
+  {
+    "source_id": "SRC-6a92f6b2220c",
+    "path": "docs/V093_2024_FULL_YEAR_GO_NO_GO_AUDIT.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "860b8be5400b605b5bedc6b418822b4a7ea72a7cd87c0b751496d834fcccc8b9",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_2024_FULL_YEAR_GO_NO_GO_AUDIT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4840
+  },
+  {
+    "source_id": "SRC-ecb975c1f1ed",
+    "path": "docs/V093_ANNUAL_CAPTURE_POLICY.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "d23b7c06c48a5049fe1fe5611b685f60b0d42261135cffe07b5a03f53281e5a6",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_ANNUAL_CAPTURE_POLICY.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 8846
+  },
+  {
+    "source_id": "SRC-16cb0a7ffb1a",
+    "path": "docs/V093_FINAL_TWO_BLOCKERS.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "5693f51d8ec4410a6ef9b21e9e0b425ddc055afc376231e6b00da654c13a88af",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_FINAL_TWO_BLOCKERS.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1187
+  },
+  {
+    "source_id": "SRC-87a8c733adaa",
+    "path": "docs/V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md",
+    "version_date_hint": "2026-10-21",
+    "source_sha256": "7cb7f24aa4edb8df12699e8ef81f84ef7fbde1305f6437107a5800129622aae5",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_FIVE_STAGE_DOWNLOAD_RULES_20261021.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 5208
+  },
+  {
+    "source_id": "SRC-76f3b324fcb8",
+    "path": "docs/V093_GOOGLE_DRIVE_STORAGE_CONNECTION_SOP_ZH_TW.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "71a0523a103a2e37d95fc92f1389238f2878e80085531c7ed639d5411cb3edc0",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_GOOGLE_DRIVE_STORAGE_CONNECTION_SOP_ZH_TW.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2247
+  },
+  {
+    "source_id": "SRC-a19a40b46ed9",
+    "path": "docs/V093_INDEPENDENT_RAW_LATEST_TO_2000.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "160c49bf67e26a8edd76757594c0b851d18b710e601b1587723627807e2637e1",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_INDEPENDENT_RAW_LATEST_TO_2000.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3220
+  },
+  {
+    "source_id": "SRC-ea7fb9aa7f47",
+    "path": "docs/V093_INSTITUTIONAL_HISTORY_BACKFILL_POLICY.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "dac938f9c70366926797c299e969f235891c29e77a7c5c7a9ef253e61ea89b04",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_INSTITUTIONAL_HISTORY_BACKFILL_POLICY.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4171
+  },
+  {
+    "source_id": "SRC-4a65bb9856c8",
+    "path": "docs/V093_LAYER02_ACCELERATION_20261020.md",
+    "version_date_hint": "2026-10-20",
+    "source_sha256": "12502012b68feaefed56701e39bef14e818b6ee76617c32a35f4d871d3ab3351",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_LAYER02_ACCELERATION_20261020.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2131
+  },
+  {
+    "source_id": "SRC-f5863faf64fb",
+    "path": "docs/V093_OFFICIAL_FIRST_FINMIND_GAPS_POLICY.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "e48e87ebcedf5721deabc34321fa81ea4c811566bc37f35122ad4bda6cb71363",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_OFFICIAL_FIRST_FINMIND_GAPS_POLICY.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1023
+  },
+  {
+    "source_id": "SRC-302a60a31ec3",
+    "path": "docs/V093_OPERATIONAL_ROLLOUT_20261020.md",
+    "version_date_hint": "2026-10-20",
+    "source_sha256": "cad33fcbbdf26adb923b5b791603b9c5a216231b9f78275a2214d98209e60379",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_OPERATIONAL_ROLLOUT_20261020.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 14932
+  },
+  {
+    "source_id": "SRC-f4b367053b8a",
+    "path": "docs/V093_PRELAUNCH_READINESS_20261021.md",
+    "version_date_hint": "2026-10-21",
+    "source_sha256": "1b1bc0f43382fc5d02679df8561c536b52939fbcabf65d91217e7a7d43799e15",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_PRELAUNCH_READINESS_20261021.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1897
+  },
+  {
+    "source_id": "SRC-14753623ab2d",
+    "path": "docs/V093_PRELAUNCH_RESUME_20261021.md",
+    "version_date_hint": "2026-10-21",
+    "source_sha256": "a9f94d17e272a08c70bd30a2165ae297190fd4a93aa9c1ef6bbed703ea8ca519",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_PRELAUNCH_RESUME_20261021.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 9004
+  },
+  {
+    "source_id": "SRC-1e66a5f7e4b2",
+    "path": "docs/V093_RAW_FIRSTPASS_20261020.md",
+    "version_date_hint": "2026-10-20",
+    "source_sha256": "bbca23af17961301517d7361bd8dcdc6c2d978e63a3c5caa4385f3d9949e5e3b",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_RAW_FIRSTPASS_20261020.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2181
+  },
+  {
+    "source_id": "SRC-1648bb30c5c5",
+    "path": "docs/V093_SCHEDULE_NAMES_20261029.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "f6f54571f03fb8d446e7a122715f399b91af7bda809c4208baa2252f64ef8857",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_SCHEDULE_NAMES_20261029.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 713
+  },
+  {
+    "source_id": "SRC-bbbfde31caea",
+    "path": "docs/V093_SEVEN_SOURCE_CLOSED_LOOP_20261029.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "cb10ee45447f83e0138790e91f45dfef0068649b801a5f79a53610b00adc989b",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_SEVEN_SOURCE_CLOSED_LOOP_20261029.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 7210
+  },
+  {
+    "source_id": "SRC-543681b27ec2",
+    "path": "docs/V093_STAGE06_ALL_DATA_FINANCIAL_EXPANSION_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "485ff89d96d28c9c693f67393739b0576be0c85a1dabb1b27b71fed5545b7d35",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_ALL_DATA_FINANCIAL_EXPANSION_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3297
+  },
+  {
+    "source_id": "SRC-449eb068a9ef",
+    "path": "docs/V093_STAGE06_DRIVE_FENCED_INTEGRATION_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "8b1e8978038784aad7ed02b3df972f9f366a700b3b4355ceb1e1e6a485f5e2e7",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_DRIVE_FENCED_INTEGRATION_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1977
+  },
+  {
+    "source_id": "SRC-01a23532f8f9",
+    "path": "docs/V093_STAGE06_LEDGER_TASK_IMPLEMENTATION_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "aedc772de8d154098f9716dda9fc94cadc3d194cb654fae52ef652a89a3af89a",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_LEDGER_TASK_IMPLEMENTATION_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2473
+  },
+  {
+    "source_id": "SRC-7d502458c641",
+    "path": "docs/V093_STAGE06_LIVE_ACTIVATION_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "6c0399f790d788e5ebf1a662d729552e0134e31b697da81e15e52fc0885125f7",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_LIVE_ACTIVATION_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2247
+  },
+  {
+    "source_id": "SRC-e984fa69c785",
+    "path": "docs/V093_STAGE06_NATIVE_REPAIR_TRIAL_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "7e9b384802bfa80e6843c0ec9770d9147f3d8f1805bedb7e47ee0877111f845a",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_NATIVE_REPAIR_TRIAL_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1963
+  },
+  {
+    "source_id": "SRC-b633078aa64e",
+    "path": "docs/V093_STAGE06_OWNER_REPLAY_IDENTITY_TEST_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "06778f7a136848d98e980737a086ecaef19991a1cae8b98b13dd06856342217e",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_OWNER_REPLAY_IDENTITY_TEST_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1696
+  },
+  {
+    "source_id": "SRC-8a9ffe68f649",
+    "path": "docs/V093_STAGE06_RECONCILIATION_REPAIR_PLAN_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "614f449ab180c653643752bd30d55243eb436b8d4d62d0263c0790921848fcab",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_RECONCILIATION_REPAIR_PLAN_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 5625
+  },
+  {
+    "source_id": "SRC-62d9839b09b0",
+    "path": "docs/V093_STAGE06_TEST_CONCLUSIONS_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "cb1f72953f50347257d5f02bbd47e2bc3db4074580c2d62050e9a7e6c3e5d995",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_TEST_CONCLUSIONS_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 6235
+  },
+  {
+    "source_id": "SRC-e4d1fa8af577",
+    "path": "docs/V093_STAGE06_WORKER_RAW_PRELAUNCH_20261022.md",
+    "version_date_hint": "2026-10-22",
+    "source_sha256": "06f6ac87b720e8931af985ee18526a33bc6b2daa8f62c70914bd102e8fbd2692",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_STAGE06_WORKER_RAW_PRELAUNCH_20261022.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2240
+  },
+  {
+    "source_id": "SRC-c450b3e5abc3",
+    "path": "docs/V093_TWELVE_SCHEDULE_REVIEW_20261029.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "37db28dec63f4405eb36896bc1df6f0a7c415ec7cbbf7a5b26cbc8f8d5c61541",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/V093_TWELVE_SCHEDULE_REVIEW_20261029.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3136
+  },
+  {
+    "source_id": "SRC-8475c20db57b",
+    "path": "docs/acceptance-scheduled-worker.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "6b68aedd523f8fdd1d5cd7021ed28fb9b4c8ae711c38702b4f8bf89f4e6e0110",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/acceptance-scheduled-worker.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4219
+  },
+  {
+    "source_id": "SRC-1fd30a06ba8b",
+    "path": "docs/raw-governance/20261029/01_測試結果總彙整.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "fecacd0eeed1bd42d817a90c0bf972419b2a2bf7c96345cbe950f72372d31304",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261029/01_測試結果總彙整.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 6809
+  },
+  {
+    "source_id": "SRC-00970a12e377",
+    "path": "docs/raw-governance/20261029/02_有效下載規則.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "4ac33bd22bb0ad94a1107b77fd8cf1eccfc04d29de90059b42a7e16c84bc97e3",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261029/02_有效下載規則.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1184
+  },
+  {
+    "source_id": "SRC-d745ee955f4f",
+    "path": "docs/raw-governance/20261029/03_問題追蹤表.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "d06f95f1c8d79b4cfb60717dc4ff8d4c2c8b908983d291b3ad7820780416908c",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261029/03_問題追蹤表.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3718
+  },
+  {
+    "source_id": "SRC-b1238eedd9a3",
+    "path": "docs/raw-governance/20261029/04_上線前待辦複核.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "af43387369a3cce725bc0fed298fdae9b358e93d0e82e1d12a276eea242e0d82",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261029/04_上線前待辦複核.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 6495
+  },
+  {
+    "source_id": "SRC-cabc45ee9efa",
+    "path": "docs/raw-governance/20261029/05_I17_I18修正結果.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "e59d458f248aa8c52df6bf49275eb5c4e6c7e2597a07909d21115bda8c6662fc",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261029/05_I17_I18修正結果.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1138
+  },
+  {
+    "source_id": "SRC-5ecde303a04e",
+    "path": "docs/raw-governance/20261031/00_README.md",
+    "version_date_hint": "2026-10-31",
+    "source_sha256": "2cdf1b4fb41a1155533ac9b58f081c403cd06066b02473398d00c1ac0f874141",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261031/00_README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1505
+  },
+  {
+    "source_id": "SRC-ff3e684ab516",
+    "path": "docs/raw-governance/20261031/01_有效規則與端到端邏輯.md",
+    "version_date_hint": "2026-10-31",
+    "source_sha256": "d8f7b672dec05663fd5df4862999bc236f008f14e11b0a037abaa286779839a9",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261031/01_有效規則與端到端邏輯.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4012
+  },
+  {
+    "source_id": "SRC-87ab0c444fee",
+    "path": "docs/raw-governance/20261031/02_實測經驗與故障處理.md",
+    "version_date_hint": "2026-10-31",
+    "source_sha256": "d857419acf99bf04996dcc7051a056be3fb055f590f1ae3065fc73c84f0d48d8",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261031/02_實測經驗與故障處理.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4284
+  },
+  {
+    "source_id": "SRC-018a42ef1eca",
+    "path": "docs/raw-governance/20261031/03_未結事項與跨對話接續.md",
+    "version_date_hint": "2026-10-31",
+    "source_sha256": "f9a1f1536588cd8884c404d68c3cba5efec78acf2e7c7dce60110e7789d18a47",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261031/03_未結事項與跨對話接續.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2879
+  },
+  {
+    "source_id": "SRC-3210475b0502",
+    "path": "docs/raw-governance/20261031/04_問題修復與重新執行.md",
+    "version_date_hint": "2026-10-31",
+    "source_sha256": "259fe85aefa662d0200a7dca17f133f58c81be9579fae5a01cfc17de530562f4",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261031/04_問題修復與重新執行.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2187
+  },
+  {
+    "source_id": "SRC-7b54af771f02",
+    "path": "docs/raw-governance/20261031/07_第二階段官方查證與受控補抓.md",
+    "version_date_hint": "2026-10-31",
+    "source_sha256": "9430a417f2fd2c48e3608fadc2b5fac14b8e758b44e0ebd0158c56c43d2dae91",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261031/07_第二階段官方查證與受控補抓.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1992
+  },
+  {
+    "source_id": "SRC-4a168d37056c",
+    "path": "docs/raw-governance/20261031/08_未通過項目第三輪解析與上線.md",
+    "version_date_hint": "2026-10-31",
+    "source_sha256": "ba5e5dcc042230a21322dd64cd73d2463b17c7b57106e17c5e83d51e3e2a5a84",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261031/08_未通過項目第三輪解析與上線.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4189
+  },
+  {
+    "source_id": "SRC-f0d34646b11e",
+    "path": "docs/raw-governance/20261101/09_未解決項目再解析與重驗.md",
+    "version_date_hint": "2026-11-01",
+    "source_sha256": "950c5fbe41064e434b6992c439e8e857c439c8cf3fd4646d192b4ba8577c3176",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261101/09_未解決項目再解析與重驗.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4069
+  },
+  {
+    "source_id": "SRC-606863ef21b8",
+    "path": "docs/raw-governance/20261101/10_剩餘缺失分流與阻擋恢復.md",
+    "version_date_hint": "2026-11-01",
+    "source_sha256": "07e8d2261b81e8c68375ef2b910ec608f7232fdde6902254d91e8902e6c1fdef",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261101/10_剩餘缺失分流與阻擋恢復.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4733
+  },
+  {
+    "source_id": "SRC-0a4c85510f0b",
+    "path": "docs/raw-governance/20261101/11_最新隔離原件重驗與證交所缺口復測.md",
+    "version_date_hint": "2026-11-01",
+    "source_sha256": "3393c6e3434265f71ea150216195a2ea2ce80a275264cfbcd5b0bf29b3e7af26",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261101/11_最新隔離原件重驗與證交所缺口復測.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2706
+  },
+  {
+    "source_id": "SRC-0b5d74e4fe77",
+    "path": "docs/raw-governance/20261102/12_收盤跨欄原件修復與未解決項分流.md",
+    "version_date_hint": "2026-11-02",
+    "source_sha256": "4f55096f280a872726e934aa549b07867c9bd53d42155e907d91f3d3f9195967",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/20261102/12_收盤跨欄原件修復與未解決項分流.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3778
+  },
+  {
+    "source_id": "SRC-cf3648fa94ae",
+    "path": "docs/raw-governance/README.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "f4c293c15b457fc5e5a3ec4cc85b161593527984635eb2fc52d033d4dd3d413c",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/raw-governance/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 858
+  },
+  {
+    "source_id": "SRC-1633b1ea5e4f",
+    "path": "docs/v093_layer02_incremental_governance_r1.md",
+    "version_date_hint": "UNKNOWN（見原文）",
+    "source_sha256": "8fdc2116accd502d38bf7fc2763328542f6a395559648b9ba5027008e58c5c06",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/docs/v093_layer02_incremental_governance_r1.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2372
+  },
+  {
+    "source_id": "SRC-f4a3767da796",
+    "path": "reports/five-day-audit-and-recovery-20261026.md",
+    "version_date_hint": "2026-10-26",
+    "source_sha256": "ff4d574f013ac43755c68cd5034947d078d1f78a6bc014e6ef81ae0126700144",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/five-day-audit-and-recovery-20261026.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 30273
+  },
+  {
+    "source_id": "SRC-50e0d53510be",
+    "path": "reports/four-lane-live-acceptance-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "d473e0f8356d489c2b67e1dc507b89bc481ade1c0fe3870575b1f4c4d38077f2",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/four-lane-live-acceptance-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 767
+  },
+  {
+    "source_id": "SRC-9cb92740bd0e",
+    "path": "reports/four-lane-prelaunch-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "c2c9adf98a0976d612707ad0ba84f38077e8775912effcebcac89560adbdd9f2",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/four-lane-prelaunch-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1068
+  },
+  {
+    "source_id": "SRC-f912bf3054c8",
+    "path": "reports/four-lane-release-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "5c9950473d809cc66ed824aad72dd0e295bdbb7792780a63054146e193fd9c3c",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/four-lane-release-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1426
+  },
+  {
+    "source_id": "SRC-8db13b429cc1",
+    "path": "reports/four-source-repair-plan-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "9c71e93e282e904c12c59a341316435aa75f0934fe008388729140e7be358eb0",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/four-source-repair-plan-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3227
+  },
+  {
+    "source_id": "SRC-d1226dc25ddb",
+    "path": "reports/official-database-backfill-20261027.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "c63c8c32829a25598d5675c88fd73c6cba35ea0900e6d800d0c864d7f42a9094",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/official-database-backfill-20261027.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1671
+  },
+  {
+    "source_id": "SRC-4f6e2dc8846d",
+    "path": "reports/official-inward-relaunch-20261026.md",
+    "version_date_hint": "2026-10-26",
+    "source_sha256": "5f518900fd073f4e890258579ee83b74af172a0bbf588c2f0790e02ee1d80e33",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/official-inward-relaunch-20261026.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2973
+  },
+  {
+    "source_id": "SRC-85553a817f3a",
+    "path": "reports/official-ten-day-finmind-relaunch-20261027.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "5d32d28ed0d5c372870ac3d6444a8ebc4741b09572f08b65367381122c5ce5df",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/official-ten-day-finmind-relaunch-20261027.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 6337
+  },
+  {
+    "source_id": "SRC-6dd24523c3cd",
+    "path": "reports/official-v6-problems-and-release-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "be80f591866301c509d634ddf0f57b0d7018082e78516ede13256bfc05fe5b07",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/official-v6-problems-and-release-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3056
+  },
+  {
+    "source_id": "SRC-f9f9190b6349",
+    "path": "reports/official-v7-integrity-speed-plan-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "c355ef84163ec71f082b0246d73c4741754c0f98f54988d590b1aedc3f3daab2",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/official-v7-integrity-speed-plan-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2528
+  },
+  {
+    "source_id": "SRC-d6377c38fb34",
+    "path": "reports/official-v8-missing-unit-repair-20261025.md",
+    "version_date_hint": "2026-10-25",
+    "source_sha256": "e59240ead7855a9c81335c32bdb30909a079f461045011835bcdc971ae729635",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/official-v8-missing-unit-repair-20261025.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2310
+  },
+  {
+    "source_id": "SRC-db1ef3227ebd",
+    "path": "reports/official-zero-repair-fix-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "d018a01854817d3dfbc1596ca2fada4d041bd4521d4309f6a80eba60ac00fa3d",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/official-zero-repair-fix-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2001
+  },
+  {
+    "source_id": "SRC-241d9010cffe",
+    "path": "reports/postlaunch-batch/20261027/README.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "ea45433049db46807f9bd8be9da321595147289a9e3d5dc026f2452cb4b929ca",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/postlaunch-batch/20261027/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1765
+  },
+  {
+    "source_id": "SRC-80a168932227",
+    "path": "reports/raw-acceptance/20261027_v1/JARVIS_七大來源錯誤處理與驗收規範_20261027.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "31cdd228f7df9c76b8ff59ae534db212e0d9f92b3266912fcde2fc11ed623792",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261027_v1/JARVIS_七大來源錯誤處理與驗收規範_20261027.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3656
+  },
+  {
+    "source_id": "SRC-9ebe0405de57",
+    "path": "reports/raw-acceptance/20261027_v1/README.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "b1325f263185d820927ae060a207330249545c25779cb7a3852c6fa9e2139368",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261027_v1/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 248
+  },
+  {
+    "source_id": "SRC-0a64846638d1",
+    "path": "reports/raw-acceptance/20261028_acceleration_plan/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "0046839e3b16fe00539295126a0775778be86f4eddc53ff7fc9aa2e87f33d340",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_acceleration_plan/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3754
+  },
+  {
+    "source_id": "SRC-a46257942fa3",
+    "path": "reports/raw-acceptance/20261028_acceleration_plan/rule_ownership.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "dbffde79e66dbd3a17bbfeee8f1b47c158cf94dedc31bd16b16edb3959c03c11",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_acceleration_plan/rule_ownership.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 876
+  },
+  {
+    "source_id": "SRC-022c0fa3309e",
+    "path": "reports/raw-acceptance/20261028_actual_cross_source/JARVIS_cross_source_actual_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "b53a7a55231283b7f44a224ef1e612bc2171f6a934c48a8c5d01f3f9a293c825",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_actual_cross_source/JARVIS_cross_source_actual_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1082
+  },
+  {
+    "source_id": "SRC-d47d25ebee42",
+    "path": "reports/raw-acceptance/20261028_blocker_followup/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "643db13037166770d25d009a26ba39a6ff02bb1295a96c7a24ecff4ac6b3dfe7",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_blocker_followup/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1700
+  },
+  {
+    "source_id": "SRC-79ebe3652739",
+    "path": "reports/raw-acceptance/20261028_consolidated/JARVIS_prelaunch_remaining_and_results_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "087cdeebdd47f21dea3879f754f83b48e7552bc9bd1620c45257b89121e68dd2",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_consolidated/JARVIS_prelaunch_remaining_and_results_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1367
+  },
+  {
+    "source_id": "SRC-8fa17d833605",
+    "path": "reports/raw-acceptance/20261028_eight_group_live/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "b9f8204c2dc8807e7ca90c4c360cc6b8e209b7739c167141816cd876afcad529",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_eight_group_live/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2107
+  },
+  {
+    "source_id": "SRC-7d39c6f97de2",
+    "path": "reports/raw-acceptance/20261028_eight_group_progress/JARVIS_eight_group_progress_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "701a7f018fe373e6d640a6b3c003594a3be96803a1781c927c5988721481b542",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_eight_group_progress/JARVIS_eight_group_progress_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1175
+  },
+  {
+    "source_id": "SRC-2ed67e762ab1",
+    "path": "reports/raw-acceptance/20261028_esb_44keys/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "6539cc234fdd48e7f36639d4a05bfeadb9b90c694925f348276311352eeeb770",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_esb_44keys/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 642
+  },
+  {
+    "source_id": "SRC-bce2c7d68acc",
+    "path": "reports/raw-acceptance/20261028_esb_contract/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "8cf686e6367c3d2e2acf0bd5be839a13396e566bd0dac706ec0f13f75c51fa36",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_esb_contract/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1399
+  },
+  {
+    "source_id": "SRC-28eead666408",
+    "path": "reports/raw-acceptance/20261028_expanded_live/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "987fdbb644a1c2fed2407d7048924a5b284a7801086145944c2c2ead5e1a5672",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_expanded_live/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 333
+  },
+  {
+    "source_id": "SRC-0c741fc56ad7",
+    "path": "reports/raw-acceptance/20261028_incremental_progress/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "9593ab48f65018b714b60c21a54fc086ddce7e0c3274a524947f53b3bba96ae6",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_incremental_progress/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 601
+  },
+  {
+    "source_id": "SRC-7fd732a6db56",
+    "path": "reports/raw-acceptance/20261028_integrated/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "666b55d90eb320c42d384146ffb26d83e1b88c577768cbf66b0e78f27eab2bab",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_integrated/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2360
+  },
+  {
+    "source_id": "SRC-622f510b5ec9",
+    "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_MOPS_combined_followup_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "a711dfaa6740eff94deba0dd9b4902c25a9122982cc27fa42fd622df0a45b2e9",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_live_batch/JARVIS_MOPS_combined_followup_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 465
+  },
+  {
+    "source_id": "SRC-5c41fb22d15b",
+    "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_combined_content_gate_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "4819d5b6fbfe300ef2348bd317075e885e1fb03fc06ce59b299b193716da97c4",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_live_batch/JARVIS_combined_content_gate_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1411
+  },
+  {
+    "source_id": "SRC-212c4edcd79d",
+    "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_combined_prelaunch_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "dbf8e1fb727b2f92d0261cfdb60306800959e67504fe986b39cd347b0e44c45f",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_live_batch/JARVIS_combined_prelaunch_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 732
+  },
+  {
+    "source_id": "SRC-61e14b001441",
+    "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_matrix_actual_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "a33eb65acc7c6ae15611c8f9a03646ace9bc2ae48daf3d077daf0d37de77c33f",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_live_batch/JARVIS_matrix_actual_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 346
+  },
+  {
+    "source_id": "SRC-d2190cc3fa32",
+    "path": "reports/raw-acceptance/20261028_live_batch/JARVIS_matrix_actual_v2_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "7853f2278e78b5268c2a0f6d8f1c5242c1547f10130737b05ed1b816095db5f9",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_live_batch/JARVIS_matrix_actual_v2_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 458
+  },
+  {
+    "source_id": "SRC-856c31b7cb29",
+    "path": "reports/raw-acceptance/20261028_one_batch/JARVIS_one_batch_run1_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "eba60fffe5e4aefbf46b206c558e4d59230033c4c93729cc02bbe78171391a55",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_one_batch/JARVIS_one_batch_run1_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1409
+  },
+  {
+    "source_id": "SRC-fb214fa2f2c1",
+    "path": "reports/raw-acceptance/20261028_one_batch_round2/JARVIS_one_batch_run2_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "defe91ad3543948c5d43c883c40573bad661bd62c0eb3ad9d01daa15a23bcd6d",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_one_batch_round2/JARVIS_one_batch_run2_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 996
+  },
+  {
+    "source_id": "SRC-621a24412d8b",
+    "path": "reports/raw-acceptance/20261028_one_batch_round2_followup/JARVIS_round2_followup_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "a2b32e0c5ef1777df8f2638d6a5992015463872d6c51f419ce61011138f521d7",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_one_batch_round2_followup/JARVIS_round2_followup_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 949
+  },
+  {
+    "source_id": "SRC-e02de7cff426",
+    "path": "reports/raw-acceptance/20261028_prelaunch_final/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "a2746083f7edd2db299dc651a989bafd2f9d6c2a8399aa2e84fdce49287bbd94",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_prelaunch_final/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 907
+  },
+  {
+    "source_id": "SRC-de6baa948b8a",
+    "path": "reports/raw-acceptance/20261028_progress_v2/JARVIS_37_rules_progress_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "f7d94161f1e8f41b885795bbabcadc6d6694e7a56a5b12dec82ee28cbcca97a6",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_progress_v2/JARVIS_37_rules_progress_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 9978
+  },
+  {
+    "source_id": "SRC-ba29e84e7ab5",
+    "path": "reports/raw-acceptance/20261028_round3/JARVIS_round3_prelaunch_20261028.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "d405dbf8db26559670daed5e131f446d0e3bcd12f0a034e5f017676da58cf326",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_round3/JARVIS_round3_prelaunch_20261028.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1460
+  },
+  {
+    "source_id": "SRC-55a859941650",
+    "path": "reports/raw-acceptance/20261028_scheduler_live_readiness/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "501d1dd37489c89cb45da6aeaa1fdead655e984dbda33b4173d4df04e2b77b07",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261028_scheduler_live_readiness/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1410
+  },
+  {
+    "source_id": "SRC-fe1bfbd12703",
+    "path": "reports/raw-acceptance/20261029_adapter_rate/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "290db0a92559a398a0250bf38f2daf141d5d89a48380365107450406664c2c53",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_adapter_rate/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 669
+  },
+  {
+    "source_id": "SRC-18c7bb790aca",
+    "path": "reports/raw-acceptance/20261029_adapter_rate/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "c859ef70752b78a0ec238e1ba0cb9044fb7ad00bcea3ca0eb1a96929939acfda",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_adapter_rate/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2451
+  },
+  {
+    "source_id": "SRC-36a4f0596a9f",
+    "path": "reports/raw-acceptance/20261029_admission_runtime/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "a9b29f466be75ccbcd9205202cb6ee1f6a599bcdeeb52557beaa081240595c9e",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_admission_runtime/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 669
+  },
+  {
+    "source_id": "SRC-91e698923887",
+    "path": "reports/raw-acceptance/20261029_admission_runtime/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "457bb488195ca7a8676e0a3364dd63552e055ccf363c808642798143325f2697",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_admission_runtime/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1975
+  },
+  {
+    "source_id": "SRC-bc8af3165373",
+    "path": "reports/raw-acceptance/20261029_auto_publication/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "24f3fff81da8d0c6a91dd4ce49fe40ecfe11e6f4c76eaa3c1546a5000af35758",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_auto_publication/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 575
+  },
+  {
+    "source_id": "SRC-9fa1dcdb8ea7",
+    "path": "reports/raw-acceptance/20261029_auto_publication/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "eefe203b801809943a9531478031044ca6eb664096a6fe05478ff1108481aa32",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_auto_publication/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1573
+  },
+  {
+    "source_id": "SRC-7812beba5943",
+    "path": "reports/raw-acceptance/20261029_closed_loop_batch/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "a8c6dda948166448a5da11a7d2bf37e0e7e279773d62cc43db665d7e8bd6aa0b",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_closed_loop_batch/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 502
+  },
+  {
+    "source_id": "SRC-c310a63d38ca",
+    "path": "reports/raw-acceptance/20261029_closed_loop_batch/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "3871d375edbd756f95e3a8a5cc80d4caed5a3344aaa3c1bab16ada266f748a1e",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_closed_loop_batch/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 994
+  },
+  {
+    "source_id": "SRC-4741be89498c",
+    "path": "reports/raw-acceptance/20261029_consolidated_remaining/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "36fec0e6ec7600840076c8a980a2ef0afd4fd4ec0dad52355320f52a7c1040fd",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_consolidated_remaining/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 575
+  },
+  {
+    "source_id": "SRC-cc660ec05a77",
+    "path": "reports/raw-acceptance/20261029_consolidated_remaining/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "ee02995a29e864ce5e796e2304fa659e2a92deef5f008f9164836f125d1e042e",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_consolidated_remaining/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1030
+  },
+  {
+    "source_id": "SRC-546747d27854",
+    "path": "reports/raw-acceptance/20261029_continuation/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "7f1ae11ea41ca0c654d07411c74eccfaefe6ba60cc0e0fc2c2622bbbbf27989d",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_continuation/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 502
+  },
+  {
+    "source_id": "SRC-a53b3e5ae40d",
+    "path": "reports/raw-acceptance/20261029_continuation/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "4fd7e646a15ee1eff89e894302d5ab04376402182579188e05d6f06a2b353e25",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_continuation/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 867
+  },
+  {
+    "source_id": "SRC-06d06313d7a5",
+    "path": "reports/raw-acceptance/20261029_cross_review/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "9ac7d17af110c1023fd011dc7eb0953d67f9ed6369febdbb761d160483382e0c",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_cross_review/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 501
+  },
+  {
+    "source_id": "SRC-9d871157876e",
+    "path": "reports/raw-acceptance/20261029_eleven_slot_preflight/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "f753962809ccecf68488ff7894f75c0fe8fd336b75295dd69865c1c91d4fa163",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_eleven_slot_preflight/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 797
+  },
+  {
+    "source_id": "SRC-4b0efc227b30",
+    "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v2/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "ecc2bc49fd0a983e02492fc22e16787581b0f4384b2c0e14551b9afee9422a0d",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_eleven_slot_preflight_v2/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 501
+  },
+  {
+    "source_id": "SRC-971383f2cf55",
+    "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v3/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "14f97f4813ed8abad6a1d33a047822cd5167522eaff6b3951ec59cae2d17f8bd",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_eleven_slot_preflight_v3/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 501
+  },
+  {
+    "source_id": "SRC-2a4b19f8a2b4",
+    "path": "reports/raw-acceptance/20261029_eleven_slot_preflight_v4/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "f721b7f709a508c68b4318167840f791c73c2ee0444682be4a90c467bcec91c6",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_eleven_slot_preflight_v4/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 858
+  },
+  {
+    "source_id": "SRC-92c13a1513ac",
+    "path": "reports/raw-acceptance/20261029_executor_hardening/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "23210b293f172427e3c4b5b4238647d9f7d046964f10b18adfce4c64c49b4187",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_executor_hardening/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 502
+  },
+  {
+    "source_id": "SRC-a62e50f4925a",
+    "path": "reports/raw-acceptance/20261029_executor_hardening/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "e59d458f248aa8c52df6bf49275eb5c4e6c7e2597a07909d21115bda8c6662fc",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_executor_hardening/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1138
+  },
+  {
+    "source_id": "SRC-194b94709601",
+    "path": "reports/raw-acceptance/20261029_final_bundle/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "ef3e1a94dab2cbba8f559a23a7dd808e0fc54f309f5b49d9ee29a9cfe388e9df",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_final_bundle/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1753
+  },
+  {
+    "source_id": "SRC-06aef621f117",
+    "path": "reports/raw-acceptance/20261029_five_native/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "2bda752db01cf8c60c9e55f40e081036ae7c58efb194154dfdf5a98d8cdba096",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_five_native/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 575
+  },
+  {
+    "source_id": "SRC-45b4f4ee170f",
+    "path": "reports/raw-acceptance/20261029_five_native/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "fe5a3a579af842d7cbbf0de47a39a6d1a17e8094131986a96f53565c86669937",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_five_native/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1614
+  },
+  {
+    "source_id": "SRC-c4e37e9f6976",
+    "path": "reports/raw-acceptance/20261029_handoff_replay/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "8732497129c56e710da9db6dd89cf08a14d1261d940cc12ad6871111620b58f2",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_handoff_replay/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 501
+  },
+  {
+    "source_id": "SRC-feb7d5bf5afc",
+    "path": "reports/raw-acceptance/20261029_handoff_replay/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "35e0b98d0d96d9248049144f93603e4cf66963ab6298452a416bd34f3b6472b4",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_handoff_replay/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1432
+  },
+  {
+    "source_id": "SRC-411c3d373bfc",
+    "path": "reports/raw-acceptance/20261029_import_handoff/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "68ff4aac0a287f61160a7e75a63c4df870c73e10ed08b2e433c655e4da97d93c",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_import_handoff/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 575
+  },
+  {
+    "source_id": "SRC-711b979da8f5",
+    "path": "reports/raw-acceptance/20261029_import_handoff/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "0f6ea82570f7a147fec9688579702dd9bbd1e6184f2d26de3cfc6a05d5218a20",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_import_handoff/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1283
+  },
+  {
+    "source_id": "SRC-7e23c6a9a736",
+    "path": "reports/raw-acceptance/20261029_legacy_handoff/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "cda5d3f167c0c1d94037366e87b0e7b8f742d1197828f73aedd7c1d10ec034ed",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_legacy_handoff/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 501
+  },
+  {
+    "source_id": "SRC-5e155cad95ea",
+    "path": "reports/raw-acceptance/20261029_paged_state/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "fd9449cf6c235f3ac09f42e88363bd0ad70d4f1124a3dc76990997b67d6129b8",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_paged_state/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 502
+  },
+  {
+    "source_id": "SRC-d4485bf2d9fb",
+    "path": "reports/raw-acceptance/20261029_paged_state/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "0e4b9dd2e92f6f58a32fd6dbb1db5aff08eaa20a17ee70243cfb54824959d02b",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_paged_state/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 788
+  },
+  {
+    "source_id": "SRC-050f5c8ca87c",
+    "path": "reports/raw-acceptance/20261029_shared_state_hold/FOLLOWUP.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "fe11de5b892de60c093edf3f6a7e335f1223bb3c234f89c7986285efe00b86f0",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_shared_state_hold/FOLLOWUP.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 434
+  },
+  {
+    "source_id": "SRC-962601035cc2",
+    "path": "reports/raw-acceptance/20261029_shared_state_hold/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "754a8b96beb2bdf6b90c4ff47b77def6b0d620794310ab598b29f36d9e2980a0",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_shared_state_hold/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 501
+  },
+  {
+    "source_id": "SRC-b7bef21030b8",
+    "path": "reports/raw-acceptance/20261029_tdcc_missing/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "875e67fdb6df6cac38479a5f083ed57e678401faf74d927d88aeff57f6820367",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_tdcc_missing/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 575
+  },
+  {
+    "source_id": "SRC-6652d6ef0699",
+    "path": "reports/raw-acceptance/20261029_tdcc_missing/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "893e68c31bcd4bea80f74f2f89efc095bc83529a35a6a0fe074a5ce35e419523",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_tdcc_missing/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1497
+  },
+  {
+    "source_id": "SRC-d01ea6642d68",
+    "path": "reports/raw-acceptance/20261029_twelve_entry/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "66f1ca9dae281f1048cecde45b2558292e9176bf06f0f7629f60cd4f05267272",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_twelve_entry/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 669
+  },
+  {
+    "source_id": "SRC-d9bbd035bccb",
+    "path": "reports/raw-acceptance/20261029_twelve_entry/RESULT.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "b396c740530a3bd4a86f9d1a8de4215541b55010f03c2a1f814efc53cb2c57ae",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_twelve_entry/RESULT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1671
+  },
+  {
+    "source_id": "SRC-d5cfd65ef0c1",
+    "path": "reports/raw-acceptance/20261029_twelve_slot_names/README.md",
+    "version_date_hint": "2026-10-29",
+    "source_sha256": "9ac7d17af110c1023fd011dc7eb0953d67f9ed6369febdbb761d160483382e0c",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-acceptance/20261029_twelve_slot_names/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 501
+  },
+  {
+    "source_id": "SRC-3f1ffdc71dc7",
+    "path": "reports/raw-register/20261027_v1/README.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "a6ccf6f6abf964766a0a78da961a176eee9c4d6c4b8ce6c2fcc11f02187fcfed",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/raw-register/20261027_v1/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3139
+  },
+  {
+    "source_id": "SRC-9d49374073cf",
+    "path": "reports/real-empty-prelaunch/20261028/README.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "a7adca143f9b55ab247d372e041e7dcf4ac9348c99b250625eb9ed1dda64ebf8",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/real-empty-prelaunch/20261028/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1015
+  },
+  {
+    "source_id": "SRC-8411bb2d7bcb",
+    "path": "reports/real-empty-prelaunch/20261028/retry-cap-followup.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "2e3c92338b72df166f9687af0e9fe4a8b9c398c9c4de08d86cc58544668f5d31",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/real-empty-prelaunch/20261028/retry-cap-followup.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1336
+  },
+  {
+    "source_id": "SRC-0b76652e329c",
+    "path": "reports/real-empty-prelaunch/20261028/待補資料明細.md",
+    "version_date_hint": "2026-10-28",
+    "source_sha256": "08a1200ef352f98f38145cff681eff6cd136525c28caf0393012436c9473641a",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/real-empty-prelaunch/20261028/待補資料明細.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 907
+  },
+  {
+    "source_id": "SRC-6fa64291e690",
+    "path": "reports/release-batch/20261027/README.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "5f7aac934315ac3784420a87c7ed85f84107adcc1250616881bd66ce9ad7d85a",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/release-batch/20261027/README.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1400
+  },
+  {
+    "source_id": "SRC-bdf7f5b1d84b",
+    "path": "reports/taifex-api-native-v5-20261025.md",
+    "version_date_hint": "2026-10-25",
+    "source_sha256": "67f297e7c9a5932c320fe8892aa4e7c159fbfbba0046e6faf2af4bd03d091edf",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-api-native-v5-20261025.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1185
+  },
+  {
+    "source_id": "SRC-62effbada4bb",
+    "path": "reports/taifex-five-day-full-range-relaunch-20261027.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "a9c27660ab73d7e8044691b9146e45e07554aaf306f83313e624d38232b28f21",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-five-day-full-range-relaunch-20261027.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 6245
+  },
+  {
+    "source_id": "SRC-e5c0cbf11d61",
+    "path": "reports/taifex-layout-repair-v3-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "358f3345e638db8c2652edea2979e8bd43993893c34626f30079f7964a72d0cd",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-layout-repair-v3-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2238
+  },
+  {
+    "source_id": "SRC-4faf7313a35f",
+    "path": "reports/taifex-native-repair-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "e6551d77ba354627463c432f57f72fde89f95fc0f4181d47c04386742e11b614",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-native-repair-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1918
+  },
+  {
+    "source_id": "SRC-b687e4b710a0",
+    "path": "reports/taifex-official-mirrors-v7-20261025.md",
+    "version_date_hint": "2026-10-25",
+    "source_sha256": "adcc6ad8dc235643878a126413d0ff1d2bc6559a9318a5e9b47fa3b5130fe2e3",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-official-mirrors-v7-20261025.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2910
+  },
+  {
+    "source_id": "SRC-487c3869fcea",
+    "path": "reports/taifex-raw-backfill-20261027.md",
+    "version_date_hint": "2026-10-27",
+    "source_sha256": "3ab4fc51ba0c9b55abe6549cbbfeabf9a51f79e4635974513c39221c1602f53c",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-raw-backfill-20261027.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2272
+  },
+  {
+    "source_id": "SRC-f54cf3870327",
+    "path": "reports/taifex-route-recovery-v8-20261025.md",
+    "version_date_hint": "2026-10-25",
+    "source_sha256": "8b72677ff23294864ca2cdb54f468e30ab649731c3e8ba9341a064c1c610e55d",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-route-recovery-v8-20261025.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2174
+  },
+  {
+    "source_id": "SRC-3c7cc81cd1c8",
+    "path": "reports/taifex-second-pass-20261026.md",
+    "version_date_hint": "2026-10-26",
+    "source_sha256": "7e6e5cd9a1d1f0a7d2eefa5d5ac27409c849768c007a70357746cd1053fcfc8b",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-second-pass-20261026.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 951
+  },
+  {
+    "source_id": "SRC-6fe50d861dd1",
+    "path": "reports/taifex-v4-problems-and-release-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "987e5dbee767b858b0045ca8dbaf795711a07d40d2be9a5fe717d79dd401a2cc",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-v4-problems-and-release-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2635
+  },
+  {
+    "source_id": "SRC-6585bf02aed5",
+    "path": "reports/taifex-v6-two-day-problems-20261025.md",
+    "version_date_hint": "2026-10-25",
+    "source_sha256": "76de0e2733e1e2969207c8278097b9049d64f4188848b2c42ba0a769a37130b3",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/taifex-v6-two-day-problems-20261025.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2866
+  },
+  {
+    "source_id": "SRC-0ab25fbaf0e2",
+    "path": "reports/tdcc-download-v4-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "7c8a70d8850e4b9f47f5dda2db893dee86c2343b58574012aee8160ede0ce9b8",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/tdcc-download-v4-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1106
+  },
+  {
+    "source_id": "SRC-7c2ec7bf6acf",
+    "path": "reports/tdcc-history-restart-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "460c58536b19149fe588be85761d14a6922eb9ac3d46c75300064cb0b57c6468",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/tdcc-history-restart-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 623
+  },
+  {
+    "source_id": "SRC-0e8d059db0bf",
+    "path": "reports/tdcc-progress-v6-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "86a83044cbff47384e53f49ad037504c02106da6cfd2f2157d2d0bb00dd2baae",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/tdcc-progress-v6-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2079
+  },
+  {
+    "source_id": "SRC-38d6d8b0858b",
+    "path": "reports/tdcc-three-day-error-review-v7-20261025.md",
+    "version_date_hint": "2026-10-25",
+    "source_sha256": "3dec7df21fbfcb93902f1b526e58910db5a5bd8817fda59adbb51dfd01246b0c",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/tdcc-three-day-error-review-v7-20261025.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1512
+  },
+  {
+    "source_id": "SRC-e93b2af09fe4",
+    "path": "reports/tdcc-timeout-repair-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "0d66e048e1e223d58fdd30526d13f75aae396c85187266e4a2650459dea423a6",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/tdcc-timeout-repair-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1757
+  },
+  {
+    "source_id": "SRC-e6cceb379a91",
+    "path": "reports/tdcc-two-ended-20261024.md",
+    "version_date_hint": "2026-10-24",
+    "source_sha256": "bb553fe1355e6337581a6e726d077a25bed735e1adbddb33ebbb38a8980fc94b",
+    "pinned_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/blob/fe9737de6b5b166de50b1bafc4e6a4caa4fab358/reports/tdcc-two-ended-20261024.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 900
+  },
+  {
+    "source_id": "SRC-843916ccbc40",
+    "path": "docs/issue-ledger/20261102/legacy-sources/JARVIS_DAILY_DQ_QUARANTINE_RECOVERY_SOP_v1_20261014.md",
+    "version_date_hint": "2026-11-02",
+    "source_sha256": "135d0707a49eb85d5ef7c21b38dc36097ad06f3ab094d35acf7da2374affffb8",
+    "pinned_url": "https://github.com/danny541690/C1-JARVIS/blob/d76b36e1fa455080977d57f7814bf55f582f4f57/docs/policies/JARVIS_DAILY_DQ_QUARANTINE_RECOVERY_SOP_v1_20261014.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 4455
+  },
+  {
+    "source_id": "SRC-e1fb28a53da1",
+    "path": "docs/issue-ledger/20261102/legacy-sources/JARVIS_GITHUB_PYTHON_TEST_CHECKPOINT_2026-10-09.md",
+    "version_date_hint": "2026-11-02",
+    "source_sha256": "0534d6714beba928c21dea7c9c470fd4591c4e4a710eaec8c923fa719b242dd1",
+    "pinned_url": "https://github.com/danny541690/C1-JARVIS/blob/d76b36e1fa455080977d57f7814bf55f582f4f57/docs/checkpoints/JARVIS_GITHUB_PYTHON_TEST_CHECKPOINT_2026-10-09.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 3166
+  },
+  {
+    "source_id": "SRC-96301defcc1f",
+    "path": "docs/issue-ledger/20261102/legacy-sources/JARVIS_LATEST_CHECKPOINT.md",
+    "version_date_hint": "2026-11-02",
+    "source_sha256": "7e71f66fa6df4e4d690d9108d106aac3653e7525145ff46380c963c4db6c1a4b",
+    "pinned_url": "https://github.com/danny541690/C1-JARVIS/blob/d76b36e1fa455080977d57f7814bf55f582f4f57/docs/checkpoints/JARVIS_LATEST_CHECKPOINT.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 150353
+  },
+  {
+    "source_id": "SRC-b8a5158b9bae",
+    "path": "docs/issue-ledger/20261102/legacy-sources/WP00_B28_FINMIND_SDK_ERROR_BOUNDARY_REVIEW_20261013.md",
+    "version_date_hint": "2026-11-02",
+    "source_sha256": "8ecb2a0d3a5f39f728663861f7ebc348c2cc266233bec10d283b39b5e01230f3",
+    "pinned_url": "https://github.com/danny541690/C1-JARVIS/blob/d76b36e1fa455080977d57f7814bf55f582f4f57/docs/registry/delivery/wp00/WP00_B28_FINMIND_SDK_ERROR_BOUNDARY_REVIEW_20261013.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 1473
+  },
+  {
+    "source_id": "SRC-036f9728c90f",
+    "path": "docs/issue-ledger/20261102/legacy-sources/WP00_B64_SDK_ASYNC_ERROR_AUDIT_20261014.md",
+    "version_date_hint": "2026-11-02",
+    "source_sha256": "b74b3752f3a08ea9c182602b79a79954b11cdd190fee8e2d8d6c6bc4abd6cd17",
+    "pinned_url": "https://github.com/danny541690/C1-JARVIS/blob/d76b36e1fa455080977d57f7814bf55f582f4f57/docs/registry/delivery/wp00/WP00_B64_SDK_ASYNC_ERROR_AUDIT_20261014.md",
+    "access": "FULL_TEXT_IMPORTED",
+    "characters": 2084
+  }
+]

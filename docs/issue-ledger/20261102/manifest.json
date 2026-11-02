@@ -1,0 +1,17 @@
+{
+  "schema": "JARVIS_UNIFIED_ISSUE_LEDGER_V1",
+  "created_date_taipei": "2026-11-02",
+  "source_main_sha": "fe9737de6b5b166de50b1bafc4e6a4caa4fab358",
+  "review_window": [
+    "2026-10-01",
+    "2026-11-02"
+  ],
+  "issue_index_records": 89,
+  "evidence_events": 1719,
+  "source_documents": 148,
+  "raw_modified": false,
+  "production_state_modified": false,
+  "coverage": "Known tracked repository documents plus five early-October legacy references; NOT every Actions run, branch state page or historical chat. No claim of exhaustive monthly reconciliation.",
+  "counts_semantics": "Issue index entries include aliases and historical namespaces; not a count of unique root causes or missing market files. Evidence blocks are document paragraphs/table rows, not individual HTTP requests.",
+  "latest_counts_as_of": "2026-11-02 09:16 +08:00; not live"
+}

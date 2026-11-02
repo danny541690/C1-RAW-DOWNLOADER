@@ -17,3 +17,8 @@
 - [Google Drive完整紀錄](https://drive.google.com/drive/folders/1P_pohL-y_w9PzokprBenTOl66jXPMAKs)
 - [ChatGPT完整交付包](https://chatgpt.com/library?file_id=libfile_3d50507eed088191bc70db71df06235d&account_id=personal)
 - [三處同步收據](20261031/publication.json)
+
+
+## 統一問題追蹤總帳（2026-11-02 R1）
+
+下載錯誤、修正及歷次證據的可搜尋入口已整合至 [統一問題總帳](../issue-ledger/README.md)。收錄148份文件、89筆問題索引及1719筆證據事件；來源與歷史狀態均保留。不是整月每次HTTP完整對帳，也不是即時進度；詳見總帳範圍。
