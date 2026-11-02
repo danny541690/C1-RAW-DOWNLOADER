@@ -1,0 +1,34 @@
+name: JARVIS 0.94 bounded Drive organization
+on:
+  push:
+    branches: [ops/v094-drive-20261102]
+    paths:
+      - scripts/ops/organize_v094.py
+      - docs/v094/**
+      - .github/workflows/jarvis-v094-drive-organization.yml
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v094-drive-organization
+  cancel-in-progress: false
+jobs:
+  organize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install google-api-python-client google-auth google-auth-httplib2 requests
+      - name: Create only inside the approved new 0.94 tree
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.ops.organize_v094
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v094-organization-evidence
+          path: results/v094
+          retention-days: 30
