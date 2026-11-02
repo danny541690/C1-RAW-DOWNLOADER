@@ -44,11 +44,15 @@ def validate_html(payload,period,format_name,response_date=None):
  if fields is None:raise ValueError('TPEX_LEGACY_CODE_HEADER_MISSING')
  # The compact 2004 table gives the change field two cells (symbol/value).
  # Bind offsets to the actual header span; never shift prices by guessing.
- nodes=trs[header_at].xpath('./th|./td');split_change=False
- if '' not in fields and '漲跌' in fields:
-  ci=fields.index('漲跌');spans=[node.get('colspan','1') for node in nodes]
-  if spans[ci]=='2' and all(span=='1' for i,span in enumerate(spans) if i!=ci):
-   fields=fields[:ci+1]+['漲跌數值']+fields[ci+1:];split_change=True
+ nodes=trs[header_at].xpath('./th|./td');split_columns={};expanded_fields=[]
+ for node,name in zip(nodes,fields):
+  span=node.get('colspan','1');start=len(expanded_fields)
+  if span=='2' and name in ('收盤價','漲跌') and '' not in fields:
+   split_columns[start]=name
+   expanded_fields.extend(['收盤價註記','收盤價'] if name=='收盤價' else ['漲跌','漲跌數值'])
+  elif span=='1':expanded_fields.append(name)
+  else:raise ValueError('TPEX_LEGACY_UNPROVEN_HEADER_SPAN')
+ fields=expanded_fields
  title=' '.join(tr.text_content() for tr in trs[:header_at])
  dates=[]
  for match in re.finditer(r'(?:交易|資料)日期\s*[:：]\s*(\d{2,4})\s*[/年]\s*(\d{1,2})\s*[/月]\s*(\d{1,2})',document.text_content()):
@@ -85,16 +89,18 @@ def validate_html(payload,period,format_name,response_date=None):
  for tr in trs[header_at+1:]:
   cells=[clean(cell.text_content()) for cell in tr.xpath('./th|./td')]
   if len(cells)<=code_index or not re.fullmatch('[1-9][0-9]{3}',cells[code_index]):continue
-  if split_change:
+  if split_columns:
    expanded=[]
    for node,value in zip(tr.xpath('./th|./td'),cells):
     span=node.get('colspan','1')
-    if span=='2' and len(expanded)==ci:expanded.extend([value,''])
+    if span=='2' and len(expanded) in split_columns:
+     expanded.extend(['',value] if split_columns[len(expanded)]=='收盤價' else [value,''])
     elif span=='1':expanded.append(value)
     else:raise ValueError('TPEX_LEGACY_UNPROVEN_COLUMN_SPAN')
    cells=expanded
   if len(cells)<=code_index or not re.fullmatch('[1-9][0-9]{3}',cells[code_index]):continue
   if len(cells)!=len(fields):raise ValueError('TPEX_LEGACY_ROW_WIDTH')
+  if '收盤價註記' in fields and cells[fields.index('收盤價註記')] not in ('','♁','☉','⊕','⊙'):raise ValueError('TPEX_LEGACY_UNPROVEN_CLOSE_MARKER')
   if '\ufffd' in ''.join(cells):raise ValueError('TPEX_LEGACY_SOURCE_REPLACEMENT_CHARACTER')
   code=cells[code_index]
   if code in codes:raise ValueError('TPEX_LEGACY_DUPLICATE_CODE')

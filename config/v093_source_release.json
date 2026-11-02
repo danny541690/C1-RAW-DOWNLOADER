@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "ca82a8021b120463a6ee4f879ceb047ec769892643e28c726f2ff0f0c746057b",
+  "tested_code_sha256": "e74adbfa3b67f538c4128b144e6c7d6d6f4607e80a06887c009e875a90371a3c",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -75,6 +75,6 @@
   "candidate_scope": "FROZEN_ADMITTED_NATIVE_CAMPAIGN_ONLY",
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
-  "recovery_update": "LATEST_QUARANTINE_AND_SERIALIZED_TWSE_RETRY_V9_1_20261101",
-  "recovery_validation": "Full regression 1222 tests; latest quarantine SHA verification, no quarantine RAW acceptance, exact existing TWSE scope and one additional request maximum."
+  "recovery_update": "SAVED_CLOSE_AND_CHANGE_SPANS_V10_20261102",
+  "recovery_validation": "1225 complete regression tests; original close marker and price columns, merged cells, wrong date, unknown marker, bad OHLC and unsupported spans."
 }

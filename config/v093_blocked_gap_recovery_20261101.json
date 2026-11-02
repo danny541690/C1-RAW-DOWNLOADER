@@ -805,5 +805,5 @@
       "keys": []
     }
   },
-  "dispatch_revision": "SERIALIZED_TWSE_RECHECK_THEN_RETRY_V9_1"
+  "dispatch_revision": "CURRENT_POST_RETRY_EVIDENCE_V10_NO_REPEAT_SOURCE_REQUESTS"
 }

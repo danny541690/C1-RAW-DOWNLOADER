@@ -14,6 +14,22 @@ def fixture(period='2007-01-02',title='96年1月2日',change=None):
  return json.dumps(dict(stat='ok',date=period.replace('-',''),html=text),ensure_ascii=False).encode()
 
 class LegacyPricesTests(unittest.TestCase):
+ def close_span_fixture(self,merged=False):
+  text=json.loads(fixture(title='資料日期：931126'))['html'].replace('<th>收盤</th>','<th colspan="2">收盤價</th>').replace('<th>漲跌</th>','<th colspan="2">漲跌</th>')
+  text=text.replace('<td>10</td><td>0</td>','<td>⊕</td><td>10</td><td>─</td><td>0</td>')
+  if merged:text=text.replace('<td>⊕</td><td>10</td>','<td colspan="2">⊕10</td>')
+  return text.encode('cp950')
+ def test_close_and_change_two_column_headers_bind_true_ohlcv_positions(self):
+  raw=self.close_span_fixture();result=validate_archived(raw,'2004-11-26');native=result['native']
+  self.assertEqual(native['rows'],300);self.assertEqual(native['price_relationship_rows_checked'],300);self.assertEqual(native['fields'][2:6],['收盤價註記','收盤價','漲跌','漲跌數值']);self.assertFalse(result['numeric_verified']);self.assertEqual(raw,self.close_span_fixture())
+ def test_observed_merged_close_uses_source_value_and_never_pads_a_missing_price(self):
+  result=validate_archived(self.close_span_fixture(merged=True),'2004-11-26');self.assertEqual(result['native']['price_relationship_rows_checked'],300)
+  raw=self.close_span_fixture().replace('<td>⊕</td><td>10</td>'.encode('cp950'),'<td>⊕</td>'.encode('cp950'),1)
+  with self.assertRaisesRegex(ValueError,'ROW_WIDTH'):validate_archived(raw,'2004-11-26')
+ def test_split_close_still_rejects_wrong_date_bad_prices_unknown_markers_and_spans(self):
+  raw=self.close_span_fixture()
+  for changed,error in ((raw.replace(b'931126',b'931125'),'WRONG_TITLE_DATE'),(raw.replace('<td>⊕</td><td>10</td>'.encode('cp950'),'<td>⊕</td><td>99</td>'.encode('cp950'),1),'OHLC_RELATIONSHIP'),(raw.replace('<td>⊕</td>'.encode('cp950'),b'<td>?</td>',1),'UNPROVEN_CLOSE_MARKER'),(raw.replace('<th>成交股數</th>'.encode('cp950'),'<th colspan="2">成交股數</th>'.encode('cp950')),'UNPROVEN_HEADER_SPAN')):
+   with self.assertRaisesRegex(ValueError,error):validate_archived(changed,'2004-11-26')
  def test_management_section_caption_does_not_shift_or_pad_stock_rows(self):
   obj=json.loads(fixture());text=obj['html'].replace('96年1月2日','').replace('<table>','<p>交易日期:93年11月16日</p><table>').replace('<th>漲跌</th>','<th colspan="2">漲跌</th>').replace('<td>0</td>','<td>▽</td><td>0</td>').replace('</table>','<tr><td colspan="10">管理股票</td></tr></table>')
   self.assertEqual(validate_archived(text.encode('cp950'),'2004-11-16')['native']['rows'],300)

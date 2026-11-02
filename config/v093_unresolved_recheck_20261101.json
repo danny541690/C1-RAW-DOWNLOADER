@@ -1,10 +1,10 @@
 {
-  "revision": "unresolved-recheck-20261101-v9",
+  "revision": "unresolved-recheck-20261102-v10",
   "market_source_requests": false,
   "original_raw_immutable": true,
   "targets": {
     "TWSE": {
-      "commit": "d17738f2ad3d7105befe864b869e87367297a113",
+      "commit": "b1f798ecb2f815baeedb7a45075514a36f930ace",
       "unresolved": 152
     },
     "MOPS": {
@@ -14,5 +14,5 @@
   },
   "official_closure_evidence_revision": "TWSE_20241002_20241031_REVIEWED_PRIMARY_PDFS",
   "latest_quarantine_evidence_first": true,
-  "dispatch_revision": "SERIALIZED_TWSE_RECHECK_THEN_RETRY_V9_1"
+  "dispatch_revision": "CURRENT_POST_RETRY_EVIDENCE_V10"
 }

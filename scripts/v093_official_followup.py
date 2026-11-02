@@ -369,7 +369,8 @@ def run_source(root,source,config):
    key=task['definition']['key'];prior=state['tasks'][key];evidence=prior.get('followup_rejected_evidence');archived=archived_html(task,config)
    if not (early_2007(task,config) or archived) or not evidence or prior.get('status')=='RAW_BASIC_VERIFIED' :continue
    old_revision=prior.get('rejected_reparse_revision')
-   if old_revision=='SECTION_LABELS_AND_SAVED_PROBE_V8' or old_revision=='CAPTION_DATE_SPLIT_CHANGE_AND_SOURCE_DIAGNOSIS_V7' and prior.get('rejected_reparse_error')!='TPEX_LEGACY_UNPROVEN_COLUMN_SPAN':continue
+   if old_revision=='CLOSE_AND_CHANGE_SPANS_V10':continue
+   if old_revision in ('SECTION_LABELS_AND_SAVED_PROBE_V8','CAPTION_DATE_SPLIT_CHANGE_AND_SOURCE_DIAGNOSIS_V7') and prior.get('rejected_reparse_error') not in ('TPEX_LEGACY_ROW_WIDTH','TPEX_LEGACY_UNPROVEN_COLUMN_SPAN','TPEX_LEGACY_UNPROVEN_HEADER_SPAN'):continue
    if time.monotonic()-started>1500:more=True;break
    from scripts.v093_problem_recovery import RecheckAdapter
    reader=object.__new__(RecheckAdapter);reader.d=drive;reader.rejected=evidence;reader.raw_cache={}
@@ -380,7 +381,7 @@ def run_source(root,source,config):
     prior.update(rejected_reparse_result='VALID_REJECTED_RAW_REQUIRES_PROMOTION',rejected_reparse_stats=stats)
    except (ValueError,UnicodeError) as exc:
     prior.update(rejected_reparse_result='REVIEW_REQUIRED',rejected_reparse_error=str(exc).split(':',1)[0])
-   prior['rejected_reparse_revision']='SECTION_LABELS_AND_SAVED_PROBE_V8';checkpoint()
+   prior['rejected_reparse_revision']='CLOSE_AND_CHANGE_SPANS_V10';checkpoint()
    if prior.get('rejected_reparse_result')=='VALID_REJECTED_RAW_REQUIRES_PROMOTION' and archived:
     proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=config['tpex_archived_html']['query_page_sha256'],route=config['tpex_archived_html'])
     promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=evidence['raw_sha256'],rejected_evidence=evidence)
