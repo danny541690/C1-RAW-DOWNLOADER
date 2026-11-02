@@ -3,7 +3,7 @@
 Never infers data acceptance from workflow success. A Drive failure leaves the
 Git outbox pending; rerunning the same record retries without losing evidence.
 """
-import argparse,hashlib,json,os,re
+import argparse,hashlib,json,os,re,time
 from pathlib import Path
 from scripts.v093_source_coordination import Coordinator,SOURCES
 from scripts.v093_source_git_store import GitCAS
@@ -71,12 +71,27 @@ class DriveArchive:
   d=Drive(service());d.direct_readback=True
   folder=d.folder(ROOT,'RUN_'+self.identity)
   def save_piece(name,payload):
-   d.put(folder,name,payload,'application/json',overwrite=False)
-   found=d.find(folder,name)
-   if not found:raise ValueError('PUBLICATION_FILE_NOT_FOUND')
-   restored=d.call(lambda:d.api.files().get_media(fileId=found['id']))
-   if restored!=payload:raise ValueError('PUBLICATION_DRIVE_SHA_MISMATCH')
-   return dict(file_id=found['id'],sha256=hashlib.sha256(payload).hexdigest(),bytes=len(payload))
+   # A timeout/502 may occur after Drive accepted the upload. Reconcile first.
+   def read_existing():
+    found=d.find(folder,name)
+    if not found:return None
+    restored=d.call(lambda:d.api.files().get_media(fileId=found['id']))
+    if restored!=payload:raise ValueError('PUBLICATION_DRIVE_SHA_MISMATCH')
+    return dict(file_id=found['id'],sha256=hashlib.sha256(payload).hexdigest(),bytes=len(payload))
+   for attempt in range(4):
+    try:
+     existing=read_existing()
+     if existing:return existing
+     d.put(folder,name,payload,'application/json',overwrite=False)
+     existing=read_existing()
+     if existing:return existing
+     raise ValueError('PUBLICATION_FILE_NOT_FOUND')
+    except Exception as exc:
+     status=getattr(getattr(exc,'resp',None),'status',None)
+     # Never retry permissions, invalid content, or identity mismatches.
+     if status not in (429,500,502,503,504) or attempt==3:raise
+     time.sleep(min(2**attempt,8))
+   raise ValueError('PUBLICATION_RETRY_EXHAUSTED')
   if len(raw)<=650000:
    receipt=save_piece('acceptance_'+digest+'.json',raw)
    return dict(receipt,folder_id=folder,readback_verified=True)

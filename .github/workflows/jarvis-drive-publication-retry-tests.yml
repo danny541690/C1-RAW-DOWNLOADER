@@ -1,0 +1,29 @@
+name: JARVIS Drive publication transient-error regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/v093_acceptance_publish.py'
+      - '.github/workflows/jarvis-drive-publication-retry-tests.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m compileall -q scripts/v093_acceptance_publish.py
+      - run: python -m unittest discover -s tests -p 'test_v093_partitioned_acceptance_publish.py' -v
+      - name: Verify backoff and pre-write reconciliation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/v093_acceptance_publish.py').read_text()
+          assert 'existing=read_existing()' in s
+          assert 'status not in (429,500,502,503,504)' in s
+          assert 'time.sleep(min(2**attempt,8))' in s
+          print('Readback-before-write and bounded transient retry present')
+          PY
