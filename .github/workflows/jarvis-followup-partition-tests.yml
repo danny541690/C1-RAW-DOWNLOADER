@@ -1,0 +1,29 @@
+name: JARVIS followup report partition regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/v093_partitioned_acceptance_publish.py'
+      - 'tests/test_v093_partitioned_acceptance_publish.py'
+      - '.github/workflows/jarvis-seven-official-followup.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest discover -s tests -p 'test_v093_partitioned_acceptance_publish.py' -v
+      - name: Verify schedule frequency and partition invocation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          y=Path('.github/workflows/jarvis-seven-official-followup.yml').read_text()
+          assert "9,19,29,39,49,59 * * * *" in y
+          assert "v093_partitioned_acceptance_publish" in y
+          print("ten-minute cadence and lossless publisher wired")
+          PY
