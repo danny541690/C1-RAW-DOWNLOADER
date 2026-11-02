@@ -1,0 +1,52 @@
+name: JARVIS three Python environments - isolated smoke test
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'config/python-environments.json'
+      - 'requirements-analytics.txt'
+      - 'scripts/jarvis_env_selector.py'
+      - 'tests/test_jarvis_env_selector.py'
+      - '.github/workflows/jarvis-three-python-environments-smoke.yml'
+permissions:
+  contents: read
+jobs:
+  smoke:
+    name: Validate ${{ matrix.action }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        action: [source_download, quality_validation, indicator_calculation]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            requirements-qa.lock
+            requirements-analytics.txt
+      - name: Select requirements (no source requests)
+        id: env
+        run: python scripts/jarvis_env_selector.py --action "${{ matrix.action }}" --github-output "$GITHUB_OUTPUT"
+      - name: Install the selected isolated environment
+        run: python -m pip install -r "${{ steps.env.outputs.requirements }}"
+      - name: Verify selected environment
+        env:
+          ENVIRONMENT: ${{ steps.env.outputs.environment }}
+        run: |
+          python -m unittest discover -s tests -p 'test_jarvis_env_selector.py' -v
+          python -c 'import pyarrow, requests; print("Core imports PASS")'
+          if [ "$ENVIRONMENT" = "analytics" ]; then
+            python -c 'import duckdb, polars, numpy, pandas, scipy, pandera, pytest; print("Analytics imports PASS")'
+            python -c 'import duckdb; assert duckdb.sql("SELECT 1+1").fetchone()[0]==2'
+          fi
+      - name: Record actual resolved packages
+        run: python -m pip freeze > "resolved-${{ matrix.action }}.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resolved-${{ matrix.action }}
+          path: resolved-${{ matrix.action }}.txt
+          retention-days: 7
