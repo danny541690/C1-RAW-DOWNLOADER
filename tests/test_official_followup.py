@@ -9,6 +9,38 @@ from test_native_repair import FakeDrive
 from test_problem_recovery import retained,sha
 
 class OfficialFollowupTests(unittest.TestCase):
+ def test_saved_validation_resumes_promotion_for_both_historical_routes(self):
+  from contextlib import ExitStack
+  from scripts.v093_official_followup import run_source
+  root=Path.cwd()
+  config=json.loads((root/'config/v093_official_followup_20261031.json').read_text())
+  for date,kind in [('2006-01-09','OFFICIAL_ARCHIVED_HTML_ROUTE'),('2007-03-01','OFFICIAL_HISTORICAL_ROUTE')]:
+   with self.subTest(date=date), tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
+    task=retained(b'raw',source='TPEx',period=date,category='prices')
+    key=task['definition']['key']
+    prior=dict(status='REVIEW_REQUIRED',attempts=3,
+     rejected_reparse_revision='CLOSE_AND_CHANGE_SPANS_V10',
+     rejected_reparse_result='VALID_REJECTED_RAW_REQUIRES_PROMOTION',
+     followup_rejected_evidence=dict(raw_sha256=sha(b'raw')))
+    state=dict(tasks={key:prior},phase='OFFICIAL_FOLLOWUP',source_requests=0,
+     discovery_revision=config.get('route_probe_revision'))
+    cas=SQLiteCAS(Path(tmp)/'state.db')
+    cas.cas('TPEx',cas.read('TPEx')[0],state)
+    for name,value in [('GitCAS',cas),('load_rows',[task])]:
+     stack.enter_context(patch('scripts.v093_official_followup.'+name,return_value=value))
+    stack.enter_context(patch('scripts.annual_actual_firstpass.service'))
+    stack.enter_context(patch('scripts.v093_official_followup.Coordinator'))
+    stack.enter_context(patch('scripts.v093_official_followup.Path.mkdir'))
+    stack.enter_context(patch('scripts.v093_official_followup.Path.write_text'))
+    promote=stack.enter_context(patch('scripts.v093_official_followup.requery',
+     return_value=dict(status='RAW_BASIC_VERIFIED',attempts=3,followup_terminal=True,
+      raw_sha256=sha(b'raw'),raw_reference='verified')))
+    run_source(root,'TPEx',config)
+    self.assertEqual(promote.call_count,1)
+    self.assertEqual(promote.call_args.args[4]['kind'],kind)
+    self.assertEqual(promote.call_args.kwargs['promotion']['raw_sha256'],sha(b'raw'))
+    self.assertEqual(cas.read('TPEx')[1]['source_requests'],0)
+
  def test_reviewed_official_emergency_notice_is_date_and_market_bound(self):
   cfg=json.loads(Path('config/v093_official_followup_20261031.json').read_text())
   for date in ('2024-10-02','2024-10-31','2024-07-24','2024-10-03'):

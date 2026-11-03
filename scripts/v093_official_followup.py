@@ -367,28 +367,39 @@ def run_source(root,source,config):
  if source=='TPEx':
   for task in rows:
    key=task['definition']['key'];prior=state['tasks'][key];evidence=prior.get('followup_rejected_evidence');archived=archived_html(task,config)
-   if not (early_2007(task,config) or archived) or not evidence or prior.get('status')=='RAW_BASIC_VERIFIED' :continue
+   if not (early_2007(task,config) or archived) or not evidence or prior.get('status')!='REVIEW_REQUIRED':continue
    old_revision=prior.get('rejected_reparse_revision')
-   if old_revision=='CLOSE_AND_CHANGE_SPANS_V10':continue
-   if old_revision in ('SECTION_LABELS_AND_SAVED_PROBE_V8','CAPTION_DATE_SPLIT_CHANGE_AND_SOURCE_DIAGNOSIS_V7') and prior.get('rejected_reparse_error') not in ('TPEX_LEGACY_ROW_WIDTH','TPEX_LEGACY_UNPROVEN_COLUMN_SPAN','TPEX_LEGACY_UNPROVEN_HEADER_SPAN'):continue
+   pending_promotion = prior.get('rejected_reparse_result') == 'VALID_REJECTED_RAW_REQUIRES_PROMOTION'
+   if old_revision=='CLOSE_AND_CHANGE_SPANS_V10' and not pending_promotion:continue
+   if not pending_promotion and old_revision in ('SECTION_LABELS_AND_SAVED_PROBE_V8','CAPTION_DATE_SPLIT_CHANGE_AND_SOURCE_DIAGNOSIS_V7') and prior.get('rejected_reparse_error') not in ('TPEX_LEGACY_ROW_WIDTH','TPEX_LEGACY_UNPROVEN_COLUMN_SPAN','TPEX_LEGACY_UNPROVEN_HEADER_SPAN'):continue
    if time.monotonic()-started>1500:more=True;break
-   from scripts.v093_problem_recovery import RecheckAdapter
-   reader=object.__new__(RecheckAdapter);reader.d=drive;reader.rejected=evidence;reader.raw_cache={}
-   try:
-    from scripts.v093_tpex_legacy_prices import validate,validate_archived
-    stats=(validate_archived if archived else validate)(reader.read_rejected(),task['definition']['period'])
-    if prior.get('rejected_reparse_error'):prior['resolved_reparse_error']=prior.pop('rejected_reparse_error')
-    prior.update(rejected_reparse_result='VALID_REJECTED_RAW_REQUIRES_PROMOTION',rejected_reparse_stats=stats)
-   except (ValueError,UnicodeError) as exc:
-    prior.update(rejected_reparse_result='REVIEW_REQUIRED',rejected_reparse_error=str(exc).split(':',1)[0])
-   prior['rejected_reparse_revision']='CLOSE_AND_CHANGE_SPANS_V10';checkpoint()
-   if prior.get('rejected_reparse_result')=='VALID_REJECTED_RAW_REQUIRES_PROMOTION' and archived:
-    proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=config['tpex_archived_html']['query_page_sha256'],route=config['tpex_archived_html'])
+   if not pending_promotion:
+    from scripts.v093_problem_recovery import RecheckAdapter
+    reader=object.__new__(RecheckAdapter);reader.d=drive;reader.rejected=evidence;reader.raw_cache={}
+    try:
+     from scripts.v093_tpex_legacy_prices import validate,validate_archived
+     stats=(validate_archived if archived else validate)(reader.read_rejected(),task['definition']['period'])
+     if prior.get('rejected_reparse_error'):prior['resolved_reparse_error']=prior.pop('rejected_reparse_error')
+     prior.update(rejected_reparse_result='VALID_REJECTED_RAW_REQUIRES_PROMOTION',rejected_reparse_stats=stats)
+    except (ValueError,UnicodeError) as exc:
+     prior.update(rejected_reparse_result='REVIEW_REQUIRED',rejected_reparse_error=str(exc).split(':',1)[0])
+    prior['rejected_reparse_revision']='CLOSE_AND_CHANGE_SPANS_V10';checkpoint()
+   if prior.get('rejected_reparse_result')=='VALID_REJECTED_RAW_REQUIRES_PROMOTION':
+    if archived:
+     proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=config['tpex_archived_html']['query_page_sha256'],route=config['tpex_archived_html'])
+    else:
+     proof=dict(kind='OFFICIAL_HISTORICAL_ROUTE',raw_sha256=config['tpex_early_2007']['page_sha256'],route=config['tpex_early_2007'])
     promotion=dict(reason='VALID_REJECTED_RAW_REQUIRES_PROMOTION',accepted_as_raw=False,raw_sha256=evidence['raw_sha256'],rejected_evidence=evidence)
     before=prior['attempts'];result=requery(root,source,task,prior,proof,drive,promotion=promotion)
+    if result.get('followup_terminal'):
+     result['rejected_reparse_result'] = (
+      'PROMOTED' if result['status']=='RAW_BASIC_VERIFIED' else 'PROMOTION_REVIEW_REQUIRED'
+     )
     state['source_requests']+=result['attempts']-before;state['tasks'][key]=result
-    if result['status']=='RAW_BASIC_VERIFIED' and task['definition']['period']==config['tpex_archived_html']['canary_date']:
+    if archived and result['status']=='RAW_BASIC_VERIFIED' and task['definition']['period']==config['tpex_archived_html']['canary_date']:
      state['archived_html_canary_verified']=dict(key=key,raw_sha256=result['raw_sha256'],raw_reference=result['raw_reference'],promoted_from_saved_rejection=True)
+    if not archived and result['status']=='RAW_BASIC_VERIFIED' and task['definition']['period']==config['tpex_early_2007']['canary_date']:
+     state['early_2007_canary_verified']=dict(key=key,raw_sha256=result['raw_sha256'],raw_reference=result['raw_reference'],promoted_from_saved_rejection=True)
     checkpoint()
     if result.get('followup_terminal'):
      def clean_promoted(shared):

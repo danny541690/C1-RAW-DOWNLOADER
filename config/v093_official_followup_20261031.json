@@ -1,4 +1,5 @@
 {
+  "checkpoint_recovery_revision": "20261103-resume-verified-promotion",
   "schema": "JARVIS_OFFICIAL_FOLLOWUP_V2",
   "enabled": true,
   "baseline_pins": {

@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "f7b22382d5f9bd2471ec61485dd186538fff06884e4006925271dbc1351f9010",
+  "tested_code_sha256": "636c16adadad3568c38078f5bae43b62e84543dc52aee7c37b40b9dcd438608c",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
