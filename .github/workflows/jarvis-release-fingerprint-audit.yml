@@ -1,0 +1,36 @@
+name: JARVIS release fingerprint audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/jarvis-release-fingerprint-audit.yml'
+      - 'config/v093_source_release.json'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Print exact production fingerprint and release comparison
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from scripts.v093_admission_runtime import code_digest, load_release
+          root=Path.cwd()
+          expected=json.loads((root/'config/v093_source_release.json').read_text())['tested_code_sha256']
+          actual=code_digest(root)
+          print('JARVIS_RELEASE_EXPECTED_SHA256='+expected,flush=True)
+          print('JARVIS_RELEASE_ACTUAL_SHA256='+actual,flush=True)
+          if expected != actual:
+              print('JARVIS_RELEASE_MISMATCH: re-run approved regression and update release manifest')
+          else:
+              load_release(root)
+              print('JARVIS_RELEASE_VERIFIED',flush=True)
+          PY
