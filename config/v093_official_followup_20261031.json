@@ -1,4 +1,8 @@
 {
+  "reviewed_truncated_retry_sha256": {
+    "TPEx|2006-01|28b28a1f50aa35a335b5a5e0": "340d131e3321f96bbbb2a7638205cd53e174f6cc69528f2ddf0f4ac1e1993fea",
+    "TPEx|2006-01|466e73bedea0844c52cd4d86": "14e0896acb1332a9d37f819f48755377d2b601f7930f05632267119bff1584dd"
+},
   "checkpoint_recovery_revision": "20261103-resume-verified-promotion",
   "schema": "JARVIS_OFFICIAL_FOLLOWUP_V2",
   "enabled": true,

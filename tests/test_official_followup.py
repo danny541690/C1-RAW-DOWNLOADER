@@ -9,6 +9,19 @@ from test_native_repair import FakeDrive
 from test_problem_recovery import retained,sha
 
 class OfficialFollowupTests(unittest.TestCase):
+ def test_truncated_retry_requires_pinned_evidence_and_only_one_extra_attempt(self):
+  from scripts.v093_official_followup import reviewed_truncated_retry
+  cfg=json.loads(Path('config/v093_official_followup_20261031.json').read_text())
+  for key,digest in cfg['reviewed_truncated_retry_sha256'].items():
+   task=dict(definition=dict(key=key,source='TPEx',period='2006-01-02'))
+   prior=dict(status='REVIEW_REQUIRED',reason='REQUERY_CONTENT_BLOCKED',attempts=2,
+    rejected_reparse_error='TPEX_LEGACY_ROW_WIDTH',
+    followup_rejected_evidence=dict(raw_sha256=digest,readback_verified=True,accepted_as_raw=False))
+   self.assertTrue(reviewed_truncated_retry(task,prior,cfg))
+   for changes in (dict(attempts=3),dict(status='RAW_BASIC_VERIFIED'),dict(reviewed_truncated_retry=True),
+                   dict(followup_rejected_evidence=dict(raw_sha256='0'*64,readback_verified=True))):
+    self.assertFalse(reviewed_truncated_retry(task,dict(prior,**changes),cfg))
+
  def test_saved_validation_resumes_promotion_for_both_historical_routes(self):
   from contextlib import ExitStack
   from scripts.v093_official_followup import run_source

@@ -200,6 +200,20 @@ def archived_html(task,config):
  proof=config.get('tpex_archived_html') or {};period=task['definition']['period']
  return task['definition']['source']=='TPEx' and '2003-08-01'<=period<='2006-12-31' and proof.get('base_url')=='https://hist.tpex.org.tw/Hist/STOCK/AFTERTRADING/DAILY_CLOSE_QUOTES/' and proof.get('filename')=='RSTA3104_{roc_year}{month:02d}{day:02d}.HTML' and proof.get('query_page_sha256')=='77e90192fca7a7538421c1f4122a95373c0895f4e15f778c7c1a377c3a1afeec'
 
+def reviewed_truncated_retry(task, prior, config):
+ definition = task['definition']
+ if not archived_html(task, config) or prior.get('status') != 'REVIEW_REQUIRED':
+  return False
+ if prior.get('reason') != 'REQUERY_CONTENT_BLOCKED' or prior.get('attempts') != 2:
+  return False
+ if prior.get('rejected_reparse_error') != 'TPEX_LEGACY_ROW_WIDTH' or prior.get('reviewed_truncated_retry'):
+  return False
+ evidence = prior.get('followup_rejected_evidence') or {}
+ expected = config.get('reviewed_truncated_retry_sha256', {}).get(definition['key'])
+ return bool(expected and evidence.get('raw_sha256') == expected
+             and evidence.get('readback_verified') is True
+             and evidence.get('accepted_as_raw') is False)
+
 def eligible(task,prior,calendars,config=None):
  source=task['definition']['source'];period=task['definition']['period'];case=task.get('execution_contract') or {}
  if prior.get('status')!='REVIEW_REQUIRED' or prior.get('reason')!='OFFICIAL_EMPTY_UNCONFIRMED' or prior['attempts']>=4:return False
@@ -412,8 +426,9 @@ def run_source(root,source,config):
   historic=early_2007(task,config);archived=archived_html(task,config)
   if archived and not state.get('archived_html_canary_verified') and task['definition']['period']!=config['tpex_archived_html']['canary_date']:continue
   if historic and not state.get('early_2007_canary_verified') and task['definition']['period']!=config['tpex_early_2007']['canary_date']:continue
-  if prior.get('followup_terminal'):continue
-  if not prior.get('followup_pending_status') and not eligible(task,prior,calendars,config):continue
+  truncated_retry = reviewed_truncated_retry(task, prior, config)
+  if prior.get('followup_terminal') and not truncated_retry:continue
+  if not truncated_retry and not prior.get('followup_pending_status') and not eligible(task,prior,calendars,config):continue
   if time.monotonic()-started>1500:more=True;break
   _,shared=Coordinator(GitCAS(root),source).store.read(source)
   if (shared or {}).get('hold'):more=True;break
@@ -423,6 +438,9 @@ def run_source(root,source,config):
   if archived:proof=dict(kind='OFFICIAL_ARCHIVED_HTML_ROUTE',raw_sha256=config['tpex_archived_html']['query_page_sha256'],route=config['tpex_archived_html'])
   if historic:proof=dict(kind='OFFICIAL_HISTORICAL_ROUTE',raw_sha256=config['tpex_early_2007']['page_sha256'],route=config['tpex_early_2007'])
   before=prior['attempts'];result=requery(root,source,task,prior,proof,drive)
+  if truncated_retry:
+   result['reviewed_truncated_retry'] = dict(
+    previous_attempts=before, original_evidence=prior['followup_rejected_evidence'])
   if historic and task['definition']['period']==config['tpex_early_2007']['canary_date']:
    state['early_2007_canary_attempted']=True
    if result['status']=='RAW_BASIC_VERIFIED':state['early_2007_canary_verified']=dict(key=key,raw_sha256=result['raw_sha256'],raw_reference=result['raw_reference'])
