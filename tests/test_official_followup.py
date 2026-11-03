@@ -18,6 +18,8 @@ class OfficialFollowupTests(unittest.TestCase):
     rejected_reparse_error='TPEX_LEGACY_ROW_WIDTH',
     followup_rejected_evidence=dict(raw_sha256=digest,readback_verified=True,accepted_as_raw=False))
    self.assertTrue(reviewed_truncated_retry(task,prior,cfg))
+   self.assertTrue(reviewed_truncated_retry(task,dict(prior,rejected_reparse_error='TPEX_SOURCE_TRUNCATED_HTML'),cfg))
+   self.assertFalse(reviewed_truncated_retry(task,dict(prior,rejected_reparse_error='TPEX_SOURCE_MIXED_REPLACEMENT_BYTES'),cfg))
    for changes in (dict(attempts=3),dict(status='RAW_BASIC_VERIFIED'),dict(reviewed_truncated_retry=True),
                    dict(followup_rejected_evidence=dict(raw_sha256='0'*64,readback_verified=True))):
     self.assertFalse(reviewed_truncated_retry(task,dict(prior,**changes),cfg))

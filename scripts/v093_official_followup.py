@@ -206,7 +206,7 @@ def reviewed_truncated_retry(task, prior, config):
   return False
  if prior.get('reason') != 'REQUERY_CONTENT_BLOCKED' or prior.get('attempts') != 2:
   return False
- if prior.get('rejected_reparse_error') != 'TPEX_LEGACY_ROW_WIDTH' or prior.get('reviewed_truncated_retry'):
+ if prior.get('rejected_reparse_error') not in ('TPEX_LEGACY_ROW_WIDTH', 'TPEX_SOURCE_TRUNCATED_HTML') or prior.get('reviewed_truncated_retry'):
   return False
  evidence = prior.get('followup_rejected_evidence') or {}
  expected = config.get('reviewed_truncated_retry_sha256', {}).get(definition['key'])
