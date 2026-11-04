@@ -25,3 +25,4 @@ jobs:
           python tests/v095_isolated_parquet_integration.py
           python tests/v095_immutable_release_isolated.py
           python tests/v095_concurrent_release_isolated.py
+          python tests/v095_full_combined_gate.py
