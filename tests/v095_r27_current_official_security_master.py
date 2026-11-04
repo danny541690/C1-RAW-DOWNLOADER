@@ -20,7 +20,8 @@ def download(label,url):
         raise ValueError("NON_JSON_SOURCE_RESPONSE")
     obj=json.loads(buf.decode("utf-8-sig"))
     if not isinstance(obj,list) or not obj or not isinstance(obj[0],dict):raise ValueError("NONEMPTY_COMPANY_ARRAY_REQUIRED")
-    if "公司代號" not in obj[0]:raise ValueError("EXPECTED_COMPANY_CODE_FIELD_MISSING")
+    code_field="公司代號" if label=="TSE" else "SecuritiesCompanyCode"
+    if code_field not in obj[0]:raise ValueError("EXPECTED_"+label+"_CODE_FIELD_MISSING:"+",".join(obj[0].keys())[:160])
     (ROOT/(label+"_snapshot.json")).write_bytes(buf)
     return obj,{"status":"PASS_CURRENT_SNAPSHOT","http":status,"row_count":len(obj),
         "sha256":sha(buf),"retrieval_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -33,8 +34,9 @@ def main():
         try:
             data,meta=download(market,url)
             codes=set()
+            code_field="公司代號" if market=="TSE" else "SecuritiesCompanyCode"
             for row in data:
-                code=str(row.get("公司代號","")).rstrip(" ")
+                code=str(row.get(code_field,"")).rstrip(" ")
                 if re.fullmatch(r"\d{4}",code):codes.add(code)
             meta["four_digit_company_codes"]=len(codes)
             index[market]=codes;result["market_sources"][market]=meta
