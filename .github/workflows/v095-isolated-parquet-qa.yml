@@ -1,0 +1,21 @@
+name: JARVIS v0.95 Isolated Parquet QA
+on:
+  push:
+    branches:
+      - test/jarvis-v095-parquet-isolated-20261104
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  parquet-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only test dependencies
+        run: python -m pip install duckdb pyarrow pandas
+      - name: Validate isolated synthetic Parquet and DuckDB pipeline
+        run: python tests/v095_isolated_parquet_integration.py
