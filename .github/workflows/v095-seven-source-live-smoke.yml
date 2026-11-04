@@ -59,6 +59,14 @@ jobs:
           name: r27-current-official-security-master
           path: r27_official_security_master/
           if-no-files-found: warn
+      - name: One-shot migration pre-copy and pre-transform QA with parallel worker benchmark
+        run: python tests/v095_migration_combined_parallel_preflight.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-migration-combined-parallel-preflight
+          path: v095_migration_single_preflight/
+          if-no-files-found: warn
       - name: Audit full migration layering and missing-data repair contracts
         run: python tests/v095_migration_architecture_gate.py
       - uses: actions/upload-artifact@v4
