@@ -59,6 +59,8 @@ jobs:
           name: r27-current-official-security-master
           path: r27_official_security_master/
           if-no-files-found: warn
+      - name: v0.93 to v0.95 migration dry-run copy-safety regression
+        run: python tests/v095_v093_migration_preflight.py
       - name: R22 run all 79 prior safety regressions
         run: |
           python tests/v095_isolated_parquet_integration.py
