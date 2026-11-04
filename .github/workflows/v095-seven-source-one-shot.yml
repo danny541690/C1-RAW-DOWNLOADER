@@ -4,6 +4,7 @@ on:
     branches: [test/jarvis-v095-one-shot-fast-20261105]
     paths:
       - .github/workflows/v095-seven-source-one-shot.yml
+      - tests/v095_seven_three_layer_live.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -35,6 +36,8 @@ jobs:
           python tests/v095_r19_live_three_layer_candidates.py
           python tests/v095_r20_tdcc_full_roundtrip.py
           python tests/v095_r24_tdcc_gold_qa.py
+      - name: Seven-source true bounded Bronze -> lossless Silver -> Gold QA-only evidence
+        run: PYTHONPATH=. python tests/v095_seven_three_layer_live.py
       - name: One bounded real v0.93 TDCC migration with Drive SHA/readback/idempotence
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -57,6 +60,7 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
           path: |
+            v095_seven_layer_candidate/report.json
             v095_seven_source_audit/
             r17_live_source_connectivity.json
             r18_live_recovery_report.json
