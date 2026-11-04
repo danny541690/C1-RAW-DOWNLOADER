@@ -22,11 +22,17 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install isolated QA dependencies
-        run: python -m pip install --disable-pip-version-check pyarrow pandas duckdb openpyxl
+        run: python -m pip install --disable-pip-version-check pyarrow pandas duckdb openpyxl google-api-python-client google-auth-httplib2 google-auth-oauthlib
       - name: Lossless TDCC Bronze Parquet candidate readback (no Drive write)
         run: |
           python tests/v095_r20_tdcc_full_roundtrip.py
           python tests/v095_r24_tdcc_gold_qa.py
+      - name: One real legacy Drive file to v0.95 isolated Parquet with SHA and resume check
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python tests/v095_drive_one_file_transfer.py
       - name: Historical archive and immutable migration contract checks
         run: |
           python tests/v095_v093_migration_preflight.py
@@ -55,6 +61,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
           path: |
+            v095_real_drive_transfer/report.json
             r20_tdcc_full/report.json
             r24_tdcc_numeric_gold_candidate/report.json
             r27_official_security_master/R27_current_master_join_report.json
