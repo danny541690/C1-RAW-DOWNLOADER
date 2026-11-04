@@ -37,7 +37,7 @@ def ledger_copy(src,dst,expected,ledger):
     ledger.append("NEW_COPY_VERIFIED")
     return "COPY"
 def synthetic_archive_checks():
-    from tests.v095_v093_migration_preflight import mkzip,verify_bytes
+    from v095_v093_migration_preflight import mkzip,verify_bytes
     valid=mkzip([("market_data.csv","date,price\n2026-10-01,10")])
     manifest=mkzip([("manifest.json",'{"all_market_complete":false,"units":[]}')])
     s1=verify_bytes(valid,2026,"TWSE","2026-10",hashlib.sha256(valid).hexdigest())
