@@ -1,0 +1,91 @@
+name: "JARVIS v0.95 PILOT | isolated scheduled monitoring only"
+on:
+  schedule:
+    # 18:30 Asia/Taipei, Mon-Fri; Friday runs full evidence pass.
+    - cron: '30 10 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Daily lightweight, weekly full, or auto weekday choice'
+        required: true
+        type: choice
+        default: full
+        options:
+          - full
+          - daily
+          - auto
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-isolated-pilot-operational
+  cancel-in-progress: false
+jobs:
+  pilot:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout ONLY v0.95 test branch, never the production code
+        uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-parquet-isolated-20261104
+          persist-credentials: false
+      - name: Set up standalone Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Select cost-efficient pilot mode
+        id: plan
+        env:
+          INPUT_MODE: ${{ inputs.mode || 'auto' }}
+        shell: bash
+        run: |
+          if [[ "$INPUT_MODE" != "auto" ]]; then
+            mode="$INPUT_MODE"
+          elif [[ "$(TZ=Asia/Taipei date +%u)" == "5" ]]; then
+            mode="full"
+          else
+            mode="daily"
+          fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "PILOT_MODE=$mode"
+      - name: Install test-only dependencies (no external secrets)
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl duckdb pandas
+      - name: Run complete isolated daily or Friday pilot and produce audit log
+        env:
+          JARVIS_PILOT_SOURCE_BRANCH: test/jarvis-v095-parquet-isolated-20261104
+          JARVIS_PILOT_SCHEDULE_INSTALLED: '1'
+          PILOT_MODE: ${{ steps.plan.outputs.mode }}
+        run: python tests/v095_pilot_operational_runner.py --mode "$PILOT_MODE"
+      - name: Always retain daily evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-pilot-daily-evidence-${{ github.run_id }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            v095_pilot_operational/
+            v095_pilot_readonly/
+            r17_live_source_connectivity.json
+            r18_live_recovery_report.json
+            r19_live_candidates/report.json
+            r20_tdcc_full/report.json
+            r24_tdcc_numeric_gold_candidate/report.json
+            r25_integrated_admission/
+            r26_evidence_register/
+            r27_official_security_master/R27_current_master_join_report.json
+            r28_prelaunch/R28_GATE.json
+            final_prelaunch_gate/
+      - name: Retain weekly source candidate and Parquet without promotion
+        if: steps.plan.outputs.mode == 'full'
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-pilot-full-candidate-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            r19_live_candidates/
+            r20_tdcc_full/
+            r24_tdcc_numeric_gold_candidate/
+            r27_official_security_master/
