@@ -26,7 +26,8 @@ def sha_file(p):
 def main():
     manifest={"schema":"JARVIS_C1_V095_ISOLATED_PILOT_V1",
         "stage":"FIRST_READONLY_PILOT",
-        "branch":os.environ.get("GITHUB_REF_NAME","UNKNOWN"),
+        "branch":os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME","UNKNOWN"),
+        "github_event_name":os.environ.get("GITHUB_EVENT_NAME","UNKNOWN"),
         "git_commit":os.environ.get("GITHUB_SHA","UNKNOWN"),
         "github_run_id":os.environ.get("GITHUB_RUN_ID","UNKNOWN"),
         "created_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
