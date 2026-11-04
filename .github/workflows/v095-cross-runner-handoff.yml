@@ -15,7 +15,7 @@ concurrency:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
       - name: Generate isolated candidate and manifest
         shell: bash
@@ -29,6 +29,19 @@ jobs:
           (root/'manifest.json').write_text(json.dumps(manifest))
           print('PRODUCER_SHA256='+manifest['sha256'])
           PY
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated Parquet dependency
+        run: python -m pip install pyarrow
+      - name: R23 producer obtains full live TDCC and prepares Parquet Gold QA
+        run: python tests/v095_r20_tdcc_full_roundtrip.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: r23-full-tdcc-between-runners
+          path: r20_tdcc_full/
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: candidate-between-runners
@@ -43,6 +56,24 @@ jobs:
         with:
           name: candidate-between-runners
           path: handoff/
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: r23-full-tdcc-between-runners
+          path: r20_tdcc_full
+      - name: Install read-only Parquet dependency
+        run: python -m pip install pyarrow
+      - name: R23 independent real TDCC candidate restore validation
+        run: python tests/v095_r23_cross_job_full_restore.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r23-full-tdcc-restore-report
+          path: r23_restore_evidence/
+          if-no-files-found: warn
       - name: Verify on a different GitHub job runner without publishing
         shell: bash
         run: |
