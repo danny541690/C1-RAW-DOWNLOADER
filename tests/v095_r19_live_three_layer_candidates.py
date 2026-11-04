@@ -2,7 +2,7 @@
 Three sources (MOPS revenue, TDCC shareholding bounded sample, NDC workbook).
 No Drive writes, no publish, no secrets. Conservative source-specific checks.
 """
-import hashlib,io,json,os,pathlib,urllib.request,urllib.error,zipfile
+import hashlib,io,json,os,pathlib,urllib.request,urllib.error,zipfile,time
 from decimal import Decimal,InvalidOperation
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -73,7 +73,22 @@ def main():
         record={"source":name,"status":"BLOCKED","complete_bronze":False,"pit_verified":False,
                 "numeric_verified":False,"gold_production_approved":False}
         try:
-            blob,code=fetch(url,limit,full)
+            if name=="MOPS":
+                errors=[]
+                for attempt in range(1,4):
+                    try:
+                        blob,code=fetch(url,limit,full)
+                        if not blob.lstrip().startswith((b"[",b"\xef\xbb\xbf[")):
+                            raise ValueError("MOPS_NON_JSON_RESPONSE")
+                        json.loads(blob.decode("utf-8-sig"))
+                        record["attempts"]=attempt
+                        break
+                    except (ValueError,UnicodeError,urllib.error.URLError,TimeoutError) as exc:
+                        errors.append(type(exc).__name__+":"+str(exc)[:90])
+                        if attempt==3:raise ValueError("MOPS_FAILED_THREE_ATTEMPTS:"+repr(errors))
+                        time.sleep(2)
+            else:
+                blob,code=fetch(url,limit,full)
             record["http"]=code
             bronze=out/("bronze_full.bin" if full else "bronze_prefix_SAMPLE_ONLY.bin")
             bronze.write_bytes(blob)
