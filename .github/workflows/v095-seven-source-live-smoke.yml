@@ -23,10 +23,14 @@ jobs:
           python-version: '3.12'
       - name: Seven-source bounded read-only data and connectivity probes
         run: python tests/v095_r17_live_source_smoke.py
+      - name: R18 verify MOPS revenue, TDCC shareholding and NDC official archive
+        run: python tests/v095_r18_recover_source_routes.py
       - name: Upload independent source-by-source test evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: r17-seven-source-live-smoke
-          path: r17_live_source_connectivity.json
+          path: |
+            r17_live_source_connectivity.json
+            r18_live_recovery_report.json
           if-no-files-found: warn
