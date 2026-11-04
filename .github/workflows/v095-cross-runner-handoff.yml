@@ -52,14 +52,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: candidate-between-runners
-          path: handoff/
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidate-between-runners
+          path: handoff/
       - uses: actions/download-artifact@v4
         with:
           name: r23-full-tdcc-between-runners
