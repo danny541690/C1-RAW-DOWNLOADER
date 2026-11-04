@@ -21,4 +21,6 @@ jobs:
       - name: Install only test dependencies
         run: python -m pip install duckdb pyarrow pandas
       - name: Validate isolated synthetic Parquet and DuckDB pipeline
-        run: python tests/v095_isolated_parquet_integration.py
+        run: |
+          python tests/v095_isolated_parquet_integration.py
+          python tests/v095_immutable_release_isolated.py
