@@ -76,5 +76,5 @@
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
   "recovery_update": "FOLLOWUP_PARTITION_AND_DRIVE_RECONCILE_V11_20261103",
-  "recovery_validation": "PR58 lossless >10MB UTF-8 report partition PASS; PR59 readback-before-write + bounded Drive 429/5xx retry PASS; JARVIS release fingerprint audit recalculated on main. Full 12-slot data acceptance remains separate."
+  "recovery_validation": "2026-11-05 diagnostic: production fingerprint invalidated only by addition of isolated v0.95 pilot workflow after verified main; approval remains gated until exact SHA and regression are checked."
 }
