@@ -51,6 +51,14 @@ jobs:
           name: r24-tdcc-numeric-gold-qa
           path: r24_tdcc_numeric_gold_candidate/
           if-no-files-found: warn
+      - name: R27 official TSE OTC current snapshot join and PIT fail closed
+        run: python tests/v095_r27_current_official_security_master.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r27-current-official-security-master
+          path: r27_official_security_master/
+          if-no-files-found: warn
       - name: R22 run all 79 prior safety regressions
         run: |
           python tests/v095_isolated_parquet_integration.py
