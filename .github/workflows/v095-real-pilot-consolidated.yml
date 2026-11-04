@@ -1,0 +1,64 @@
+name: JARVIS v0.95 One-Shot Combined Pilot QA (isolated)
+on:
+  push:
+    branches: [test/jarvis-v095-one-shot-fast-20261105]
+    paths: [.github/workflows/v095-real-pilot-consolidated.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-real-pilot-consolidated
+  cancel-in-progress: true
+jobs:
+  pilot-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-one-shot-fast-20261105
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated QA dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow pandas duckdb openpyxl
+      - name: Lossless TDCC Bronze Parquet candidate readback (no Drive write)
+        run: |
+          python tests/v095_r20_tdcc_full_roundtrip.py
+          python tests/v095_r24_tdcc_gold_qa.py
+      - name: Historical archive and immutable migration contract checks
+        run: |
+          python tests/v095_v093_migration_preflight.py
+          python tests/v095_migration_architecture_gate.py
+          python tests/v095_isolated_parquet_integration.py
+          python tests/v095_immutable_release_isolated.py
+          python tests/v095_concurrent_release_isolated.py
+      - name: Read-only official TSE OTC master check (report failures, no false pass)
+        run: |
+          python tests/v095_r27_current_official_security_master.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('r27_official_security_master/R27_current_master_join_report.json')
+          d=json.loads(p.read_text())
+          print('CURRENT_MARKET_MASTER_CHECK=',d.get('current_market_snapshot_join_pass'))
+          for name,meta in d.get('market_sources',{}).items():
+              print('MARKET=',name,'STATUS=',meta.get('status'),'REASON=',meta.get('error',''))
+          print('HISTORICAL_PIT_VERIFIED=false')
+          PY
+      - name: Publish bounded evidence in one artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-single-batch-QA-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            r20_tdcc_full/report.json
+            r24_tdcc_numeric_gold_candidate/report.json
+            r27_official_security_master/R27_current_master_join_report.json
+            v095_migration_architecture_audit/
+            v095_isolated_parquet/
+            v095_immutable_release/
+            v095_concurrent_release/
