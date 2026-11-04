@@ -26,9 +26,9 @@ def sha_file(p):
 def main():
     manifest={"schema":"JARVIS_C1_V095_ISOLATED_PILOT_V1",
         "stage":"FIRST_READONLY_PILOT",
-        "branch":os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME","UNKNOWN"),
+        "branch":os.environ.get("JARVIS_PILOT_SOURCE_BRANCH") or os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME","UNKNOWN"),
         "github_event_name":os.environ.get("GITHUB_EVENT_NAME","UNKNOWN"),
-        "git_commit":os.environ.get("GITHUB_SHA","UNKNOWN"),
+        "git_commit":__import__("subprocess").run(["git","rev-parse","HEAD"],capture_output=True,text=True,check=True).stdout.strip(),
         "github_run_id":os.environ.get("GITHUB_RUN_ID","UNKNOWN"),
         "created_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "production_release_approved":False,
@@ -36,7 +36,7 @@ def main():
         "drive_writes_by_runner":False,
         "historical_pit_approved":False,
         "investment_gold_enabled":False,
-        "scheduling_activated":False,
+        "scheduling_activated":os.environ.get("JARVIS_PILOT_SCHEDULE_INSTALLED")=="1",
         "source_evidence":{}}
     if manifest["branch"]!="test/jarvis-v095-parquet-isolated-20261104":
         raise RuntimeError("PILOT_REF_NOT_ISOLATED_BRANCH")
