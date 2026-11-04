@@ -1,0 +1,106 @@
+name: "JARVIS v0.95 One-Shot Fast Combined Acceptance (NO SCHEDULE)"
+on:
+  push:
+    branches: [test/jarvis-v095-one-shot-fast-20261105]
+    paths: [.github/workflows/v095-one-shot-fast-combined.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-one-shot-fast-acceptance
+  cancel-in-progress: false
+jobs:
+  combined-acceptance:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BULK_COPY_APPROVED: 'false'
+      RELEASE_APPROVED: 'false'
+    steps:
+      - name: Checkout isolated one-shot branch only
+        uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-one-shot-fast-20261105
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install isolated dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow duckdb pandas openpyxl
+      - name: Fetch each of seven source samples once
+        run: |
+          python tests/v095_r17_live_source_smoke.py
+          python tests/v095_r18_recover_source_routes.py
+          python tests/v095_r19_live_three_layer_candidates.py
+      - name: Build TDCC and official-market master candidates once
+        run: |
+          python tests/v095_r20_tdcc_full_roundtrip.py
+          python tests/v095_r24_tdcc_gold_qa.py
+          python tests/v095_r27_current_official_security_master.py
+      - name: Combined pre-copy, pre-transform, 1-2-4-8 local worker benchmark
+        run: |
+          python tests/v095_migration_combined_parallel_preflight.py
+          python tests/v095_migration_architecture_gate.py
+          python tests/v095_v093_migration_preflight.py
+      - name: Combined safety regression only once
+        run: |
+          python tests/v095_isolated_parquet_integration.py
+          python tests/v095_immutable_release_isolated.py
+          python tests/v095_concurrent_release_isolated.py
+          python tests/v095_full_combined_gate.py
+          python tests/v095_release_gate_evidence.py
+          python tests/v095_real_twse_sample_parquet.py
+          python tests/v095_historical_error_regression.py
+          python tests/v095_source_config_release_audit.py
+          python tests/v095_r21_tdcc_semantic_rules.py
+      - name: Consolidated PIT, release, rollback and 11 blockers report
+        run: |
+          python tests/v095_r22_single_run_release_gate.py
+          python tests/v095_r25_pit_security_publish_admission.py
+          python tests/v095_r26_reconciled_gate.py
+          python tests/v095_r28_historical_pit_and_release_rollback.py
+          python tests/v095_final_oneshot_prelaunch_adjudication.py
+      - name: Assert no bulk copy or production release and preserve reports
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          f=pathlib.Path('final_prelaunch_gate/FINAL_PRELAUNCH_GATE.json')
+          p=pathlib.Path('v095_migration_single_preflight/COMBINED_PRECOPY_PRETRANSFORM_GATE.json')
+          if not (f.exists() and p.exists()):
+              raise SystemExit('MISSING_COMBINED_EVIDENCE')
+          a=json.loads(f.read_text())
+          b=json.loads(p.read_text())
+          if a.get('release_approved') is not False or b.get('bulk_copy_approved') is not False:
+              raise SystemExit('UNSAFE_PUBLICATION_OR_COPY')
+          print('PRODUCTION_RELEASE_APPROVED=false')
+          print('BULK_COPY_APPROVED=false')
+          print('GATES_BLOCKED=',a.get('production_gate_blocked'))
+          print('LOCAL_ONLY_WORKER_TRIAL=',b.get('recommended_trial_policy',{}).get('migration_global_workers'))
+          PY
+      - name: Upload single consolidated evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-one-shot-fast-combined-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            v095_migration_single_preflight/
+            v095_migration_architecture_audit/
+            r17_live_source_connectivity.json
+            r18_live_recovery_report.json
+            r19_live_candidates/report.json
+            r20_tdcc_full/report.json
+            r24_tdcc_numeric_gold_candidate/report.json
+            r27_official_security_master/R27_current_master_join_report.json
+            r22_combined/
+            r25_integrated_admission/
+            r26_evidence_register/
+            r28_prelaunch/
+            final_prelaunch_gate/
+            v095_go_live_gate_report.json
