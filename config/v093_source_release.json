@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_NATIVE_RELEASE_V1",
   "enabled": true,
-  "tested_code_sha256": "2712934dd013b61768ed5608091b7b869b4ebd4dc9ff567b6680c56930e0fffd",
+  "tested_code_sha256": "564591ce98fc48d62eac37e9f576c35246ff19130d86ff4eddaeca5c03fdef34",
   "approved_checks": {
     "source_contracts": true,
     "continuation_and_quota": true,
@@ -76,5 +76,5 @@
   "missing_download_authority": true,
   "activation_evidence_run": "41002625767",
   "recovery_update": "FOLLOWUP_PARTITION_AND_DRIVE_RECONCILE_V11_20261103",
-  "recovery_validation": "2026-11-05 diagnostic: production fingerprint invalidated only by addition of isolated v0.95 pilot workflow after verified main; approval remains gated until exact SHA and regression are checked."
+  "recovery_validation": "2026-11-05: full unittest regression PASS in watchdog run 41925594160; exact code SHA verified in audit 41925594299; only source-code fingerprint delta since last verified main was isolated v0.95 workflow addition. Restore guarded TDCC and other twelve-slot continuations; still no release to v0.95 Gold."
 }
