@@ -38,8 +38,14 @@ def main():
         d=parse_source_date(row["source_date_raw"])
         if d is None:dates["UNKNOWN_SOURCE_DATE"]+=1
         else:dates[d]+=1
-        if re.fullmatch(r"\d{4}",code):classes["FOUR_DIGIT_CANDIDATE_NOT_MASTER_VERIFIED"]+=1
-        else:classes["NON_FOUR_DIGIT_PRESERVE_RAW"]+=1
+        # TDCC uses a six-character padded field, e.g. "2330  ".
+        # Only trim right-side padding; NEVER remove leading zeroes or suffix letters.
+        normalized=code.rstrip(" ")
+        if re.fullmatch(r"\d{4}",normalized):
+            classes["FOUR_DIGIT_CANDIDATE_NOT_MASTER_VERIFIED"]+=1
+        else:
+            classes["NON_FOUR_DIGIT_PRESERVE_RAW"]+=1
+        if code!=normalized:classes["TRAILING_SPACE_PADDED_SOURCE_CODE"]+=1
         warnings+=bool(row["semantic_review_required"])
         if row["investment_gold_approved"] or row["pit_verified"] or row["security_master_verified"]:
             raise ValueError("UNVERIFIED_GOLD_IS_FALSLY_APPROVED")
