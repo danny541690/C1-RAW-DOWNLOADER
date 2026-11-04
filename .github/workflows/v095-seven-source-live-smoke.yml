@@ -15,7 +15,7 @@ concurrency:
 jobs:
   seven-provider-probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,6 +34,14 @@ jobs:
         with:
           name: r19-live-three-layer-candidates
           path: r19_live_candidates/
+          if-no-files-found: warn
+      - name: R20 full TDCC Bronze and Parquet Silver and Gold QA
+        run: python tests/v095_r20_tdcc_full_roundtrip.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r20-tdcc-full-candidates
+          path: r20_tdcc_full/
           if-no-files-found: warn
       - name: Upload independent source-by-source test evidence
         if: always()
