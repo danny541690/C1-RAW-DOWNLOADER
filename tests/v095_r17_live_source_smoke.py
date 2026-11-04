@@ -10,9 +10,9 @@ ENDPOINTS=[
  ("TWSE","https://www.twse.com.tw/rwd/zh/marginTrading/MI_MARGN?date=20261022&response=json","DATA_JSON"),
  ("TPEx","https://www.tpex.org.tw/www/zh-tw/margin/sbl?date=2026%2F10%2F22&response=json","DATA_JSON"),
  ("FinMind","https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=1101&start_date=2026-10-22&end_date=2026-10-22","DATA_JSON"),
- ("TAIFEX","https://openapi.taifex.com.tw/swagger.json","API_SCHEMA_ONLY"),
+ ("TAIFEX","https://openapi.taifex.com.tw/v1/PutCallRatio","DATA_JSON"),
  ("MOPS","https://mops.twse.com.tw/","SITE_ONLY"),
- ("TDCC","https://www.tdcc.com.tw/portal/zh/smWeb/qryStock","SITE_ONLY"),
+ ("TDCC","https://openapi.tdcc.com.tw/v1/opendata/1-5","DATA_JSON"),
  ("NDC","https://www.ndc.gov.tw/","SITE_ONLY")
 ]
 def check_one(source,url,kind):
@@ -28,12 +28,19 @@ def check_one(source,url,kind):
             try:
                 parsed=json.loads(blob)
             except (ValueError,UnicodeDecodeError) as exc:
+                if source in ("TAIFEX","TDCC") and blob.lstrip().startswith(b"["):
+                    try: parsed=[json.JSONDecoder().raw_decode(blob.decode("utf-8","replace").lstrip()[1:].lstrip())[0]]
+                    except Exception: parsed=None
+                else: parsed=None
+            if parsed is None:
                 result["reason"]="NOT_JSON_OR_TRUNCATED"
                 return result
             if source=="TWSE":
                 good=parsed.get("stat")=="OK" and isinstance(parsed.get("tables"),list) and any(t.get("data") for t in parsed["tables"])
             elif source=="TPEx":
                 good=isinstance(parsed.get("tables"),list) and any(t.get("data") for t in parsed["tables"])
+            elif source in ("TAIFEX","TDCC"):
+                good=isinstance(parsed,list) and bool(parsed) and isinstance(parsed[0],dict)
             else:
                 good=isinstance(parsed.get("data"),list) and len(parsed["data"])>0
             result["status"]="PASS" if good else "BLOCKED"
