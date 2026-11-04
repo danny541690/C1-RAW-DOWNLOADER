@@ -76,6 +76,14 @@ jobs:
         run: python tests/v095_r25_pit_security_publish_admission.py
       - name: R26 reconcile previous actual evidence and full-scope production gates
         run: python tests/v095_r26_reconciled_gate.py
+      - name: R28 official master anti-lookahead and local rollback test
+        run: python tests/v095_r28_historical_pit_and_release_rollback.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r28-history-pit-rollback-evidence
+          path: r28_prelaunch/
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
