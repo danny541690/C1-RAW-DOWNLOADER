@@ -28,12 +28,16 @@ def validate(name,blob):
         if first is None:raise ValueError("NO_REVENUE_SCHEMA")
         return {"rows":len(arr),"fields":list(first)[:16],"example_company":str(first.get("公司代號")),"period":str(first.get("資料年月")),"publish_time_known":False,"pit_approved":False}
     if name=="TDCC_SHAREHOLDING":
-        arr=sample_json(blob)
-        first=arr[0]
+        # Validate a single complete JSON object from a deliberately bounded prefix.
+        # A full-dataset approval requires a separate complete ingestion.
+        prefix=blob.decode("utf-8-sig","strict").lstrip()
+        if not prefix.startswith("["):raise ValueError("NOT_ARRAY_PREFIX")
+        first,_=json.JSONDecoder().raw_decode(prefix[1:].lstrip())
+        if not isinstance(first,dict):raise ValueError("NOT_OBJECT_RECORD")
         keys=" ".join(first.keys())
         if not any(tag in keys for tag in ("證券代號","股票代號","持股","集保戶","股權")):
             raise ValueError("NOT_SHAREHOLDING_SCHEMA")
-        return {"rows":len(arr),"fields":list(first)[:20],"example":{str(k):str(v)[:70] for k,v in list(first.items())[:6]},"pit_approved":False}
+        return {"rows_sampled":1,"full_payload_read":False,"fields":list(first)[:20],"example":{str(k):str(v)[:70] for k,v in list(first.items())[:6]},"pit_approved":False}
     if not blob.startswith(b"PK\x03\x04"):raise ValueError("NDC_NOT_XLSX_ZIP")
     with zipfile.ZipFile(io.BytesIO(blob)) as z:
         names=z.namelist()
@@ -47,14 +51,21 @@ def main():
     for name,url,limit in SOURCES:
         item={"source":name,"status":"BLOCKED","http":None,"valid_data":False,"pit_approved":False}
         try:
-            status,ctype,body,complete=get(url,limit)
+            if name=="TDCC_SHAREHOLDING":
+                # The endpoint is large: stream only enough to parse its first record.
+                status,ctype,body,_=get(url,262144)
+                complete=False
+                item["sample_only"]=True
+            else:
+                status,ctype,body,complete=get(url,limit)
             item.update(http=status,mime=ctype,bytes=len(body),complete=complete)
-            if not complete:raise ValueError("BOUNDED_READ_INCOMPLETE")
+            if not complete and name!="TDCC_SHAREHOLDING":
+                raise ValueError("BOUNDED_READ_INCOMPLETE")
             if name=="NDC_XLSX":
                 expected="c035dc5bbd3fe91ca80a620fd84828a54e8c49885a1b3aa51db5e42857772c83"
                 item["same_as_20261023_captured_file"]=hashlib.sha256(body).hexdigest()==expected
             item["sample"]=validate(name,body)
-            item["status"]="PASS_DATA_FETCH";item["valid_data"]=True
+            item["status"]="PASS_BOUNDED_SAMPLE" if name=="TDCC_SHAREHOLDING" else "PASS_DATA_FETCH";item["valid_data"]=True
         except urllib.error.HTTPError as e:
             item.update(http=e.code,error=f"HTTP_{e.code}")
         except Exception as e:
