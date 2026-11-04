@@ -1,0 +1,43 @@
+{
+  "schema": "JARVIS_V095_MIGRATION_CONCURRENCY_POLICY_V1",
+  "scope": "ISOLATED_PRE_COPY_AND_PRE_TRANSFORM_ONLY",
+  "effective_for_production": false,
+  "worker_limits": {
+    "overall_migration_max_active": 4,
+    "drive_read_max_active": 2,
+    "drive_write_max_active": 1,
+    "same_source_dataset_partition_writers": 1,
+    "publication_writer": 1,
+    "historical_download_slots_defined": 12,
+    "historical_download_slots_running_simultaneously": 0
+  },
+  "priority_order": [
+    "DAILY",
+    "REPAIR",
+    "MIGRATION",
+    "HISTORICAL_BACKFILL",
+    "REPORT"
+  ],
+  "shard_key": [
+    "source_id",
+    "dataset_id",
+    "data_period",
+    "source_version"
+  ],
+  "retry": {
+    "transient_http_429_500_503": "exponential_backoff_with_jitter",
+    "attempt_limit": 3,
+    "honor_retry_after": true,
+    "no_retry_on_schema_pit_value_without_adapter_review": true
+  },
+  "adaptive": {
+    "on_429_or_5xx": "reduce_network_concurrency_to_one",
+    "on_drive_quota_warning": "pause_writes_keep_checkpoint",
+    "on_low_throughput_without_errors": "test_three_or_four_readers_only_after_actual_API_measurement",
+    "network_eight_workers_allowed": false
+  },
+  "storage": "v095 staging only; no old v093 mutation; no bronze promotion before complete inventory and SHA",
+  "benchmark_caveat": "1/2/4/8 local SHA benchmarks assess Runner CPU only; live Google Drive API concurrency still untested",
+  "bulk_copy_approved": false,
+  "release_approved": false
+}
