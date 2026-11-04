@@ -32,7 +32,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python tests/v095_drive_one_file_transfer.py
+        run: PYTHONPATH=. python tests/v095_drive_one_file_transfer.py
       - name: Historical archive and immutable migration contract checks
         run: |
           python tests/v095_v093_migration_preflight.py
