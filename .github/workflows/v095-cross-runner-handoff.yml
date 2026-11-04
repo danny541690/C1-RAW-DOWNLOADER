@@ -1,0 +1,60 @@
+name: JARVIS v0.95 Cross-Runner Artifact Handoff (No Production)
+on:
+  push:
+    branches:
+      - test/jarvis-v095-parquet-isolated-20261104
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-cross-runner-handoff
+  cancel-in-progress: false
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Generate isolated candidate and manifest
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib
+          root=pathlib.Path('handoff');root.mkdir(exist_ok=True)
+          content=b'JARVIS-v095-ISOLATED-CANDIDATE-NO-REAL-RAW\n2026-10-22,2330,123\n'
+          (root/'candidate.bin').write_bytes(content)
+          manifest={'schema':'V095_TEST_HANDOFF','sha256':hashlib.sha256(content).hexdigest(),'size':len(content),'publish_authorized':False}
+          (root/'manifest.json').write_text(json.dumps(manifest))
+          print('PRODUCER_SHA256='+manifest['sha256'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-between-runners
+          path: handoff/
+          if-no-files-found: error
+  validate:
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidate-between-runners
+          path: handoff/
+      - name: Verify on a different GitHub job runner without publishing
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,sys
+          root=pathlib.Path('handoff')
+          meta=json.loads((root/'manifest.json').read_text())
+          data=(root/'candidate.bin').read_bytes()
+          assert meta['schema']=='V095_TEST_HANDOFF'
+          assert meta['sha256']==hashlib.sha256(data).hexdigest()
+          assert meta['size']==len(data)
+          assert meta['publish_authorized'] is False
+          print('CROSS_RUNNER_HANDOFF_SHA=PASS')
+          print('PRODUCTION_RELEASE=BLOCKED')
+          PY
