@@ -28,6 +28,7 @@ jobs:
           python tests/v095_full_combined_gate.py
           python tests/v095_release_gate_evidence.py
           python tests/v095_real_twse_sample_parquet.py
+          python tests/v095_historical_error_regression.py
       - name: Save candidate-release gate report (does not approve production)
         if: always()
         uses: actions/upload-artifact@v4
