@@ -1,0 +1,192 @@
+{
+  "schema": "JARVIS_V095_PINNED_LEGACY_CANDIDATES_V1",
+  "status": "BASIC_VERIFIED_NOT_PIT_APPROVED",
+  "limit": 24,
+  "source_proof": "GitHub completed TDCC jobs 126701668221 and 126701662779",
+  "rows": [
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3189",
+      "file_id": "1DAu8iSlsEoXw2S8__ZdtDOBovT9Q9aqQ",
+      "sha256": "27411644b3a400c423b545147f3997864c4d2f0fd80dfca10ba4bedaa0677ee9",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3188",
+      "file_id": "1pgFerx7a30IxJkMpJdxC78AqmFfxGN00",
+      "sha256": "722d42516df5f95535f4d703bd54c6697ed0053fcabd82e4c93df2f8699acf41",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3186",
+      "file_id": "1TyijzmJ0p1rOujPqFz4_KfvsF-9O92so",
+      "sha256": "920c091833384d483892f470deda4d3091a591202de153af1719f1ddcbfbc038",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3185",
+      "file_id": "15wMg_aTJTBuX9Hk3LIACpQJy70h3TfrD",
+      "sha256": "7d7c5ff8dbc9a629fb9406a04a12e07d31b8a348be0d7c6accdb2cbde4084dfd",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3184",
+      "file_id": "1HAkPbX8jJF9DOqUcekPLDNi-UiMUfj2m",
+      "sha256": "cecbacf65e2a7f67570c72a8be2680b16e586fea8b07d7850e94923c86ec4027",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3179",
+      "file_id": "19B_Ypceh7BfeQtKmPr9KHI0dXti_VvHN",
+      "sha256": "2e0a4e92735a40926a2c998635db1835f71b51eae55476328a4d43cd2a7179bd",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3178",
+      "file_id": "1EFuylH3VthVXrUpnNxLLy2eKcwxTuANy",
+      "sha256": "fc801ec41524642e01b024e8c834d12e915941a778b410a1ae4eed58597d8f8e",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3177",
+      "file_id": "1ePfMykAXo12VbCdr1JzmCgteYWSkSTLo",
+      "sha256": "6d815ebf470f72c5db9aae6af9203611f1fb96ee69c253f761d191ad53abbbd7",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3176",
+      "file_id": "1o49ztJGlZ4vtywM3znLAlzxNFqaFQV8Y",
+      "sha256": "277709a30e86282cf3c9ad23f62faa1845823fb83428f4c80a9713cf9962bcb0",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3171",
+      "file_id": "10I8LEP4Du524lSfUB-4GfPzXwdtQlDCa",
+      "sha256": "1384d1472f1b307196e8320489535659247d9601b51d0aaea45712fe9b8f3e0a",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3169",
+      "file_id": "1Mp6JbuhqON1uJMic-gMtKKr7Fu-Z-pxm",
+      "sha256": "8d2e392be06f71aad82995258ba7561e32e44caeb717b7ef2a28ae0a2c31958e",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3168",
+      "file_id": "1yqBO4qoYBjHfOn0ZhHc0RKQfPzdr1RXJ",
+      "sha256": "665b12b8afe40db6cacac8f6a040f92ba851f4fc6c2a8b47c31cd13bbfc6bf7d",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3167",
+      "file_id": "1xerIsLJREpA62eKkfDWqD9q3c21IMzvJ",
+      "sha256": "6049c55ee7dbbf127446b628fdbcc7916aa7abc8fddc46bcab3839ec52de9f02",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3166",
+      "file_id": "1epHMT00yvcY7R8Iv1tleEJaFlIPK1TXN",
+      "sha256": "1b9e565c7220b03cef56f0a4aa60b57a3c76e59dc6b4d66818717bc11cf5cc37",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2026-09-18",
+      "security_id": "3164",
+      "file_id": "1LyZySEedlW3DH73rlC57EoWCJew4PYlX",
+      "sha256": "1553dc0eb2d96588dac025e81d8524d22c3fca8b05c90361e15596a872d899a5",
+      "proof_run": 126701668221
+    },
+    {
+      "source": "TDCC",
+      "date": "2025-12-05",
+      "security_id": "6556",
+      "file_id": "1JGfdHn04dFqfn06DGAYInwV9pKskCPlu",
+      "sha256": "bbc45508223183dcf903ec8e73072a5b25608cb20a6654e660a5864c69dce616",
+      "proof_run": 126701662779
+    },
+    {
+      "source": "TDCC",
+      "date": "2025-12-05",
+      "security_id": "6558",
+      "file_id": "1pjF0xzDIExtwfLtT1BK-zQabeWNxD978",
+      "sha256": "d125b9b9ebd68bb212862c4490f43167753255135bf8dcde422d6ea6ef5f21e0",
+      "proof_run": 126701662779
+    },
+    {
+      "source": "TDCC",
+      "date": "2025-12-05",
+      "security_id": "6559",
+      "file_id": "1587yrZWd8n4QR1T-3827eFSSyuM1rI-5",
+      "sha256": "c2ed1e4de12554cc1254d35407e48cdfc39cfbc75923d7d4a43b8c0e7434ace2",
+      "proof_run": 126701662779
+    },
+    {
+      "source": "TDCC",
+      "date": "2025-12-05",
+      "security_id": "6560",
+      "file_id": "1JRKFgEHWtzgCJOxHR_Lxm0hEoxXn4mmo",
+      "sha256": "35a5766e7963bc75f9b33e2e6ef6f3a915ef3675a494b3928acb2b27a933d11b",
+      "proof_run": 126701662779
+    },
+    {
+      "source": "TDCC",
+      "date": "2025-12-05",
+      "security_id": "6561",
+      "file_id": "17-IuGva7imhCBylPU0_juvj6aGaCyX3D",
+      "sha256": "69e2c789a224bd4e55312fb9830ed8ae5a69b93d0c1b60d0a0cd4a1eb2547f21",
+      "proof_run": 126701662779
+    },
+    {
+      "source": "TDCC",
+      "date": "2025-12-05",
+      "security_id": "6562",
+      "file_id": "13nffv650Ncd0hfQdQaMiA-safPuxPt4s",
+      "sha256": "390444d973f880e195e96a30d685f90797fe09fdd8a4712dd9587f8a93b2e3a7",
+      "proof_run": 126701662779
+    },
+    {
+      "source": "TDCC",
+      "date": "2025-12-05",
+      "security_id": "6563",
+      "file_id": "1PPMDjPAFT6SJWctC5aZpbf_CQu_1fsoa",
+      "sha256": "ad7926392b5da27cd438994db41b8bb99eb941d842c72e40c35610c012390c9d",
+      "proof_run": 126701662779
+    },
+    {
+      "source": "TDCC",
+      "date": "2025-12-05",
+      "security_id": "6564",
+      "file_id": "1PzWhpuwB7S1JwlS1uy6YSyL2NCG-lpsC",
+      "sha256": "76da201373023d9dd1457b53691d13d5104243732edba82a4b26292850f13b1d",
+      "proof_run": 126701662779
+    }
+  ]
+}
