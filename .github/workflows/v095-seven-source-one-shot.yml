@@ -1,0 +1,67 @@
+name: JARVIS v0.95 SEVEN sources one-shot combined QA (isolated)
+on:
+  push:
+    branches: [test/jarvis-v095-one-shot-fast-20261105]
+    paths:
+      - .github/workflows/v095-seven-source-one-shot.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-seven-source-one-shot
+  cancel-in-progress: false
+jobs:
+  seven-source-one-shot:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout isolated test branch
+        uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-one-shot-fast-20261105
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install all dependencies once
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl pandas duckdb google-api-python-client google-auth-httplib2 google-auth-oauthlib
+      - name: Seven-source live data probes and official recovery routes
+        run: |
+          python tests/v095_r17_live_source_smoke.py
+          python tests/v095_r18_recover_source_routes.py
+      - name: MOPS TDCC NDC bounded local raw to Parquet candidate checks
+        run: |
+          python tests/v095_r19_live_three_layer_candidates.py
+          python tests/v095_r20_tdcc_full_roundtrip.py
+          python tests/v095_r24_tdcc_gold_qa.py
+      - name: One bounded real v0.93 TDCC migration with Drive SHA/readback/idempotence
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python tests/v095_drive_one_file_transfer.py
+      - name: Consolidate seven-source progress and no-false-approval evidence
+        if: always()
+        run: python tests/v095_seven_source_single_run.py
+      - name: Immutable, archive and historical acceptance checks
+        if: always()
+        run: |
+          python tests/v095_v093_migration_preflight.py
+          python tests/v095_migration_architecture_gate.py
+      - name: Upload a single seven-source QA bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-seven-source-once-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            v095_seven_source_audit/
+            r17_live_source_connectivity.json
+            r18_live_recovery_report.json
+            r19_live_candidates/report.json
+            r20_tdcc_full/report.json
+            r24_tdcc_numeric_gold_candidate/report.json
+            v095_real_drive_transfer/report.json
+            v095_migration_architecture_audit/
