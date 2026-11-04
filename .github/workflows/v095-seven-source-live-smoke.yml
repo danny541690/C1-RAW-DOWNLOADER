@@ -66,6 +66,14 @@ jobs:
         run: python tests/v095_r22_single_run_release_gate.py
       - name: R25 real-data PIT security-master and signed publish admission
         run: python tests/v095_r25_pit_security_publish_admission.py
+      - name: R26 reconcile previous actual evidence and full-scope production gates
+        run: python tests/v095_r26_reconciled_gate.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r26-reconciled-go-live-gate
+          path: r26_evidence_register/
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
