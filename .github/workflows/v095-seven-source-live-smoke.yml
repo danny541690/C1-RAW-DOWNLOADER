@@ -51,14 +51,6 @@ jobs:
           name: r24-tdcc-numeric-gold-qa
           path: r24_tdcc_numeric_gold_candidate/
           if-no-files-found: warn
-      - name: R25 real-data PIT security-master and signed publish admission
-        run: python tests/v095_r25_pit_security_publish_admission.py
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: r25-pit-security-publisher-gate
-          path: r25_integrated_admission/
-          if-no-files-found: warn
       - name: R22 run all 79 prior safety regressions
         run: |
           python tests/v095_isolated_parquet_integration.py
@@ -72,6 +64,14 @@ jobs:
           python tests/v095_r21_tdcc_semantic_rules.py
       - name: R22 real-source numeric lineage and release gate
         run: python tests/v095_r22_single_run_release_gate.py
+      - name: R25 real-data PIT security-master and signed publish admission
+        run: python tests/v095_r25_pit_security_publish_admission.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r25-pit-security-publisher-gate
+          path: r25_integrated_admission/
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
