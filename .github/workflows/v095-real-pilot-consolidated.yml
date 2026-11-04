@@ -2,7 +2,9 @@ name: JARVIS v0.95 One-Shot Combined Pilot QA (isolated)
 on:
   push:
     branches: [test/jarvis-v095-one-shot-fast-20261105]
-    paths: [.github/workflows/v095-real-pilot-consolidated.yml]
+    paths:
+      - .github/workflows/v095-real-pilot-consolidated.yml
+      - tests/v095_drive_one_file_transfer.py
   workflow_dispatch:
 permissions:
   contents: read
