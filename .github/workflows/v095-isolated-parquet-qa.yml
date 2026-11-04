@@ -9,6 +9,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: jarvis-v095-isolated-qa
+  cancel-in-progress: false
+  queue: max
 jobs:
   parquet-isolation:
     runs-on: ubuntu-latest
@@ -29,6 +33,7 @@ jobs:
           python tests/v095_release_gate_evidence.py
           python tests/v095_real_twse_sample_parquet.py
           python tests/v095_historical_error_regression.py
+          python tests/v095_source_config_release_audit.py
       - name: Save candidate-release gate report (does not approve production)
         if: always()
         uses: actions/upload-artifact@v4
