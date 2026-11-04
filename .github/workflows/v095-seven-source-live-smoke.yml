@@ -43,6 +43,14 @@ jobs:
           name: r20-tdcc-full-candidates
           path: r20_tdcc_full/
           if-no-files-found: warn
+      - name: R24 TDCC full-dataset numeric QA Gold candidate
+        run: python tests/v095_r24_tdcc_gold_qa.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r24-tdcc-numeric-gold-qa
+          path: r24_tdcc_numeric_gold_candidate/
+          if-no-files-found: warn
       - name: R22 run all 79 prior safety regressions
         run: |
           python tests/v095_isolated_parquet_integration.py
