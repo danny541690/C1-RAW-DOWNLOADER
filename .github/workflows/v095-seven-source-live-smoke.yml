@@ -1,0 +1,32 @@
+name: JARVIS v0.95 Seven Source Live Data Connectivity (Test Only)
+on:
+  push:
+    branches:
+      - test/jarvis-v095-parquet-isolated-20261104
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-seven-live-probe
+  cancel-in-progress: false
+jobs:
+  seven-provider-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Seven-source bounded read-only data and connectivity probes
+        run: python tests/v095_r17_live_source_smoke.py
+      - name: Upload independent source-by-source test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r17-seven-source-live-smoke
+          path: r17_live_source_connectivity.json
+          if-no-files-found: warn
