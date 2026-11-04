@@ -69,7 +69,7 @@ class IsolatedV095Test(unittest.TestCase):
         out, sha = parquet_release(rows, self.meta, self.path)
         self.assertEqual(len(sha), 64)
         self.assertEqual(out.suffix, ".parquet")
-        self.assertEqual(duckdb.sql(f"SELECT SUM(margin_buy) FROM '{out.as_posix()}'").fetchone()[0], 120)
+        self.assertEqual(duckdb.sql(f"SELECT SUM(margin_buy) FROM '{out.as_posix()}'").fetchall()[0][0], 120)
 
     def test_unverified_numeric_block(self):
         self.meta["numeric_verified"] = False
