@@ -73,3 +73,28 @@ jobs:
             r17_live_source_connectivity.json
             r18_live_recovery_report.json
           if-no-files-found: warn
+
+  independent-tdcc-restore:
+    needs: seven-provider-probe
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: r20-tdcc-full-candidates
+          path: r20_tdcc_full
+      - name: Install read-only Parquet library
+        run: python -m pip install pyarrow
+      - name: Validate cross-job full TDCC restore and lineage
+        run: python tests/v095_r23_cross_job_full_restore.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r23-independent-tdcc-restore-evidence
+          path: r23_restore_evidence/
+          if-no-files-found: warn
