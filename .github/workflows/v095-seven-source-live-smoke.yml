@@ -25,6 +25,16 @@ jobs:
         run: python tests/v095_r17_live_source_smoke.py
       - name: R18 verify MOPS revenue, TDCC shareholding and NDC official archive
         run: python tests/v095_r18_recover_source_routes.py
+      - name: Install isolated Parquet and spreadsheet parsing dependencies
+        run: python -m pip install pyarrow openpyxl
+      - name: R19 real source data through isolated three layers
+        run: python tests/v095_r19_live_three_layer_candidates.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r19-live-three-layer-candidates
+          path: r19_live_candidates/
+          if-no-files-found: warn
       - name: Upload independent source-by-source test evidence
         if: always()
         uses: actions/upload-artifact@v4
