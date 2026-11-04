@@ -51,7 +51,7 @@ class GateTests(unittest.TestCase):
         self.assertIsNone(evaluate({})["checks"][0]["evidence_url"])
 
 if __name__=="__main__":
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=2, exit=False)
     inp=Path(os.environ.get("JARVIS_GATE_INPUT","/tmp/v095_missing_live_evidence.json"))
     data=json.loads(inp.read_text()) if inp.exists() else {}
     report=evaluate(data)
