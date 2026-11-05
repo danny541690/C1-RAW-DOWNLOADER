@@ -93,8 +93,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install Parquet library
-        run: python -m pip install --disable-pip-version-check pyarrow
+      - name: Install Parquet and workbook validation libraries
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl
       - uses: actions/download-artifact@v4
         with:
           name: v095-silver-${{ matrix.source }}-${{ github.run_id }}
