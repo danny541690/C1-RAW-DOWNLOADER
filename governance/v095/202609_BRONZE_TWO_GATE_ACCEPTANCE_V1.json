@@ -1,0 +1,32 @@
+{
+  "schema": "JARVIS_V095_202609_BRONZE_TWO_GATE_SCOPE_V1",
+  "effective": "2026-11-05",
+  "period": "2026-09",
+  "user_goal": "copy v0.93 September originals into v0.95, official first missing repair, FinMind Free only if confirmed identical gaps, certify Bronze before Silver",
+  "gate_1_v093_to_v095_handoff": {
+    "pass_requirements": [
+      "TWSE all three v093 September source envelopes plus native hash manifest reused",
+      "TPEx seven v093 source envelopes plus nine official date-and-kind recovery originals verified",
+      "MOPS seven v093 envelopes including revision and supplement raw preserved",
+      "TDCC all 10949 frozen v093 September native Drive file IDs and raw byte SHA indexed inside v0.95 verified source ZIP bundles, plus four weekly derived snapshots distinctly marked",
+      "TAIFEX all 19 selected non-tick originals, with binary duplicates and Tick excluded by explicit user scope",
+      "NDC source v093 September folder absent; official September 11509 XLSX captured with source and publication date",
+      "every copied archive verified by destination byte readback SHA256 and zip CRC, preserve source originals",
+      "all missing, exceptions, alternate source and actual requests recorded"
+    ],
+    "status": "PENDING_TDCC_NATIVE_COPY_COMPLETION",
+    "not_equivalent_to": "All possible official datasets or all 400 indicators validated"
+  },
+  "gate_2_six_official_dataset_universe": {
+    "pass_requirements": [
+      "Signed complete source/dataset matrix scoped to user's 400+ active indicators",
+      "Each dataset has actual availability and publication calendar and expected 2026-09 units",
+      "All expected units present or confirmed official non-offer/legitimate exception",
+      "FinMind Free gaps only where compatible dataset exists and official absence confirmed",
+      "Every source's native source attribution, licensing and PIT availability recorded"
+    ],
+    "status": "BLOCKED_DATASET_UNIVERSE_NOT_YET_APPROVED"
+  },
+  "silver_stage": "Do not promote formally until Gate 1 passes; only isolated candidate conversions allowed before Gate 2 is defined; formal all-index Silver requires Gate 2",
+  "release_approved": false
+}
