@@ -1,0 +1,45 @@
+name: JARVIS v0.95 2026-09 real Gold descriptive short-term features two lanes
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-gold-descriptive-two-lane.yml'
+      - 'scripts/v095_202609_gold_descriptive_2lane.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-gold-descriptive
+  cancel-in-progress: false
+jobs:
+  verified-input-gold:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        lane: [tse, revenue]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Silver-to-Gold isolated compute runtime
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Compute only measured qualifying September Gold metrics without historical lookahead
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_gold_descriptive_2lane.py --lane ${{ matrix.lane }}
+      - name: Retain verifiable Gold computation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-gold-descriptive-${{ matrix.lane }}-${{ github.run_id }}
+          path: v095_202609_gold_descriptive/
+          retention-days: 90
+          if-no-files-found: warn
