@@ -1,0 +1,73 @@
+name: JARVIS v0.95 Phase 1 governance audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'governance/v095/**'
+      - '.github/workflows/v095-phase1-governance-audit.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '10 0,6,12,18 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-phase1-governance-readonly
+  cancel-in-progress: false
+jobs:
+  governance-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate schemas and evidence without promoting or modifying production data
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv, json, os, pathlib, datetime
+          root=pathlib.Path('governance/v095')
+          report=pathlib.Path('phase1_governance_report')
+          report.mkdir(exist_ok=True)
+          expected=['SOURCE_REGISTRY','DATASET_CONTRACTS','TASK_LEDGER','MANIFEST_INDEX','CHECKPOINTS','ISSUE_REPAIR_HISTORY','RUN_LOGS','DATA_QUALITY_STATES']
+          findings=[]
+          definitions=json.loads((root/'LEDGER_SCHEMA.json').read_text())
+          for name in expected:
+              fields=definitions.get(name)
+              if not fields or not all(isinstance(s,str) and s for s in fields):
+                  findings.append('INVALID_LEDGER_SCHEMA:'+name)
+              else:
+                  actual=list(csv.reader((root/(name+'.csv')).open(newline='',encoding='utf-8-sig')))
+                  if not actual or actual[0]!=fields:
+                      findings.append('HEADER_MISMATCH:'+name)
+          registry=json.loads((root/'SOURCE_REGISTRY.initial.json').read_text())
+          classes=registry.get('source_classes',[])
+          canonical={'TWSE','TPEx','MOPS','TDCC','TAIFEX','NDC','FinMind_Free','FinMind_Backer'}
+          if {x.get('source_class_id') for x in classes}!=canonical or len(classes)!=8:
+              findings.append('SOURCE_CLASS_MISMATCH')
+          flags=json.loads((root/'PHASE1_FLAGS.json').read_text())
+          if flags.get('BULK_COPY_APPROVED') is not False or flags.get('RELEASE_APPROVED') is not False:
+              findings.append('UNSAFE_RELEASE_FLAGS')
+          issues=list(csv.DictReader((root/'ISSUE_REPAIR_HISTORY.csv').open(newline='',encoding='utf-8-sig')))
+          if len(issues)<15: findings.append('ISSUE_CATALOG_INCOMPLETE')
+          data={'checked_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                'phase':'PHASE1_GOVERNANCE_ONLY','readonly':True,
+                'ledger_schemas_checked':len(expected),'registered_sources':len(classes),
+                'tracked_issues':len(issues),'findings':findings,
+                'BULK_COPY_APPROVED':False,'RELEASE_APPROVED':False,
+                'drive_upload_verified':False,'historical_inventory_verified':False,
+                'production_repair_verified':False,
+                'run_id':os.getenv('GITHUB_RUN_ID')}
+          (report/'result.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(data,ensure_ascii=False,indent=2))
+          if findings: raise SystemExit(1)
+          PY
+      - name: Upload first-stage audit evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-phase1-governance-${{ github.run_id }}
+          path: phase1_governance_report/
+          retention-days: 30
+          if-no-files-found: warn
