@@ -104,7 +104,8 @@
     "MOPS historical-as-of fundamental reports and releases need PIT inventory outside monthly revenue only",
     "NDC international/macro indicators beyond one 11509 workbook not enumerated",
     "Whole-market numerical cross-source equality not demonstrated",
-    "Drive 443-factor dependency registry is only 9 representative groups, not 443 formula-level source data dependencies; cannot certify 100% requirement coverage"
+    "Drive 443-factor dependency registry is only 9 representative groups, not 443 formula-level source data dependencies; cannot certify 100% requirement coverage",
+    "Historical 443-indicator v0.93 dependency report found but v0.95 active/inactive flags, financial PIT and XQ-only 57 direct dependencies are not reconciled to six official plus FinMind Free"
   ],
   "policy": "reuse original; official source first maximum 3 attempts; FinMind Free only confirmed equivalent data for documented gaps, never overwrite official Bronze",
   "production_bronze_status": "BLOCKED_UNIVERSE_NOT_CERTIFIED",
@@ -126,5 +127,14 @@
     "source_classes": 8,
     "dataset_availability_marked_dynamic": true
   },
-  "recommended_next_gate": "Only certify defined source/date original corpus; keep all-indicator Bronze completeness blocked until per-indicator dataset mapping is complete and source calendars are signed"
+  "recommended_next_gate": "Only certify defined source/date original corpus; keep all-indicator Bronze completeness blocked until per-indicator dataset mapping is complete and source calendars are signed",
+  "historical_443_reference_found": {
+    "drive_id": "1mj0-Jr46atOhDoGRTxS-G17aShKF64PS",
+    "name": "JARVIS093_443指標缺口與XQ補抓對照_20261017.md",
+    "scope": "v0.93 per-indicator dependency map as of 2026-10-17, not v0.95 validation or Sept raw completeness",
+    "indicator_ids": 443,
+    "xq_main_branch_direct_dependent_indicators": 57,
+    "financial_statement_indicators": 55,
+    "use_as": "reference for v0.95 active dependency matrix, not automatic production admission"
+  }
 }
