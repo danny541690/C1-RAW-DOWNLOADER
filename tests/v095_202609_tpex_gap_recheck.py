@@ -43,6 +43,7 @@ def main():
         f.write_bytes(payload)
         if hashlib.sha256(f.read_bytes()).digest()!=hashlib.sha256(payload).digest():raise ValueError("COLD_LOCAL_READBACK_MISMATCH")
         row.update(status="CANDIDATE_OFFICIAL_RECOVERED",sha256=hashlib.sha256(payload).hexdigest(),bytes=len(payload),rows=records,source_url=url,validated_local_hash=True)
+        row.pop("error",None)  # a prior transient transport error is history, not final failure
         break
       except Exception as e:
         row["error"]=type(e).__name__+":"+str(e)[:180]
