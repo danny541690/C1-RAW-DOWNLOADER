@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-six-source-week-canary.yml'
+      - 'tests/v095_six_official_week_canary.py'
   workflow_dispatch:
 permissions:
   contents: read
