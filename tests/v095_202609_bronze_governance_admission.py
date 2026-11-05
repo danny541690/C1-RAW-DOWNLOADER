@@ -20,7 +20,8 @@ for name in six:
  if name=="TDCC" and d["source_checks"][name]["duplicate_composite_keys"]!=0:a.append("TDCC_DUPLICATE_DATE_STOCK_TIER_KEYS")
  if name=="NDC" and not d["source_checks"][name]["official_11509_xlsx_present"]:a.append("NDC_11509_OFFICIAL_ATTACHMENT_MISSING")
  if name=="TAIFEX" and len(d["source_checks"][name].get("exact_duplicate_alias_pairs_verified",[]))<3:a.append("TAIFEX_ALIAS_SHA_EVIDENCE_MISSING")
- if name in ("MOPS","TDCC","NDC","TAIFEX"):a.append("DATASET_SPECIFIC_PRODUCTION_PIT_OR_NATIVE_LINEAGE_PENDING")
+ if name=="TDCC":a.append("RAW_NATIVE_ORIGIN_LINEAGE_NOT_FULLY_RECONCILED")
+ if name in ("MOPS","NDC","TAIFEX"):a.append("COMPLETE_SOURCE_DATASET_SCOPE_NOT_AUDITED")
  issues[name]=a
 blocked=any(issues.values()) or not flags.get("RELEASE_APPROVED",False)
 report={"schema":"JARVIS_202609_BRONZE_GOVERNANCE_ADMISSION_V1",
@@ -29,6 +30,7 @@ report={"schema":"JARVIS_202609_BRONZE_GOVERNANCE_ADMISSION_V1",
         "bronze_full_month_status":"BLOCKED" if blocked else "PENDING_MANUAL_PRODUCTION_EVIDENCE",
         "silver_full_month_allowed":False,
         "candidate_silver_dry_run_allowed":True,
+        "important_stage_boundary":"Bronze validates original provenance, source-period completeness, hash and byte readback; numeric field conversion and PIT calculation belong to Silver",
         "finmind_required_by_verified_defects":False,
         "source_issues":issues,
         "notes":"GitHub contract and receipt checks cannot independently read private Drive bytes. Never use this result to approve monthly Bronze."}
