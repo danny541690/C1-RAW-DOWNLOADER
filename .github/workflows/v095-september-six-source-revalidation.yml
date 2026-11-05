@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-september-six-source-revalidation.yml'
+      - 'governance/v095/202609_BRONZE_MIGRATION_RESUME_20261105.json'
+      - 'governance/v095/202609_6SOURCE_DRIVE_BYTE_VALIDATION_20261105.json'
   workflow_dispatch:
 permissions:
   contents: read
@@ -64,6 +66,7 @@ jobs:
           cp governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json policy_sync/governance/
           cp governance/v095/202609_BRONZE_MIGRATION_RESUME_20261105.json policy_sync/governance/
           cp governance/v095/202609_BRONZE_GATE_STATUS_20261105.json policy_sync/governance/
+          cp governance/v095/202609_6SOURCE_DRIVE_BYTE_VALIDATION_20261105.json policy_sync/governance/
           cp governance/v095/DATASET_CONTRACTS.csv policy_sync/governance/
           cp scripts/v095_official_first_fallback.py policy_sync/engine/
           cp tests/test_v095_official_first_fallback.py policy_sync/tests/
