@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "status": "REGISTERED_PENDING_CONTRACT",
+  "as_of": "2026-11-05",
+  "source_classes": [
+    {
+      "source_class_id": "TWSE",
+      "source_family": "TWSE",
+      "tier": "official",
+      "license_verified": false,
+      "dataset_contract_status": "PENDING",
+      "historical_inventory_status": "NOT_ENUMERATED"
+    },
+    {
+      "source_class_id": "TPEx",
+      "source_family": "TPEx",
+      "tier": "official",
+      "license_verified": false,
+      "dataset_contract_status": "PENDING",
+      "historical_inventory_status": "NOT_ENUMERATED"
+    },
+    {
+      "source_class_id": "MOPS",
+      "source_family": "MOPS",
+      "tier": "official",
+      "license_verified": false,
+      "dataset_contract_status": "PENDING",
+      "historical_inventory_status": "NOT_ENUMERATED"
+    },
+    {
+      "source_class_id": "TDCC",
+      "source_family": "TDCC",
+      "tier": "official",
+      "license_verified": false,
+      "dataset_contract_status": "PENDING",
+      "historical_inventory_status": "NOT_ENUMERATED"
+    },
+    {
+      "source_class_id": "TAIFEX",
+      "source_family": "TAIFEX",
+      "tier": "official",
+      "license_verified": false,
+      "dataset_contract_status": "PENDING",
+      "historical_inventory_status": "NOT_ENUMERATED"
+    },
+    {
+      "source_class_id": "NDC",
+      "source_family": "NDC",
+      "tier": "official",
+      "license_verified": false,
+      "dataset_contract_status": "PENDING",
+      "historical_inventory_status": "NOT_ENUMERATED"
+    },
+    {
+      "source_class_id": "FinMind_Free",
+      "source_family": "FinMind",
+      "tier": "free",
+      "license_verified": false,
+      "dataset_contract_status": "PENDING",
+      "historical_inventory_status": "NOT_ENUMERATED"
+    },
+    {
+      "source_class_id": "FinMind_Backer",
+      "source_family": "FinMind",
+      "tier": "backer",
+      "license_verified": false,
+      "dataset_contract_status": "PENDING",
+      "historical_inventory_status": "NOT_ENUMERATED"
+    }
+  ]
+}
