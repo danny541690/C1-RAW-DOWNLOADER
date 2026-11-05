@@ -1,0 +1,40 @@
+name: JARVIS v0.95 Sep 2026 Bronze to Silver TDCC weekly candidate
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-silver-tdcc-conversion.yml'
+      - 'scripts/v095_202609_tdcc_silver_candidate.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-silver-tdcc-candidate
+  cancel-in-progress: false
+jobs:
+  tdcc-silver-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated Silver transform runtime
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Convert and SHA-readback 4 official September weekly source partitions
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_tdcc_silver_candidate.py
+      - name: Preserve Silver QA readout
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-silver-tdcc-candidate-${{ github.run_id }}
+          path: v095_silver_tdcc_202609/
+          retention-days: 90
+          if-no-files-found: warn
