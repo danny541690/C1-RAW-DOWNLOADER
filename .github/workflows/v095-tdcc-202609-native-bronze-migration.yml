@@ -17,7 +17,7 @@ jobs:
   native-originals:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       max-parallel: 3
@@ -37,7 +37,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_tdcc_202609_native_bronze_migration.py --shard ${{ matrix.shard }} --limit 60 --max-batches 10
+        run: python scripts/v095_tdcc_202609_native_bronze_migration.py --shard ${{ matrix.shard }} --limit 60 --max-batches 30
       - name: Retain actual Drive migration receipt
         if: always()
         uses: actions/upload-artifact@v4
