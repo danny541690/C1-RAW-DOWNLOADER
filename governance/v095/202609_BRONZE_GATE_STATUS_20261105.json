@@ -48,12 +48,46 @@
       "duplicate_composite_keys": 0,
       "required_field_missing": 0,
       "all_manifest_sha_valid": true,
-      "underlying_native_per_security_lineage_verified": false
+      "underlying_native_per_security_lineage_verified": false,
+      "independent_native_html_crosscheck": {
+        "date": "2026-09-11",
+        "stock_code": "7772",
+        "tier": "1",
+        "persons": 2534,
+        "shares": 425558,
+        "share_pct": "1.60",
+        "matching_to_jsonl": true,
+        "verified_scope": "one stock one week tier-level and full raw row sample, not all stocks"
+      }
     },
     "TAIFEX": {
       "non_tick_originals_in_v095": 19,
       "byte_level_dedup_all_verified": false,
-      "all_dataset_scope_verified": false
+      "all_dataset_scope_verified": false,
+      "exact_duplicate_alias_pairs_verified": [
+        {
+          "pair": [
+            "HISTORY_largeTraderFutDown",
+            "V095_BRONZE_202609_V093_TAIFEX_large_trader_futures"
+          ],
+          "sha256": "57adce404080e86a8900b8e73a07129bd5f85eacf5e31872b7dc3e12afa511a7"
+        },
+        {
+          "pair": [
+            "HISTORY_dlLargeTraderOptDown",
+            "V095_BRONZE_202609_V093_TAIFEX_large_trader_options"
+          ],
+          "sha256": "8bd6981d9cfc450cae9f7c49741ad29bd5f85eacf5e31872b7dc3e12afa511a7"
+        },
+        {
+          "pair": [
+            "HISTORY_dlBargainOrderDown",
+            "V095_BRONZE_202609_V093_TAIFEX_bargain_orders"
+          ],
+          "sha256": "a5ee13c30eb4358c0e0af034391807ca119ccfbd2c706a938683589c03d22d93"
+        }
+      ],
+      "duplicate_alias_policy": "preserve all immutable Bronze versions; deduplicate only Silver data keys after content SHA verification"
     },
     "NDC": {
       "official_11509_xlsx_present": true,
@@ -81,5 +115,6 @@
     "True full Drive binary readback and manifest verification of all v0.95 objects",
     "Formal PIT/security unverse and license gates"
   ],
-  "release": "FAIL_CLOSED"
+  "release": "FAIL_CLOSED",
+  "newly_grounded_evidence_path": "sandbox:/mnt/data/JARVIS_v095_202609_Bronze_Gate_Audit_20261105.json"
 }
