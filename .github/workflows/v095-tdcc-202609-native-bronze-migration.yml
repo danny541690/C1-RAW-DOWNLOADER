@@ -1,0 +1,47 @@
+name: JARVIS v0.95 September TDCC native Bronze original migration
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-tdcc-202609-native-bronze-migration.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-tdcc-202609-native-migration
+  cancel-in-progress: false
+jobs:
+  native-originals:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive API runtime
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 requests
+      - name: Migrate one resumable bounded native TDCC batch, preserve v093 originals
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_tdcc_202609_native_bronze_migration.py --shard ${{ matrix.shard }} --limit 60
+      - name: Retain actual Drive migration receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-tdcc-202609-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: tdcc_202609_migration/
+          retention-days: 45
+          if-no-files-found: warn
