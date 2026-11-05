@@ -1,0 +1,131 @@
+{
+  "schema": "JARVIS_V095_BRONZE_QUALITY_RELEASE_POLICY_V2",
+  "version": "2.0.0",
+  "effective_date": "2026-11-05",
+  "approved_by_user": "98 percent minimum download coverage and correctness for eligible dataset scopes",
+  "scope": "2026-09 pilot, then eligible monthly Bronze and Silver by dataset/date/market; listed and OTC analysis, emerging save-only",
+  "supersedes": [
+    "global_100_percent_all_sources_block",
+    "global_443_indicators_complete_before_any_Silver",
+    "single_overall_percentage_can_hide_missing_sources"
+  ],
+  "default_thresholds": {
+    "expected_unit_coverage_min": 0.98,
+    "valid_content_rate_min": 0.98,
+    "record_quality_min": 0.98,
+    "percent_comparison_inclusive": true,
+    "rounding": "compare exact numerator/denominator fractions; display rounded metrics only",
+    "file_integrity_for_each_admitted_object": 1
+  },
+  "definitions": {
+    "expected_unit": "A contracted source-dataset-period-market unit that should exist under that source's official trading, reporting and release calendar; exclude proven closures, not-yet-due and source-not-offered items; unknown scope not included or silently deemed complete",
+    "valid_download": "Immutable native bytes can be read back, SHA256 matches, ZIP CRC passes if applicable, correct source/period, source ID and provenance",
+    "valid_content": "Expected schema and required field types, valid date and stock identity, no unisolated critical errors; legitimate null/nontrading values are classified, not changed to zero",
+    "denominator": "Expected due units for approved active dataset scope, never downloaded files or total possible website resources",
+    "coverage": "eligible valid_download_units / expected_due_units",
+    "correctness": "valid_expected_content_records / inspectable_expected_content_records; requires a declared market/dataset sampling or exhaustive method and no known-critical violations",
+    "missing": "confirmed expected due unit with no accepted original or equivalent, record as missing; official retry is not proof of absence",
+    "unknown": "No credible scope or calendar denominator. Mark UNKNOWN rather than 0% or 100%."
+  },
+  "dataset_release": {
+    "per_dataset_and_market_and_period": true,
+    "scope_statuses": [
+      "PASS_98",
+      "PARTIAL",
+      "QUARANTINE",
+      "UNKNOWN",
+      "NOT_DUE",
+      "NOT_OFFERED",
+      "DISABLED"
+    ],
+    "pass_conditions": [
+      "approved_active_dataset_contract_and_calendar",
+      "both_coverage_and_correctness_at_least_0_98",
+      "no_critical_unisolated_errors",
+      "every_admitted_original_passes_integrity",
+      "timestamp_and_source_lineage_sufficient_for_its_declared_use"
+    ],
+    "partial_conditions": [
+      "other_approved_dataset_scopes_can_continue",
+      "affected_dates_symbols_fields_or_factors_are_disabled_or_flagged",
+      "missing_units_logged_to_repair_ledger"
+    ],
+    "unknown_scope_policy": "UNKNOWN datasets or unmapped indicators must not block independent PASS dataset scopes; unknown/unmapped itself cannot be called 98% PASS",
+    "release_prohibition": "Do not set global production RELEASE_APPROVED merely because policy was changed; no approval until measured evidence and targeted gate, separate authorization for actual promotion"
+  },
+  "hard_stops": {
+    "bad_sha256_or_zip_crc": "QUARANTINE individual file; never accept corrupted bytes even if aggregate >=98%",
+    "wrong_stock_id_or_date_or_market": "QUARANTINE affected records and dependent signals",
+    "lookahead_or_unknown_published_at": "BLOCK PIT-sensitive signals using those observations; retain native Bronze with PIT_UNKNOWN",
+    "entire_market_day_absent": "BLOCK dependent market/date analysis irrespective of monthly percentage",
+    "critical_reference_data_missing": "BLOCK dependent analytics while unaffected scopes can release",
+    "legal_null_no_trades": "not automatically invalid; source-specific semantics required",
+    "schema_breaking": "QUARANTINE affected dataset family until schema version accounted",
+    "required_original_source_absent": "source scoped partial; do not manufacture FinMind pseudo-official"
+  },
+  "data_acquisition_priority": [
+    "REUSE_VERIFIED_V095",
+    "COPY_VERIFIED_V093_IMMUTABLE",
+    "OFFICIAL_MAX_THREE_ATTEMPTS_INCLUDING_INITIAL",
+    "CLASSIFY_EXPECTED_MISSING_WITH_OFFICIAL_CALENDAR",
+    "FINMIND_FREE_MATCHED_BACKFILL_ONLY_IF_CONFIRMED_GAP_AND_LICENSE_PIT_COMPARABILITY",
+    "QUARANTINE_UNVERIFIED_GAPS"
+  ],
+  "retry": {
+    "total_attempts_max": 3,
+    "backoff_seconds": [
+      5,
+      20
+    ],
+    "http429": "honor Retry-After and source rate limit instead of hammering",
+    "do_not_retry": "valid closure or not-yet-published data"
+  },
+  "immutable_raw": true,
+  "silver_policy": "May transform only PASS_98 scoped Bronze; PARTIAL may transform explicitly verified subscopes with warnings, disabled affected indicators, no global 443-indicator dependency requirement",
+  "gold_policy": "Only compute features whose full lookback, source unit, provenance, market identity, PIT and required dependencies are satisfied; disabled features stay disabled",
+  "required_reporting": [
+    "source",
+    "dataset",
+    "market",
+    "month",
+    "expected_due_units",
+    "valid_download_units",
+    "coverage_pct",
+    "records_inspected",
+    "valid_records",
+    "correctness_pct",
+    "critical_incidents",
+    "unknown_units",
+    "normal_exceptions",
+    "backfilled_units",
+    "fallback_source",
+    "source_SHA",
+    "PIT_status",
+    "per_scope_release_status"
+  ],
+  "september_2026_legacy_evidence": {
+    "TDCC_native_original_handoff": "10949/10949 verified 184/184 bundles, not entire TDCC category guarantee",
+    "TWSE_defined_main": "122/122 manifest hashes",
+    "TPEx_defined_primary": "163/163 with nine official gap recoveries, alternative CSV holds not double counted",
+    "MOPS_defined_revenue": "4/4 original raw units",
+    "TAIFEX": "19 source files, 16 distinct content hashes, excluding Tick",
+    "NDC": "one official 11509 workbook, other macro contracts unknown",
+    "FinMind": "20/20 trading dates and 40/40 two-stock OHLC diagnostic checks, not market-wide proof",
+    "blocked_categories": [
+      "full TAIFEX dataset period calendars",
+      "MOPS as-of reports beyond revenue",
+      "NDC macro data contract universe",
+      "296 OHLC no-price-with-positive-volume classifications",
+      "443 indicator complete PIT dependencies"
+    ],
+    "legacy_all_source_bronze_flag": "NOT_APPROVED_YET",
+    "candidate_scope_possible": true
+  },
+  "change_management": {
+    "policy_changes_not_retroactive_data_edits": true,
+    "existing_v093_and_v095_originals_never_overwritten": true,
+    "already_verified_data_not_redownloaded": true,
+    "gate_v2_must_run_tests_before_enabling_publish": true,
+    "decision_requires_measured_per_scope_results": true
+  }
+}
