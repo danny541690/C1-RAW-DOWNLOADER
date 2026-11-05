@@ -1,0 +1,37 @@
+name: JARVIS v0.95 Sep TWSE PE Silver repair and Gold R2
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-twse-pe-repair.yml'
+      - 'scripts/v095_202609_twse_pe_silver_gold_repair.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-twse-pe-repair
+  cancel-in-progress: false
+jobs:
+  recover-native-pe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Restore September source-verified PE in typed Silver R2 then refresh descriptive Gold R2
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_twse_pe_silver_gold_repair.py
+      - name: Keep source SHA and PE coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-twse-pe-repair-${{ github.run_id }}
+          path: v095_gold_pe_repair/
+          if-no-files-found: warn
+          retention-days: 90
