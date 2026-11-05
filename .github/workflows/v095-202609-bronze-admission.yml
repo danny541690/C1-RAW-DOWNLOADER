@@ -1,0 +1,34 @@
+name: JARVIS 2026-09 Bronze contract admission and Silver candidate readiness
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-bronze-admission.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-bronze-admission
+  cancel-in-progress: false
+jobs:
+  bronze-release-evidence-admission:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Evaluate candidate contracts and known source deficits - no private Drive access
+        run: python tests/v095_202609_bronze_governance_admission.py
+      - name: Preserve explicit fail-closed Bronze gate and Silver candidate boundary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-bronze-gate-${{ github.run_id }}
+          retention-days: 90
+          path: v095_202609_bronze_admission/
+          if-no-files-found: warn
