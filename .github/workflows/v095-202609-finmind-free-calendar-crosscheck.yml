@@ -1,0 +1,34 @@
+name: JARVIS 2026-09 FinMind Free independent 20 trading day crosscheck
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-finmind-free-calendar-crosscheck.yml'
+      - 'tests/v095_202609_finmind_free_calendar_check.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-finmind-free-202609-calendar
+  cancel-in-progress: false
+jobs:
+  finmind-free-independent-market-calendar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Free dataset TaiwanStockTradingDate, match official 20-day list, no replacements
+        run: python tests/v095_202609_finmind_free_calendar_check.py
+      - name: Retain independent source result regardless of pass or fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-finmind-free-calendar-${{ github.run_id }}
+          path: v095_202609_seven_source_crosscheck/
+          retention-days: 90
+          if-no-files-found: warn
