@@ -1,0 +1,156 @@
+{
+  "schema": "JARVIS_V095_E2E_MIGRATION_GATE_R1",
+  "spec_basis": [
+    "JARVIS_C1_v0.95_Architecture_Management_R1.xlsx",
+    "JARVIS_C1_v0.95_Orchestration_And_GoLive_R2.md"
+  ],
+  "legacy_readonly_root": "C1_0.93/01_RAW",
+  "target_root": "C1_0.95",
+  "physical_bronze_sources": [
+    "TWSE",
+    "TPEx",
+    "MOPS",
+    "TDCC",
+    "TAIFEX",
+    "NDC",
+    "FinMind_Free",
+    "FinMind_Backer"
+  ],
+  "stage_dirs": [
+    "10_INGEST_STAGING",
+    "20_BRONZE_RAW",
+    "30_SILVER_STANDARD",
+    "40_GOLD_FEATURES",
+    "60_OPERATIONS_QA",
+    "70_RELEASE_BACKUP"
+  ],
+  "silver_families": [
+    "SECURITY_MASTER",
+    "PRICE_VOLUME",
+    "FUNDAMENTALS",
+    "OWNERSHIP_CHIP",
+    "DERIVATIVES",
+    "MACRO_CROSS_ASSET"
+  ],
+  "gold_families": [
+    "INDICATORS",
+    "FEATURE_STORE",
+    "SIGNALS",
+    "APPROVED_VIEWS",
+    "PIT_SNAPSHOTS"
+  ],
+  "required_dataset_contract": [
+    "dataset_id",
+    "source_id",
+    "source_endpoint",
+    "availability_start",
+    "frequency",
+    "market_scope",
+    "business_key",
+    "native_units",
+    "published_at",
+    "fetched_at",
+    "revision_policy",
+    "schema_version",
+    "expected_population",
+    "quality_gates",
+    "upstream_version",
+    "license_tier"
+  ],
+  "quality_gates": [
+    {
+      "id": "G0",
+      "label": "v093 per-file manifest full source/data/version inventory",
+      "requires": [
+        "v093_file_id",
+        "v093_sha256",
+        "v093_size",
+        "dataset_id",
+        "source_revision",
+        "legacy_immutable"
+      ]
+    },
+    {
+      "id": "G1",
+      "label": "v095 staging real Drive independent copy and SHA readback",
+      "requires": [
+        "staging_new_file_id",
+        "staging_sha256",
+        "v093_sha256",
+        "source_unchanged"
+      ]
+    },
+    {
+      "id": "G2",
+      "label": "v095 physical eight-way native-byte Bronze path and dataset contract",
+      "requires": [
+        "bronze_path",
+        "bronze_origin_sha256",
+        "dataset_contract",
+        "source_license_tier"
+      ]
+    },
+    {
+      "id": "G3",
+      "label": "v095 typed data-key Silver Parquet and original to canonical column mapping",
+      "requires": [
+        "silver_path",
+        "typed_columns",
+        "business_key_unique",
+        "native_and_standard_units",
+        "numeric_or_categorical",
+        "missing_vs_zero",
+        "source_row_count_reconciled"
+      ]
+    },
+    {
+      "id": "G4",
+      "label": "source-specific semantic QA and publication/revision PIT",
+      "requires": [
+        "period_verified",
+        "source_version_asof",
+        "numeric_domain_verified",
+        "published_at_verified",
+        "pit_approved"
+      ]
+    },
+    {
+      "id": "G5",
+      "label": "genuine formula Gold signal with dependency fingerprint, no lookahead",
+      "requires": [
+        "gold_path",
+        "factor_formula_version",
+        "input_sha_list",
+        "historical_asof",
+        "golden_calculation_pass",
+        "gold_pit_approved"
+      ]
+    },
+    {
+      "id": "G6",
+      "label": "real Drive target folder check, manifest CAS, backup, restore",
+      "requires": [
+        "destination_drive_readback",
+        "release_id",
+        "cas_fence",
+        "restore_sha_verified",
+        "t0_t1_catchup_verified"
+      ]
+    }
+  ],
+  "migration_policy": {
+    "source_file_never_modified": true,
+    "staging_before_bronze": true,
+    "typed_silver_not_binary_parquet": true,
+    "gold_quality_metadata_not_factor": true,
+    "no_publication_without_complete_gates": true,
+    "no_mass_migration_before_each_source_dataset_e2e_pilot": true,
+    "workers_initial": 3,
+    "concurrency_partition_writer": 1,
+    "no_finmind_tier_inference": true,
+    "no_pit_from_fetch_timestamp": true,
+    "market_scope": "TSE_OTC_ANALYSIS_EMERGING_ARCHIVE_ONLY"
+  },
+  "approved_bulk_migration": false,
+  "approved_production_gold": false
+}
