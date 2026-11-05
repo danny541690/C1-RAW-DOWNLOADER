@@ -1,0 +1,28 @@
+{
+  "schema": "JARVIS_202609_SEVEN_GROUP_PIT_GAP_CHECKPOINT",
+  "date": "2026-11-06",
+  "new_success_runs": [
+    42126211425,
+    42126557735
+  ],
+  "nine_descriptive_gold_scopes": true,
+  "rows_total": 337504,
+  "historical_pit_pass": false,
+  "all_silver_formal_pass": false,
+  "new_gold_ids": [
+    "1KUJ6FG6XMdGOpnOAiceAgE0xszTlZ0M6",
+    "11kpQ1ehaY3wkUGBUblqX_-rNPYz-XYA5",
+    "18pghcU3lYeWP008NzbHQ1ZDeK85a3Hs7",
+    "15x6onyRG640UEUW1yQDqWqOxrvpljN14"
+  ],
+  "missing": {
+    "OTC_prices": "412 unclassified missing OHLC values",
+    "flows_margin_lending": "some stock vs aggregate and repeated positional field semantics plus source release dates",
+    "TDCC": "official tiers and release time and historical market security identity",
+    "TAIFEX": "16 non Tick source native categories need metric and date contracts",
+    "NDC": "five sheets multi-year observation and vintage revision mapping",
+    "MOPS_quarterly": "quarterly statements and PIT source outside four September revenue originals",
+    "long_lookback": "earlier month history for 60,120,240 trading days and multi-month revenues and market-relative RS"
+  },
+  "limits": "Gold outputs descriptive as-of 2026-11-06 only, not historical Sept trading-date backtests; 98% measured per active source dataset; no fabricated values"
+}
