@@ -60,10 +60,10 @@ def main():
      native_member=name,native_sha256=sha(b),available_at=None,published_at=None,
      pit_verified=False,status="CANDIDATE_REVENUE_PIT_UNVERIFIED")
    for k,v in zip(fields,nums):
-    row[k]=str(v) if v is not None else None
+    row[k]=v
    for key_in,key_out in (("current_month","revenue_億元"),("previous_month","prior_month_億元"),("year_ago_month","year_ago_month_億元"),("ytd","ytd_億元"),("year_ago_ytd","year_ago_ytd_億元")):
     vv=number(row[key_in]) if row[key_in] is not None else None
-    row[key_out]=str(vv/D("100000")) if vv is not None else None
+    row[key_out]=vv/D("100000") if vv is not None else None
    records.append(row)
   per[x["name"]]=count
   if excluded:issues.append({"source_original":x["name"],"excluded_non_four_digit_count":excluded,"reason":"MARKET_SECURITY_CLASSIFICATION_REQUIRED"})
@@ -71,16 +71,19 @@ def main():
  a=s.files().list(q=f"'{DEST}' in parents and name = '{MONTH}' and trashed = false",fields="files(id)",pageSize=50).execute()["files"]
  if len(a)>1:raise ValueError("AMBIGUOUS_MONTH")
  folder=a[0]["id"] if a else s.files().create(body={"name":MONTH,"mimeType":"application/vnd.google-apps.folder","parents":[DEST]},fields="id").execute()["id"]
- out=io.BytesIO();pq.write_table(pa.Table.from_pylist(records),out,compression="zstd")
+ out=io.BytesIO();tbl=pa.Table.from_pylist(records)
+ assert pa.types.is_decimal(tbl.schema.field("revenue_億元").type)
+ assert pa.types.is_decimal(tbl.schema.field("current_month").type)
+ pq.write_table(tbl,out,compression="zstd")
  b=out.getvalue();assert pq.read_metadata(io.BytesIO(b)).num_rows==len(records)
- par=save(s,folder,"JARVIS_v095_SILVER_202609_MOPS_REVENUE_CANDIDATE_R1.parquet",b)
+ par=save(s,folder,"JARVIS_v095_SILVER_202609_MOPS_REVENUE_CANDIDATE_R2.parquet",b)
  report=dict(schema="JARVIS_V095_202609_MOPS_SILVER_REVENUE",month="2026-09",
     rows=len(records),per_source_unit_rows=dict(per),original_count=4,
     parquet_drive_id=par,parquet_sha256=sha(b),native_revenue_unit="千元",
     analysis_money_unit="億元",status="SILVER_CANDIDATE_ONLY",pit_verified=False,gold_allowed=False,
     completeness_to_all_mops_fundamental_datasets=False,exceptions=issues[:50],
     pending=["official publication/revision timestamps","historical security identity","all MOPS disclosure & financial datasets outside monthly revenue"])
- qa=save(s,folder,"JARVIS_v095_SILVER_202609_MOPS_REVENUE_QA_R1.json",json.dumps(report,ensure_ascii=False,indent=2).encode())
+ qa=save(s,folder,"JARVIS_v095_SILVER_202609_MOPS_REVENUE_QA_R2.json",json.dumps(report,ensure_ascii=False,indent=2).encode())
  report["qa_drive_id"]=qa
  pathlib.Path("v095_silver_mops_202609").mkdir(exist_ok=True)
  pathlib.Path("v095_silver_mops_202609/result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
