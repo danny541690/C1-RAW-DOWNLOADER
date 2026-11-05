@@ -75,7 +75,7 @@ def verify_tpex_recovery(svc,report):
   b=raw(svc,fid);z=zipfile.ZipFile(io.BytesIO(b))
   assert z.testzip() is None
   for name in z.namelist():
-   m=re.search(r"(prices|institutional)_((?:2026-09-)[0-9]{2})\\.raw$",name)
+   m=re.search(r"(prices|institutional)_((?:2026-09-)[0-9]{2})\.raw$",name)
    if not m:continue
    raw_bytes=z.read(name)
    obj=json.loads(raw_bytes.decode("utf-8-sig"))
@@ -88,7 +88,7 @@ def verify_tpex_recovery(svc,report):
 def verify_tdcc_migration(svc,report):
  source=[x for x in listing(svc,NATIVE_TDCC_V093) if x.get("mimeType")!="application/vnd.google-apps.folder"]
  dst=listing(svc,SOURCE_FOLDERS["TDCC"])
- packages=[x for x in dst if re.fullmatch(r"TDCC_202609_NATIVE_SHARD_[012]_[0-9]{5}\\.zip",x["name"])]
+ packages=[x for x in dst if re.fullmatch(r"TDCC_202609_NATIVE_SHARD_[012]_[0-9]{5}\.zip",x["name"])]
  ids=set();duplicate=0;corrupt=0
  for item in packages:
   try:
