@@ -1,0 +1,74 @@
+{
+  "schema": "JARVIS_V095_202609_SILVER_TRANSFORMATION_EXECUTION_CHECKPOINT",
+  "period": "2026-09",
+  "silver_status": "PARTIAL_CANDIDATE_OUTPUTS_PRESENT_NO_PRODUCTION_RELEASE",
+  "quality_policy": "98 percent per approved dataset and market, not across all records pooled",
+  "completed": [
+    {
+      "dataset": "TWSE unadjusted daily OHLCV",
+      "days": 20,
+      "rows": 21860,
+      "numeric_ohlc_rows": 21803,
+      "non_numeric_rows": 57,
+      "rate_numeric": 0.9973924977127173,
+      "parquet_drive_id": "14U9bwJCipIOJvNhThliTaCBb9RSTu4Cz",
+      "qa_drive_id": "16sxYtpaDLBnoBXzOcmR3pr8a4unUKp2G",
+      "types": "date32+decimal128",
+      "release": "CANDIDATE_NOT_PUBLISHED",
+      "github_run": 42053061181
+    },
+    {
+      "dataset": "TPEx unadjusted daily OHLCV",
+      "days": 20,
+      "rows": 17762,
+      "numeric_ohlc_rows": 17350,
+      "non_numeric_rows": 412,
+      "rate_numeric": 0.9768044139173516,
+      "parquet_drive_id": "1qHYWmIq13UUIdYil4RU5L3VRLpuQVBzk",
+      "qa_drive_id": "1Rft2HPtn19A_g69GzLmnJKpflIQYlgyf",
+      "types": "date32+decimal128",
+      "release": "CANDIDATE_NOT_PUBLISHED",
+      "github_run": 42053061181
+    },
+    {
+      "dataset": "MOPS 2026-09 revenue",
+      "rows": 1980,
+      "excluded_non_four_digit": 1,
+      "original_html_sources": 4,
+      "parquet_drive_id": "1y623bgGtMtRgkJmUZfIzX0eVnpmINbc5",
+      "qa_drive_id": "19Ge8G9G1nhAPXPBms_rpIPz2FVrFhRok",
+      "types": "decimal128 money and percent",
+      "release": "CANDIDATE_NOT_PUBLISHED",
+      "github_run": 42052917870
+    }
+  ],
+  "in_progress": [
+    {
+      "dataset": "TDCC weekly shareholder distribution",
+      "expected_rows": 276097,
+      "source_weekly_files": 4,
+      "github_run": 42051648685,
+      "output_verified": false
+    }
+  ],
+  "not_started_this_turn": [
+    "TWSE and TPEx other daily institutional, margin, lending, valuation, indices, corporate actions",
+    "TAIFEX non-tick derivative monthly datasets",
+    "NDC macro workbook series and other monthly indicators",
+    "MOPS quarterly statements and historical publication changes",
+    "Full September Gold features"
+  ],
+  "release_issues": [
+    "unclassified native nonnumeric OHLC values especially OTC 412",
+    "security ID and instrument type classification",
+    "historical published_at and PIT availability",
+    "all active family-specific 98 percent numerator/denominator and independent validation",
+    "NDc/TAIFEX native semantic contracts unverified"
+  ],
+  "three_layer_parallel_rules": "governance/v095/PARALLEL_BRONZE_SILVER_GOLD_SCHEDULING_20261105.md",
+  "bronze_untouched": true,
+  "gold_started": false,
+  "latest_price_workflow": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42053061181",
+  "latest_mops_workflow": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42052917870",
+  "tdcc_workflow": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42051648685"
+}
