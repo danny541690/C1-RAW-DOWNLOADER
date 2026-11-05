@@ -83,14 +83,11 @@ jobs:
               ]:
                   check(name,[sys.executable,script],"candidate")
           else:
-              for name,script in [
-                ("QA_historical_error","tests/v095_historical_error_regression.py"),
-                ("QA_concurrent_release","tests/v095_concurrent_release_isolated.py"),
-                ("QA_immutable_release","tests/v095_immutable_release_isolated.py"),
-                ("QA_PIT_rollback","tests/v095_r28_historical_pit_and_release_rollback.py"),
-                ("QA_final_gate","tests/v095_final_oneshot_prelaunch_adjudication.py"),
-              ]:
-                  check(name,[sys.executable,script],"candidate")
+              # Run the existing full pilot orchestrator because R28 and FINAL require
+              # R22/R24/R25/R26/R27 evidence from the SAME isolated workspace.
+              # Running R28/FINAL alone produces false failures from missing input files.
+              check("FULL_DEPENDENCY_ORDERED_PILOT",
+                    [sys.executable,"tests/v095_pilot_operational_runner.py","--mode","full"],"candidate")
           result["all_pass"]=all(z["pass"] for z in result["checks"])
           result["production_data_published"]=False
           (out/"result.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
