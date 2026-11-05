@@ -208,5 +208,30 @@
     "Official NDC macro dataset coverage beyond released 11509 workbook",
     "Gold and Silver intentionally not started until Bronze approved"
   ],
-  "production_bronze_status": "NOT_APPROVED"
+  "production_bronze_status": "SIX_SOURCES_PRESENT_BUT_MONTHLY_CONTRACT_COVERAGE_NOT_APPROVED",
+  "byte_for_byte_verified_from_destination_readback": {
+    "TWSE_primary_zip": true,
+    "TPEx_primary_zip": true,
+    "MOPS_primary_zip": true,
+    "TPEx_complement_zip": true,
+    "TDCC_archive_zip": true,
+    "NDC_11509_official_xlsx_archive": true
+  },
+  "official_ndc_release_verified": {
+    "period": "2026-09",
+    "released_on": "2026-10-29",
+    "source": "https://www.ndc.gov.tw/nc_332_40618",
+    "attachment_native_sha256": "3d8dedd82d0f52bc3afc7c36ef0028106afa903041bdbae5b08d9da8cddda2cc"
+  },
+  "tpex_primary_gap_reconciliation": {
+    "primary_dated_failed_in_v093": 9,
+    "v093_official_complements": 5,
+    "v095_official_refetch_success": 7,
+    "union_can_cover_all_nine": true,
+    "individual_dataset_semantic_reconciliation_pending": true,
+    "alternate_csv_holds_in_v093": 5
+  },
+  "total_drive_bronze_month_files": 29,
+  "finmind_used": false,
+  "silver_gold_intentionally_not_started": true
 }
