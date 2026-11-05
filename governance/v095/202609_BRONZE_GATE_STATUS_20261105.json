@@ -1,0 +1,85 @@
+{
+  "schema": "JARVIS_V095_202609_BRONZE_PARTIAL_GATE_AUDIT",
+  "source": "original zipped v093 members and v095 Drive destination readback; targeted TPEx official recovery artifacts",
+  "period": "2026-09",
+  "pilot_only": true,
+  "source_universe_certified": false,
+  "canonical_dataset_contract_count": 30,
+  "canonical_dataset_contract_status": "CANDIDATE_NEEDS_SCHEMA_AND_PIT_VALIDATION",
+  "source_checks": {
+    "TWSE": {
+      "legacy_manifest_expected": 122,
+      "sha256_matches": 122,
+      "main_zip_destination_binary_identical": true,
+      "source_full_market_scope_verified": false
+    },
+    "TPEx": {
+      "legacy_manifest_expected": 172,
+      "legacy_main_sha256_matches": 158,
+      "legacy_main_missing": 14,
+      "missing_primary_dates": 9,
+      "official_recovered_unique_primary_date_kind": 9,
+      "remaining_primary_missing": 0,
+      "alternate_csv_held": 5,
+      "semantic_numeric_pit_verification": false
+    },
+    "MOPS": {
+      "legacy_manifest_expected": 4,
+      "sha256_matches": 4,
+      "main_zip_destination_binary_identical": true,
+      "additional_mops_datasets_beyond_revenue_not_verified": true
+    },
+    "TDCC": {
+      "source_format": "legacy reconstructed JSONL partitions",
+      "dates": [
+        "2026-09-04",
+        "2026-09-11",
+        "2026-09-18",
+        "2026-09-24"
+      ],
+      "rows": [
+        68867,
+        68935,
+        69139,
+        69156
+      ],
+      "total_rows": 276097,
+      "unique_date_security_tier_keys": 276097,
+      "duplicate_composite_keys": 0,
+      "required_field_missing": 0,
+      "all_manifest_sha_valid": true,
+      "underlying_native_per_security_lineage_verified": false
+    },
+    "TAIFEX": {
+      "non_tick_originals_in_v095": 19,
+      "byte_level_dedup_all_verified": false,
+      "all_dataset_scope_verified": false
+    },
+    "NDC": {
+      "official_11509_xlsx_present": true,
+      "container_crc_valid": true,
+      "workbook_xml_present": true,
+      "other_published_datasets_not_enumerated": true
+    }
+  },
+  "no_finmind_used": true,
+  "legacy_unmodified": true,
+  "silver_production_release_approved": false,
+  "bronze_full_month_release_approved": false,
+  "silver_candidate_eligible_only_after_dataset_specific_gate": [
+    "TWSE 8 observed categories pending schema/PIT",
+    "TPEx 11 primary categories pending numeric/PIT",
+    "MOPS revenue pending publication and revisions",
+    "TDCC 4 weekly derived partitions pending native lineage"
+  ],
+  "blockers": [
+    "Complete official source/dataset catalog beyond 30 observed candidate contracts",
+    "TDCC underlying official-native lineage",
+    "TAIFEX original files SHA and alias classification",
+    "NDC additional macro datasets as defined by scope",
+    "Native MOPS published_at/revisions and non-revenue datasets",
+    "True full Drive binary readback and manifest verification of all v0.95 objects",
+    "Formal PIT/security unverse and license gates"
+  ],
+  "release": "FAIL_CLOSED"
+}
