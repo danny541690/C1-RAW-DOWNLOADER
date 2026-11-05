@@ -4,6 +4,7 @@ on:
     branches: [test/jarvis-v095-one-shot-fast-20261105]
     paths:
       - .github/workflows/v095-matrix-321-smoke.yml
+      - tests/v095_matrix_stage_worker.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -42,6 +43,7 @@ jobs:
   silver:
     name: Silver / ${{ matrix.source }}
     needs: bronze
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -75,6 +77,7 @@ jobs:
   gold-qa:
     name: Gold QA / ${{ matrix.source }}
     needs: silver
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
