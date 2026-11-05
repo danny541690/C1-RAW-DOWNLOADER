@@ -1,0 +1,102 @@
+{
+  "SOURCE_REGISTRY": [
+    "source_class_id",
+    "source_family",
+    "tier",
+    "license_status",
+    "market_scope",
+    "endpoint_ref",
+    "availability_evidence",
+    "dataset_contract_status",
+    "status"
+  ],
+  "DATASET_CONTRACTS": [
+    "dataset_id",
+    "source_class_id",
+    "raw_format",
+    "native_unit",
+    "standard_unit",
+    "primary_keys",
+    "schema_version",
+    "published_at_rule",
+    "revision_rule",
+    "market_scope",
+    "license_tier",
+    "effective_start",
+    "status"
+  ],
+  "TASK_LEDGER": [
+    "task_id",
+    "task_type",
+    "source_class_id",
+    "dataset_id",
+    "period_start",
+    "period_end",
+    "task_state",
+    "attempts",
+    "checkpoint_id",
+    "run_id",
+    "issue_code",
+    "updated_at_utc"
+  ],
+  "MANIFEST_INDEX": [
+    "source_file_id",
+    "legacy_drive_id",
+    "legacy_sha256",
+    "staging_drive_id",
+    "staging_sha256",
+    "bronze_drive_id",
+    "bronze_sha256",
+    "native_bytes",
+    "dataset_id",
+    "content_period",
+    "version_id",
+    "readback_status"
+  ],
+  "CHECKPOINTS": [
+    "checkpoint_id",
+    "task_id",
+    "source_cursor",
+    "last_committed_file_id",
+    "last_committed_sha256",
+    "lease_owner",
+    "fencing_token",
+    "commit_ack",
+    "updated_at_utc"
+  ],
+  "ISSUE_REPAIR_HISTORY": [
+    "issue_id",
+    "priority",
+    "issue_name",
+    "root_cause_or_risk",
+    "repair_strategy",
+    "acceptance_evidence",
+    "status",
+    "owner",
+    "last_run_id"
+  ],
+  "RUN_LOGS": [
+    "run_id",
+    "workflow_name",
+    "git_sha",
+    "started_at_utc",
+    "finished_at_utc",
+    "task_id",
+    "status",
+    "api_requests",
+    "drive_receipt_id",
+    "details"
+  ],
+  "DATA_QUALITY_STATES": [
+    "artifact_id",
+    "dataset_id",
+    "period",
+    "expected_state",
+    "fetched_state",
+    "validated_state",
+    "pit_approved",
+    "gold_approved",
+    "source_sha256",
+    "evidence_ref"
+  ]
+}
