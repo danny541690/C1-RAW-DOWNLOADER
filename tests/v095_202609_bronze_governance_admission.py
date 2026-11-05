@@ -5,6 +5,8 @@ import csv,json,pathlib,collections
 G=pathlib.Path("governance/v095")
 d=json.loads((G/"202609_BRONZE_GATE_STATUS_20261105.json").read_text())
 flags=json.loads((G/"PHASE1_FLAGS.json").read_text())
+migration=json.loads((G/"202609_BRONZE_MIGRATION_RESUME_20261105.json").read_text())
+migrated={x["source"]:x for x in migration["source_month_folders"]}
 with (G/"DATASET_CONTRACTS.csv").open(newline="") as f:
  rows=list(csv.DictReader(f))
 by=collections.Counter(r["source_class_id"] for r in rows)
@@ -13,6 +15,8 @@ issues={}
 for name in six:
  a=[]
  if not by[name]:a.append("NO_DATASET_CONTRACTS")
+ if not migrated[name]["files"]:a.append("NO_BRONZE_COPIED_FILES")
+ if name=="TDCC" and len(migrated[name]["files"])==1:a.append("ONLY_DERIVED_TDCC_WEEKLY_ARCHIVE_COPIED")
  if not d["source_checks"].get(name):a.append("NO_SOURCE_EVIDENCE")
  if not d["source_universe_certified"]:a.append("UNVERIFIED_COMPLETE_SOURCE_DATASET_UNIVERSE")
  if name=="TWSE" and d["source_checks"][name]["sha256_matches"]!=122:a.append("SOURCE_MANIFEST_SHA_FAILURE")
@@ -27,6 +31,9 @@ blocked=any(issues.values()) or not flags.get("RELEASE_APPROVED",False)
 report={"schema":"JARVIS_202609_BRONZE_GOVERNANCE_ADMISSION_V1",
         "classification":"NOT_A_SOURCE_BYTE_READBACK_TEST",
         "contract_rows":len(rows),"per_source_candidate_contracts":dict(by),
+        "copied_month_files_by_source":{n:len(migrated[n]["files"]) for n in six},
+        "copied_month_file_total":migration["target_drive_folder_contains_files"],
+        "migrated_legacy_zip_source_readback_certified":False,
         "bronze_full_month_status":"BLOCKED" if blocked else "PENDING_MANUAL_PRODUCTION_EVIDENCE",
         "silver_full_month_allowed":False,
         "candidate_silver_dry_run_allowed":True,
@@ -38,4 +45,5 @@ out=pathlib.Path("v095_202609_bronze_admission");out.mkdir(exist_ok=True)
 (out/"gate.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
 print(json.dumps(report,ensure_ascii=False,indent=2))
 if len(rows)<30 or set(by)!=set(six):raise SystemExit("candidate contracts absent")
+if migration["target_drive_folder_contains_files"]<41:raise SystemExit("September migrated file inventory regressed")
 if flags.get("RELEASE_APPROVED") or flags.get("BULK_COPY_APPROVED"):raise SystemExit("dangerous auto release flags")
