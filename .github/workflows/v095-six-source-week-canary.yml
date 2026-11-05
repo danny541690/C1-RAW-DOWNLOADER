@@ -1,0 +1,49 @@
+name: JARVIS v0.95 six official sources weekly parallel canary
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-six-source-week-canary.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-six-official-week-canary
+  cancel-in-progress: false
+jobs:
+  source-canary:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - lane: daily-equity
+            sources: TWSE,TPEx
+          - lane: financial-custody
+            sources: MOPS,TDCC
+          - lane: futures-macro
+            sources: TAIFEX,NDC
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only required candidate dependency
+        run: python -m pip install --disable-pip-version-check 'pyarrow>=18,<23'
+      - name: Bounded official API acquisition and native Bronze/Silver/QA Gold readback
+        env:
+          JARVIS_WEEK_SOURCES: ${{ matrix.sources }}
+        run: python tests/v095_six_official_week_canary.py --sources "$JARVIS_WEEK_SOURCES"
+      - name: Retain even failed or partial source results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: six-official-week-${{ matrix.lane }}-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: weekly_official_canary/
