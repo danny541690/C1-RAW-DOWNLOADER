@@ -1,0 +1,93 @@
+{
+  "schema": "JARVIS_V095_202609_SILVER_FINALIZATION_EXECUTION_CHECKPOINT_20261106",
+  "date": "2026-11-06",
+  "request": "2026-09 all Bronze -> formally QA'd Silver usable by Gold, only >=98 quality scopes",
+  "work_executed": {
+    "header_inspection_run": 42122250643,
+    "typed_convert_initial_run": 42122609215,
+    "typed_convert_corrected_runs": [
+      42122773046,
+      42122830120
+    ],
+    "scoped_numeric_QA_run": 42123136904,
+    "source_candidates_preserved": true,
+    "existing_bronze_untouched": true,
+    "retries_fixed": "corrected simultaneous shared Drive folder creation race using isolated lane folder",
+    "deployed_release_manifest_drive_id": "1nIroxeT5hfkjpPJ_eU3mDh53-MlhX3n8",
+    "typed_datasets": {
+      "TWSE_institutional": {
+        "rows": 21621,
+        "id": "1AYTAGxQKV2q3FaZgmp6YJ20e8CkVcELx"
+      },
+      "TWSE_foreign_holdings": {
+        "rows": 21926,
+        "id": "13eDm8PmagXIwxEHuhiDq49F9noG2qqgf"
+      },
+      "TWSE_valuation": {
+        "rows": 21620,
+        "id": "1-yw7DxlsuNXXRjVRcwOfU5AjjhPqMwbq"
+      },
+      "TPEx_institutional_total": {
+        "rows": 15605,
+        "id": "19ad1CN0W74c0AF529EIq5quDdJ6tDaG0"
+      },
+      "TPEx_foreign_holdings": {
+        "rows": 17827,
+        "id": "1zgVmOyNvpjhzqE9QZFIPqiOCy2IOntFS"
+      },
+      "TPEx_valuation": {
+        "rows": 17744,
+        "id": "1h9PU-3stNNWyT_SXPTtNeltbEm8QSQ1t"
+      },
+      "TPEx_margin": {
+        "rows": 16041,
+        "id": "1obHT1dEE9ZxvdbcgBHXgTn2Z2SWxSpmU"
+      }
+    }
+  },
+  "read_back_quality": {
+    "TWSE_prices": {
+      "observed_rows": 21860,
+      "valid_numeric_rows": 21803,
+      "rate": 0.9973924977127173,
+      "descriptive_asof_20261106": true,
+      "historical_backtest": false
+    },
+    "TPEx_prices": {
+      "observed_rows": 17762,
+      "valid_numeric_rows": 17350,
+      "rate": 0.9768044139173516,
+      "scope_hold": true
+    },
+    "MOPS_revenue": {
+      "observed_rows": 1980,
+      "valid_numeric_rows": 1980,
+      "rate": 1,
+      "descriptive_asof_20261106": true,
+      "historical_backtest": false
+    }
+  },
+  "release_decision": "SCOPED_DESCRIPTIVE_INPUTS_ONLY_NOT_FULL_SILVER_AND_NOT_HISTORICAL_GOLD",
+  "hard_blockers": [
+    "No certified historical security master (equities vs ETFs); four-digit code alone is insufficient",
+    "Missing actual historical official released_at and source corrections PIT",
+    "TAIFEX 16 distinct native families still require type/contract/date semantics, not merely JSON serialization",
+    "NDC workbook 5 sheets contain multi-year observations; dates must be extracted and mapped",
+    "TWSE aggregate margin has no stock_id and cannot be handled as a security day",
+    "Repeated duplicate native fields TPEx institution/group require positional semantic contract",
+    "Only numeric 98% measured for selected files, not population or complete content correctness for all sources",
+    "Some original marketplace categories may be missing from 39 candidate dataset contracts and MOPS quarterly reports unenumerated"
+  ],
+  "finish_criteria": {
+    "full_silver": "Each active Bronze dataset family mapped to typed correct field units and business keys, provenance and actual obs date, 98% audited scope and critical errors isolated, formal release manifest",
+    "gold_historical_backtest": "Silver release plus verified as-of announcement time, historical trading eligibility and lookback; no future information"
+  },
+  "recommended_next_jobs": [
+    "Map missing borrowing/margin/institutional duplicate columns and security master as independent 4 lane batch",
+    "Map TAIFEX non-Tick 16 families, each true date/contract and units",
+    "Parse NDC workbook series by actual observation month, preserve revisions and dates",
+    "PIT releases and scoped 98% acceptances; publish independently passing portions"
+  ],
+  "gold_scope_preserved": "Descriptive snapshot only for TWSE OHLC and MOPS revenues; historic signal research remains blocked until PIT evidence",
+  "note": "Do not claim 2026-09 Silver entire dataset complete; user instruction 98% relaxes quality threshold but not identity or hindsight leakage."
+}
