@@ -36,8 +36,13 @@
     },
     "TPEx": {
       "folder_id": "1fcWwV2qK_aoevqlDSc9_9aNJ6lKFmSQ2",
-      "count": 5,
+      "count": 6,
       "files": [
+        {
+          "id": "1kXahDil5I6Mda5SN0XE-LG0bN8LZBm0y",
+          "name": "V095_BRONZE_202609_TPEx_LAST_2_OFFICIAL_PRICES_RECOVERED_RUN41993011980.zip",
+          "size": "723200"
+        },
         {
           "id": "1Tmh0sEZZCWFvdeTQ7eAOMuLX8WEY7ehR",
           "name": "V095_BRONZE_202609_OFFICIAL_RECOVERY_institutional_QA_ONLY_RUN41989880464.zip",
@@ -229,9 +234,12 @@
     "v095_official_refetch_success": 7,
     "union_can_cover_all_nine": true,
     "individual_dataset_semantic_reconciliation_pending": true,
-    "alternate_csv_holds_in_v093": 5
+    "alternate_csv_holds_in_v093": 5,
+    "missing_main_after_recovery": 0,
+    "recovery_last_success_run": 41993694875,
+    "defined_legacy_primary_units_verified_structural": "163/163 (8 daily families x 20 days + 3 period; not the full official dataset universe)"
   },
-  "total_drive_bronze_month_files": 29,
+  "total_drive_bronze_month_files": 30,
   "finmind_used": false,
   "silver_gold_intentionally_not_started": true
 }
