@@ -5,11 +5,13 @@ on:
     paths:
       - '.github/workflows/v095-tdcc-202609-native-bronze-migration.yml'
       - 'scripts/v095_tdcc_202609_native_bronze_migration.py'
+      - 'scripts/v095_tdcc_202609_native_completion_gate.py'
   workflow_dispatch:
   schedule:
     - cron: '7,22,37,52 * * * *'
 permissions:
   contents: read
+  actions: write
 concurrency:
   group: jarvis-v095-tdcc-202609-native-migration
   cancel-in-progress: false
@@ -46,3 +48,23 @@ jobs:
           path: tdcc_202609_migration/
           retention-days: 45
           if-no-files-found: warn
+  native-completion-gate:
+    needs: [native-originals]
+    if: always() && needs.native-originals.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 requests
+      - name: Certify source and archive ID/SHA equality and disable completed September scheduler
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/v095_tdcc_202609_native_completion_gate.py
