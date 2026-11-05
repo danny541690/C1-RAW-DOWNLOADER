@@ -1,0 +1,26 @@
+name: JARVIS September official Silver Gold institutional conversion
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-institutional-convert.yml'
+      - 'scripts/v095_202609_tpex_institutional_final.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --quiet pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Validate and convert TPEx institutional Silver and Gold
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_tpex_institutional_final.py
