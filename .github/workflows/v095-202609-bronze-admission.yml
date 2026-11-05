@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/v095-202609-bronze-admission.yml'
       - 'tests/v095_202609_bronze_governance_admission.py'
+      - 'governance/v095/202609_BRONZE_MIGRATION_RESUME_20261105.json'
   workflow_dispatch:
 permissions:
   contents: read
