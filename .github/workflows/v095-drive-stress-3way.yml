@@ -1,0 +1,81 @@
+name: JARVIS v0.95 3-way historical Drive migration stress (isolated)
+on:
+  push:
+    branches: [test/jarvis-v095-one-shot-fast-20261105]
+    paths:
+      - .github/workflows/v095-drive-stress-3way.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-drive-stress-3way
+  cancel-in-progress: false
+jobs:
+  drive-stress:
+    name: Historical migration shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-one-shot-fast-20261105
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install one-off migration dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth-httplib2 google-auth-oauthlib
+      - name: Historical SHA, Drive create/readback, Parquet and idempotence under three-way concurrency
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python tests/v095_migration_stress_3way.py --shard "${{ matrix.shard }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-historical-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: v095_migration_stress/shard_${{ matrix.shard }}/
+          retention-days: 14
+          if-no-files-found: warn
+  combine:
+    name: Consolidated 7-source readiness and stress QA
+    needs: drive-stress
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-one-shot-fast-20261105
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v095-historical-shard-*-${{ github.run_id }}
+          path: v095_migration_stress
+          merge-multiple: false
+      - name: Normalize artifact folder layout
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root=Path('v095_migration_stress')
+          for i in range(3):
+              found=list(root.glob(f'v095-historical-shard-{i}-*/report.json'))
+              if len(found)!=1: raise SystemExit('MISSING_SHARD_'+str(i))
+              target=root/f'shard_{i}'; target.mkdir(exist_ok=True)
+              (target/'report.json').write_bytes(found[0].read_bytes())
+          PY
+      - name: Aggregate 23 historical files, 3 shards and seven-source migration readiness
+        run: python tests/v095_migration_stress_aggregate.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-historical-3way-combined-${{ github.run_id }}
+          path: v095_migration_stress/COMBINED_REPORT.json
+          if-no-files-found: warn
+          retention-days: 30
