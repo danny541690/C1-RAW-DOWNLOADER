@@ -1,0 +1,28 @@
+name: JARVIS v0.95 official-first FinMind Free policy regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-official-first-finmind-free-policy.yml'
+      - 'scripts/v095_official_first_fallback.py'
+      - 'tests/test_v095_official_first_fallback.py'
+      - 'governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-official-first-finmind-free-policy
+  cancel-in-progress: false
+jobs:
+  policy-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate policy gates (no external downloads or writes)
+        run: python -m unittest -v tests/test_v095_official_first_fallback.py
