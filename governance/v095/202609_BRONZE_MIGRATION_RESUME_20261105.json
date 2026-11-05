@@ -1,0 +1,310 @@
+{
+  "schema": "JARVIS_V095_202609_BRONZE_MIGRATION_RESUMED",
+  "period": "2026-09",
+  "as_of": "2026-11-05",
+  "source_version": "v0.93",
+  "target_version": "v0.95",
+  "migration_verified_by": "connected Drive listing of v0.93 and v0.95 2026-09 source folders and GitHub fix logs",
+  "target_drive_folder_contains_files": 41,
+  "source_archive_unmodified": true,
+  "source_legacy_status": {
+    "TWSE": "All 3 observed v0.93 September container files copied; 122/122 primary manifest members verified; whole dataset universe not established",
+    "TPEx": "All 7 observed v0.93 September container files copied plus 3 official recovery archives; 9 primary missing date-kind units re-fetched; numeric equivalence pending",
+    "MOPS": "All 7 observed v0.93 September container files copied; four revenue raw files verified; supplementary archives may duplicate",
+    "TDCC": "Only four weekly JSONL partition archive copied plus 3 original-lineage sample files; full source per-stock original HTML corpus still in v0.93",
+    "TAIFEX": "19 curated non-tick originals copied; original 127 tick files omitted by user scope; duplicated alias files retained",
+    "NDC": "No native September v0.93 folder was present; new September 11509 official Excel archive added"
+  },
+  "byte_match_evidence": [
+    {
+      "source": "TWSE",
+      "kind": "main_zip",
+      "sha256_same": true
+    },
+    {
+      "source": "TPEx",
+      "kind": "main_zip",
+      "sha256_same": true
+    },
+    {
+      "source": "MOPS",
+      "kind": "main_zip",
+      "sha256_same": true
+    },
+    {
+      "source": "TPEx",
+      "kind": "complement_zip",
+      "sha256_same": true
+    },
+    {
+      "source": "TDCC",
+      "kind": "weekly_archive_zip",
+      "sha256_same": true
+    }
+  ],
+  "source_complete_contracts": false,
+  "full_month_bronze_approved": false,
+  "production_silver_allowed": false,
+  "candidate_silver_allowed": true,
+  "open_blockers": [
+    "No signed exhaustive original source/dataset contracts for all six sources",
+    "TDCC full per-stock source originals not migrated, weekly partition hash matches but raw lineage not exhaustive",
+    "No independent SHA readback across all 41 target files",
+    "MOPS quarterly and disclosure universe not covered by four monthly revenue captures",
+    "NDC only September headline workbook is captured; other contracted macro datasets not enumerated"
+  ],
+  "source_month_folders": [
+    {
+      "source": "TWSE",
+      "drive_folder_id": "1abuHJHAVv_a3AOpG4hKfguyF-qpXSKm-",
+      "files": [
+        {
+          "id": "17MRJVs-oLbzO66ApNpuxRl92BroIT552",
+          "name": "V095_BRONZE_202609_LEGACY_ADDITIONAL_EVIDENCE_LIVE_FIVE_STAGE_202610_TO_200001_V1_OFFICIAL_BATCH_9fa74cc6224b030cb0ebdecdbf8a91256ec6f18cad66b1ebcb87294c336d7b7e.zip",
+          "bytes": 6967
+        },
+        {
+          "id": "1OgyI0aMUnEmZBXTVTwn2eIPMViD7xPKy",
+          "name": "V095_BRONZE_202609_V093_DELTA_TWSE_R3.zip",
+          "bytes": 469339
+        },
+        {
+          "id": "16G68HaFVX1Ddmu23xWeexhNDn0DWryet",
+          "name": "V095_BRONZE_202609_V093_VERIFIED_ZIP_TWSE.zip",
+          "bytes": 5854414
+        }
+      ],
+      "sample_folders": []
+    },
+    {
+      "source": "TPEx",
+      "drive_folder_id": "1fcWwV2qK_aoevqlDSc9_9aNJ6lKFmSQ2",
+      "files": [
+        {
+          "id": "1UKR0ErSjMbBUSxUGJdMWSgd1ZgGzOjCQ",
+          "name": "V095_BRONZE_202609_LEGACY_ADDITIONAL_EVIDENCE_INDEPENDENT_RAW_2026_LATEST_TO_200001_V1_units_0fe202b3435ff5a3d689.zip",
+          "bytes": 463385
+        },
+        {
+          "id": "19Q8km9SCfEKuoq3P11HiXsGg6kzm8qMq",
+          "name": "V095_BRONZE_202609_LEGACY_ADDITIONAL_EVIDENCE_INDEPENDENT_RAW_2026_LATEST_TO_200001_V1_units_37c79af6ca85e5d2e9c1.zip",
+          "bytes": 385527
+        },
+        {
+          "id": "1fEQ_8MSxfhMB4BMvUWTW83jtlYubE1Ql",
+          "name": "V095_BRONZE_202609_LEGACY_ADDITIONAL_EVIDENCE_L1_RAW_QA_REPAIR_LATEST_TO_201504_V2_units_c537ebe9e4f765efa2b3.zip",
+          "bytes": 121131
+        },
+        {
+          "id": "1Q-KneDU0ij7HtEQMHizPlcsS-CN8rupq",
+          "name": "V095_BRONZE_202609_LEGACY_ADDITIONAL_EVIDENCE_LIVE_FIVE_STAGE_202610_TO_200001_V1_OFFICIAL_BATCH_d71df649a1a09772ad2345598de2267c5d20eacd9769d2b4289cafc8f819c816.zip",
+          "bytes": 1471
+        },
+        {
+          "id": "1kXahDil5I6Mda5SN0XE-LG0bN8LZBm0y",
+          "name": "V095_BRONZE_202609_TPEx_LAST_2_OFFICIAL_PRICES_RECOVERED_RUN41993011980.zip",
+          "bytes": 723200
+        },
+        {
+          "id": "1Tmh0sEZZCWFvdeTQ7eAOMuLX8WEY7ehR",
+          "name": "V095_BRONZE_202609_OFFICIAL_RECOVERY_institutional_QA_ONLY_RUN41989880464.zip",
+          "bytes": 453790
+        },
+        {
+          "id": "12lSt3OY0WclDoCc6TAk3peruEW2-K9_r",
+          "name": "V095_BRONZE_202609_OFFICIAL_RECOVERY_prices_QA_ONLY_RUN41989880464.zip",
+          "bytes": 1071162
+        },
+        {
+          "id": "189JOKYsWHQud0k2QApUGlSqiCyDIYvOp",
+          "name": "V095_BRONZE_202609_V093_DELTA_TPEx_R3.zip",
+          "bytes": 421374
+        },
+        {
+          "id": "1BZdpY6HgrJjPe23N0GvNVjR5CMrCRRxb",
+          "name": "V095_BRONZE_202609_V093_SUPPLEMENT_TPEx_R1.zip",
+          "bytes": 1324176
+        },
+        {
+          "id": "1xz7SdR0itvatFQ_IaAdpsAw9fN6i-0iu",
+          "name": "V095_BRONZE_202609_V093_VERIFIED_ZIP_TPEx.zip",
+          "bytes": 10934588
+        }
+      ],
+      "sample_folders": []
+    },
+    {
+      "source": "MOPS",
+      "drive_folder_id": "14N6x7HDLt5nMwOEUE7K818iOw4NHjwWg",
+      "files": [
+        {
+          "id": "1ZTfKkiWtwyAkJ8g5IrCfVSKLz0Ukqr8J",
+          "name": "V095_202609_V093_ADDITIONAL_PROVENANCE_THREE_YEAR_OFFICIAL_GAPS_20261019_R1_revenue_sii_1_2026-09_933c709b2cb3.zip",
+          "bytes": 10666
+        },
+        {
+          "id": "1SwJtxRCufHYfLlxxBS9lovucj2T6pwt5",
+          "name": "V095_202609_V093_ADDITIONAL_PROVENANCE_THREE_YEAR_OFFICIAL_GAPS_20261019_R1_revenue_otc_1_2026-09_fbac1e140c8f.zip",
+          "bytes": 5548
+        },
+        {
+          "id": "1VvuH6RpvpJ98jZDOQdO2UAmzzHVDHLXc",
+          "name": "V095_202609_V093_ADDITIONAL_PROVENANCE_L1_RAW_QA_REPAIR_LATEST_TO_201504_V2_financial_units_3f3cc1cf5fa0060c5100.zip",
+          "bytes": 3549
+        },
+        {
+          "id": "1o3EWhELSve0_NtlAHPMdFw5qSxIxx_lK",
+          "name": "V095_202609_V093_ADDITIONAL_PROVENANCE_L1_RAW_QA_REPAIR_LATEST_TO_201504_V2_financial_units_46c7d57fede97af7f206.zip",
+          "bytes": 3694
+        },
+        {
+          "id": "1R73xgEOGat5vcypcykeW0YjOyGSdAlJd",
+          "name": "V095_202609_V093_ADDITIONAL_PROVENANCE_L1_RAW_THIRD_PASS_GATED_REPAIR_V1_202609_financial_units_d865555375ffc02d3859.zip",
+          "bytes": 3550
+        },
+        {
+          "id": "1Z4yX31Q1lslCyBiEYApYMEVxvnUWw_y5",
+          "name": "V095_202609_V093_ADDITIONAL_PROVENANCE_L1_RAW_THIRD_PASS_GATED_REPAIR_V1_202609_financial_units_bc26a1a783bee41b5229.zip",
+          "bytes": 3695
+        },
+        {
+          "id": "1wAHL6qfZnSC3RIKvShhL4At3ZNs32bvj",
+          "name": "V095_BRONZE_202609_V093_VERIFIED_ZIP_MOPS.zip",
+          "bytes": 716137
+        }
+      ],
+      "sample_folders": []
+    },
+    {
+      "source": "TDCC",
+      "drive_folder_id": "1_Pl4nN0HRXnIJSjJrt0iX2Lq7nkS1pcV",
+      "files": [
+        {
+          "id": "1sRULF-1_1UTf5x2E6mWoDVx0BgdP2GS8",
+          "name": "V095_BRONZE_202609_V093_ARCHIVE_TDCC_R1.zip",
+          "bytes": 4225964
+        }
+      ],
+      "sample_folders": [
+        {
+          "id": "1s4l5XbtmTdSCTfsVuP4nXx9F1v9yj0WW",
+          "name": "NATIVE_SOURCE_SAMPLE_ONLY"
+        }
+      ]
+    },
+    {
+      "source": "TAIFEX",
+      "drive_folder_id": "1fr-4WqvgHazBZV-YYreidxQ03TY5aO2o",
+      "files": [
+        {
+          "id": "1kdrHNOaFMmLF67bDS6g-Y5YJo-Ztj3Qz",
+          "name": "V095_V093_COPY_202609_MARKET_options_2026-09_e7d2af9d687716da690fce9396a63ad8484b6efeb05e828675f695860641d656.csv",
+          "bytes": 21145969
+        },
+        {
+          "id": "1UibWfnOnPA6ctTWssd6fe30M4Ae6VDnp",
+          "name": "V095_V093_COPY_202609_MARKET_futures_2026-09_526f7115fb7271128e18271fe422882ac459d6455242f0969eb7586a0fd3cb7a.csv",
+          "bytes": 3769568
+        },
+        {
+          "id": "1_Tv_Yd9uybdGv1oiyys8razCENQcJ-Li",
+          "name": "V095_V093_COPY_202609_HISTORY_totalTableDateDown_2026-09_dd210a63b5072aa49b2fc8fb5a379e62e855970dfade9688407847ff40379e73.csv",
+          "bytes": 6196
+        },
+        {
+          "id": "1o4ur0Jyy-VKDHi3j9-Fx6FPCNmKZ1nDh",
+          "name": "V095_V093_COPY_202609_HISTORY_optContractsDateDown_2026-09_0ac25685c8fe2f822262be049c87a885c3b604994f3cf43ed5eeaf97ca6f006b.csv",
+          "bytes": 21661
+        },
+        {
+          "id": "1ZPJNLLBt2ycpO0tEJb3zEw-m335s4j9u",
+          "name": "V095_V093_COPY_202609_HISTORY_futContractsDateDown_2026-09_90d8db6caa55babff20b109e40da0a66a86e5b8cc46b7700ea2a495fbd652bf0.csv",
+          "bytes": 112845
+        },
+        {
+          "id": "10tGY5Ex3m8JWM5ySXyxJ1ZwL7ppHoVgB",
+          "name": "V095_V093_COPY_202609_HISTORY_dlPcRatioDown_2026-09_486f21cf772e39f07e161f0120cc1ca7c703333efa32def530e9e648db960d43.csv",
+          "bytes": 1118
+        },
+        {
+          "id": "1i_KAwdhrc24x1I5b6p0UkQkMKRx0ms9L",
+          "name": "V095_V093_COPY_202609_HISTORY_dlDailyFXRateDown_2026-09_7c7fe9b8631407ccc68a3ee02c07fe8f6b174214bce89295ffb3b9afc16b448d.csv",
+          "bytes": 1896
+        },
+        {
+          "id": "1XPRi7f0MQPO7PA84H4JYVMNUrqj9bvhZ",
+          "name": "V095_V093_COPY_202609_HISTORY_callsAndPutsDateDown_2026-09_a8a5dfa67c9a66985e7bbd084e3817d174445b6f7765aaaeac770c028d5a235b.csv",
+          "bytes": 43977
+        },
+        {
+          "id": "1Qd1cA0guDMFNXvTKkZ2f2KhZAujKmbfu",
+          "name": "V095_V093_COPY_202609_HISTORY_futAndOptDateDown_2026-09_65efb52858650ad5470443cb721c18a72ac6540f38e45645bffec0c24e884afd.csv",
+          "bytes": 12018
+        },
+        {
+          "id": "1nb6G77TGTNzZ-LbnR7v2FZ_61fY4zB13",
+          "name": "V095_V093_COPY_202609_HISTORY_callsAndPutsDateAhDown_2026-09_05c99cdd136f30f68f57c7484229875902c1103f3f387f0a9bdbb85bea599002.csv",
+          "bytes": 7746
+        },
+        {
+          "id": "1d1WKgU0jVuA-r3iPIQGGuH29IhQQRj0t",
+          "name": "V095_V093_COPY_202609_HISTORY_dlProductOrderDown_2026-09_5cbc9cdb70a9e35017bc6aa820e162de6e0b16b3283945d12b53e6da2d431825.csv",
+          "bytes": 3041
+        },
+        {
+          "id": "1sUIs3LArnHHGTkF5KdkKmkM3WaAyk2y3",
+          "name": "V095_V093_COPY_202609_HISTORY_futContractsDateAhDown_2026-09_8be76db711acfaa7d2ac6149187ec894928d59ae6fd295861895b3368c7ccc7e.csv",
+          "bytes": 56502
+        },
+        {
+          "id": "1HhgZPlxUGFIg7SZzyovcDkwyIfGeFhYj",
+          "name": "V095_V093_COPY_202609_HISTORY_optContractsDateAhDown_2026-09_7e57f6196e0ae310427138bcb1c172994be15756d7db582bdf06374f127246a0.csv",
+          "bytes": 3689
+        },
+        {
+          "id": "1xL7O-FK1QiN92cEx_-VwFO3G5UwV3rva",
+          "name": "V095_V093_COPY_202609_HISTORY_productOrderDown_2026-09_5cbc9cdb70a9e35017bc6aa820e162de6e0b16b3283945d12b53e6da2d431825.csv",
+          "bytes": 3041
+        },
+        {
+          "id": "1FhrbMW4R8ukPs-oksA6FRm-5oxVEmNHt",
+          "name": "V095_V093_COPY_202609_HISTORY_dlBargainOrderDown_2026-09_a5ee13c30eb4358c0e0af034391807ca119ccfbd2c706a938683589c03d22d93.csv",
+          "bytes": 4373
+        },
+        {
+          "id": "1uPAosmpBkWtHHebim88g3r81H6Be92Yg",
+          "name": "V095_V093_COPY_202609_HISTORY_dlLargeTraderOptDown_2026-09_8bd6981d9cfc450cae9f7c49741ad29a3ecd0b7c3be0a828d714473cb0f6104e.csv",
+          "bytes": 360387
+        },
+        {
+          "id": "1cDkk_kMidIA3Z-DLoOsTnIzNGdtViBNi",
+          "name": "V095_BRONZE_202609_V093_TAIFEX_bargain_orders.csv",
+          "bytes": 4373
+        },
+        {
+          "id": "1yYp6WhusIWoq8ikp5_BP4EUu8RHZoRsK",
+          "name": "V095_BRONZE_202609_V093_TAIFEX_large_trader_options.csv",
+          "bytes": 360387
+        },
+        {
+          "id": "1Vj05tn0TXDY_tVbGDzEQomCEKdYtti0e",
+          "name": "V095_BRONZE_202609_V093_TAIFEX_large_trader_futures.csv",
+          "bytes": 1738863
+        }
+      ],
+      "sample_folders": []
+    },
+    {
+      "source": "NDC",
+      "drive_folder_id": "1JeqoAWecyvlXEo8odMvLqdVu6ddubeuJ",
+      "files": [
+        {
+          "id": "16hZu79uBk7OWyOnv7-4ga8QZnXl4ANWr",
+          "name": "V095_BRONZE_202609_NDC_OFFICIAL_XLSX_AND_RECEIPT_20261029_QA_ONLY.zip",
+          "bytes": 792440
+        }
+      ],
+      "sample_folders": []
+    }
+  ]
+}
