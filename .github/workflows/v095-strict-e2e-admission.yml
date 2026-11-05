@@ -1,0 +1,47 @@
+name: JARVIS v0.95 STRICT full E2E migration gates (candidate-only)
+on:
+  push:
+    branches: [test/jarvis-v095-one-shot-fast-20261105]
+    paths:
+      - .github/workflows/v095-strict-e2e-admission.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-strict-e2e-admission
+  cancel-in-progress: false
+jobs:
+  strict-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-one-shot-fast-20261105
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies once for actual sample and admission test
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth-httplib2 google-auth-oauthlib
+      - name: Real v093 NDC original -> typed and period checked Silver candidate
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python tests/v095_ndc_real_typed_silver_pilot.py
+      - name: Strict G0 to G6 gate validation and negative quality tests
+        run: PYTHONPATH=. python tests/v095_strict_e2e_migration_gate.py
+      - name: Existing migration governance independent regression
+        run: python tests/v095_migration_architecture_gate.py
+      - name: Consolidated evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-strict-e2e-admission-${{ github.run_id }}
+          path: |
+            v095_ndc_typed_candidate/
+            v095_e2e_admission/
+            v095_migration_architecture_audit/
+          retention-days: 30
+          if-no-files-found: warn
