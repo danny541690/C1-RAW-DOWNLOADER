@@ -51,7 +51,7 @@ def write(s,dest,family,records,raw_digest,source_ids):
  buf=io.BytesIO();pq.write_table(pa.Table.from_pylist(records),buf,compression="zstd")
  b=buf.getvalue()
  if pq.read_metadata(io.BytesIO(b)).num_rows!=len(records):raise ValueError("PARQUET_ROW_COUNT_MISMATCH")
- name=f"JARVIS_v095_SILVER_202609_{family}_NATIVE_CANDIDATE_R1.parquet"
+ name=f"JARVIS_v095_SILVER_202609_{family}_NATIVE_CANDIDATE_R2.parquet"
  id=save(s,dest,name,b)
  return {"status":"PARQUET_CANDIDATE","rows":len(records),"parquet_id":id,
    "parquet_sha256":sha(b),"source_sha256":raw_digest,"original_drive_ids":source_ids}
@@ -76,7 +76,7 @@ def taifex(s,lane,dest):
    "native_row_index":i,"native_record_json":json.dumps(row,ensure_ascii=False),
    "native_encoding":encoding,"native_field_contract":"UNAPPROVED_PRESERVED_RAW",
    "source_drive_id":f["id"],"source_sha256":h,
-   "observation_month":"2026-09","published_at":None,"pit_verified":False}
+   "source_archive_month":"2026-09","observation_date":None,"published_at":None,"pit_verified":False}
    for i,row in enumerate(rows) if any(str(c).strip() for c in row)]
   key="TAIFEX_"+("OPTIONS" if group=="taifex-options" else "FUTURES" if group=="taifex-futures" else "HISTORY_"+h[:10])
   families[key]=write(s,dest,key,records,h,[f["id"]])
@@ -96,7 +96,7 @@ def ndc(s,dest):
    records.append({"source":"NDC","dataset_label":"NDC_11509","sheet_name":sh.title,
     "row_index":i,"native_cells_json":json.dumps(cells,ensure_ascii=False),
     "source_zip_drive_id":NDC,"native_workbook_sha256":sha(b),
-    "observation_month":"2026-09","published_at":None,"pit_verified":False})
+    "source_archive_month":"2026-09","published_at":None,"pit_verified":False})
    count+=1
   sheets[sh.title]=count
  return {"source":"NDC","lane":"ndc-workbook","sheets":sheets,"datasets":{
@@ -105,12 +105,12 @@ def main():
  a=argparse.ArgumentParser();a.add_argument("--lane",choices=TARGETS,required=True);lane=a.parse_args().lane
  s=service();dest=folder(s,TARGETS[lane])
  report=ndc(s,dest) if lane=="ndc-workbook" else taifex(s,lane,dest)
- report.update(period="2026-09",silver_status="CANDIDATE_ONLY",
+ report.update(source_archive_month="2026-09",observation_dates_certified=False,silver_status="CANDIDATE_ONLY",
   release_approved=False,gold_allowed=False,
   warnings=["Native rows kept as JSON; formal field mappings not yet audited","PIT and source calendar pending",
             "Do not claim 98% data correctness from row serialization alone"])
  root=pathlib.Path("v095_202609_taifex_ndc_silver");root.mkdir(exist_ok=True)
  (root/(lane+".json")).write_text(json.dumps(report,ensure_ascii=False,indent=2))
- save(s,dest,"JARVIS_v095_202609_"+lane+"_SILVER_QA_R1.json",json.dumps(report,ensure_ascii=False,indent=2).encode())
+ save(s,dest,"JARVIS_v095_202609_"+lane+"_SILVER_QA_R2.json",json.dumps(report,ensure_ascii=False,indent=2).encode())
  print(json.dumps(report,ensure_ascii=False),flush=True)
 if __name__=="__main__":main()
