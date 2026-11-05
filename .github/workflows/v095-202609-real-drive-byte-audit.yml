@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/v095-202609-real-drive-byte-audit.yml'
       - 'scripts/v095_202609_real_drive_bronze_audit.py'
+      - 'governance/v095/202609_BRONZE_TWO_GATE_ACCEPTANCE_V1.json'
   workflow_dispatch:
 permissions:
   contents: read
