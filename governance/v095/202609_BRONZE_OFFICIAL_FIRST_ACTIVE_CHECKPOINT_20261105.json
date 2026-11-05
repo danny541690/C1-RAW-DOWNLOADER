@@ -1,0 +1,66 @@
+{
+  "schema": "JARVIS_V095_202609_BRONZE_MIGRATION_AND_OFFICIAL_GAP_REPAIR_CHECKPOINT",
+  "period": "2026-09",
+  "snapshot_date": "2026-11-05",
+  "all_source_raw_immutable": true,
+  "source_byte_audit_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42025744184",
+  "tdcc_first_three_run_ids": [
+    42023946124,
+    42024297209,
+    42025314201
+  ],
+  "tdcc_active_native_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42025334562",
+  "tdcc_queued_continuation": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42026712758",
+  "tdcc_source_inventory_files": 10949,
+  "tdcc_verified_migrated_complete_60_file_bundles_at_checkpoint": 88,
+  "tdcc_source_files_copied_at_checkpoint": 5280,
+  "tdcc_source_files_outstanding_at_checkpoint": 5669,
+  "per_source_evidence": {
+    "TWSE": {
+      "main_manifest_raw_sha": "122/122",
+      "v093_outer_archives_copied": "3/3",
+      "dataset_universe_approved": false
+    },
+    "TPEx": {
+      "main_manifest_raw_sha": "158/172",
+      "official_missing_primary_recovered": "9/9",
+      "csv_alternate_holds": 5,
+      "v093_outer_archives_copied": "7/7",
+      "dataset_universe_approved": false
+    },
+    "MOPS": {
+      "main_revenue_raw_sha": "4/4",
+      "v093_outer_archives_copied": "7/7",
+      "other_mops_datasets_pending": true
+    },
+    "TDCC": {
+      "native_v093_source_files": 10949,
+      "first_native_bundles_verified": 88,
+      "associated_derived_weekly_partitions": 4,
+      "native_complete": false
+    },
+    "TAIFEX": {
+      "non_tick_files_copied": 19,
+      "source_selected_originals_sha_names_checked": 16,
+      "duplicate_alias_pairs": 3,
+      "tick_excluded_by_user": true
+    },
+    "NDC": {
+      "official_11509_xlsx_stored": true,
+      "workbook_container_integrity_pass": true,
+      "complete_macro_catalog": false
+    }
+  },
+  "download_priority": "OFFICIAL_FIRST_3_ATTEMPTS_THEN_CONFIRMED_GAP_FINMIND_FREE",
+  "additional_finmind_requests_this_execution": 0,
+  "reason_finmind_not_used": "No new exact-dataset confirmed official missing item requiring free-provider substitution; original TDCC gap is a v093 to v095 copy, not an official data gap",
+  "formal_bronze_release": "BLOCKED",
+  "silver_production_release": false,
+  "two_separate_gates": {
+    "exact_v093_source_handoff": "PENDING_FINAL_TDCC_NATIVE_FILES_AND_DESTINATION_VERIFICATION",
+    "all_six_official_source_dataset_universe": "PENDING_COMPLETE_SIGNED_DATASET_CONTRACTS"
+  },
+  "live_v095_tdcc_folder": "https://drive.google.com/drive/folders/1_Pl4nN0HRXnIJSjJrt0iX2Lq7nkS1pcV",
+  "audit_drive_folder": "https://drive.google.com/drive/folders/1XSkUNOHSkJEbdr6UGNqescxOVBUV3Uvk",
+  "scheduler_auto_check": "Runs every 15 minutes if enabled; self-disable only after exact all-source-native IDs and SHA completion gate writes validated Drive marker"
+}
