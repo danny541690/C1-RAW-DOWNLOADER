@@ -1,0 +1,186 @@
+{
+  "schema": "JARVIS_V095_202609_OFFICIAL_BRONZE_REPAIR_AUDIT",
+  "period": "2026-09",
+  "source_originals_untouched": true,
+  "finmind_calls": 0,
+  "silver_started": false,
+  "gold_started": false,
+  "production_bronze_approved": false,
+  "evidence": {
+    "v093_manifests": "v0.93 Drive 01_RAW/2026/<SOURCE>/2026-09 main ZIP manifests",
+    "verified_action_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41993011980",
+    "earlier_action_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41989880464",
+    "drive_last_two": "https://drive.google.com/file/d/1kXahDil5I6Mda5SN0XE-LG0bN8LZBm0y/view"
+  },
+  "per_source": {
+    "TWSE": {
+      "legacy_manifest_units": 122,
+      "legacy_native_sha_ok": 122,
+      "missing_in_legacy_manifest": 0,
+      "legacy_all_market_complete": false,
+      "status": "EXISTING_ORIGINALS_VALID__UNIVERSE_UNVERIFIED"
+    },
+    "TPEx": {
+      "legacy_manifest_units": 172,
+      "legacy_native_sha_ok": 158,
+      "missing_in_legacy_manifest": 14,
+      "main_api_missing": 9,
+      "alternate_csv_holds": 5,
+      "official_missing_main_recovered": 9,
+      "missing_main_after_repair": 0,
+      "matched_existing_legacy_supplement_hash": 5,
+      "new_valid_originals": 4,
+      "final_download_run": 41993011980,
+      "source_semantic_numeric_pit_verified": false,
+      "status": "9_MAIN_SOURCE_GAPS_RECOVERED__5_CSV_ALTERNATES_CLASSIFICATION_PENDING"
+    },
+    "MOPS": {
+      "legacy_manifest_units": 4,
+      "legacy_native_sha_ok": 4,
+      "legacy_all_market_complete": false,
+      "pit_verified": false,
+      "status": "4_REVENUE_ORIGINALS_VALID__OTHER_CONTRACTS_UNVERIFIED"
+    },
+    "TDCC": {
+      "four_week_dates": [
+        "2026-09-04",
+        "2026-09-11",
+        "2026-09-18",
+        "2026-09-24"
+      ],
+      "rows_by_week": [
+        68867,
+        68935,
+        69139,
+        69156
+      ],
+      "security_counts_by_week": [
+        4051,
+        4055,
+        4067,
+        4068
+      ],
+      "shareholding_levels_per_security": 17,
+      "archive_crc_verified": true,
+      "legacy_archive_manifest_shas_verified": true,
+      "native_per_security_records_copied": false,
+      "code_trailing_spaces_observed": true,
+      "status": "FOUR_WEEK_PARTITIONS_SHA_VALID__SOURCE_LINEAGE_AND_ALL_DATASETS_UNVERIFIED"
+    },
+    "TAIFEX": {
+      "non_tick_month_files_moved": 19,
+      "possible_alias_duplicates": "dl and base variants; preserve raw originals; classify in inventory",
+      "tick_excluded_by_user": true,
+      "full_dataset_catalog_verified": false,
+      "status": "NON_TICK_ORIGINALS_COPIED__FORMAT_COVERAGE_PENDING"
+    },
+    "NDC": {
+      "published_202609_11509_source_archive_present": true,
+      "official_release_date": "2026-10-29",
+      "other_relevant_macro_datasets_catalog_complete": false,
+      "status": "OFFICIAL_11509_CANDIDATE_PRESENT__MACRO_UNIVERSE_PENDING"
+    }
+  },
+  "tpex_recovered_originals": [
+    {
+      "category": "institutional",
+      "date": "20260907",
+      "sha256": "370d0feb7f4149a1b8f21c2652ebdf6099bb369c173fcb15ea04e59958410ff8",
+      "rows": 5415,
+      "exists_in_legacy_complement": true,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    },
+    {
+      "category": "institutional",
+      "date": "20260908",
+      "sha256": "afd5ea12b6a99a84f9c34862f473965dd8f1f0011c37a142fde3d8851d7b0eb7",
+      "rows": 5159,
+      "exists_in_legacy_complement": false,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    },
+    {
+      "category": "institutional",
+      "date": "20260929",
+      "sha256": "ec5d65cc8a14bc3fcc255657952c647cdb7c851767a7c78192110c683a8dc486",
+      "rows": 5774,
+      "exists_in_legacy_complement": false,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    },
+    {
+      "category": "institutional",
+      "date": "20260930",
+      "sha256": "0fdbf215f28a3e7ee9fe91ffd7314f61d5316e95b9c163f678acbedc7b15db41",
+      "rows": 6303,
+      "exists_in_legacy_complement": true,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    },
+    {
+      "category": "prices",
+      "date": "20260904",
+      "sha256": "c9986a62a71262272c6bdea498b2f4c1814c2ec475e9e86de80f58f29e2402f1",
+      "rows": 10963,
+      "exists_in_legacy_complement": true,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    },
+    {
+      "category": "prices",
+      "date": "20260908",
+      "sha256": "e9c5a86950f88ae2222126fa54af463e32d4f0f8d5d1d5ac64a328fa03932bee",
+      "rows": 10991,
+      "exists_in_legacy_complement": false,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    },
+    {
+      "category": "prices",
+      "date": "20260910",
+      "sha256": "7524b7ffc3051ab9ad5bf73213e6ebc6a873afe53aebb41636d13ef96ffc25d9",
+      "rows": 11179,
+      "exists_in_legacy_complement": true,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    },
+    {
+      "category": "prices",
+      "date": "20260922",
+      "sha256": "71ac58753d77665a7c3cbf26b33225be6d7c0183ff68712ed33235754930999a",
+      "rows": 11596,
+      "exists_in_legacy_complement": false,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    },
+    {
+      "category": "prices",
+      "date": "20260929",
+      "sha256": "41e64aef784e9e4b0672330800acecd5d2b06d7d7f95e51a5b391eb4f5998c4e",
+      "rows": 11730,
+      "exists_in_legacy_complement": true,
+      "now_in_drive": true,
+      "structural_date_verified": true,
+      "price_or_flow_numeric_external_crosscheck": false
+    }
+  ],
+  "open_gates": [
+    "list complete Dataset Contracts for six sources",
+    "confirm v0.95 29+ Drive files full source/target SHA, not merely metadata for some",
+    "independent external row/value reconciliation and historical PIT",
+    "TDCC original vs derived per-stock lineage",
+    "MOPS complete obligations aligned to actual announcement dates",
+    "NDC other macro reports according to release calendar",
+    "TAIFEX deduplicate alternate aliases and verify 19 non-tick dataset meanings"
+  ],
+  "release_decision": "BLOCKED_FOR_FULL_MONTH__TPEX_PRIMARY_9_FIXED"
+}
