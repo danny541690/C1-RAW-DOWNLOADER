@@ -1,0 +1,32 @@
+name: JARVIS 2026-09 seven-source Bronze audit evidence bundle
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-seven-source-audit-bundle.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  create-audit-bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Bundle exact governance evidence and observed contracts with SHA
+        run: |
+          mkdir -p v095_sept_audit_package
+          cp governance/v095/202609_SEVEN_SOURCE_FINAL_SCOPE_AUDIT_20261105.json v095_sept_audit_package/
+          cp governance/v095/DATASET_CONTRACTS.csv v095_sept_audit_package/
+          cp governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json v095_sept_audit_package/
+          cd v095_sept_audit_package
+          sha256sum *.json *.csv > BUNDLE_SHA256.txt
+      - name: Keep audit evidence, not a claimed Bronze release
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-seven-source-audit-evidence-${{ github.run_id }}
+          path: v095_sept_audit_package/
+          retention-days: 90
+          if-no-files-found: error
