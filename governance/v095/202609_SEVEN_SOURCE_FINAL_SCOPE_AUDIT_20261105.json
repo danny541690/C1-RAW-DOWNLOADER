@@ -103,7 +103,8 @@
     "TAIFEX family-specific date coverage not fully audited",
     "MOPS historical-as-of fundamental reports and releases need PIT inventory outside monthly revenue only",
     "NDC international/macro indicators beyond one 11509 workbook not enumerated",
-    "Whole-market numerical cross-source equality not demonstrated"
+    "Whole-market numerical cross-source equality not demonstrated",
+    "Drive 443-factor dependency registry is only 9 representative groups, not 443 formula-level source data dependencies; cannot certify 100% requirement coverage"
   ],
   "policy": "reuse original; official source first maximum 3 attempts; FinMind Free only confirmed equivalent data for documented gaps, never overwrite official Bronze",
   "production_bronze_status": "BLOCKED_UNIVERSE_NOT_CERTIFIED",
@@ -112,5 +113,18 @@
     "six_source_real_drive": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42034834590",
     "finmind_free_calendar": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42043312417",
     "finmind_free_stock_sample": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42044237050"
-  }
+  },
+  "indicator_dependency_registry_evidence": {
+    "drive_folder": "00_GOVERNANCE/INDICATOR_REGISTRY",
+    "drive_file_id": "1EkUJOtlZIn1g6uo7fYzf6sQhRY811wWo",
+    "registry_note": "representative groups, full 443 formulas not audited",
+    "registered_groups": 9,
+    "full_443_factor_dependency_matrix_available": false
+  },
+  "source_contract_registry_evidence": {
+    "drive_file_id": "1CYoF7y6Gyg5i5FT_VLTHt2SwV8PJO5s9",
+    "source_classes": 8,
+    "dataset_availability_marked_dynamic": true
+  },
+  "recommended_next_gate": "Only certify defined source/date original corpus; keep all-indicator Bronze completeness blocked until per-indicator dataset mapping is complete and source calendars are signed"
 }
