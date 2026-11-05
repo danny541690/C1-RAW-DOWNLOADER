@@ -8,6 +8,8 @@ on:
       - 'tests/test_v095_bronze_release_gate_98.py'
       - 'governance/v095/BRONZE_RELEASE_98_PERCENT_POLICY_V2_20261105.json'
       - 'governance/v095/202609_BRONZE_TWO_GATE_ACCEPTANCE_V1.json'
+      - 'governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json'
+      - 'governance/v095/202609_BRONZE_FULL_RULE_LOGIC_REVIEW_98PCT_20261105.json'
   workflow_dispatch:
 permissions:
   contents: read
@@ -49,6 +51,7 @@ jobs:
           cp scripts/v095_bronze_release_gate_98.py policy_sync/
           cp tests/test_v095_bronze_release_gate_98.py policy_sync/
           cp governance/v095/202609_SEVEN_SOURCE_FINAL_SCOPE_AUDIT_20261105.json policy_sync/
+          cp governance/v095/202609_BRONZE_FULL_RULE_LOGIC_REVIEW_98PCT_20261105.json policy_sync/
           cd policy_sync && sha256sum * > FILE_SHA256SUMS.txt
       - name: Preserve exact audited rules for Drive sync
         uses: actions/upload-artifact@v4
