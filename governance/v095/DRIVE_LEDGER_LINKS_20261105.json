@@ -1,0 +1,63 @@
+{
+  "schema": "V095_DRIVE_LEDGER_LINKS_V1",
+  "as_of": "2026-11-05",
+  "note": "Native Google Sheets created and read back; GitHub workflows do not yet have verified append permissions / CAS to these sheets.",
+  "ledgers": [
+    {
+      "name": "SOURCE_REGISTRY",
+      "spreadsheet_id": "1fVw9WOz6ugwHBvYEVDqJQ-E-vou-0l9_pbOx-0HXf9s",
+      "readback_rows": 9,
+      "url": "https://docs.google.com/spreadsheets/d/1fVw9WOz6ugwHBvYEVDqJQ-E-vou-0l9_pbOx-0HXf9s/edit",
+      "verified_readback": true
+    },
+    {
+      "name": "DATASET_CONTRACTS",
+      "spreadsheet_id": "1NOrdUqve_G-Bl4hmAkPr6GdP5rmMfEOXFpq7cAmKHos",
+      "readback_rows": 1,
+      "url": "https://docs.google.com/spreadsheets/d/1NOrdUqve_G-Bl4hmAkPr6GdP5rmMfEOXFpq7cAmKHos/edit",
+      "verified_readback": true
+    },
+    {
+      "name": "TASK_LEDGER",
+      "spreadsheet_id": "1t7u0_kNjLoRE9QNxPEqz3HHvn8EmKsGOTpuS8KDzAq0",
+      "readback_rows": 2,
+      "url": "https://docs.google.com/spreadsheets/d/1t7u0_kNjLoRE9QNxPEqz3HHvn8EmKsGOTpuS8KDzAq0/edit",
+      "verified_readback": true
+    },
+    {
+      "name": "MANIFEST_INDEX",
+      "spreadsheet_id": "1Xd1fR45sVrzlU3Jc8uresqzI2tXaxmG0aCNfiTi9Ohs",
+      "readback_rows": 1,
+      "url": "https://docs.google.com/spreadsheets/d/1Xd1fR45sVrzlU3Jc8uresqzI2tXaxmG0aCNfiTi9Ohs/edit",
+      "verified_readback": true
+    },
+    {
+      "name": "CHECKPOINTS",
+      "spreadsheet_id": "14yVAFT84aAIfIFO9ON2i9XIjqpkQdGjMYzTpXVGH1lc",
+      "readback_rows": 1,
+      "url": "https://docs.google.com/spreadsheets/d/14yVAFT84aAIfIFO9ON2i9XIjqpkQdGjMYzTpXVGH1lc/edit",
+      "verified_readback": true
+    },
+    {
+      "name": "ISSUE_REPAIR_HISTORY",
+      "spreadsheet_id": "1EPduIXonrF1Pd2j-BbMoPrfxrsrI_kSzWZPaggZMJQY",
+      "readback_rows": 16,
+      "url": "https://docs.google.com/spreadsheets/d/1EPduIXonrF1Pd2j-BbMoPrfxrsrI_kSzWZPaggZMJQY/edit",
+      "verified_readback": true
+    },
+    {
+      "name": "RUN_LOGS",
+      "spreadsheet_id": "1anBVjOkc0u5ULz0I6CGASrusuvdjP4dC-WvkqMyE_o0",
+      "readback_rows": 2,
+      "url": "https://docs.google.com/spreadsheets/d/1anBVjOkc0u5ULz0I6CGASrusuvdjP4dC-WvkqMyE_o0/edit",
+      "verified_readback": true
+    },
+    {
+      "name": "DATA_QUALITY_STATES",
+      "spreadsheet_id": "1KODg0L5184XMNrVPG6AHimVQ8khL-xgkmx1hPi9Bnk4",
+      "readback_rows": 1,
+      "url": "https://docs.google.com/spreadsheets/d/1KODg0L5184XMNrVPG6AHimVQ8khL-xgkmx1hPi9Bnk4/edit",
+      "verified_readback": true
+    }
+  ]
+}
