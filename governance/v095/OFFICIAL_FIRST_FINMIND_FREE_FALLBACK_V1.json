@@ -85,5 +85,13 @@
     "VALIDATED_SOURCE_GAP",
     "BRONZE_ACCEPTED"
   ],
-  "note": "Three attempts is a limit for a bounded official download, not proof of a missing official dataset. FinMind is an evidence-bound secondary provider, never official-source impersonation."
+  "note": "Official max 3 including first call. Confirm legitimate missing with calendars; FinMind Free only equivalent verified gap, never overwrite. Consult scoped 98% release gate for Bronze promotion.",
+  "release_quality_policy_path": "governance/v095/BRONZE_RELEASE_98_PERCENT_POLICY_V2_20261105.json",
+  "release_quality_policy_minimums": {
+    "expected_unit_coverage": 0.98,
+    "valid_content_record_correctness": 0.98,
+    "per_active_dataset_market_and_period": true
+  },
+  "release_quality_scope_notes": "98% is user approved quality threshold. It does not relax SHA/CRC for admitted files, critical identity/date/PIT errors, missing full required trading day, or release authorization. Inactive/unavailable datasets and 443 formula completeness do not block unrelated validated dataset releases.",
+  "operational_integration_status": "DECISION_ENGINE_EXISTS_AND_TESTED; NOT_ALL_EXISTING_DOWNLOAD_WORKERS_INTEGRATED"
 }
