@@ -1,0 +1,78 @@
+name: JARVIS v0.95 ten-minute continuation supervisor
+on:
+  schedule:
+    - cron: '7,17,27,37,47,57 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-ten-minute-continuation.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: jarvis-v095-continuation-supervisor
+  cancel-in-progress: false
+jobs:
+  supervise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read live state and produce safe continuation decision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GH_RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import datetime,json,os,pathlib,urllib.request
+          out=pathlib.Path("v095_supervisor")
+          out.mkdir(exist_ok=True)
+          base="https://api.github.com/repos/"+os.environ["GH_REPO"]
+          headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],
+                   "Accept":"application/vnd.github+json",
+                   "X-GitHub-Api-Version":"2022-11-28"}
+          def read_json(path):
+              with urllib.request.urlopen(urllib.request.Request(base+path,headers=headers),timeout=25) as f:
+                  return json.load(f)
+          flags=json.loads(pathlib.Path("governance/v095/PHASE1_FLAGS.json").read_text())
+          releases=(flags.get("BULK_COPY_APPROVED") is True or flags.get("RELEASE_APPROVED") is True)
+          result={"created_at_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                  "supervisor_run_id":os.getenv("GH_RUN_ID"),"check_interval_minutes_requested":10,
+                  "release_safe":not releases,"observed_runs":[],"action":"MONITOR_ONLY",
+                  "reason":"NO_VERIFIED_V095_MIGRATION_AND_REPAIR_DISPATCH",
+                  "historical_inventory_complete":False,"original_gap_repair_live":False,
+                  "v095_bulk_migration_enabled":False}
+          if releases:
+              result["action"]="BLOCKED_UNSAFE_FLAGS"
+          else:
+              try:
+                  runs=read_json("/actions/runs?per_page=100")["workflow_runs"]
+                  matches=[x for x in runs if x.get("path","").endswith("v095-combined-prelaunch-3lane.yml")][:6]
+                  result["observed_runs"]=[{"id":x["id"],"status":x["status"],"conclusion":x.get("conclusion"),
+                                           "head_sha":x.get("head_sha")} for x in matches]
+                  if not matches:result["reason"]="NO_COMBINED_TEST_RUN"
+                  elif matches[0]["status"]!="completed":result["reason"]="COMBINED_TEST_IN_PROGRESS"
+                  elif matches[0]["conclusion"]=="success":
+                      result["reason"]="ISOLATED_TEST_PASS; REAL_DATA_AND_DRIVE_CAS_STILL_BLOCKED"
+                  else:
+                      result["reason"]="ISOLATED_TEST_FAILED; REQUIRE_ISSUE_FIX_AND_NEW_COMMIT"
+              except Exception as e:
+                  result["action"]="MONITOR_ERROR"
+                  result["reason"]=type(e).__name__+":"+str(e)
+          (out/"supervisor.json").write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n")
+          print(json.dumps(result,indent=2,ensure_ascii=False))
+          if result["action"] in ("MONITOR_ERROR","BLOCKED_UNSAFE_FLAGS"):raise SystemExit(1)
+          PY
+      - name: Retain heartbeat / blocked-state evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-supervisor-${{ github.run_id }}
+          path: v095_supervisor/
+          retention-days: 30
+          if-no-files-found: warn
