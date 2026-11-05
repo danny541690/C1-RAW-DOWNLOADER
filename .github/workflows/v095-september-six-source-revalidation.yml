@@ -1,0 +1,77 @@
+name: JARVIS v0.95 September six-source Bronze policy and completeness revalidation
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-september-six-source-revalidation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-september-six-source-revalidation
+  cancel-in-progress: false
+jobs:
+  september-six-source:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - lane: twse-tpex
+            source_a: TWSE
+            source_b: TPEx
+          - lane: mops-tdcc
+            source_a: MOPS
+            source_b: TDCC
+          - lane: taifex-ndc
+            source_a: TAIFEX
+            source_b: NDC
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test official priority and conditional FinMind Free policy
+        run: python -m unittest -v tests/test_v095_official_first_fallback.py
+      - name: Revalidate September frozen receipts for both source families
+        run: |
+          python tests/v095_202609_six_source_policy_validation.py ${{ matrix.source_a }}
+          python tests/v095_202609_six_source_policy_validation.py ${{ matrix.source_b }}
+      - name: Save per-source audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-sept-revalidation-${{ matrix.lane }}-${{ github.run_id }}
+          path: v095_sept_qa/
+          retention-days: 60
+          if-no-files-found: warn
+  policy-bundle:
+    needs: [september-six-source]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Bundle exact GitHub policy and source receipt for Drive sync
+        run: |
+          mkdir -p policy_sync/governance policy_sync/engine policy_sync/tests
+          cp governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json policy_sync/governance/
+          cp governance/v095/202609_BRONZE_MIGRATION_RESUME_20261105.json policy_sync/governance/
+          cp governance/v095/202609_BRONZE_GATE_STATUS_20261105.json policy_sync/governance/
+          cp governance/v095/DATASET_CONTRACTS.csv policy_sync/governance/
+          cp scripts/v095_official_first_fallback.py policy_sync/engine/
+          cp tests/test_v095_official_first_fallback.py policy_sync/tests/
+          cd policy_sync && sha256sum governance/* engine/* tests/* > FILE_SHA256SUMS.txt
+      - name: Retain downloadable exact policy bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-official-first-policy-drive-sync-${{ github.run_id }}
+          path: policy_sync/
+          retention-days: 90
+          if-no-files-found: error
