@@ -29,7 +29,7 @@ def inspect_bytes(raw,filename):
   x=Tables();x.feed(raw[:800000].decode("utf-8","replace"))
   n=sum(numeric(a) for a in x.cells)
   result.update(format="html_table",table_count=x.table_count,cell_samples=len(x.cells),numeric_sample_count=n,row_evidence=bool(x.table_count and x.cells))
- elif low.endswith((".csv",".raw")):
+ elif low.endswith((".csv",".raw")) and not raw.lstrip().startswith((b"{",b"[")):
   rows=list(csv.reader(io.StringIO(raw[:150000].decode("utf-8-sig","replace"))))
   n=sum(numeric(x) for row in rows[:300] for x in row)
   result.update(format="csv_candidate",sample_rows=len(rows),numeric_sample_count=n,row_evidence=len(rows)>2)
