@@ -1,0 +1,56 @@
+{
+  "schema": "V095_SEVEN_SOURCE_DRIVE_PROVENANCE_PILOT_V1",
+  "policy": "CANDIDATE_ONLY; selected historical-folder samples not all historical coverage; compute source sha from actual bytes; do not infer PIT or all-market",
+  "items": [
+    {
+      "source": "TWSE",
+      "file_id": "1nHhuMwIqEQxcqCSVEFgqpFohj5MLXhI2",
+      "format": "zip",
+      "folder_period": "2007-12",
+      "expected_min_bytes": 30000
+    },
+    {
+      "source": "TPEx",
+      "file_id": "1E86r6y70-bWU8TzvCeHGk09iL1WNLdHh",
+      "format": "zip",
+      "folder_period": "2007-12",
+      "expected_min_bytes": 30000
+    },
+    {
+      "source": "MOPS",
+      "file_id": "1UcDAF5nrwV-uHoE74KUg2qIxQvBUNIX3",
+      "format": "html",
+      "folder_period": "2007-12",
+      "expected_min_bytes": 30000
+    },
+    {
+      "source": "NDC",
+      "file_id": "1Ty74zKGSivXNHmA3WDG4VjeOKmWpA3n4",
+      "format": "json",
+      "folder_period": "2000-01",
+      "expected_min_bytes": 500
+    },
+    {
+      "source": "TAIFEX",
+      "file_id": "1eSUHhw0AiVqfYRnQwFJhc67tFhTFsw27",
+      "format": "csv",
+      "folder_period": "2007-12",
+      "expected_min_bytes": 30000
+    },
+    {
+      "source": "FinMind",
+      "file_id": "1Hmp_YuxIVtIPUF65lrOsh_H5dviakrVG",
+      "format": "zip",
+      "folder_period": "2000-01",
+      "expected_min_bytes": 500
+    },
+    {
+      "source": "TDCC",
+      "file_id": "1JGfdHn04dFqfn06DGAYInwV9pKskCPlu",
+      "format": "html",
+      "folder_period": "2025-12",
+      "expected_sha256": "bbc45508223183dcf903ec8e73072a5b25608cb20a6654e660a5864c69dce616",
+      "expected_min_bytes": 500
+    }
+  ]
+}
