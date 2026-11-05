@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-tdcc-202609-native-bronze-migration.yml'
+      - 'scripts/v095_tdcc_202609_native_bronze_migration.py'
   workflow_dispatch:
   schedule:
     - cron: '7,22,37,52 * * * *'
@@ -36,7 +37,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_tdcc_202609_native_bronze_migration.py --shard ${{ matrix.shard }} --limit 60
+        run: python scripts/v095_tdcc_202609_native_bronze_migration.py --shard ${{ matrix.shard }} --limit 60 --max-batches 10
       - name: Retain actual Drive migration receipt
         if: always()
         uses: actions/upload-artifact@v4
