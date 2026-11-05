@@ -42,10 +42,13 @@ def main():
   document=b.decode("cp950")
   market="TSE" if "revenue_sii_" in x["name"] else "OTC"
   if "115年9月份" not in document:raise ValueError("WRONG_REVENUE_MONTH")
-  count=0
+  count=0;excluded=0
   for tr in re.findall(r"<tr\b[^>]*\balign\s*=\s*['\"]?right['\"]?[^>]*>(.*?)</tr>",document,flags=re.I|re.S):
    cells=[clean(y) for y in re.findall(r"<td\b[^>]*>(.*?)</td>",tr,flags=re.I|re.S)]
-   if len(cells)!=11 or not re.fullmatch(r"\d{4}",cells[0]):continue
+   if len(cells)!=11:continue
+   if not re.fullmatch(r"\d{4}",cells[0]):
+    if re.fullmatch(r"[0-9A-Za-z]{4,8}",cells[0]):excluded+=1
+    continue
    key=(market,cells[0])
    if key in seen:raise ValueError("MOPS_DUPLICATE_COMPANY_PER_MARKET")
    seen.add(key);count+=1
@@ -63,7 +66,8 @@ def main():
     row[key_out]=str(vv/D("100000")) if vv is not None else None
    records.append(row)
   per[x["name"]]=count
-  if count!=x["rows"]:raise ValueError("MOPS_REPORT_ROW_COUNT_DIFFERENCE_"+x["name"]+"_"+str(count))
+  if excluded:issues.append({"source_original":x["name"],"excluded_non_four_digit_count":excluded,"reason":"MARKET_SECURITY_CLASSIFICATION_REQUIRED"})
+  if count+excluded!=x["rows"]:raise ValueError("MOPS_REPORT_ROW_COUNT_DIFFERENCE_"+x["name"]+"_"+str(count)+"+"+str(excluded))
  a=s.files().list(q=f"'{DEST}' in parents and name = '{MONTH}' and trashed = false",fields="files(id)",pageSize=50).execute()["files"]
  if len(a)>1:raise ValueError("AMBIGUOUS_MONTH")
  folder=a[0]["id"] if a else s.files().create(body={"name":MONTH,"mimeType":"application/vnd.google-apps.folder","parents":[DEST]},fields="id").execute()["id"]
