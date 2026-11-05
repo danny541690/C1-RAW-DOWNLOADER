@@ -56,7 +56,7 @@ def main():
       if raw is not None:
         try:
           if source=="NDC":
-            if not raw.startswith(b"PK\\x03\\x04"):raise ValueError("NDC_NOT_XLSX")
+            if not raw.startswith(bytes([80,75,3,4])):raise ValueError("NDC_NOT_XLSX")
             import io,zipfile
             with zipfile.ZipFile(io.BytesIO(raw)) as z:
               if z.testzip() is not None:raise ValueError("BAD_XLSX_CRC")
