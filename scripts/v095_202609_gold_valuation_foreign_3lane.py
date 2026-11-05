@@ -10,7 +10,7 @@ import pyarrow as pa,pyarrow.parquet as pq
 D=decimal.Decimal
 ASOF=datetime.date(2026,11,6)
 SOURCES={
- "tse-valuation":{"id":"1-yw7DxlsuNXXRjVRcwOfU5AjjhPqMwbq","expected":21620,"fields":["pe","pb","dividend_yield_pct"]},
+ "tse-valuation":{"id":"1-yw7DxlsuNXXRjVRcwOfU5AjjhPqMwbq","expected":21620,"fields":["pb","dividend_yield_pct"],"optional_fields":["pe"]},
  "tpex-valuation":{"id":"1h9PU-3stNNWyT_SXPTtNeltbEm8QSQ1t","expected":17744,"fields":["pe","pb","dividend_yield_pct"]},
  "tpex-foreign-holdings":{"id":"1zgVmOyNvpjhzqE9QZFIPqiOCy2IOntFS","expected":17827,"fields":["foreign_holdings_shares","foreign_ownership_pct","issued_shares"]}
 }
@@ -79,7 +79,7 @@ def main():
  file=save(s,dest,"JARVIS_v095_202609_GOLD_"+lane+"_DESCRIPTIVE_R1.parquet",b)
  report={"scope":lane,"source_Silver_file_id":spec["id"],"source_Silver_sha256":sha(raw),
   "source_rows":len(rows),"gold_rows":len(out),"gold_parquet_id":file,"gold_parquet_sha256":sha(b),
-  "source_numeric_field_names":spec["fields"],"exceptions":dict(report_counts),
+  "source_numeric_field_names":spec["fields"],"optional_fields_missing":[x for x in spec.get("optional_fields",[]) if x not in t.schema.names],"exceptions":dict(report_counts),
   "status":"DESCRIPTIVE_GOLD_DATASET_PUBLISHED","available_asof":"2026-11-06",
   "historical_backtest_allowed":False,"pit_verified":False,"security_type_verified":False,
   "completeness_443_indicators_certified":False,
