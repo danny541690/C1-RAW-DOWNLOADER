@@ -1,0 +1,39 @@
+name: JARVIS v0.95 Sep typed Silver final scoped descriptive Gold input QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-september-silver-scoped-release.yml'
+      - 'scripts/v095_202609_silver_scoped_descriptive_release.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-scoped-silver-release
+  cancel-in-progress: false
+jobs:
+  scoped-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Read back typed R2 Silver original and emit strict descriptive-only release manifest
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_silver_scoped_descriptive_release.py
+      - name: Preserve actual release QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-silver-scoped-gold-input-${{ github.run_id }}
+          path: v095_202609_silver_release/
+          retention-days: 90
+          if-no-files-found: warn
