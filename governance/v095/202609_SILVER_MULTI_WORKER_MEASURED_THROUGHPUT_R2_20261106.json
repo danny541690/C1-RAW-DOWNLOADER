@@ -1,0 +1,91 @@
+{
+  "schema": "JARVIS_V095_202609_PARALLEL_SILVER_MEASURED_EXECUTION_R2",
+  "as_of": "2026-11-06",
+  "note": "One-time push/manual workflows for September pilot, not recurring daily schedule. Source-native row candidates do not equal fully normalized publishable Silver.",
+  "decision": "four concurrent workers maximum per batch; two batches success; avoid retrying finished source SHA; future lanes fill independent dataset partitions",
+  "historical_comparison": [
+    {
+      "workflow": "price R2",
+      "run": 42053061181,
+      "rows": 39622,
+      "elapsed_seconds_approx": 38
+    },
+    {
+      "workflow": "MOPS revenue R2",
+      "run": 42052917870,
+      "rows": 1980,
+      "elapsed_seconds_approx": 26
+    },
+    {
+      "workflow": "TDCC weekly",
+      "run": 42051648685,
+      "rows": 276097,
+      "elapsed_seconds_approx": 2378
+    }
+  ],
+  "parallel_waves": [
+    {
+      "wave": "TWSE_TPEx_4_lane",
+      "run": 42063172870,
+      "workers": 4,
+      "elapsed_seconds": 40,
+      "outputs": 16,
+      "rows": 330067,
+      "output_format": "native source rows with raw JSON and SHA",
+      "lanes": [
+        "twse-chip",
+        "twse-financing",
+        "tpex-chip",
+        "tpex-financing"
+      ],
+      "status": "SUCCESS"
+    },
+    {
+      "wave": "TAIFEX_NDC_4_lane_R1",
+      "run": 42063622021,
+      "workers": 4,
+      "elapsed_seconds": 64,
+      "distinct_originals": 17,
+      "rows": 326402,
+      "outputs": 17,
+      "source_file_sha_duplicate_aliases": 3,
+      "status": "SUCCESS",
+      "caveat": "R1 observational month field ambiguous; corrected with immutable R2"
+    },
+    {
+      "wave": "TAIFEX_NDC_4_lane_R2",
+      "run": 42063934536,
+      "workers": 4,
+      "status": "IN_PROGRESS_AT_LAST_SNAPSHOT",
+      "fix": "archive_month vs observation_date"
+    }
+  ],
+  "max_concurrent_recommended_initial": 4,
+  "scaling_plan": {
+    "reason": "Google Drive read/write latency and GitHub Actions environment startup, avoid 8 concurrent Drive writers before throttle baseline",
+    "bronze_workers": 1,
+    "silver_workers": 3,
+    "gold_workers": 0,
+    "until_quality_release": "Gold remains disabled for candidate-only partitions",
+    "future_after_qa": {
+      "bronze": 2,
+      "silver": 3,
+      "gold": 1
+    }
+  },
+  "completeness": {
+    "source_dataset_groups_converted_to_candidate": "TWSE+TPEx 16 additional partitions plus 3 earlier source families and TDCC",
+    "market_data_family_quality": "not all fully typed or semantic-normalized; new 16 generic partitions store native_row_json",
+    "taifex_ndc": "17 additional raw-to-Parquet candidates, source archive scope is not guaranteed observation scope",
+    "unmapped_market_stock_types": "still pending",
+    "mops_reports_other_than_revenue": "pending",
+    "publishable_gold": "NO"
+  },
+  "release_gate": "Per approved active source+dataset+market+period, >=98% download and content correctness; evidence and source calendar required; critical SHA/PIT errors quarantined",
+  "recovery": "parquet filenames immutable per revision, repeated jobs reuse identical SHA and reject mismatches, keep old files; per-lane QA artifact; one writer per source-dataset",
+  "sources": {
+    "four_lanes": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42063172870",
+    "taifex_ndc_r1": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42063622021",
+    "taifex_ndc_r2": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42063934536"
+  }
+}
