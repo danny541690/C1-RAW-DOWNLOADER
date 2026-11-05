@@ -28,8 +28,8 @@ def listing(svc,parent):
  return out
 def main():
  p=argparse.ArgumentParser();p.add_argument("--shard",type=int,required=True);p.add_argument("--shards",type=int,default=3)
- p.add_argument("--limit",type=int,default=60);args=p.parse_args()
- assert 0<=args.shard<args.shards and 1<=args.limit<=200
+ p.add_argument("--limit",type=int,default=60);p.add_argument("--max-batches",type=int,default=10);args=p.parse_args()
+ assert 0<=args.shard<args.shards and args.limit==60 and 1<=args.max_batches<=12
  svc=api()
  for ident in (SRC,DST):
   f=svc.files().get(fileId=ident,fields="id,mimeType,name").execute()
@@ -44,7 +44,9 @@ def main():
  report={"source":"TDCC","period":"2026-09","shard":args.shard,"source_folder_total":len(source),
   "shard_items":len(shard),"expected_batches":len(batches),"existing_archives":len(existing),
   "downloaded_this_run":0,"saved_this_run":0,"errors":[],"status":"BLOCKED_NOT_COMPLETE"}
+ completed_batches=0
  for idx,batch in enumerate(batches):
+  if completed_batches>=args.max_batches:break
   name=prefix+f"{idx:05d}.zip"
   if name in existing:continue
   archive=io.BytesIO();manifest=[]
@@ -70,9 +72,9 @@ def main():
   if digest(read)!=digest(data):
    report["errors"].append({"archive":name,"error":"DRIVE_UPLOAD_SHA256_READBACK_MISMATCH"});break
   report["saved_this_run"]+=len(batch)
+  completed_batches+=1
   report["last_verified_archive"]={"id":result["id"],"name":name,"sha256":digest(data),"members":len(batch)}
-  # One batch per shard per run, continuation via new scheduled job.
-  break
+  # Continue only to the bounded batch budget; next run resumes by verified archive names.
  report["status"]="PARTIAL_MIGRATION" if report["saved_this_run"] else ("NO_ACTION_OR_BLOCKED")
  os.makedirs("tdcc_202609_migration",exist_ok=True)
  with open("tdcc_202609_migration/shard_"+str(args.shard)+".json","w") as out:json.dump(report,out,ensure_ascii=False,indent=2)
