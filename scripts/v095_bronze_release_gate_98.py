@@ -15,6 +15,14 @@ def admit(s):
     if exp==0:return {"status":"NOT_DUE" if s.get("source_not_due_proven",False) else "UNKNOWN","reasons":["NO_POSITIVE_EXPECTED_DENOMINATOR"]}
     if inspected==0 or have>exp or valid>inspected:
         return {"status":"UNKNOWN","reasons":["NO_VALID_CORRECTNESS_DENOMINATOR_OR_INCONSISTENT_COUNTS"]}
+    # Correctness cannot be declared from arbitrary one-row spot checks.
+    method=s.get("content_audit_method")
+    if method not in ("EXHAUSTIVE","APPROVED_SAMPLE"):
+        return {"status":"UNKNOWN","reasons":["CONTENT_AUDIT_METHOD_UNVERIFIED"]}
+    if method=="APPROVED_SAMPLE" and not s.get("sampling_plan_approved",False):
+        return {"status":"UNKNOWN","reasons":["SAMPLING_PLAN_UNAPPROVED"]}
+    if method=="EXHAUSTIVE" and inspected!=s.get("inspectable_expected_records",inspected):
+        return {"status":"UNKNOWN","reasons":["NOT_ACTUALLY_EXHAUSTIVE"]}
     # A single bad raw object is NEVER accepted into a 98% passing set.
     if s.get("unisolated_critical_errors",0)!=0:
         return {"status":"QUARANTINE","reasons":["CRITICAL_ERRORS_NOT_ISOLATED"]}
