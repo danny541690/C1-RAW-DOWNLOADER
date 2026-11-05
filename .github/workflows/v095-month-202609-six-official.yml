@@ -1,0 +1,49 @@
+name: JARVIS v0.95 2026-09 six-official monthly pilot
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-month-202609-six-official.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-month-202609-six-official
+  cancel-in-progress: false
+jobs:
+  monthly-candidate:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - lane: twse-tpex
+            sources: TWSE,TPEx
+          - lane: mops-tdcc
+            sources: MOPS,TDCC
+          - lane: taifex-ndc
+            sources: TAIFEX,NDC
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install bounded candidate converter
+        run: python -m pip install --disable-pip-version-check 'pyarrow>=18,<23'
+      - name: Run 2026-09 official pilot, no FinMind and no formal Drive writes
+        env:
+          MONTH_SOURCES: ${{ matrix.sources }}
+        run: python tests/v095_six_official_month_202609.py --sources "$MONTH_SOURCES"
+      - name: Preserve original responses, Parquet candidate and explicit contract gaps
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-month-202609-${{ matrix.lane }}-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: monthly_202609_official_canary/
