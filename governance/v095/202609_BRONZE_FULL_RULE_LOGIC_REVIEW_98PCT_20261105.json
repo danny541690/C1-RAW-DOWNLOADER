@@ -1,0 +1,211 @@
+{
+  "schema": "JARVIS_V095_202609_BRONZE_END_TO_END_RULES_REVIEW_V2",
+  "as_of": "2026-11-05",
+  "decision": "APPROVED_POLICY_ONLY_NOT_PRODUCTION_RELEASE",
+  "user_quality_minimum": 0.98,
+  "observed": {
+    "tdcc_source_records_and_exact_sha": {
+      "expected": 10949,
+      "passed": 10949,
+      "bundles": 184,
+      "status": "COPIED_AND_SHA_PASS"
+    },
+    "twse_defined_native_units": {
+      "expected": 122,
+      "sha_pass": 122,
+      "status": "DEFINED_CORPUS_INTEGRITY_PASS"
+    },
+    "tpex_primary_units": {
+      "expected": 163,
+      "official_recovered": 9,
+      "all_primary_present": true,
+      "status": "DEFINED_CORPUS_INTEGRITY_PASS"
+    },
+    "mops_revenue": {
+      "native_units": 4,
+      "passed": 4,
+      "status": "DEFINED_CORPUS_INTEGRITY_PASS_ONLY"
+    },
+    "taifex": {
+      "non_tick_files": 19,
+      "distinct_source_sha": 16,
+      "alias_duplicates": 3,
+      "status": "REQUIRES_DATASET_DATE_SCOPE_EVIDENCE"
+    },
+    "ndc": {
+      "official_11509_xlsx_present": true,
+      "status": "SINGLE_MACRO_WORKBOOK_ONLY"
+    },
+    "finmind_free": {
+      "market_trading_days_202609": 20,
+      "crosschecked_stock_day_rows": 40,
+      "mismatch": 0,
+      "status": "SAMPLE_ONLY"
+    },
+    "ohlc_unparsed": {
+      "twse": 57,
+      "tpex": 412,
+      "positive_volume_and_no_numeric_price": 296,
+      "status": "UNCLASSIFIED_EXCEPTION_NOT_AUTOMATICALLY_BAD"
+    },
+    "candidate_contract_rows": 39,
+    "full_443_indicator_dependency_ready": false
+  },
+  "review_findings": [
+    {
+      "issue": "ALL_SOURCE_100_PERCENT_BLOCKER",
+      "severity": "BLOCKED_GO_LIVE",
+      "old": "Full all-source 100% and 443 indicators required before any release",
+      "correction": "98% independent PASS by active contracted dataset+market+period, inactive/unmapped flagged but not global blocker",
+      "verification": "scoped gate unit tests",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "SINGLE_AGGREGATE_PERCENTAGE",
+      "severity": "HIGH",
+      "old": "One combined 98% could conceal missing source or full market day",
+      "correction": "two independently measured rates >=98% per scoped family; no pooled numerator; full critical day missing blocks dependent market/date",
+      "verification": "per-dataset expected calendar and market scope",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "CHECKSUM_98_PERCENT_MISREAD",
+      "severity": "CRITICAL",
+      "old": "Could accept corrupt files as part of 2% errors",
+      "correction": "100% of ADMITTED raw bytes need SHA+CRC; corrupt isolated and excluded from approved numerator",
+      "verification": "integrity_count zero bad admitted",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "UNMEASURED_ACCURACY_98",
+      "severity": "CRITICAL",
+      "old": "few sample stock OHLC checks interpreted as all-stock correctness",
+      "correction": "correctness denominator with exhaustive or approved sampling plan; sampled metrics cannot imply full-population certainty",
+      "verification": "test unapproved sampling and unknown denominators",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "UNKNOWN_DENOMINATOR_AS_COMPLETENESS",
+      "severity": "HIGH",
+      "old": "missing official dataset universe treated as 100% or eternal global block",
+      "correction": "UNKNOWN dataset not certified, but doesn't block independent approved active scope",
+      "verification": "formal source+dataset+market+calendar scope ledger",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "CLOSURES_NOT_DUE_MISSING",
+      "severity": "HIGH",
+      "old": "all natural calendar dates demanded as trading records",
+      "correction": "nontrading and not-yet-published are separate exceptions, not missing or counted as fabricated zero",
+      "verification": "source-specific release calendar",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "OFFICIAL_RETRY_VS_FINMIND",
+      "severity": "HIGH",
+      "old": "three network errors assumed proven official missing, switch to FinMind unconditionally",
+      "correction": "official three total attempts incl initial, classify actual gap and equivalent free fields/PIT/licensing, never overwrite official",
+      "verification": "existing 11 fallback tests plus current 19 scoped tests",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "UNSAFE_VALUE_NORMALIZATION",
+      "severity": "CRITICAL",
+      "old": "prices missing represented as 0 or treated as corruption without classification",
+      "correction": "preserve literal original, quarantine affected field when ambiguous, classify 296 no numeric OHLC positive volume using official note",
+      "verification": "classification evidence ledger",
+      "status": "OPEN_DATA_CLASSIFICATION"
+    },
+    {
+      "issue": "TDCC_V093_MIGRATION_BLOCKER_STALE",
+      "severity": "HIGH",
+      "old": "claim TDCC native per-stock originals not migrated",
+      "correction": "mark exact 10949/10949 raw source IDs SHA verified and 184/184 ZIP bundles passed, separate derived weekly JSONL",
+      "verification": "GitHub Run 42026712758 native completion gate",
+      "status": "CORRECTED_EVIDENCE"
+    },
+    {
+      "issue": "TPEX_ALT_CSV_DOUBLE_COUNTING",
+      "severity": "MEDIUM",
+      "old": "five alternate failures double counted against nine missing primary daily JSON",
+      "correction": "163/163 defined primary expected units with official recovery; 5 alternate CSV holds classified as fallback route not missing primary",
+      "verification": "main manifest + recovery ZIP source ID/date",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "TAIFEX_ALIAS_DUPLICATES",
+      "severity": "MEDIUM",
+      "old": "19 files treated as 19 distinct datasets",
+      "correction": "19 files, three byte-identical aliases, 16 content-distinct records; preserve Bronze, dedup Silver by SHA and keys",
+      "verification": "per-file SHA readback, dataset semantics still pending",
+      "status": "PARTIALLY_RESOLVED"
+    },
+    {
+      "issue": "MOPS_ASOF_VS_REPORT_MONTH",
+      "severity": "HIGH",
+      "old": "September folder counts four revenue originals as whole MOPS as-of September coverage",
+      "correction": "distinguish report period from announcement/revision timestamp, financial and disclosure datasets are optional scopes until contracts approved",
+      "verification": "MOPS official published_at and source membership calendar",
+      "status": "OPEN_DATASET_SCOPE"
+    },
+    {
+      "issue": "NDC_SINGLE_WORKBOOK_AS_ALL_MACRO",
+      "severity": "HIGH",
+      "old": "one 11509 workbook counted as all 72 international/macro series",
+      "correction": "NDC 11509 is one observed dataset; external macro sources individually declare contracts or remain disabled",
+      "verification": "per-series source catalog and published calendar",
+      "status": "OPEN_DATASET_SCOPE"
+    },
+    {
+      "issue": "CRITICAL_PIT_LOOKAHEAD",
+      "severity": "CRITICAL",
+      "old": "post-hoc source latest values misused as historical knowledge",
+      "correction": "Bronze preserves raw; Silver PIT-sensitive signal blocked without evidence published_at/available_at, never silently infer publication time",
+      "verification": "PIT known/unknown gate",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "RELEASE_FLAG_POLICY_CONFUSION",
+      "severity": "HIGH",
+      "old": "setting threshold automatically flips RELEASE_APPROVED and permits Gold",
+      "correction": "policy approval != measured source PASS or production permission; PHASE1_FLAGS release stays false pending actual eligible dataset evidence",
+      "verification": "CI checks flags remain false",
+      "status": "CORRECTED_POLICY"
+    },
+    {
+      "issue": "INTEGRATED_DOWNLOADERS_NOT_FULLY_SWITCHED",
+      "severity": "HIGH",
+      "old": "decision-engine code mistaken for fully integrated automatic download workflow",
+      "correction": "record implementation status; existing full workers not yet all routed to official->FinMind decision engine",
+      "verification": "integration tests of every real Worker required",
+      "status": "OPEN_INTEGRATION"
+    },
+    {
+      "issue": "98_PERCENT_NOT_EQUAL_ACCURACY_CERTAINTY",
+      "severity": "MEDIUM",
+      "old": "pass means errors impossible",
+      "correction": "PASS_98 is policy acceptance not statistical guarantee; display inspected count/method and sample confidence/limitations",
+      "verification": "QA report",
+      "status": "CORRECTED_POLICY"
+    }
+  ],
+  "release_plan": {
+    "BRONZE_SCOPE_PASS_98": "only measured active dataset market period with both >=98%, source context, and no unisolated hard stop",
+    "PARTIAL": "release unaffected subscopes; missing dates/fields/indicators masked and repair queue persists",
+    "QUARANTINE": "damaged files, wrong security/date/market, PIT-sensitive unsafe derived signals",
+    "UNKNOWN": "contract/calendar or inspection denominator not established; do not call it complete, don't block unrelated scopes",
+    "SILVER": "convert PASS_98 subscopes; source-original format unchanged; no global 443 dependency gate",
+    "GOLD": "activate only indicators whose validated sources/warmup/release dates are available",
+    "actual_202609_production_status": "NOT_YET_MEASURED_AND_RELEASED_UNDER_NEW_98_PERCENT_METRIC"
+  },
+  "migration_versus_quality": "Validated v093->v095 original bytes are not proof every dataset was ever downloaded; keep these measurements separate",
+  "immutable_originals": true,
+  "no_new_raw_download_performed_in_this_policy_review": true,
+  "pointers": {
+    "new_policy": "governance/v095/BRONZE_RELEASE_98_PERCENT_POLICY_V2_20261105.json",
+    "release_engine": "scripts/v095_bronze_release_gate_98.py",
+    "source_fallback": "governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json",
+    "september_audit": "governance/v095/202609_SEVEN_SOURCE_FINAL_SCOPE_AUDIT_20261105.json",
+    "tdcc_verified_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42026712758"
+  }
+}
