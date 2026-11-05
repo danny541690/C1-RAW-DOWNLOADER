@@ -1,0 +1,46 @@
+name: JARVIS v0.95 2026-09 four-lane Silver dataset conversion
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-multi-silver-four-lane.yml'
+      - 'scripts/v095_202609_multi_silver_families.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-four-lane-silver
+  cancel-in-progress: false
+jobs:
+  silver-source-family:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        lane: [twse-chip, twse-financing, tpex-chip, tpex-financing]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Silver isolated runtime
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Convert source-native September source families to independent candidate Parquet partitions
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_multi_silver_families.py --lane ${{ matrix.lane }}
+      - name: Save actual per-lane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-silver-${{ matrix.lane }}-${{ github.run_id }}
+          path: v095_202609_multi_silver/
+          retention-days: 60
+          if-no-files-found: warn
