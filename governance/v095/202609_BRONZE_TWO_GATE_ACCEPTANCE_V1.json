@@ -1,5 +1,5 @@
 {
-  "schema": "JARVIS_V095_202609_BRONZE_TWO_GATE_SCOPE_V1",
+  "schema": "JARVIS_V095_202609_TWO_GATE_SCOPE_WITH_98_PERCENT_RELEASE_V2",
   "effective": "2026-11-05",
   "period": "2026-09",
   "user_goal": "copy v0.93 September originals into v0.95, official first missing repair, FinMind Free only if confirmed identical gaps, certify Bronze before Silver",
@@ -14,19 +14,23 @@
       "every copied archive verified by destination byte readback SHA256 and zip CRC, preserve source originals",
       "all missing, exceptions, alternate source and actual requests recorded"
     ],
-    "status": "PENDING_TDCC_NATIVE_COPY_COMPLETION",
-    "not_equivalent_to": "All possible official datasets or all 400 indicators validated"
+    "status": "NATIVE_SCOPE_HANDOFF_COMPLETE_WITH_SEPARATE_QUALITY_GATES",
+    "not_equivalent_to": "All possible official datasets or all 400 indicators validated",
+    "tdcc_complete_evidence": "TDCC 10949 native source IDs and SHA256 passed 184/184 bundles, Run 42026712758",
+    "note": "Native original copy completeness is not equivalent to numeric quality or complete dataset universe"
   },
   "gate_2_six_official_dataset_universe": {
     "pass_requirements": [
-      "Signed complete source/dataset matrix scoped to user's 400+ active indicators",
-      "Each dataset has actual availability and publication calendar and expected 2026-09 units",
-      "All expected units present or confirmed official non-offer/legitimate exception",
-      "FinMind Free gaps only where compatible dataset exists and official absence confirmed",
-      "Every source's native source attribution, licensing and PIT availability recorded"
+      "Approved dataset/date/market expected universe for each ACTIVE dataset only, with nontrading and not-yet-published exceptions excluded",
+      "Valid download coverage >=98% AND independently measured content correctness >=98% within each eligible scope, using explicit denominators",
+      "Quarantine every corrupted raw object and unisolated critical identity/date/PIT error; block entire missing market day for dependent indicators",
+      "Inactive, unavailable or currently unmatched indicator dependencies flagged DISABLED/UNKNOWN, not blockers for unrelated PASS_98 scopes",
+      "FinMind Free only for verified compatible official dataset gaps; save separately, never overwrite official originals"
     ],
-    "status": "BLOCKED_DATASET_UNIVERSE_NOT_YET_APPROVED"
+    "status": "INCREMENTAL_BY_APPROVED_ACTIVE_DATASET_NOT_GLOBAL_ALL_443"
   },
-  "silver_stage": "Do not promote formally until Gate 1 passes; only isolated candidate conversions allowed before Gate 2 is defined; formal all-index Silver requires Gate 2",
-  "release_approved": false
+  "silver_stage": "Allow Silver production for individually certified PASS_98 Bronze dataset scopes and validated safe subscopes; disable affected dependent indicators, retain full-system 443-indicator completion as separate later milestone",
+  "release_approved": false,
+  "user_approved_threshold": 0.98,
+  "status_note": "Policy approved by user; no production release asserted until measured scoped results and QA evidence. Legacy RELEASE_APPROVED remains false."
 }
