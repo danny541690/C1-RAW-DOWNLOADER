@@ -1,0 +1,45 @@
+name: JARVIS v0.95 September six-source real Drive Bronze byte audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-real-drive-byte-audit.yml'
+      - 'scripts/v095_202609_real_drive_bronze_audit.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-real-drive-byte-audit
+  cancel-in-progress: false
+jobs:
+  per-source-byte-audit:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC]
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Read source Drive objects and independently verify actual bytes
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_real_drive_bronze_audit.py --source ${{ matrix.source }}
+      - name: Preserve source actual-byte audit and blocked-gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-true-drive-byte-${{ matrix.source }}-${{ github.run_id }}
+          path: v095_202609_drive_byte_audit/
+          retention-days: 60
+          if-no-files-found: warn
