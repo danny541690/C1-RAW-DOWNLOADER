@@ -1,0 +1,89 @@
+{
+  "schema": "JARVIS_V095_BRONZE_OFFICIAL_FIRST_FINMIND_FREE_V1",
+  "version": "1.0",
+  "scope": "TSE_OTC_and_official_macroeconomic_datasets",
+  "effective_from": "2026-11-05",
+  "production_activation": false,
+  "priority": [
+    "REUSE_VERIFIED_V095_RAW",
+    "REUSE_VERIFIED_V093_RAW_WITH_PROVENANCE",
+    "OFFICIAL_DOWNLOAD_MAX_3_TOTAL_ATTEMPTS",
+    "CLASSIFY_OFFICIAL_GAP",
+    "FINMIND_FREE_ONLY_IF_EXACT_MATCH",
+    "VALIDATE_AND_QUARANTINE_OR_ADMIT"
+  ],
+  "official": {
+    "maximum_attempts_total": 3,
+    "includes_initial_request": true,
+    "retry_intervals_seconds": [
+      5,
+      20
+    ],
+    "retryable": [
+      "NETWORK_TIMEOUT",
+      "INCOMPLETE_READ",
+      "HTTP_429",
+      "HTTP_500_502_503_504",
+      "TEMPORARY_UPSTREAM_ERROR"
+    ],
+    "non_retryable": [
+      "INVALID_CONTRACT",
+      "SCHEMA_MISMATCH",
+      "DATE_MISMATCH",
+      "NON_TRADING_DAY",
+      "NOT_YET_PUBLISHED",
+      "OFFICIAL_DATA_NOT_OFFERED"
+    ],
+    "rate_limit_429": "RESPECT_RETRY_AFTER_AND_PAUSE_SOURCE; DO_NOT_CONSUME_RAPID_RETRIES",
+    "on_exhausted": "UNRESOLVED_OFFICIAL_DOWNLOAD_NOT_AUTOMATICALLY_PROVEN_MISSING"
+  },
+  "calendar": {
+    "rule": "USE_SOURCE_SPECIFIC_PUBLICATION_CALENDAR",
+    "non_trading_day_status": "EXPECTED_NO_DATA",
+    "disclosure_not_due_status": "NOT_YET_PUBLISHED"
+  },
+  "finmind_free": {
+    "enabled": true,
+    "never_auto_replace_official": true,
+    "require": [
+      "OFFICIAL_MISSING_CONFIRMED_NOT_ONLY_NETWORK_ERROR",
+      "DATASET_SUPPORTED_BY_FREE_TIER",
+      "DATASET_ID_AND_SECURITY_ID_MATCH",
+      "PERIOD_MATCH",
+      "FIELD_DEFINITION_UNIT_FREQUENCY_MATCH",
+      "MARKET_TSE_OTC_MATCH_WHERE_APPLICABLE",
+      "SOURCE_RELEASE_TIME_AND_PIT_SAFE",
+      "RATE_BUDGET_AVAILABLE"
+    ],
+    "on_unsupported": "RECORD_UNRESOLVED_NO_FABRICATED_BACKFILL",
+    "quota": "OFFICIAL_DOC_300_PER_HOUR_NO_TOKEN_OR_600_REGISTERED_WITH_TOKEN;CHECK_ACTUAL_RATE_HEADERS",
+    "global_source_throttle": "SHARED_HOURLY_COUNTER_REQUIRED_ACROSS_ALL_RUNNERS",
+    "source_label": "FINMIND_FREE_FALLBACK",
+    "allowed_data_license": "NONCOMMERCIAL_ONLY"
+  },
+  "acceptance": {
+    "raw_original_immutable": true,
+    "save_separate_official_and_finmind": true,
+    "sha256": true,
+    "zip_crc_when_applicable": true,
+    "response_date_and_source": true,
+    "bronze_record_provenance": true,
+    "source_specific_expected_calendar": true,
+    "duplicate_identical_sha": "REUSE_NOT_REDOWLOAD",
+    "conflict": "QUARANTINE_NOT_OVERWRITE",
+    "silver_entry_only_if_dataset_gate_pass": true
+  },
+  "exception_classifications": [
+    "EXPECTED_NON_TRADING_DAY",
+    "NOT_YET_PUBLISHED",
+    "OFFICIAL_NOT_OFFERED",
+    "NETWORK_EXHAUSTED_UNCONFIRMED",
+    "FINMIND_FREE_NOT_SUPPORTED",
+    "FIELD_OR_UNIT_MISMATCH",
+    "PIT_NOT_PROVEN",
+    "RATE_LIMIT_DEFERRED",
+    "VALIDATED_SOURCE_GAP",
+    "BRONZE_ACCEPTED"
+  ],
+  "note": "Three attempts is a limit for a bounded official download, not proof of a missing official dataset. FinMind is an evidence-bound secondary provider, never official-source impersonation."
+}
