@@ -81,7 +81,7 @@
       "drive_folder_id": "1fcWwV2qK_aoevqlDSc9_9aNJ6lKFmSQ2",
       "files": [
         {
-          "id": "1UKR0ErSjMbBUSxUGJdMWSgd1ZgGzOjCQ",
+          "id": "10FTidn55CQ8eG0Ne7zeOziOhGIRHaAtM",
           "name": "V095_BRONZE_202609_LEGACY_ADDITIONAL_EVIDENCE_INDEPENDENT_RAW_2026_LATEST_TO_200001_V1_units_0fe202b3435ff5a3d689.zip",
           "bytes": 463385
         },
@@ -306,5 +306,13 @@
       ],
       "sample_folders": []
     }
-  ]
+  ],
+  "discovered_20261105_correction": {
+    "issue": "stale Google Drive ID in v095 September TPEx provenance copy returned 404",
+    "old_file_id": "1UKR0ErSjMbBUSxUGJdMWSgd1ZgGzOjCQ",
+    "verified_v093_source": "1-LacMHLRFczb9I-LA3MddWRLwskMyy72",
+    "new_v095_file_id": "10FTidn55CQ8eG0Ne7zeOziOhGIRHaAtM",
+    "correction": "recopied from immutable v093 original, replace receipt ID, never delete source",
+    "source_sha256_recheck_pending": true
+  }
 }
