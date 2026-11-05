@@ -63,6 +63,22 @@ def validate_main(svc,source,report):
   statuses["RAW_SHA_PASS"]+=1
  report["legacy_raw_unit_status"]=dict(statuses)
  report["legacy_manifest_all_market_complete"]=manifest.get("all_market_complete",False)
+ trading=[(__import__("datetime").date(2026,9,1)+__import__("datetime").timedelta(days=i)).isoformat() for i in range(30)
+          if (__import__("datetime").date(2026,9,1)+__import__("datetime").timedelta(days=i)).weekday()<5 and i+1 not in (25,28)]
+ assert len(trading)==20
+ per_family=collections.defaultdict(list)
+ for unit in manifest["units"]:
+  if unit.get("kind")=="daily" and not unit["name"].startswith("csv_alternate_"):
+   family=unit["name"].split("_202609")[0]
+   per_family[family].append(unit.get("date"))
+ expected_families={"TWSE":6,"TPEx":8,"MOPS":0}[source]
+ assert len(per_family)==expected_families,"DAILY_DATASET_FAMILY_COUNT_MISMATCH"
+ for fam,actual_dates in per_family.items():
+  if len(actual_dates)!=20 or len(set(actual_dates))!=20 or sorted(actual_dates)!=trading:
+   raise ValueError("SEPTEMBER_DAILY_DATASET_DATE_MISMATCH:"+fam)
+ report["complete_20_day_dataset_families"]=len(per_family)
+ report["official_exchange_expected_trading_days"]=trading
+ report["date_coverage_for_defined_daily_families"]="20_OF_20_EACH"
  if source=="TWSE":assert statuses=={"RAW_SHA_PASS":122}
  if source=="MOPS":assert statuses=={"RAW_SHA_PASS":4}
  if source=="TPEx":
@@ -118,7 +134,8 @@ def verify_taifex(svc,report):
   h=sha(b);hashes[h]+=1
   if h in x["name"]:matched+=1
  assert len(f)==19
- report.update(taifex_non_tick_files=len(f),taifex_hash_suffix_verified=matched,
+ assert len(hashes)==16,"TAIFEX_EXPECTED_16_UNIQUE_NON_TICK_CONTENTS_MISMATCH"
+ report.update(taifex_unique_original_contents=len(hashes),taifex_non_tick_files=len(f),taifex_hash_suffix_verified=matched,
     taifex_identical_content_alias_extra=sum(n-1 for n in hashes.values() if n>1),
     taifex_tick_excluded_by_scope=True)
 def main():
