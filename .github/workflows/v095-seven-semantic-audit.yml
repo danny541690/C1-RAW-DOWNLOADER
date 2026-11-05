@@ -1,0 +1,44 @@
+name: JARVIS v0.95 7-source historical semantic data audit (read-only)
+on:
+  push:
+    branches: [test/jarvis-v095-one-shot-fast-20261105]
+    paths:
+      - .github/workflows/v095-seven-semantic-audit.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-seven-semantic-audit
+  cancel-in-progress: false
+jobs:
+  audit:
+    name: Raw dataset content / ${{ matrix.source }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TAIFEX, TDCC, FinMind]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-one-shot-fast-20261105
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth-httplib2 google-auth-oauthlib
+      - name: Validate actual source contents beyond archive metadata
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python tests/v095_seven_source_semantic_audit.py --source "${{ matrix.source }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-semantic-${{ matrix.source }}-${{ github.run_id }}
+          path: v095_semantic_audit/${{ matrix.source }}/report.json
+          retention-days: 14
+          if-no-files-found: warn
