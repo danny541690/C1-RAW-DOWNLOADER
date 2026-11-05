@@ -34,7 +34,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_real_drive_bronze_audit.py --source ${{ matrix.source }}
+        run: python -m scripts.v095_202609_real_drive_bronze_audit --source ${{ matrix.source }}
       - name: Preserve source actual-byte audit and blocked-gate evidence
         if: always()
         uses: actions/upload-artifact@v4
