@@ -39,8 +39,11 @@ def snapshot_tse(rows,input_sha):
  for r in rows:
   if r["trade_date"].isoformat()[:7]!="2026-09":raise ValueError("WRONG_PRICE_MONTH")
   key=(r["stock_id"],r["trade_date"])
-  if key in daily[r["stock_id"]]:raise ValueError("DUPLICATE_DAILY_KEY")
+  if r["trade_date"] in daily[r["stock_id"]]:raise ValueError("DUPLICATE_DAILY_KEY")
   daily[r["stock_id"]][r["trade_date"]]=r
+ expected_calendar=[datetime.date(2026,9,1)+datetime.timedelta(days=i) for i in range(30) if (datetime.date(2026,9,1)+datetime.timedelta(days=i)).weekday()<5 and i+1 not in (25,28)]
+ if len(expected_calendar)!=20:raise ValueError("BAD_OFFICIAL_CALENDAR")
+ expected_idx={d:i for i,d in enumerate(expected_calendar)}
  out=[];limits=collections.Counter()
  for stock,dated in daily.items():
   dates=sorted(dated)
@@ -61,12 +64,12 @@ def snapshot_tse(rows,input_sha):
     "output_usage":"DESCRIPTIVE_ONLY_NO_BACKTEST"
    }
    # Daily changes from consecutive available market-wide day only, never bridge missing stock trading day.
-   if i and (dates[i]-dates[i-1]).days<=5 and series[i-1]["close"] is not None and series[i-1]["close"]>0:
+   if i and expected_idx[dates[i]]-expected_idx[dates[i-1]]==1 and series[i-1]["close"] is not None and series[i-1]["close"]>0:
     feat["close_change_1d_pct"]=(c/series[i-1]["close"]-D(1))*D(100)
    else:feat["close_change_1d_pct"]=None
    # Strict windows: require each prior session in all 20 official trade dates, no missing price.
    for n in (5,10,20):
-    if i+1>=n and all(series[j]["close"] is not None for j in range(i-n+1,i+1)):
+    if i+1>=n and expected_idx[dates[i]]-expected_idx[dates[i-n+1]]==n-1 and all(series[j]["close"] is not None for j in range(i-n+1,i+1)):
      closes=[series[j]["close"] for j in range(i-n+1,i+1)]
      feat[f"SMA_{n}"]=sum(closes,D(0))/D(n)
      feat[f"close_vs_SMA_{n}_pct"]=(c/feat[f"SMA_{n}"]-D(1))*D(100) if feat[f"SMA_{n}"]>0 else None
