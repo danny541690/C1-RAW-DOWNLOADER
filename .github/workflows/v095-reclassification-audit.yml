@@ -1,0 +1,45 @@
+name: JARVIS v0.95 Seven-source v093 dataset reclassification audit (isolated)
+on:
+  push:
+    branches: [test/jarvis-v095-one-shot-fast-20261105]
+    paths:
+      - .github/workflows/v095-reclassification-audit.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-reclassification-audit
+  cancel-in-progress: false
+jobs:
+  reclassify:
+    name: Real historical classification shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-one-shot-fast-20261105
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive dependencies once
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth-httplib2 google-auth-oauthlib
+      - name: Verify v093 true dataset classification, unit/period/PIT gates
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python tests/v095_reclassification_actual_sources.py --shard "${{ matrix.shard }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-classification-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: v095_reclassification_audit/shard_${{ matrix.shard }}/report.json
+          retention-days: 30
+          if-no-files-found: warn
