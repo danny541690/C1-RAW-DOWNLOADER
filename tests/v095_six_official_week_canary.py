@@ -12,6 +12,12 @@ import pyarrow.parquet as pq
 
 DAYS=[(datetime.date(2026,10,19)+datetime.timedelta(days=i)).isoformat() for i in range(7)]
 ROOT=pathlib.Path("weekly_official_canary")
+# Confirmed fixed-window TWSE market exceptions; not a general-purpose calendar.
+EXCHANGE_CLOSURES={
+ "2026-10-23":("TYPHOON_EMERGENCY_CLOSURE","https://investoredu.twse.com.tw/pages/TWSE_HotNews.aspx?Page=4"),
+ "2026-10-24":("WEEKEND_SATURDAY","https://www.twse.com.tw/zh/trading/holiday.html"),
+ "2026-10-25":("WEEKEND_SUNDAY_AND_PUBLIC_HOLIDAY","https://www.twse.com.tw/zh/trading/holiday.html")
+}
 ROUTES={
   "TWSE":("https://www.twse.com.tw/rwd/zh/marginTrading/MI_MARGN?date={compact}&response=json",True),
   "TPEx":("https://www.tpex.org.tw/www/zh-tw/margin/sbl?date={slash}&response=json",True),
@@ -44,6 +50,13 @@ def main():
         "all_week_datasets_verified":False,"bronze_readback":False,
         "silver_readback":False,"gold_qa_only":False,"pit_verified":False,
         "production_release_approved":False,"status":"BLOCKED"}
+      if daily and day in EXCHANGE_CLOSURES:
+        reason,evidence=EXCHANGE_CLOSURES[day]
+        item.update(status="SKIPPED_VERIFIED_MARKET_CLOSED",market_closed_reason=reason,
+                    calendar_evidence_url=evidence,attempts=0,expected_trading_rows=False)
+        results.append(item)
+        print("OFFICIAL_WEEK_CANARY",source,day,item["status"],reason,flush=True)
+        continue
       raw=None
       for attempt in range(1,3):
         item["attempts"]=attempt
@@ -100,10 +113,12 @@ def main():
     "window":"2026-10-19/2026-10-25","requested_sources":sources,
     "FinMind_requested":False,"production_drive_writes":False,"release_approved":False,
     "formal_complete_week_certified":False,"results":results,
-    "pass_candidates":sum(x["status"].startswith("PASS") for x in results)}
+    "pass_candidates":sum(x["status"].startswith("PASS") for x in results),
+    "verified_market_closed_skips":sum(x["status"]=="SKIPPED_VERIFIED_MARKET_CLOSED" for x in results),
+    "date_scope_policy":"exchange closures apply only to equity daily endpoints; source snapshots have independent calendars"}
   (ROOT/("report_"+ "_".join(sources)+".json")).write_text(json.dumps(report,ensure_ascii=False,indent=2))
   # Deliberately fail on attempted-but-blocked routes, not on absence of
   # full-week certification (which remains a separate formal gate).
-  if any(x["status"]!="PASS_STRUCTURAL_CANDIDATE_ONLY" for x in results):
+  if any(x["status"] not in ("PASS_STRUCTURAL_CANDIDATE_ONLY","SKIPPED_VERIFIED_MARKET_CLOSED") for x in results):
     raise SystemExit(1)
 if __name__=="__main__":main()
