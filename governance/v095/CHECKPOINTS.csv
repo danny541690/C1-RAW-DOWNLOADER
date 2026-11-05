@@ -1,0 +1,1 @@
+"checkpoint_id","task_id","source_cursor","last_committed_file_id","last_committed_sha256","lease_owner","fencing_token","commit_ack","updated_at_utc"
