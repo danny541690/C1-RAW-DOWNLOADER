@@ -1,0 +1,40 @@
+name: JARVIS v0.95 Sep 2026 Bronze to Silver price Parquet candidate
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-silver-price-conversion.yml'
+      - 'scripts/v095_202609_silver_ohlcv_candidate.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-silver-price-candidate
+  cancel-in-progress: false
+jobs:
+  silver-price-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated Silver schema and Drive runtime
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Convert genuine September official Bronze files, retain SHA and nonnumeric exceptions
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_silver_ohlcv_candidate.py
+      - name: Preserve Silver QA candidate outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-silver-price-candidate-${{ github.run_id }}
+          path: v095_silver_202609/
+          retention-days: 90
+          if-no-files-found: warn
