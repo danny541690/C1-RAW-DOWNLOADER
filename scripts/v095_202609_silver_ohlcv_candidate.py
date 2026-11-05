@@ -70,12 +70,12 @@ def convert(s,source):
    if valid and not(prices[2]<=prices[0]<=prices[1] and prices[2]<=prices[3]<=prices[1]):raise ValueError('OHLC_LOGIC_ERROR')
    status='NUMERIC_OHLC' if valid else 'NONNUMERIC_OHLC_PENDING_CLASSIFICATION'
    if not valid:errs.append(dict(date=day,stock_id=code,volume=str(volume),native=[str(v[k]) for k in ('open','high','low','close')]))
-   records.append({'trade_date':day,'stock_id':code,'market':'TSE' if source=='TWSE' else 'OTC',
-      'name':str(v['name']).strip(),'open':str(prices[0]) if prices[0] is not None else None,
-      'high':str(prices[1]) if prices[1] is not None else None,'low':str(prices[2]) if prices[2] is not None else None,
-      'close':str(prices[3]) if prices[3] is not None else None,
+   records.append({'trade_date':dt.date.fromisoformat(day),'stock_id':code,'market':'TSE' if source=='TWSE' else 'OTC',
+      'name':str(v['name']).strip(),'open':prices[0],
+      'high':prices[1],'low':prices[2],
+      'close':prices[3],
       'volume_shares':int(volume) if volume is not None and volume==volume.to_integral_value() else None,
-      'turnover_億元':str(amount/D('100000000')) if amount is not None else None,
+      'turnover_億元':amount/D('100000000') if amount is not None else None,
       'raw_ohlc_json':json.dumps({k:v[k] for k in ('open','high','low','close')},ensure_ascii=False),
       'status':status,'source_zip_id':zipid,'source_member':member,'source_sha256':hashval,
       'source_row_index':position,'price_adjustment':'UNADJUSTED','published_at':None,
@@ -84,6 +84,9 @@ def convert(s,source):
  assert len({(x['trade_date'],x['stock_id']) for x in records})==len(records)
  assert len(set(x['trade_date'] for x in records))==20
  table=pa.Table.from_pylist(records)
+  assert pa.types.is_decimal(table.schema.field('open').type)
+  assert pa.types.is_decimal(table.schema.field('turnover_億元').type)
+  assert pa.types.is_date32(table.schema.field('trade_date').type)
  payload=io.BytesIO();pq.write_table(table,payload,compression='zstd')
  data=payload.getvalue();assert pq.read_table(io.BytesIO(data)).num_rows==len(records)
  return data,records,errs
@@ -104,7 +107,7 @@ def main():
  out=pathlib.Path('v095_silver_202609');out.mkdir(exist_ok=True)
  for source in ('TWSE','TPEx'):
   data,records,errors=convert(s,source)
-  name=f'JARVIS_v095_SILVER_202609_{source}_OHLCV_CANDIDATE_R1.parquet'
+  name=f'JARVIS_v095_SILVER_202609_{source}_OHLCV_CANDIDATE_R2.parquet'
   drive_id=save(s,folder,name,data)
   report={'source':source,'period':'2026-09','market':'TSE' if source=='TWSE' else 'OTC',
    'dates':len(set(x['trade_date'] for x in records)),'rows':len(records),
@@ -117,7 +120,7 @@ def main():
    'gold_allowed':False,'production_release_approved':False,
    'pending':['classify official nonnumeric OHLC','verify per-source Silver correctness using approved 98 percent measurement','verify publication time and historical identity'],
    'exception_examples':errors[:20]}
-  qa=save(s,folder,f'JARVIS_v095_SILVER_202609_{source}_QA_R1.json',json.dumps(report,ensure_ascii=False,indent=2).encode())
+  qa=save(s,folder,f'JARVIS_v095_SILVER_202609_{source}_QA_R2.json',json.dumps(report,ensure_ascii=False,indent=2).encode())
   report['qa_drive_id']=qa
   (out/(source+'.json')).write_text(json.dumps(report,ensure_ascii=False,indent=2))
   print(json.dumps({k:report[k] for k in ('source','dates','rows','numeric_ohlc_rows','nonnumeric_rows','numeric_ohlc_rate','parquet_drive_id','qa_drive_id','status')},ensure_ascii=False),flush=True)
