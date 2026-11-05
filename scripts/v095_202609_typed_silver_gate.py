@@ -131,7 +131,7 @@ def process(s,family,source_file,output_folder):
  return metrics
 def main():
  parser=argparse.ArgumentParser();parser.add_argument("--lane",choices=LANES,required=True);lane=parser.parse_args().lane
- s=svc();source_files=ls(s,ROOT);dest=folder(s,ROOT,"2026-09_TYPED_SILVER_QA_NOT_YET_GOLD")
+ s=svc();source_files=ls(s,ROOT);dest=folder(s,ROOT,"2026-09_TYPED_SILVER_QA_NOT_YET_GOLD_"+lane)
  output={"lane":lane,"period":"2026-09","families":{},"gate":"CANDIDATE_UNTIL_SOURCE_PIT_AND_SECURITY_MASTER","gold_enabled":False}
  for fam in LANES[lane]:
   src=[f for f in source_files if f["name"]==f"JARVIS_v095_SILVER_202609_{fam.replace('_','_')}_NATIVE_CANDIDATE_R1.parquet"]
