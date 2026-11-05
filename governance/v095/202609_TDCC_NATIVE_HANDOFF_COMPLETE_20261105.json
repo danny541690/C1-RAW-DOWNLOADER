@@ -1,0 +1,31 @@
+{
+  "schema": "JARVIS_V095_202609_NATIVE_BRONZE_HANDOFF_COMPLETION_CHECKPOINT",
+  "period": "2026-09",
+  "observed_at": "2026-11-05",
+  "verified_drives": {
+    "TDCC_v093_native_originals": 10949,
+    "TDCC_v095_originals_by_exact_id_and_sha256": 10949,
+    "TDCC_expected_native_bundles": 184,
+    "TDCC_observed_native_bundles": 184,
+    "TDCC_missing_bundles": 0,
+    "TDCC_final_completion_marker_drive_id": "1quqOCxylrHCsfsLNHwtVVyocU-6qdr6T",
+    "TDCC_final_gate": "TDCC_NATIVE_COPY_COMPLETE_PASS",
+    "TDCC_scheduler_disable_http_response": 204
+  },
+  "tdcc_completion_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42026712758",
+  "six_source_independent_byte_reaudit": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42034834590",
+  "six_source_status_at_checkpoint": {
+    "TWSE": "SUCCESS",
+    "TPEx": "SUCCESS",
+    "MOPS": "SUCCESS",
+    "TDCC": "IN_PROGRESS",
+    "TAIFEX": "SUCCESS",
+    "NDC": "SUCCESS"
+  },
+  "source_transfer_and_full_universe_are_different_gates": true,
+  "six_source_complete_dataset_contracts_approved": false,
+  "six_source_full_bronze_released": false,
+  "production_silver_released": false,
+  "reason": "v0.93->v0.95 known originals complete for TDCC; all official 2026-09 source/dataset contract universe remains unapproved; independent full TDCC archive byte scan in progress",
+  "finmind_usage_necessary_for_copy_gap": false
+}
