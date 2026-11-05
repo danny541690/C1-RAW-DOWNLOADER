@@ -1,0 +1,137 @@
+{
+  "schema": "JARVIS_V095_202609_SILVER_TO_GOLD_LATEST_EXECUTION_CHECKPOINT_V2",
+  "asof": "2026-11-06",
+  "scope": "September 2026 source periods; current-as-of descriptive Gold only, not point-in-time historical stock strategy verification",
+  "pipelines_executed": [
+    {
+      "run": 42124245180,
+      "summary": "TWSE price Gold and MOPS revenue Gold",
+      "status": "SUCCESS"
+    },
+    {
+      "run": 42124640971,
+      "summary": "OTC valuation & foreign holdings Gold succeeded, TWSE valuation first try failed",
+      "status": "PARTIAL_FAILURE_RECOVERED"
+    },
+    {
+      "run": 42124922973,
+      "summary": "TWSE valuation PB + dividend Gold recovered, PE missing in typed source",
+      "status": "SUCCESS"
+    },
+    {
+      "run": 42125226231,
+      "summary": "TWSE missing P/E repaired from real official native source; typed Silver R2 and Gold R2",
+      "status": "SUCCESS"
+    }
+  ],
+  "latest_gold_outputs": [
+    {
+      "feature_scope": "TSE_202609_technical_5_10_20d",
+      "rows": 21803,
+      "drive_id": "1OtEVfGl83HTWnPgNYumRa0OY7BE0yBgI",
+      "qa_id": "1bsEGeHMXrvwg5PM5HCneBBcw0ACCt9c_",
+      "source_silver_id": "14U9bwJCipIOJvNhThliTaCBb9RSTu4Cz",
+      "limitations": [
+        "20 available market days max, no prior month history",
+        "unadjusted price & unconfirmed instrument classification",
+        "historical PIT unproven"
+      ]
+    },
+    {
+      "feature_scope": "MOPS_202609_revenue_mom_yoy",
+      "rows": 1980,
+      "drive_id": "1XWy7mCMqdGcJbF4owafoT6caLo3-MMyI",
+      "qa_id": "1CtvmX0vCB_Pw-FI9Qj35H4R6Ki4cfjPv",
+      "source_silver_id": "1y623bgGtMtRgkJmUZfIzX0eVnpmINbc5",
+      "limitations": [
+        "actual announcement timestamp and revision PIT pending",
+        "year ago/previous figures are values reported in current source, no independent prior publications"
+      ]
+    },
+    {
+      "feature_scope": "TSE_202609_valuation_PB_PE_dividend_yield",
+      "rows": 21620,
+      "drive_id": "1v8Fd6nnmliIpqnLQDnOPlMsbgtnJgegy",
+      "qa_id": "1Gi4RLVOVKMTy_6z36xiF4VkiwA3l5xQe",
+      "source_silver_id": "1_i14A8BAoIsMXmb2yevRr3MpZaUoYOlC",
+      "positive_pe_rows": 17402,
+      "limitations": [
+        "PE may be legitimately absent or negative for some issuers, not 98% content error",
+        "historical identity and PIT unproven"
+      ]
+    },
+    {
+      "feature_scope": "TPEx_202609_valuation_PE_PB_dividend_yield",
+      "rows": 17744,
+      "drive_id": "17nFxa7xUwTJFqLnTo9i60XuhPwcu8Myf",
+      "qa_id": "1n0bbyNJxsv_0HV53tHFTPWohwTNPrfrw",
+      "source_silver_id": "1h9PU-3stNNWyT_SXPTtNeltbEm8QSQ1t",
+      "limitations": [
+        "historic PIT and instrument classification pending"
+      ]
+    },
+    {
+      "feature_scope": "TPEx_202609_foreign_holdings",
+      "rows": 17827,
+      "drive_id": "19w0PWXYDCdchSgASQGNY7pmBxJuaxFHc",
+      "qa_id": "1K6UmxqmgaotuqUAIGx9J4YbQAvbWBeKz",
+      "source_silver_id": "1zgVmOyNvpjhzqE9QZFIPqiOCy2IOntFS",
+      "limitations": [
+        "historic PIT and instrument classification pending"
+      ]
+    }
+  ],
+  "totals": {
+    "gold_parquet_outputs": 5,
+    "feature_rows_staged": 80974,
+    "unique_stock_day_rows": "NOT_COMPUTED because 5 feature tables overlap markets/dates",
+    "full_443_features_ready": false,
+    "all_sep_gold_complete": false
+  },
+  "still_unfinished": [
+    {
+      "workstream": "TPEx full market OHLC price Gold",
+      "blocking": "412 nonnumeric OHLC of 17762; prior source numerical 97.68% below 98%, not legally classified",
+      "required": "classify source legitimate no-price/exempt rows, remeasure proper denominator or isolate true errors"
+    },
+    {
+      "workstream": "TWSE/TPEx three-institution detailed flows, margin and stock lending",
+      "blocking": "typed Silver or native candidate incomplete positional semantics; ETF/stock separation, source record dates and PIT still pending",
+      "required": "per-source canonical unit contracts and published-asof evidence"
+    },
+    {
+      "workstream": "TDCC shareholder distribution",
+      "blocking": "native derived weekly rows exist but source release timing, class semantics, historical security master and direct HTML reconciliation not final",
+      "required": "typed verified source classes and current vs historical use decision"
+    },
+    {
+      "workstream": "TAIFEX derivatives",
+      "blocking": "raw CSV is serialized to Parquet but contract, observation date, unit and positions missing",
+      "required": "typed contract by family, observed date and PIT"
+    },
+    {
+      "workstream": "NDC multi-year macro history",
+      "blocking": "source native workbook rows preserved but actual observation dates/revisions not extracted",
+      "required": "map five workbooks/sheets actual dates and published revision"
+    },
+    {
+      "workstream": "MOPS quarterly EPS gross margin, ROE and TTM",
+      "blocking": "only monthly revenue source available in verified Sep pilot; missing quarterly & asof releases",
+      "required": "additional Bronze/Silver quarterly financial dataset contracts and observed revisions"
+    },
+    {
+      "workstream": "long technical, RS sector 50/120/240, stage3->4, 24-month revenue high",
+      "blocking": "20 Sep trading days and 1 report month insufficient",
+      "required": "approved prior-month Silver history, official membership and PIT before long lookbacks"
+    }
+  ],
+  "release_policy": {
+    "normal_quality_threshold": 0.98,
+    "blocking_critical_errors_ignored": false,
+    "descriptive_asof": "2026-11-06",
+    "historical_PIT_gold_release_approved": false,
+    "official_native_source_immutable": true,
+    "non_available_indicators_disabled": true
+  },
+  "message": "Successfully executed 5 actual Gold descriptive Parquet builds plus PE repair from native Sept source. This DOES NOT equal formal September full 443-indicator Gold, or September point-in-time strategy backtest."
+}
