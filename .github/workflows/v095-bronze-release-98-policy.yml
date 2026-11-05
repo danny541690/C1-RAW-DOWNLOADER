@@ -15,7 +15,7 @@ concurrency:
   group: jarvis-v095-bronze-98-policy
   cancel-in-progress: false
 jobs:
-  98-percent-gate-regression:
+  bronze-98-percent-gate-regression:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
