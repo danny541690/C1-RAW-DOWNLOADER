@@ -1,0 +1,39 @@
+name: JARVIS v0.95 official TPEx 2026-09 missing original recheck
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-tpex-official-gap-recheck.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-tpex-official-gap-recheck
+  cancel-in-progress: false
+jobs:
+  tpex-gap-recheck:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        category: [prices, institutional]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Official date-scoped missing original recheck (QA-only)
+        run: python tests/v095_202609_tpex_gap_recheck.py --category "${{ matrix.category }}"
+      - name: Retain official source bytes, hashes, and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-tpex-202609-${{ matrix.category }}-${{ github.run_id }}
+          retention-days: 60
+          path: v095_202609_tpex_gap_recheck/
+          if-no-files-found: warn
