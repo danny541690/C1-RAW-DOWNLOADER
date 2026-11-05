@@ -1,0 +1,123 @@
+name: JARVIS v0.95 one-run full prelaunch bundle
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-one-run-prelaunch-bundle.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-one-run-full-prelaunch
+  cancel-in-progress: false
+jobs:
+  all-prelaunch-tests:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout governance from main (read-only)
+        uses: actions/checkout@v4
+        with:
+          path: control
+          persist-credentials: false
+      - name: Checkout isolated v0.95 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-parquet-isolated-20261104
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test-only dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl duckdb pandas
+      - name: Single merged run - governance, sources, historical fixes, PIT, rollback and final gate
+        env:
+          JARVIS_PILOT_SOURCE_BRANCH: test/jarvis-v095-parquet-isolated-20261104
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,datetime,json,os,pathlib,subprocess,sys
+          control=pathlib.Path('control/governance/v095')
+          candidate=pathlib.Path('candidate')
+          out=pathlib.Path('prelaunch_bundle')
+          out.mkdir(exist_ok=True)
+          report={'schema':'JARVIS_V095_SINGLE_JOB_PRELAUNCH_20261105',
+                  'run_id':os.getenv('GITHUB_RUN_ID'),
+                  'generated_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                  'scope':'ISOLATED_QA_NOT_PRODUCTION_APPROVAL',
+                  'bulk_copy_approved':False,'release_approved':False,
+                  'checks':[],'production_blockers':[]}
+          def record(name,pass_,detail=None):
+              report['checks'].append({'name':name,'pass':bool(pass_),'detail':detail})
+          try:
+              schema=json.loads((control/'LEDGER_SCHEMA.json').read_text())
+              links=json.loads((control/'DRIVE_LEDGER_LINKS_20261105.json').read_text())
+              flags=json.loads((control/'PHASE1_FLAGS.json').read_text())
+              for name,columns in schema.items():
+                  with (control/(name+'.csv')).open(newline='',encoding='utf-8') as f:
+                      header=next(csv.reader(f))
+                  record('ledger_schema_'+name,header==columns)
+              record('eight_registered_drive_ledger_links',
+                     len(links['ledgers'])==8 and len(set(x['spreadsheet_id'] for x in links['ledgers']))==8)
+              record('release_stays_fail_closed',
+                     flags.get('BULK_COPY_APPROVED') is False and flags.get('RELEASE_APPROVED') is False)
+              issues=list(csv.DictReader((control/'ISSUE_REPAIR_HISTORY.csv').open(encoding='utf-8')))
+              record('defect_catalog_15',len(issues)==15)
+              p=subprocess.run([sys.executable,'tests/v095_pilot_operational_runner.py','--mode','full'],
+                               cwd=candidate,capture_output=True,text=True,timeout=3000,
+                               env=dict(os.environ,JARVIS_PILOT_SOURCE_BRANCH='test/jarvis-v095-parquet-isolated-20261104'))
+              (out/'full_pilot.log').write_text((p.stdout+'\n'+p.stderr)[-250000:],encoding='utf-8')
+              operational=candidate/'v095_pilot_operational/PILOT_RUN_REPORT.json'
+              if operational.is_file():
+                  pilot=json.loads(operational.read_text())
+                  report['pilot']={'trial_status':pilot.get('trial_status'),'steps':pilot.get('steps'),
+                                   'source_count':pilot.get('source_count'),
+                                   'formal_gates_blocked':pilot.get('formal_gates_blocked')}
+              else: report['pilot']={'missing':'PILOT_RUN_REPORT.json'}
+              record('ordered_full_isolated_pilot',p.returncode==0)
+              final=candidate/'final_prelaunch_gate/FINAL_PRELAUNCH_GATE.json'
+              if final.is_file():
+                  gate=json.loads(final.read_text())
+                  report['production_gates']={'passed':gate.get('production_gate_pass'),
+                                              'blocked':gate.get('production_gate_blocked'),
+                                              'release_approved':gate.get('release_approved')}
+                  report['production_blockers']=[{'id':x['id'],'missing':x['exact_missing_evidence']}
+                    for x in gate.get('all_eleven_gates',[]) if x.get('full_production_gate')=='BLOCKED']
+                  record('correctly_blocks_unproven_production_release',
+                         gate.get('release_approved') is False)
+              else:
+                  record('final_gate_report_available',False,'Missing final decision file')
+          except Exception as e:
+              record('orchestrator_exception',False,type(e).__name__+':'+str(e))
+          report['isolated_tests_pass']=all(x['pass'] for x in report['checks'])
+          report['production_release_approved']=False
+          (out/'RESULT.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps({'run_id':report['run_id'],'checks':report['checks'],
+                            'isolated_tests_pass':report['isolated_tests_pass'],
+                            'production_gates':report.get('production_gates'),
+                            'production_release_approved':False},ensure_ascii=False,indent=2))
+          if not report['isolated_tests_pass']:sys.exit(1)
+          PY
+      - name: Retain all consolidated evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-one-run-prelaunch-${{ github.run_id }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            prelaunch_bundle/
+            candidate/v095_pilot_operational/
+            candidate/v095_pilot_readonly/
+            candidate/final_prelaunch_gate/
+            candidate/r28_prelaunch/
+            candidate/r27_official_security_master/
+            candidate/r26_evidence_register/
+            candidate/r25_integrated_admission/
+            candidate/r24_tdcc_numeric_gold_candidate/report.json
+            candidate/r20_tdcc_full/report.json
+            candidate/r19_live_candidates/report.json
+            candidate/r18_live_recovery_report.json
+            candidate/r17_live_source_connectivity.json
