@@ -1,0 +1,44 @@
+name: JARVIS v0.95 Sep three additional descriptive Gold subsets
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-gold-three-subsets.yml'
+      - 'scripts/v095_202609_gold_subscope_3lane.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-202609-gold-three-subsets
+  cancel-in-progress: false
+jobs:
+  gold-subscope:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        lane: [otc-price, otc-margin, tse-flow]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Generate descriptive Gold strictly from existing Silver data, preserve PIT hold
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_gold_subscope_3lane.py --lane ${{ matrix.lane }}
+      - name: Upload QA artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-gold-${{ matrix.lane }}-${{ github.run_id }}
+          path: gold_subscope_evidence/
+          if-no-files-found: warn
+          retention-days: 90
