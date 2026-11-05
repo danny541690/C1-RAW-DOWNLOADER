@@ -10,7 +10,9 @@
     "v093_manifests": "v0.93 Drive 01_RAW/2026/<SOURCE>/2026-09 main ZIP manifests",
     "verified_action_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41993011980",
     "earlier_action_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41989880464",
-    "drive_last_two": "https://drive.google.com/file/d/1kXahDil5I6Mda5SN0XE-LG0bN8LZBm0y/view"
+    "drive_last_two": "https://drive.google.com/file/d/1kXahDil5I6Mda5SN0XE-LG0bN8LZBm0y/view",
+    "final_retry_run": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/41993694875",
+    "manual_member_inventory_audit": "TWSE 122/122; TPEx 158/172 primary archive, 9 independently recovered; MOPS 4/4; TDCC 4 weekly archive files CRC and per-member SHA"
   },
   "per_source": {
     "TWSE": {
@@ -32,7 +34,13 @@
       "new_valid_originals": 4,
       "final_download_run": 41993011980,
       "source_semantic_numeric_pit_verified": false,
-      "status": "9_MAIN_SOURCE_GAPS_RECOVERED__5_CSV_ALTERNATES_CLASSIFICATION_PENDING"
+      "status": "9_MAIN_SOURCE_GAPS_RECOVERED__5_CSV_ALTERNATES_CLASSIFICATION_PENDING",
+      "v093_defined_primary_monthly_scope_total": 163,
+      "primary_monthly_scope_raw_structurally_recovered": 163,
+      "primary_scope_formula": "8 daily datasets x 20 trading days + 3 period datasets; does not imply all possible TPEx datasets",
+      "alternate_9_records_breakdown": "4 alternative CSV files present; 5 alternative CSV ALTERNATE_HOLD, non-independent provided corresponding official JSON primary exists",
+      "final_retry_validation_run": 41993694875,
+      "final_retry_validation_result": "SUCCESS: 2026-09-10, 2026-09-29 returned valid dated JSON and no stale error flags"
     },
     "MOPS": {
       "legacy_manifest_units": 4,
@@ -65,7 +73,9 @@
       "legacy_archive_manifest_shas_verified": true,
       "native_per_security_records_copied": false,
       "code_trailing_spaces_observed": true,
-      "status": "FOUR_WEEK_PARTITIONS_SHA_VALID__SOURCE_LINEAGE_AND_ALL_DATASETS_UNVERIFIED"
+      "status": "FOUR_WEEK_PARTITIONS_SHA_VALID__SOURCE_LINEAGE_AND_ALL_DATASETS_UNVERIFIED",
+      "trim_stock_code_in_silver_only": true,
+      "weekly_source_record_payloads_verified": true
     },
     "TAIFEX": {
       "non_tick_month_files_moved": 19,
@@ -182,5 +192,6 @@
     "NDC other macro reports according to release calendar",
     "TAIFEX deduplicate alternate aliases and verify 19 non-tick dataset meanings"
   ],
-  "release_decision": "BLOCKED_FOR_FULL_MONTH__TPEX_PRIMARY_9_FIXED"
+  "release_decision": "BLOCKED_FOR_FULL_MONTH__TPEX_PRIMARY_9_FIXED",
+  "last_verified_stage": "BRONZE_SOURCE_REPAIR_ONLY"
 }
