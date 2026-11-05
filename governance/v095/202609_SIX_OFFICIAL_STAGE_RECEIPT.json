@@ -1,0 +1,85 @@
+{
+  "schema": "JARVIS_V095_202609_SIX_OFFICIAL_STAGE_RECEIPT_V1",
+  "pilot_run": 41981129047,
+  "drive_candidate_folder_id": "1McG_uf3UwVYv0nEZv9R1cpQM4iFJfjBw",
+  "drive_artifacts": [
+    {
+      "sources": [
+        "TWSE",
+        "TPEx"
+      ],
+      "github_artifact": 13393358955,
+      "drive_file_id": "1l0s2L-hnc4mdZprzt9n1K2_CAF1lvF5p",
+      "bytes": 1417643
+    },
+    {
+      "sources": [
+        "MOPS",
+        "TDCC"
+      ],
+      "github_artifact": 13393849043,
+      "drive_file_id": "1NRh6hQBIZ2Etc_frfyBaXxLWHXhQ4Np2",
+      "bytes": 2092264
+    },
+    {
+      "sources": [
+        "TAIFEX",
+        "NDC"
+      ],
+      "github_artifact": 13393876910,
+      "drive_file_id": "11Oi1GAJc55VMErx_HYtptOhAOc0peJgM",
+      "bytes": 797747
+    }
+  ],
+  "checks": {
+    "zip_internal_crc_pass": true,
+    "bronze_silver_qa_gold_candidate_triplets": 44,
+    "sha256_bronze_silver_in_qa_gold_match": 44,
+    "drive_file_metadata_readback": true,
+    "drive_download_byte_for_byte_readback": false
+  },
+  "source_scope": {
+    "TWSE": {
+      "period": "2026-09",
+      "one_daily_dataset_trading_days": 20,
+      "market_closed_days_skipped": 10,
+      "full_dataset_universe": false
+    },
+    "TPEx": {
+      "period": "2026-09",
+      "one_daily_dataset_trading_days": 20,
+      "market_closed_days_skipped": 10,
+      "full_dataset_universe": false
+    },
+    "MOPS": {
+      "period": "latest_snapshot",
+      "historical_202609_full_month": false
+    },
+    "TDCC": {
+      "period": "latest_snapshot",
+      "historical_202609_full_month": false
+    },
+    "TAIFEX": {
+      "period": "latest_snapshot",
+      "historical_202609_full_month": false
+    },
+    "NDC": {
+      "period": "latest_snapshot",
+      "historical_202609_full_month": false
+    }
+  },
+  "release": {
+    "bronze_production": false,
+    "silver_production": false,
+    "gold_production": false,
+    "finmind_regular_download": false,
+    "critical_blockers": [
+      "complete_6source_dataset_contract_inventory",
+      "historical_september_fetch_for_MOPS_TDCC_TAIFEX_NDC",
+      "real_derived_silver_domain_schema",
+      "real_gold_indicator_formulas_and_pit",
+      "durable_drive_binary_readback_and_cas",
+      "full_month_completeness_and_security_master_qa"
+    ]
+  }
+}
