@@ -1,0 +1,56 @@
+{
+  "schema": "JARVIS_C1_V095_CANONICAL_THREE_LAYER_DATA_ARCHITECTURE",
+  "version": "1.0.0",
+  "effective_date": "2026-11-06",
+  "authority": "User-defined architecture, supersedes inconsistent assistant-created labels and stage interpretations",
+  "only_layers": [
+    "Bronze",
+    "Silver",
+    "Gold"
+  ],
+  "Bronze": {
+    "definition": "The complete source-original raw data downloaded from the six official Taiwan sources, with FinMind as compatible missing-data fallback where appropriate.",
+    "required": "Preserve source-native bytes, source metadata, source date and SHA/CRC; record known gaps. Do not treat a Parquet copy of a native JSON cell as Silver.",
+    "ready_for_next_stage": "Raw data needed by the target dataset has been acquired and integrity/coverage measured according to user-approved source rules."
+  },
+  "Silver": {
+    "definition": "FORMAL standardized dataset produced from Bronze via correct parsing and column mapping; standard types, source observation dates, stock/instrument identifiers, market, units, signs and provenance; directly usable by Gold with no further data-format conversion.",
+    "required": "Complete canonical field mapping and source-aware date/unit conversion, valid keys and content checks; accept per approved active dataset at >=98% download coverage and >=98% content correctness with critical anomalies isolated.",
+    "ready_for_next_stage": "Gold indicator implementation can read the formal Silver schema directly.",
+    "no_extra_stages": "Do not define candidate Silver as a separate layer; intermediate tests or incomplete files are unfinished processing outputs, not formal Silver."
+  },
+  "Gold": {
+    "definition": "Actual persisted computed JARVIS 400+ analysis indicators and relevant snapshots calculated from formal Silver and directly queryable by ChatGPT for analysis.",
+    "required": "Store computed indicator values with formula/version, parameters, required lookback, dataset sources, observation date, available_asof or PIT eligibility and QA state; no missing dependency fabricated.",
+    "no_extra_stages": "Do not define descriptive Gold, candidate Gold or preliminary Gold as new data layers. Products lacking required historical source/PIT do not qualify as completed corresponding historical analysis indicators.",
+    "ready_for_use": "Named indicator exists as computed, validated records, ready for ChatGPT query for its allowed as-of purpose."
+  },
+  "release_policy": {
+    "quality_minimum": 0.98,
+    "unit": "per approved dataset market and reporting period, not pooled across unrelated source types",
+    "admitted_raw_integrity": 1,
+    "critical_failures": "Source corruption, invalid identity/date/unit and known lookahead errors must be quarantined and not silently accepted as the 2% tolerance.",
+    "partial_data_policy": "Unavailable or unsupported input fields or indicators remain disabled without blocking independent formally accepted Silver datasets or other Gold indicators.",
+    "pit": "PIT is a validation rule for historical use, not a new layer. Historical Gold analysis must not use source values published after its simulated decision time.",
+    "missing_history": "Long lookback indicators disabled until required earlier Silver history available. They are not replaced by insufficient September-only observations."
+  },
+  "operational_workflow": [
+    "Bronze: acquire and preserve source-original complete downloadable corpus; document gaps.",
+    "Silver: perform all original->canonical conversions and QA in same processing operation; publish formally accepted dataset with stable schema.",
+    "Gold: compute each approved 400+ indicator from formally accepted Silver and preserve queryable outputs.",
+    "Report only Bronze complete, Silver formalized, Gold indicators computed and their source/date coverage; no alternate stage naming."
+  ],
+  "historical_202609_status": {
+    "Bronze": "Known originals migrated and integrity checked; full source-wide universe not independently certified.",
+    "Silver": "Prior September Parquet files include incomplete source-native JSON serialization and typed subsets; cannot label the full September dataset formalized yet.",
+    "Gold": "Previously generated descriptive snapshots do not establish completion of the full 400+ defined indicator computation or PIT-approved historical backtests.",
+    "need": "Complete and validate the missing formal Silver mappings first, then compute matching Gold indicator groups; avoid repeated Bronze re-download and invalid all-complete claims."
+  },
+  "legacy_terminology": {
+    "CANDIDATE_SILVER": "Incomplete Silver conversion output, not a separate layer or a final Silver release",
+    "DESCRIPTIVE_GOLD": "Limited analysis artifact or indicator with restricted historical eligibility; not an extra architecture layer and not a substitute for JARVIS full formal Gold indicator set",
+    "RAW_JSON_IN_PARQUET": "Still needs canonical Silver field conversion",
+    "PARQUET_EXISTS": "Not sufficient evidence of completed Silver",
+    "WORKFLOW_SUCCESS": "Not sufficient evidence of finished Silver or complete Gold"
+  }
+}
