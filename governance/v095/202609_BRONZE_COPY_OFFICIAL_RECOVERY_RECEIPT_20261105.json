@@ -1,0 +1,212 @@
+{
+  "schema": "JARVIS_V095_202609_BRONZE_STAGE_RECEIPT",
+  "migration_scope": "six-official-source, September 2026, v093-copy + official correction",
+  "source_v093_unmodified": true,
+  "silver_conversion_started": false,
+  "gold_conversion_started": false,
+  "release_approved": false,
+  "full_month_universe_verified": false,
+  "official_finmind_fallback_used": false,
+  "source_notes": {
+    "TWSE": "122 ZIP original members, matching SHA original vs Drive copy; delta; manifest all_market_complete=false",
+    "TPEx": "172 legacy unit manifest; 14 prior hold rows, of which 9 primary dated JSON targets; 5 supplemented native members and 7 official recovered files, union covers these 9 date/category failures, numeric/PIT not proven",
+    "MOPS": "4 revenue files in main archive, native hashes matched; all_market_complete=false",
+    "TDCC": "4 weekly source JSONL archived with per-member manifest SHA; original per-stock records in legacy not yet copied",
+    "TAIFEX": "19 monthly non-TICK sources copied; tick excluded by research requirement",
+    "NDC": "official 11509 xlsx released 2026-10-29, source sha256 3d8dedd82d0f52bc3afc7c36ef0028106afa903041bdbae5b08d9da8cddda2cc"
+  },
+  "tpex_recheck_run_id": 41989880464,
+  "ndc_recheck_run_id": 41991021695,
+  "drive_month_folders": {
+    "TWSE": {
+      "folder_id": "1abuHJHAVv_a3AOpG4hKfguyF-qpXSKm-",
+      "count": 2,
+      "files": [
+        {
+          "id": "1OgyI0aMUnEmZBXTVTwn2eIPMViD7xPKy",
+          "name": "V095_BRONZE_202609_V093_DELTA_TWSE_R3.zip",
+          "size": "469339"
+        },
+        {
+          "id": "16G68HaFVX1Ddmu23xWeexhNDn0DWryet",
+          "name": "V095_BRONZE_202609_V093_VERIFIED_ZIP_TWSE.zip",
+          "size": "5854414"
+        }
+      ]
+    },
+    "TPEx": {
+      "folder_id": "1fcWwV2qK_aoevqlDSc9_9aNJ6lKFmSQ2",
+      "count": 5,
+      "files": [
+        {
+          "id": "1Tmh0sEZZCWFvdeTQ7eAOMuLX8WEY7ehR",
+          "name": "V095_BRONZE_202609_OFFICIAL_RECOVERY_institutional_QA_ONLY_RUN41989880464.zip",
+          "size": "453790"
+        },
+        {
+          "id": "12lSt3OY0WclDoCc6TAk3peruEW2-K9_r",
+          "name": "V095_BRONZE_202609_OFFICIAL_RECOVERY_prices_QA_ONLY_RUN41989880464.zip",
+          "size": "1071162"
+        },
+        {
+          "id": "189JOKYsWHQud0k2QApUGlSqiCyDIYvOp",
+          "name": "V095_BRONZE_202609_V093_DELTA_TPEx_R3.zip",
+          "size": "421374"
+        },
+        {
+          "id": "1BZdpY6HgrJjPe23N0GvNVjR5CMrCRRxb",
+          "name": "V095_BRONZE_202609_V093_SUPPLEMENT_TPEx_R1.zip",
+          "size": "1324176"
+        },
+        {
+          "id": "1xz7SdR0itvatFQ_IaAdpsAw9fN6i-0iu",
+          "name": "V095_BRONZE_202609_V093_VERIFIED_ZIP_TPEx.zip",
+          "size": "10934588"
+        }
+      ]
+    },
+    "MOPS": {
+      "folder_id": "14N6x7HDLt5nMwOEUE7K818iOw4NHjwWg",
+      "count": 1,
+      "files": [
+        {
+          "id": "1wAHL6qfZnSC3RIKvShhL4At3ZNs32bvj",
+          "name": "V095_BRONZE_202609_V093_VERIFIED_ZIP_MOPS.zip",
+          "size": "716137"
+        }
+      ]
+    },
+    "TDCC": {
+      "folder_id": "1_Pl4nN0HRXnIJSjJrt0iX2Lq7nkS1pcV",
+      "count": 1,
+      "files": [
+        {
+          "id": "1sRULF-1_1UTf5x2E6mWoDVx0BgdP2GS8",
+          "name": "V095_BRONZE_202609_V093_ARCHIVE_TDCC_R1.zip",
+          "size": "4225964"
+        }
+      ]
+    },
+    "TAIFEX": {
+      "folder_id": "1fr-4WqvgHazBZV-YYreidxQ03TY5aO2o",
+      "count": 19,
+      "files": [
+        {
+          "id": "1kdrHNOaFMmLF67bDS6g-Y5YJo-Ztj3Qz",
+          "name": "V095_V093_COPY_202609_MARKET_options_2026-09_e7d2af9d687716da690fce9396a63ad8484b6efeb05e828675f695860641d656.csv",
+          "size": "21145969"
+        },
+        {
+          "id": "1UibWfnOnPA6ctTWssd6fe30M4Ae6VDnp",
+          "name": "V095_V093_COPY_202609_MARKET_futures_2026-09_526f7115fb7271128e18271fe422882ac459d6455242f0969eb7586a0fd3cb7a.csv",
+          "size": "3769568"
+        },
+        {
+          "id": "1_Tv_Yd9uybdGv1oiyys8razCENQcJ-Li",
+          "name": "V095_V093_COPY_202609_HISTORY_totalTableDateDown_2026-09_dd210a63b5072aa49b2fc8fb5a379e62e855970dfade9688407847ff40379e73.csv",
+          "size": "6196"
+        },
+        {
+          "id": "1o4ur0Jyy-VKDHi3j9-Fx6FPCNmKZ1nDh",
+          "name": "V095_V093_COPY_202609_HISTORY_optContractsDateDown_2026-09_0ac25685c8fe2f822262be049c87a885c3b604994f3cf43ed5eeaf97ca6f006b.csv",
+          "size": "21661"
+        },
+        {
+          "id": "1ZPJNLLBt2ycpO0tEJb3zEw-m335s4j9u",
+          "name": "V095_V093_COPY_202609_HISTORY_futContractsDateDown_2026-09_90d8db6caa55babff20b109e40da0a66a86e5b8cc46b7700ea2a495fbd652bf0.csv",
+          "size": "112845"
+        },
+        {
+          "id": "10tGY5Ex3m8JWM5ySXyxJ1ZwL7ppHoVgB",
+          "name": "V095_V093_COPY_202609_HISTORY_dlPcRatioDown_2026-09_486f21cf772e39f07e161f0120cc1ca7c703333efa32def530e9e648db960d43.csv",
+          "size": "1118"
+        },
+        {
+          "id": "1i_KAwdhrc24x1I5b6p0UkQkMKRx0ms9L",
+          "name": "V095_V093_COPY_202609_HISTORY_dlDailyFXRateDown_2026-09_7c7fe9b8631407ccc68a3ee02c07fe8f6b174214bce89295ffb3b9afc16b448d.csv",
+          "size": "1896"
+        },
+        {
+          "id": "1XPRi7f0MQPO7PA84H4JYVMNUrqj9bvhZ",
+          "name": "V095_V093_COPY_202609_HISTORY_callsAndPutsDateDown_2026-09_a8a5dfa67c9a66985e7bbd084e3817d174445b6f7765aaaeac770c028d5a235b.csv",
+          "size": "43977"
+        },
+        {
+          "id": "1Qd1cA0guDMFNXvTKkZ2f2KhZAujKmbfu",
+          "name": "V095_V093_COPY_202609_HISTORY_futAndOptDateDown_2026-09_65efb52858650ad5470443cb721c18a72ac6540f38e45645bffec0c24e884afd.csv",
+          "size": "12018"
+        },
+        {
+          "id": "1nb6G77TGTNzZ-LbnR7v2FZ_61fY4zB13",
+          "name": "V095_V093_COPY_202609_HISTORY_callsAndPutsDateAhDown_2026-09_05c99cdd136f30f68f57c7484229875902c1103f3f387f0a9bdbb85bea599002.csv",
+          "size": "7746"
+        },
+        {
+          "id": "1d1WKgU0jVuA-r3iPIQGGuH29IhQQRj0t",
+          "name": "V095_V093_COPY_202609_HISTORY_dlProductOrderDown_2026-09_5cbc9cdb70a9e35017bc6aa820e162de6e0b16b3283945d12b53e6da2d431825.csv",
+          "size": "3041"
+        },
+        {
+          "id": "1sUIs3LArnHHGTkF5KdkKmkM3WaAyk2y3",
+          "name": "V095_V093_COPY_202609_HISTORY_futContractsDateAhDown_2026-09_8be76db711acfaa7d2ac6149187ec894928d59ae6fd295861895b3368c7ccc7e.csv",
+          "size": "56502"
+        },
+        {
+          "id": "1HhgZPlxUGFIg7SZzyovcDkwyIfGeFhYj",
+          "name": "V095_V093_COPY_202609_HISTORY_optContractsDateAhDown_2026-09_7e57f6196e0ae310427138bcb1c172994be15756d7db582bdf06374f127246a0.csv",
+          "size": "3689"
+        },
+        {
+          "id": "1xL7O-FK1QiN92cEx_-VwFO3G5UwV3rva",
+          "name": "V095_V093_COPY_202609_HISTORY_productOrderDown_2026-09_5cbc9cdb70a9e35017bc6aa820e162de6e0b16b3283945d12b53e6da2d431825.csv",
+          "size": "3041"
+        },
+        {
+          "id": "1FhrbMW4R8ukPs-oksA6FRm-5oxVEmNHt",
+          "name": "V095_V093_COPY_202609_HISTORY_dlBargainOrderDown_2026-09_a5ee13c30eb4358c0e0af034391807ca119ccfbd2c706a938683589c03d22d93.csv",
+          "size": "4373"
+        },
+        {
+          "id": "1uPAosmpBkWtHHebim88g3r81H6Be92Yg",
+          "name": "V095_V093_COPY_202609_HISTORY_dlLargeTraderOptDown_2026-09_8bd6981d9cfc450cae9f7c49741ad29a3ecd0b7c3be0a828d714473cb0f6104e.csv",
+          "size": "360387"
+        },
+        {
+          "id": "1cDkk_kMidIA3Z-DLoOsTnIzNGdtViBNi",
+          "name": "V095_BRONZE_202609_V093_TAIFEX_bargain_orders.csv",
+          "size": "4373"
+        },
+        {
+          "id": "1yYp6WhusIWoq8ikp5_BP4EUu8RHZoRsK",
+          "name": "V095_BRONZE_202609_V093_TAIFEX_large_trader_options.csv",
+          "size": "360387"
+        },
+        {
+          "id": "1Vj05tn0TXDY_tVbGDzEQomCEKdYtti0e",
+          "name": "V095_BRONZE_202609_V093_TAIFEX_large_trader_futures.csv",
+          "size": "1738863"
+        }
+      ]
+    },
+    "NDC": {
+      "folder_id": "1JeqoAWecyvlXEo8odMvLqdVu6ddubeuJ",
+      "count": 1,
+      "files": [
+        {
+          "id": "16hZu79uBk7OWyOnv7-4ga8QZnXl4ANWr",
+          "name": "V095_BRONZE_202609_NDC_OFFICIAL_XLSX_AND_RECEIPT_20261029_QA_ONLY.zip",
+          "size": "792440"
+        }
+      ]
+    }
+  },
+  "missing_or_unverified": [
+    "Full source/dataset contract universe across six official sources",
+    "TDCC legacy per-stock evidence reconciliation vs four aggregated weekly JSONL",
+    "Monthly MOPS financial and publication contract PIT",
+    "All true Bronze source versions hash readback for each copied file",
+    "Official NDC macro dataset coverage beyond released 11509 workbook",
+    "Gold and Silver intentionally not started until Bronze approved"
+  ],
+  "production_bronze_status": "NOT_APPROVED"
+}
