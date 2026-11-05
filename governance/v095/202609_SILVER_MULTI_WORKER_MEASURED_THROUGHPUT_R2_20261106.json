@@ -56,8 +56,14 @@
       "wave": "TAIFEX_NDC_4_lane_R2",
       "run": 42063934536,
       "workers": 4,
-      "status": "IN_PROGRESS_AT_LAST_SNAPSHOT",
-      "fix": "archive_month vs observation_date"
+      "status": "SUCCESS",
+      "fix": "archive_month vs observation_date",
+      "elapsed_seconds": 85,
+      "verified_jobs_success": 4,
+      "outputs": 17,
+      "rows": 326402,
+      "archive_month_field_fixed": true,
+      "observation_date_certified": false
     }
   ],
   "max_concurrent_recommended_initial": 4,
@@ -87,5 +93,13 @@
     "four_lanes": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42063172870",
     "taifex_ndc_r1": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42063622021",
     "taifex_ndc_r2": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42063934536"
+  },
+  "latest_202609_silver_candidates": {
+    "original_distinct_partition_outputs": 37,
+    "additional_partition_outputs_from_two_parallel_waves": 33,
+    "additional_rows_staged": 656469,
+    "previously_converted_rows": 317699,
+    "all_candidate_rows_combined": 974168,
+    "not_formal_silver_98_percent_release": true
   }
 }
