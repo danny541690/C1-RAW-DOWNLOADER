@@ -1,0 +1,53 @@
+{
+  "schema": "JARVIS_V095_202609_SIX_SOURCE_BRONZE_RESUMED_AUDIT_V2",
+  "period": "2026-09",
+  "verified_date": "2026-11-05",
+  "github_run_id": 42005342615,
+  "verification_scopes": {
+    "github_three_lanes": "PASS; governance receipt checks and policy unit tests only",
+    "google_drive_v095_destination": "41 individual Drive origin files downloaded into independent audit environment",
+    "byte_read_and_crc": "22/22 ZIP files pass ZIP CRC; 19 CSV source files readable; 16 hash-in-filename CSVs match SHA256",
+    "v093_to_v095_pair_checksum": "7 exact source/target archive pairs SHA256 identical",
+    "independent_complete_dataset_census": "NOT_CERTIFIED",
+    "tdcc_full_original_per_stock_html": "NOT_MIGRATED",
+    "full_bronze_release": "BLOCKED"
+  },
+  "observed_count_by_source": {
+    "TWSE": 3,
+    "TPEx": 10,
+    "MOPS": 7,
+    "TDCC": 1,
+    "TAIFEX": 19,
+    "NDC": 1
+  },
+  "observed_sha_checks": {
+    "v095_files_fetched": 41,
+    "zip_archives_crc_pass": 22,
+    "filename_sha256_match": 16,
+    "legacy_pair_sha256_match": 7
+  },
+  "corrected_drive_reference": {
+    "source": "TPEx",
+    "prior_id": "1UKR0ErSjMbBUSxUGJdMWSgd1ZgGzOjCQ",
+    "reason": "404 while trying to read v095 provenance archive",
+    "replaced_from_v093_id": "1-LacMHLRFczb9I-LA3MddWRLwskMyy72",
+    "new_verified_id": "10FTidn55CQ8eG0Ne7zeOziOhGIRHaAtM",
+    "repair_kind": "re-copy source unchanged and replace stale ledger id"
+  },
+  "policy_sync": {
+    "github_path": "governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json",
+    "drive_policy_file_id": "1rxOf0YTKjZjKyf0HA9uV_ov3qZHNMJY7",
+    "github_policy_test_passed": true,
+    "max_official_download_attempts_total": 3,
+    "finmind_free_evidence_gated": true,
+    "live_existing_downloaders_switched_over": false
+  },
+  "file_evidence_local": "JARVIS_v095_202609_Bronze_Drive_41file_byte_audit.json",
+  "blocking_reasons": [
+    "No approved exhaustive 2026-09 dataset contracts for 6 sources",
+    "TDCC native per-stock corpus not fully moved from v0.93",
+    "Official MOPS financial/Macro full disclosure coverage not verified",
+    "Gold/Silver production release not authorized; 2026-09 Bronze not certified"
+  ],
+  "release_approved": false
+}
