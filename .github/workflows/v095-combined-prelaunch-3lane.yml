@@ -1,0 +1,107 @@
+name: JARVIS v0.95 combined prelaunch 3-lane isolated
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-combined-prelaunch-3lane.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-combined-prelaunch-3lane
+  cancel-in-progress: false
+jobs:
+  combined:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        lane: [governance, source-integrity, resilience-pit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout default branch with ledger schemas and linkage
+        uses: actions/checkout@v4
+        with:
+          path: control
+          persist-credentials: false
+      - name: Checkout isolated v0.95 candidate (never production main code)
+        if: matrix.lane != 'governance'
+        uses: actions/checkout@v4
+        with:
+          ref: test/jarvis-v095-parquet-isolated-20261104
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated test dependencies once per worker
+        if: matrix.lane != 'governance'
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl duckdb pandas
+      - name: Run one merged lane with independently recorded subtest outcomes
+        env:
+          LANE: ${{ matrix.lane }}
+          JARVIS_PILOT_SOURCE_BRANCH: test/jarvis-v095-parquet-isolated-20261104
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,datetime,json,os,pathlib,subprocess,sys
+          lane=os.environ["LANE"]
+          out=pathlib.Path("combined_prelaunch")/lane
+          out.mkdir(parents=True,exist_ok=True)
+          result={"lane":lane,"run_id":os.environ.get("GITHUB_RUN_ID"),"created_at_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                  "readonly":True,"release_approved":False,"bulk_copy_approved":False,"checks":[]}
+          def check(name,command,cwd):
+              try:
+                  x=subprocess.run(command,cwd=cwd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=420)
+                  ok=x.returncode==0
+                  log=x.stdout[-40000:]
+              except Exception as e:
+                  ok=False;log=type(e).__name__+":"+str(e)
+              (out/(name+".log")).write_text(log,encoding="utf-8")
+              result["checks"].append({"name":name,"pass":ok})
+          if lane=="governance":
+              root=pathlib.Path("control/governance/v095")
+              schema=json.loads((root/"LEDGER_SCHEMA.json").read_text())
+              links=json.loads((root/"DRIVE_LEDGER_LINKS_20261105.json").read_text())
+              flags=json.loads((root/"PHASE1_FLAGS.json").read_text())
+              for name,fields in schema.items():
+                  with (root/(name+".csv")).open(newline="",encoding="utf-8") as f:
+                      headers=next(csv.reader(f))
+                  result["checks"].append({"name":"ledger_"+name,"pass":headers==fields})
+              result["checks"].append({"name":"eight_drive_links","pass":len(links["ledgers"])==8 and all(x.get("verified_readback") for x in links["ledgers"])})
+              result["checks"].append({"name":"safe_release_flags","pass":flags.get("RELEASE_APPROVED") is False and flags.get("BULK_COPY_APPROVED") is False})
+              result["checks"].append({"name":"fifteen_defects","pass":len(list(csv.DictReader((root/"ISSUE_REPAIR_HISTORY.csv").open())))==15})
+          elif lane=="source-integrity":
+              for name,script in [
+                ("R17_live_7source","tests/v095_r17_live_source_smoke.py"),
+                ("R18_route_recovery","tests/v095_r18_recover_source_routes.py"),
+                ("R19_three_layer_candidates","tests/v095_r19_live_three_layer_candidates.py"),
+                ("R20_tdcc_full","tests/v095_r20_tdcc_full_roundtrip.py"),
+                ("R21_semantics","tests/v095_r21_tdcc_semantic_rules.py"),
+              ]:
+                  check(name,[sys.executable,script],"candidate")
+          else:
+              for name,script in [
+                ("QA_historical_error","tests/v095_historical_error_regression.py"),
+                ("QA_concurrent_release","tests/v095_concurrent_release_isolated.py"),
+                ("QA_immutable_release","tests/v095_immutable_release_isolated.py"),
+                ("QA_PIT_rollback","tests/v095_r28_historical_pit_and_release_rollback.py"),
+                ("QA_final_gate","tests/v095_final_oneshot_prelaunch_adjudication.py"),
+              ]:
+                  check(name,[sys.executable,script],"candidate")
+          result["all_pass"]=all(z["pass"] for z in result["checks"])
+          result["production_data_published"]=False
+          (out/"result.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(result,ensure_ascii=False,indent=2),flush=True)
+          if not result["all_pass"]:raise SystemExit(1)
+          PY
+      - name: Preserve independent lane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-prelaunch-${{ matrix.lane }}-${{ github.run_id }}
+          retention-days: 60
+          path: combined_prelaunch/
+          if-no-files-found: warn
