@@ -29,7 +29,7 @@ def listing(svc,parent):
 def main():
  p=argparse.ArgumentParser();p.add_argument("--shard",type=int,required=True);p.add_argument("--shards",type=int,default=3)
  p.add_argument("--limit",type=int,default=60);p.add_argument("--max-batches",type=int,default=10);args=p.parse_args()
- assert 0<=args.shard<args.shards and args.limit==60 and 1<=args.max_batches<=12
+ assert 0<=args.shard<args.shards and args.limit==60 and 1<=args.max_batches<=36
  svc=api()
  for ident in (SRC,DST):
   f=svc.files().get(fileId=ident,fields="id,mimeType,name").execute()
