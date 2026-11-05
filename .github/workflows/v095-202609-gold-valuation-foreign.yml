@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        lane: [tse-valuation, tpex-valuation, tpex-foreign-holdings]
+        lane: [tse-valuation]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
