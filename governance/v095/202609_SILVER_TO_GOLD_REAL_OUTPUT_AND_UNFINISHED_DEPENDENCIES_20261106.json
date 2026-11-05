@@ -1,0 +1,113 @@
+{
+  "schema": "JARVIS_V095_202609_SILVER_TO_GOLD_EXECUTION_AND_GAP_LEDGER",
+  "date": "2026-11-06",
+  "user_request": "Complete all 2026-09 Silver to formal Gold where safely possible; 98 percent per active scope and PIT integrity",
+  "completed_runs": [
+    {
+      "run_id": 42124245180,
+      "conclusion": "SUCCESS",
+      "max_parallel": 2
+    }
+  ],
+  "produced": [
+    {
+      "scope": "TSE Sep daily unadjusted OHLCV descriptive",
+      "silver_drive_id": "14U9bwJCipIOJvNhThliTaCBb9RSTu4Cz",
+      "gold_drive_id": "1OtEVfGl83HTWnPgNYumRa0OY7BE0yBgI",
+      "qa_drive_id": "1bsEGeHMXrvwg5PM5HCneBBcw0ACCt9c_",
+      "source_rows": 21860,
+      "valid_rows": 21803,
+      "numeric_rate": 0.9973924977127173,
+      "features": [
+        "return_one_prior_official_session_pct",
+        "SMA_5",
+        "SMA_10",
+        "SMA_20",
+        "average_volume_5_10_20",
+        "close_vs_SMA_pct"
+      ],
+      "strict_rolling_window_rows": {
+        "5": 17288,
+        "10": 11772,
+        "20": 1062
+      },
+      "gold_type": "DESCRIPTIVE_SNAPSHOT_ASOF_2026_11_06",
+      "pit_backtest_certified": false
+    },
+    {
+      "scope": "MOPS Sep month revenue",
+      "silver_drive_id": "1y623bgGtMtRgkJmUZfIzX0eVnpmINbc5",
+      "gold_drive_id": "1XWy7mCMqdGcJbF4owafoT6caLo3-MMyI",
+      "qa_drive_id": "1CtvmX0vCB_Pw-FI9Qj35H4R6Ki4cfjPv",
+      "source_rows": 1980,
+      "valid_rows": 1980,
+      "numeric_rate": 1,
+      "features": [
+        "revenue_current_億元",
+        "revenue_previous_month_億元",
+        "revenue_last_year_month_億元",
+        "revenue_mom_pct",
+        "revenue_yoy_pct"
+      ],
+      "gold_type": "DESCRIPTIVE_SNAPSHOT_ASOF_2026_11_06",
+      "pit_backtest_certified": false
+    }
+  ],
+  "blocked_scopes": [
+    {
+      "source": "TPEx",
+      "family": "OHLCV",
+      "reason": "only 17350/17762 (97.68%) numeric OHLC; 412 nonnumeric rows need official explanation; four-digit security master unproven",
+      "next": "classify official trade/price states, exclude proven not-applicable rows from valid denominator, recompute 98 percent gate"
+    },
+    {
+      "source": "TWSE/TPEx",
+      "family": "Institutional, margin, short selling, stock lending, valuation, foreign holdings",
+      "reason": "some typed canonical Parquet exists, but duplicated labels, multi instrument product rows, no independent 98 percent content correctness and historical identity/PIT",
+      "next": "define positional official field contracts per dataset, distinguish aggregate vs stock, verify per scope, then compute source-specific Gold"
+    },
+    {
+      "source": "TDCC",
+      "family": "four weekly holding level snapshots",
+      "reason": "276097 Silver rows copied and typed; source original HTML and source release timing/stock vs emerging master not fully validated",
+      "next": "classify native tiers and source release date, validate 98 percent then build 4-week ownership metrics"
+    },
+    {
+      "source": "TAIFEX",
+      "family": "futures options plus 14 historical files",
+      "reason": "17 source-native preserved Parquet with native_row_json; no validated contract, observation dates, position units or publication timestamps",
+      "next": "type each of 16 distinct non-Tick datasets; then Gold derivatives"
+    },
+    {
+      "source": "NDC",
+      "family": "11509 monthly macro 5 sheets",
+      "reason": "2690 native Excel rows preserved; actual historical observations and revisions not extracted",
+      "next": "map Excel series date and levels, release calendar PIT then macro Gold"
+    },
+    {
+      "source": "MOPS",
+      "family": "quarterly profitability EPS ROE and long lookback",
+      "reason": "existing 4 native revenue HTML cannot provide quarterly statements; other source contracts not inventory approved",
+      "next": "source-specific quarterly financial Bronze->Silver, PIT publication calendar, TTM feature warmup"
+    },
+    {
+      "source": "Historical reference",
+      "family": "60/120/240 MA, RS, 50/120/240 breakouts, stage3->4, 24 month revenue maximum",
+      "reason": "Sep-only 20 trading days and single revenue reporting month cannot support full required history",
+      "next": "reconcile earlier-months Silver + adjustment/corporate actions + as-of sources before computing"
+    }
+  ],
+  "safety": {
+    "gold_historical_backtest_approved": false,
+    "gold_current_asof_20261106_descriptive_pass_scopes": [
+      "TSE",
+      "MOPS revenue"
+    ],
+    "all_sep_gold_complete": false,
+    "do_not_misstate_numeric_rate_as_full_accuracy": true,
+    "source_sha_and_immutable_parquet": true,
+    "no_fabricated_missing_series": true
+  },
+  "release_summary": "Gold descriptive snapshot for two eligible typed Silver sources succeeded; all-source Gold formal research remains blocked by real missing dependencies, do not report 100 percent",
+  "github_run_url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42124245180"
+}
