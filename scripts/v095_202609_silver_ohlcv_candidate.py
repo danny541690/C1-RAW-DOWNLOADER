@@ -84,9 +84,9 @@ def convert(s,source):
  assert len({(x['trade_date'],x['stock_id']) for x in records})==len(records)
  assert len(set(x['trade_date'] for x in records))==20
  table=pa.Table.from_pylist(records)
-  assert pa.types.is_decimal(table.schema.field('open').type)
-  assert pa.types.is_decimal(table.schema.field('turnover_億元').type)
-  assert pa.types.is_date32(table.schema.field('trade_date').type)
+ assert pa.types.is_decimal(table.schema.field('open').type)
+ assert pa.types.is_decimal(table.schema.field('turnover_億元').type)
+ assert pa.types.is_date32(table.schema.field('trade_date').type)
  payload=io.BytesIO();pq.write_table(table,payload,compression='zstd')
  data=payload.getvalue();assert pq.read_table(io.BytesIO(data)).num_rows==len(records)
  return data,records,errs
