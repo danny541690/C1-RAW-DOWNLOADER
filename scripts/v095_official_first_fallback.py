@@ -20,12 +20,12 @@ def next_action(item):
         return {"action":"BLOCKED","accepted":False,"reason":"INVALID_OFFICIAL_ATTEMPT_COUNTER"}
     if item.get("rate_limited") or item.get("global_quota_exhausted"):
         return {"action":"DEFER_BY_RATE_LIMIT","accepted":False}
+    if item.get("verified_official_response_valid"):
+        return {"action":"PRESERVE_OFFICIAL_BRONZE","accepted":True}
     last=item.get("official_last_error")
     if n == 0 or (n < 3 and last in RETRYABLE):
         return {"action":"OFFICIAL_DOWNLOAD","accepted":False,"attempt_number":n+1,
                 "backoff_seconds":(0 if n==0 else POLICY["official"]["retry_intervals_seconds"][n-1])}
-    if item.get("verified_official_response_valid"):
-        return {"action":"PRESERVE_OFFICIAL_BRONZE","accepted":True}
     if n < 3 and last not in RETRYABLE:
         return {"action":"REVIEW_OFFICIAL_FAILURE","accepted":False,"reason":last or "NO_ERROR_CLASSIFICATION"}
     if n == 3 and not item.get("official_missing_confirmed"):
