@@ -1,0 +1,116 @@
+{
+  "schema": "JARVIS_V095_202609_SEVEN_SOURCE_FULL_BRONZE_AUDIT_CHECKPOINT_20261105",
+  "period": "2026-09",
+  "fully_approved": false,
+  "warning": "100% completeness only meaningful relative to a signed exhaustive active-indicator-driven dataset contract universe. Existing contract inventory remains candidate-only.",
+  "trading_days": {
+    "TWSE_official_expected": 20,
+    "FinMind_free_confirmed": 20,
+    "holidays": [
+      "2026-09-25",
+      "2026-09-28"
+    ]
+  },
+  "candidate_dataset_contracts": {
+    "total": 39,
+    "TWSE": 8,
+    "TPEx": 11,
+    "MOPS": 2,
+    "TDCC": 1,
+    "TAIFEX": 16,
+    "NDC": 1,
+    "all_contracts_approved": false
+  },
+  "observed": {
+    "TWSE": {
+      "known_daily_families": 6,
+      "verified_daily_dates_per_family": 20,
+      "periodic_families": 2,
+      "known_original_units_sha_pass": 122,
+      "known_expected_units": 122,
+      "all_official_family_universe_complete": false
+    },
+    "TPEx": {
+      "known_daily_primary_families": 8,
+      "verified_daily_dates_per_family": 20,
+      "periodic_families": 3,
+      "known_primary_units_complete": 163,
+      "known_primary_expected": 163,
+      "original_main_sha_pass": 158,
+      "official_recovered_primary": 9,
+      "alternate_csv_holds": 5,
+      "all_official_family_universe_complete": false
+    },
+    "MOPS": {
+      "existing_revenue_original_units": 4,
+      "verified": 4,
+      "complete_asof_date_financial_disclosure_universe": false
+    },
+    "TDCC": {
+      "native_originals_expected": 10949,
+      "native_originals_id_and_sha_verified": 10949,
+      "bundles_verified": 184,
+      "weekly_partitions": 4,
+      "more_than_original_integrity_verified": false
+    },
+    "TAIFEX": {
+      "non_tick_files": 19,
+      "distinct_hashes": 16,
+      "alias_duplicate_count": 3,
+      "full_dataset_calendar_not_validated": true
+    },
+    "NDC": {
+      "september_official_11509_workbook_verified": true,
+      "full_macro_and_international_indicators_catalog_verified": false
+    }
+  },
+  "OHLC": {
+    "TWSE": {
+      "days": 20,
+      "four_digit_security_daily_rows": 21700,
+      "numeric_and_consistent_rows": 21643,
+      "no_numeric_price": 57,
+      "no_numeric_price_with_positive_volume": 41,
+      "invalid_ohlc": 0,
+      "negative_volume": 0,
+      "duplicate_code_per_day": 0
+    },
+    "TPEx": {
+      "days": 20,
+      "four_digit_security_daily_rows": 17762,
+      "numeric_and_consistent_rows": 17350,
+      "no_numeric_price": 412,
+      "no_numeric_price_with_positive_volume": 255,
+      "invalid_ohlc": 0,
+      "negative_volume": 0,
+      "duplicate_code_per_day": 0
+    }
+  },
+  "finmind_free_secondary_evidence": {
+    "trading_days_matched": 20,
+    "OHLC_stocks": [
+      "2330",
+      "6488"
+    ],
+    "date_stock_rows_matched": 40,
+    "OHLC_mismatch_count": 0,
+    "new_backfill_required_for_confirmed_missing_primary_units": 0,
+    "all_market_numeric_accuracy_certified": false
+  },
+  "unresolved": [
+    "Active 400+ factors complete source dependency and source-native dataset universe not signed",
+    "296 records with nonnumeric OHLC and positive volume need official trade-type classification, no mutation to Bronze",
+    "TAIFEX family-specific date coverage not fully audited",
+    "MOPS historical-as-of fundamental reports and releases need PIT inventory outside monthly revenue only",
+    "NDC international/macro indicators beyond one 11509 workbook not enumerated",
+    "Whole-market numerical cross-source equality not demonstrated"
+  ],
+  "policy": "reuse original; official source first maximum 3 attempts; FinMind Free only confirmed equivalent data for documented gaps, never overwrite official Bronze",
+  "production_bronze_status": "BLOCKED_UNIVERSE_NOT_CERTIFIED",
+  "silver_production_status": "NOT_RELEASED",
+  "runs": {
+    "six_source_real_drive": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42034834590",
+    "finmind_free_calendar": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42043312417",
+    "finmind_free_stock_sample": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42044237050"
+  }
+}
