@@ -1,0 +1,59 @@
+name: JARVIS v0.95 Bronze 98 percent policy verification and Drive sync package
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-bronze-release-98-policy.yml'
+      - 'scripts/v095_bronze_release_gate_98.py'
+      - 'tests/test_v095_bronze_release_gate_98.py'
+      - 'governance/v095/BRONZE_RELEASE_98_PERCENT_POLICY_V2_20261105.json'
+      - 'governance/v095/202609_BRONZE_TWO_GATE_ACCEPTANCE_V1.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-bronze-98-policy
+  cancel-in-progress: false
+jobs:
+  98-percent-gate-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test 98 percent dataset scoped PASS PARTIAL UNKNOWN QUARANTINE rules
+        run: python -m unittest -v tests/test_v095_bronze_release_gate_98.py
+      - name: Verify not accidentally authorizing production release
+        run: |
+          python - <<'PY'
+          import json
+          root='governance/v095/'
+          policy=json.load(open(root+'BRONZE_RELEASE_98_PERCENT_POLICY_V2_20261105.json'))
+          flags=json.load(open(root+'PHASE1_FLAGS.json'))
+          assert policy['default_thresholds']['expected_unit_coverage_min']==0.98
+          assert policy['default_thresholds']['valid_content_rate_min']==0.98
+          assert flags['RELEASE_APPROVED'] is False
+          assert flags['BULK_COPY_APPROVED'] is False
+          print('PASS: 98% is a QA threshold, not unrestricted production release')
+          PY
+      - name: Bundle versioned rules and QA evidence for Google Drive
+        run: |
+          mkdir -p policy_sync
+          cp governance/v095/BRONZE_RELEASE_98_PERCENT_POLICY_V2_20261105.json policy_sync/
+          cp governance/v095/202609_BRONZE_TWO_GATE_ACCEPTANCE_V1.json policy_sync/
+          cp governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json policy_sync/
+          cp scripts/v095_bronze_release_gate_98.py policy_sync/
+          cp tests/test_v095_bronze_release_gate_98.py policy_sync/
+          cp governance/v095/202609_SEVEN_SOURCE_FINAL_SCOPE_AUDIT_20261105.json policy_sync/
+          cd policy_sync && sha256sum * > FILE_SHA256SUMS.txt
+      - name: Preserve exact audited rules for Drive sync
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-bronze-98-policy-sync-${{ github.run_id }}
+          path: policy_sync/
+          retention-days: 90
+          if-no-files-found: error
