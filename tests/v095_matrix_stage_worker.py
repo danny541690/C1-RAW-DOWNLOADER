@@ -16,7 +16,7 @@ ENDPOINTS={
 hashof=lambda b:hashlib.sha256(b).hexdigest()
 def verify(source,kind,raw):
  if kind=="xlsx":
-  if not raw.startswith(b"PK\\x03\\x04"):raise ValueError("INVALID_XLSX_MAGIC")
+  if not raw.startswith(b"PK\x03\x04"):raise ValueError("INVALID_XLSX_MAGIC")
   w=openpyxl.load_workbook(io.BytesIO(raw),read_only=True,data_only=True)
   sheets=len(w.sheetnames);w.close()
   if not sheets:raise ValueError("EMPTY_WORKBOOK")
