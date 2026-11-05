@@ -21,12 +21,15 @@ def admit(s):
         return {"status":"UNKNOWN","reasons":["CONTENT_AUDIT_METHOD_UNVERIFIED"]}
     if method=="APPROVED_SAMPLE" and not s.get("sampling_plan_approved",False):
         return {"status":"UNKNOWN","reasons":["SAMPLING_PLAN_UNAPPROVED"]}
-    if method=="EXHAUSTIVE" and inspected!=s.get("inspectable_expected_records",inspected):
+    if method=="EXHAUSTIVE" and (type(s.get("inspectable_expected_records")) is not int or inspected!=s["inspectable_expected_records"]):
         return {"status":"UNKNOWN","reasons":["NOT_ACTUALLY_EXHAUSTIVE"]}
     # A single bad raw object is NEVER accepted into a 98% passing set.
-    if s.get("unisolated_critical_errors",0)!=0:
+    for safety_count in ("unisolated_critical_errors","admitted_bad_sha_count","admitted_bad_crc_count"):
+        if type(s.get(safety_count)) is not int or s[safety_count]<0:
+            return {"status":"UNKNOWN","reasons":["MISSING_OR_INVALID_SAFETY_COUNT:"+safety_count]}
+    if s["unisolated_critical_errors"]!=0:
         return {"status":"QUARANTINE","reasons":["CRITICAL_ERRORS_NOT_ISOLATED"]}
-    if s.get("admitted_bad_sha_count",0)!=0 or s.get("admitted_bad_crc_count",0)!=0:
+    if s["admitted_bad_sha_count"]!=0 or s["admitted_bad_crc_count"]!=0:
         return {"status":"QUARANTINE","reasons":["CORRUPT_ADMITTED_RAW_OBJECT"]}
     if s.get("pit_sensitive",False) and not s.get("pit_proven",False):
         return {"status":"PARTIAL","reasons":["PIT_UNPROVEN_SIGNAL_BLOCKED"]}
