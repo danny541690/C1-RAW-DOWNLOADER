@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-ultimate-r1.yml'
+      - 'scripts/v095_ultimate_r1_controller.py'
+      - 'config/v095_ultimate_r1.json'
   schedule:
     - cron: '*/15 * * * *'
 permissions:
