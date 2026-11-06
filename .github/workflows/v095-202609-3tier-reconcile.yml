@@ -1,0 +1,38 @@
+name: JARVIS v0.95 September 3-tier source reconciliation real Drive
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-3tier-reconcile.yml'
+      - 'scripts/v095_202609_3tier_inventory.py'
+permissions:
+  contents: read
+concurrency:
+  group: v095-202609-3tier-reconcile
+  cancel-in-progress: false
+jobs:
+  manifest-reconciliation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Check actual v0.93 > v0.95 source manifest against live Drive bytes and contracts
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_3tier_inventory.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-september-3tier-real-inventory-${{ github.run_id }}
+          path: v095_202609_3tier_inventory/
+          retention-days: 90
+          if-no-files-found: warn
