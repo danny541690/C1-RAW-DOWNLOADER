@@ -112,7 +112,7 @@ def main():
  configbytes=pathlib.Path("config/v095_ultimate_r1.json").read_bytes()
  specbytes=pathlib.Path("governance/v095/JARVIS_V095_ULTIMATE_R1_SPEC_20261106.md").read_bytes()
  published={}
- for filename,b in [("JARVIS_V095_ULTIMATE_R1_SPEC_20261106.md",specbytes),("JARVIS_V095_ULTIMATE_R1_CONFIG_20261106.json",configbytes)]:
+ for filename,b in [("JARVIS_V095_ULTIMATE_R1_SPEC_20261106.md",specbytes),("JARVIS_V095_ULTIMATE_R1_CONFIG_20261106_"+sha(configbytes)[:16]+".json",configbytes)]:
   published[filename]=save_bytes(s,DRIVE["governance"],filename,b)
  # Create immutable run receipt so no data/state is overwritten, but heartbeat cron won't flood Drive:
  # save on initial run/manual, or if a new source-month object appears (checkpoint fingerprint).
