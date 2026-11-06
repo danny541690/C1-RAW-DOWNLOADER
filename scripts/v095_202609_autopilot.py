@@ -73,6 +73,12 @@ def main():
     s,sha=load()
     # Continue immediately to the next dependency phase if the prior phase has finished.
     # Never label the controller's run as complete while there is queued work.
+    if s['phase']=='silver':
+        essential=[w for w in PHASES['silver'] if w!='v095-202609-silver-tdcc-conversion.yml']
+        if all(s['steps'].get(w,{}).get('status')=='success' for w in essential):
+            s['tdcc_partial_hold']=s['steps'].get('v095-202609-silver-tdcc-conversion.yml',{}).get('status')!='success'
+            s['phase']='gold'
+            sha=save(s,sha)
     for phase in ('bronze','silver','gold'):
         if s['phase'] == phase:
             sha=phase_run(s,sha,phase)
