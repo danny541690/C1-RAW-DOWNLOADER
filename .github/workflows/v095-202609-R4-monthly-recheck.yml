@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-202609-R4-monthly-recheck.yml'
+      - 'scripts/v095_202609_monthly_classify.py'
+      - 'scripts/v095_202609_tdcc_monthly_verify.py'
 permissions:
   contents: read
 concurrency:
