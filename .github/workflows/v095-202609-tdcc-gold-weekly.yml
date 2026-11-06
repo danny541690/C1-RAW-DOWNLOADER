@@ -32,3 +32,5 @@ jobs:
           path: tdcc_gold_qa/
           if-no-files-found: warn
           retention-days: 90
+
+# Re-run 2026-09 measured validation with unchanged safety gates on 2026-11-06.
