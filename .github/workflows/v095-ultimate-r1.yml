@@ -9,6 +9,7 @@ on:
       - 'config/v095_ultimate_r1.json'
       - 'scripts/v095_ultimate_r1_14lane_smoke.py'
       - 'scripts/v095_ultimate_r1_14lane_worker.py'
+      - 'scripts/v095_ultimate_r1_3month_reconcile.py'
       - 'scripts/v095_ultimate_r1_october_canary.py'
       - 'scripts/v095_ultimate_r1_october_bsg.py'
       - 'scripts/v095_ultimate_r1_query_october.py'
@@ -46,12 +47,21 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           JARVIS_LANE: ${{ matrix.lane }}
         run: python scripts/v095_ultimate_r1_14lane_worker.py
+      - name: Reconcile September October November source and typed data independently
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          JARVIS_LANE: ${{ matrix.lane }}
+        run: python scripts/v095_ultimate_r1_3month_reconcile.py
       - name: Preserve per-lane evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v095-ultimate-${{ github.run_id }}-${{ matrix.lane }}
-          path: ultimate_r1_lanes/
+          path: |
+            ultimate_r1_lanes/
+            ultimate_r1_3month/
           if-no-files-found: warn
           retention-days: 90
   pilot-controller:
