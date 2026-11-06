@@ -12,6 +12,7 @@ on:
       - 'scripts/v095_ultimate_r1_october_bsg.py'
       - 'scripts/v095_ultimate_r1_query_october.py'
       - 'scripts/v095_ultimate_r1_enlarged_bsg.py'
+      - 'scripts/v095_ultimate_r1_enlarged_query.py'
   schedule:
     - cron: '*/15 * * * *'
 permissions:
@@ -21,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   parallel-smoke:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER' && github.event_name != 'schedule'
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -98,6 +99,13 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_enlarged_bsg.py
+      - name: Build ChatGPT October enlarged source and Gold index with dates and SHA
+        if: github.event_name != 'schedule'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_ultimate_r1_enlarged_query.py
       - name: Check existing September Silver Gold immutable incremental checkpoints
         if: github.event_name != 'schedule'
         env:
