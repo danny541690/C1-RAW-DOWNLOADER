@@ -1,7 +1,7 @@
 {
-  "schema": "JARVIS_V095_DATA_VALIDITY_SYSTEM_RULES_V2",
-  "version": "2026-11-06-R2",
-  "effective_date": "2026-11-06",
+  "schema": "JARVIS_V095_DATA_VALIDITY_SYSTEM_RULES_V3",
+  "version": "2026-11-07-R3",
+  "effective_date": "2026-11-07",
   "timezone": "Asia/Taipei",
   "range_from": "2000-01-01",
   "description": "Source publication calendar, dataset-specific availability, PIT, stage qualification and 4-state acceptance; authoritative rules for controller and ChatGPT query, not claims that every dataset is complete.",
@@ -201,7 +201,7 @@
   ],
   "acceptance_pilot_202609_202611": {
     "asof": "2026-11-06T23:16:00+08:00",
-    "latest_evidence_run": 42237807632,
+    "latest_evidence_run": 42248680714,
     "worker_execution": "PASS",
     "dataset_acceptance": "PARTIAL",
     "production_gate": "BLOCK",
@@ -216,5 +216,76 @@
     },
     "meaning": "Folders/partial Parquet exist. No full 443 indicator or formal PIT approval. Source-month observation not completeness.",
     "next_month_backfill": "2026-08_BLOCKED_UNTIL_PILOT_RELEASE"
+  },
+  "post_transform_acceptance": {
+    "phase": "AFTER_BRONZE_SILVER_GOLD_MATERIALIZATION_BEFORE_DATA_RELEASE",
+    "execution_order": [
+      "bronze_source_contract_sha_check",
+      "silver_field_type_units_sha_check",
+      "gold_formula_warmup_dependency_check",
+      "bidirectional_443_catalog_edges",
+      "source_release_receipt_and_historical_pit",
+      "immutable_post_transform_evidence_and_acceptance"
+    ],
+    "catalog_id": "1lbWk0qRZZFjpV-yL1gZNUb2pCZmHDHW7",
+    "expected_indicator_count": 443,
+    "monthly_audit_grain": [
+      "indicator_id",
+      "reference_month",
+      "source_dataset_version",
+      "security_id_if_applicable"
+    ],
+    "forward_keys": [
+      "indicator_id",
+      "formula_version",
+      "input_silver_field",
+      "input_silver_file_id",
+      "input_silver_sha256",
+      "source_bronze_file_id",
+      "source_bronze_sha256",
+      "available_at"
+    ],
+    "reverse_keys": [
+      "source_bronze_file_id",
+      "source_sha256",
+      "downstream_silver_file_ids",
+      "affected_gold_indicator_ids",
+      "versioned_affected_periods"
+    ],
+    "status_rules": {
+      "PASS": "formula, warmup, real Silver/Bronze SHA and first publication timestamp all evidenced",
+      "PARTIAL": "some actual Gold/Silver/Bronze chain proved but not all expected applicable units",
+      "BLOCK": "publication not yet due or source/definition/evidence absent; release gate stays blocked",
+      "ERROR": "file parse, integrity, runtime or conflicting source observed"
+    },
+    "known_catalog_baseline": {
+      "indicators": 443,
+      "pending_formulas": 443,
+      "certified_formulas": 0,
+      "baseline_run_id": 42248680714,
+      "note": "443 candidate lineage entries are not certified 443 formula definitions. Existing partial MA5 and Oct descriptive trace are pilot examples only."
+    },
+    "validation_requirements": [
+      "compare registry with actual 443 catalog and prove bidirectional candidate set equality",
+      "re-read real Gold -> Silver -> Bronze file contents and verify actual SHA-256 before counting verified chain",
+      "multi-row indicator warmup requires every necessary historical input, not only output day",
+      "first_published_at and available_at must be evidenced per exact dataset/security/revision, otherwise PIT false",
+      "do not use download time as official release evidence",
+      "source folder/file existence is NOT proof of whole dataset completeness",
+      "never count candidate source-family relationships as exact field-level SHA lineage",
+      "run after successful three-stage conversion; even when upstream fails write an explicit BLOCK/ERROR report; preserve prior PASS",
+      "no automatic backfill before Sep 2026 while pilot release blocked"
+    ],
+    "schedule_semantics": {
+      "cron": "*/15 * * * *",
+      "mode": "incremental checks; expensive three-layer jobs manual or due checkpoint; QA on every run, no automatic forced recalculation",
+      "dependency": "post-transform acceptance waits for pilot-controller and 14 lane evidence; report distinguishes execution result and data release",
+      "outputs": [
+        "GitHub artifact receipt",
+        "Google Drive governance validation manifest",
+        "PASS/PARTIAL/BLOCK/ERROR and specific gaps per dataset/indicator/period"
+      ],
+      "checkpoint_rule": "unchanged input sha+formula version+release version => skip recalculation"
+    }
   }
 }
