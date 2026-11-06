@@ -1,0 +1,113 @@
+{
+  "schema": "JARVIS_v095_202609_MONTH_ONLY_ACCEPTANCE_R4",
+  "period": "2026-09",
+  "snapshot_asof": "2026-11-06",
+  "purpose": "Accept the one-month data-pipeline pilot without requiring 240d or multi-year warmup",
+  "quality_not_equal_to_job_success": true,
+  "predecessor_batch_run": 42150845929,
+  "source_priority": [
+    "v0.93 immutable existing",
+    "six official sites only confirmed source gaps",
+    "FinMind Free only equivalent remaining gaps"
+  ],
+  "eligibility": {
+    "monthly_direct": "OHLCV, current price, volume, turnover, one-day returns using September consecutive sessions, 5d/10d/20d trailing windows only where sufficient valid consecutive September sessions; daily institutional flow, margin, foreign holdings, official valuation, TDCC four weekly observations",
+    "monthly_report_self_contained": "September revenue current, prior-month and prior-year comparisons from original monthly reporting fields (once release date reached); cannot assume published on 2026-09-30",
+    "only_if_published_within_asof": "official 2026 September report 2026 October publication; NDC 11509 October 29 workbook; financial revisions need available_at",
+    "correctly_not_applicable": "MA60/120/240, RS60/120/240, historical 50/120/240 breakout, multiyear percentile, 24m revenue peak, EPS TTM and seasonal QoQ without prerequisite history, 57 XQ-dependent indicators if source absent",
+    "missing_policy": "NOT_APPLICABLE_HISTORY rather than failed / missing; for truly expected current month fields use NULL + DATA_GAP and quality issue",
+    "acceptance_split": "MONTH_SCOPE_DATA_QA and HISTORICAL_PIT_QA are independent; no claim old backtesting PIT pass"
+  },
+  "verified_qa_reports": [
+    {
+      "kind": "TSE_PRICE",
+      "silver_rows": 21860,
+      "gold_rows": 21803,
+      "excluded_nonnumeric": 57,
+      "monthly_ma5_rows": 17288,
+      "monthly_ma10_rows": 11772,
+      "monthly_ma20_rows": 1062,
+      "drive_qa_id": "1bsEGeHMXrvwg5PM5HCneBBcw0ACCt9c_"
+    },
+    {
+      "kind": "OTC_PRICE",
+      "silver_rows": 17762,
+      "gold_rows": 17350,
+      "excluded_nonnumeric": 412,
+      "drive_qa_id": "1R70y8gs9u6HJ_ZvBnJxhsx-oumJzDezg"
+    },
+    {
+      "kind": "SEPTEMBER_REVENUE",
+      "silver_rows": 1980,
+      "gold_rows": 1980,
+      "drive_qa_id": "1CtvmX0vCB_Pw-FI9Qj35H4R6Ki4cfjPv"
+    },
+    {
+      "kind": "TSE_FLOW",
+      "silver_rows": 21621,
+      "gold_rows": 21621,
+      "drive_qa_id": "1NvjoW8eQWDS89nGPdPa1uDYWSXDq2vu8"
+    },
+    {
+      "kind": "OTC_MARGIN",
+      "silver_rows": 16041,
+      "gold_rows": 16041,
+      "drive_qa_id": "1m2OQHYJFQk_oa8NXXaumnpwGF-6QV3VP"
+    }
+  ],
+  "bronze": {
+    "migrated_file_manifests_name_size": "41/41 observed",
+    "tdcc_native_source_id_sha": "10949/10949 pass",
+    "all_source_contracts_signed": false,
+    "status": "MONTH_SCOPE_PARTIAL_PASS"
+  },
+  "silver": {
+    "datasets_transformed": true,
+    "tdcc_weekly_numeric_qa_full_scope_unconfirmed": true,
+    "ohlc_invalid_values_preserved_not_filled": true,
+    "status": "MONTH_SCOPE_PARTIAL_PASS"
+  },
+  "gold": {
+    "monthly_feature_tables_produced": true,
+    "full_443_required": false,
+    "zero_unavailable_to_zero_imputation": true,
+    "full_443_formulas_verified": false,
+    "status": "MONTHLY_DESCRIPTIVE_SUBSETS_PUBLISHED"
+  },
+  "issue_register": [
+    {
+      "issue": "OTC 412 nonnumeric OHLC",
+      "rule": "do not call all errors; classify trading state and positive volume (previous audit 255) independently",
+      "status": "REQUIRES_CLASSIFICATION"
+    },
+    {
+      "issue": "TSE 57 nonnumeric OHLC",
+      "rule": "classify official no-trade and exceptions, keep null; do not average across gaps",
+      "status": "REQUIRES_CLASSIFICATION"
+    },
+    {
+      "issue": "Revenue historical asof",
+      "rule": "month 2026-09 revenue publication is after report month; usable in 2026-11-06 descriptive snapshot but not assumed valid at 2026-09-30",
+      "status": "REQUIRES_PIT_FOR_BACKTEST_ONLY"
+    },
+    {
+      "issue": "TDCC weekly Silver",
+      "rule": "check existing native copy gate and 4 weekly Silver partitions; do not block independent families",
+      "status": "RECHECK"
+    },
+    {
+      "issue": "Market scope security master",
+      "rule": "exclude emerging from Gold analysis and certify TSE/OTC security identity where needed",
+      "status": "RECHECK"
+    }
+  ],
+  "pass_conditions": {
+    "bronze": "all defined September source-date files for active month-only features exist and checksum/source contracts match or explicit exceptions",
+    "silver": "typed, units, dates, key uniqueness, source-SHA equality, null exceptions and row-count QA pass for the monthly dataset",
+    "gold": "monthly-eligible formula/columns have non-null values where inputs valid and month window sufficient; no unexplained missing values, no lookahead",
+    "AI": "read the verified monthly-only Gold partitions using an accessible query executor, return availability/missing reason and source lineage"
+  },
+  "overall": "ONE_MONTH_MONTHLY_SUBSET_VALIDATED_PARTIALLY_NOT_100_PERCENT_END_TO_END",
+  "production_release_for_all_443": false,
+  "recalculate_multimonth_only_when_history_arrives": true
+}
