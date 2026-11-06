@@ -1,0 +1,136 @@
+{
+  "schema": "JARVIS_V095_ULTIMATE_R1",
+  "version": "0.95.ultimate.r1",
+  "created_on": "2026-11-06",
+  "mode": "PILOT",
+  "description": "2026 newest to September pilot; historical before September strictly gated",
+  "direction": "newest_to_oldest",
+  "pilot": {
+    "latest_month": "2026-11",
+    "oldest_month": "2026-09",
+    "canary_max_units_per_run": 6,
+    "require_bronze_silver_gold_pit_lineage_acceptance": true,
+    "auto_advance_before_2026_09_only_if_pilot_certified": true
+  },
+  "history": {
+    "oldest_month": "2000-01",
+    "backfill_enabled_on_pilot_pass": true
+  },
+  "orchestrator": {
+    "cron_utc": "*/15 * * * *",
+    "global_max_active": 6,
+    "stress_max_active": 14,
+    "max_dispatch_per_tick": 6,
+    "lease_minutes": 75,
+    "transient_retry_limit": 3,
+    "backoff_minutes": [
+      15,
+      30,
+      60
+    ],
+    "max_drive_requests_per_second": 2,
+    "fail_closed_on_unknown_release": true
+  },
+  "worker_slots": {
+    "BRONZE": [
+      "TWSE",
+      "TPEX",
+      "MOPS",
+      "TDCC",
+      "TAIFEX",
+      "NDC"
+    ],
+    "SILVER": [
+      "PRICE_VOLUME",
+      "FUNDAMENTALS_FLOWS",
+      "TDCC_OWNERSHIP",
+      "DERIVATIVES_MACRO"
+    ],
+    "GOLD": [
+      "TECHNICAL",
+      "CHIP_OWNERSHIP",
+      "FINANCIAL_VALUATION",
+      "CROSS_ASSET"
+    ]
+  },
+  "source_priority": [
+    "v0.93_immutable",
+    "six_official_exact_dataset_dates",
+    "FinMind_free_equivalent_gap_only"
+  ],
+  "canonical_dirs": [
+    "00_GOVERNANCE",
+    "10_INGEST_STAGING",
+    "20_BRONZE_RAW",
+    "30_SILVER_STANDARD",
+    "40_GOLD_FEATURES",
+    "50_RESEARCH_DECISIONS",
+    "60_OPERATIONS_QA",
+    "70_RELEASE_BACKUP"
+  ],
+  "qa_requirements": {
+    "bronze": [
+      "sha256",
+      "source_lineage",
+      "date_coverage",
+      "immutable"
+    ],
+    "silver": [
+      "date",
+      "security_id",
+      "field_types",
+      "units",
+      "parquet",
+      "uniqueness",
+      "source_sha"
+    ],
+    "gold": [
+      "catalog_443",
+      "formula_version",
+      "DAG",
+      "input_sha",
+      "nonnull_eligibility"
+    ],
+    "pit": [
+      "published_at",
+      "available_at",
+      "revision_at",
+      "security_universe_asof"
+    ],
+    "lineage": [
+      "gold_to_silver_to_bronze",
+      "silver_to_gold",
+      "file_or_row_evidence"
+    ]
+  },
+  "missing_states": [
+    "WAITING_SOURCE",
+    "NO_HISTORICAL_SOURCE",
+    "NOT_APPLICABLE_HISTORY",
+    "WAITING_PIT",
+    "BLOCKED_FORMULA",
+    "BLOCKED_QA",
+    "PENDING_RETRY"
+  ],
+  "release_policies": {
+    "do_not_impute_prices": true,
+    "only_tse_otc_for_analysis": true,
+    "emerging_raw_only": true,
+    "amounts_unit": "億元",
+    "never_mix_download_at_with_available_at": true,
+    "production_gate": "BLOCK_UNTIL_EVIDENCE_VERIFIED"
+  },
+  "drive": {
+    "c1_root": "1oCcRwevEWtRRutOkXSxds5nPF4Br5two",
+    "governance": "1igeNb_PpOgiYV13_TB1rfEPNsAoisc_Z",
+    "operations": "1XSkUNOHSkJEbdr6UGNqescxOVBUV3Uvk",
+    "bronze_root": "1GLgDFEKrUgH5CJYoV-bjGIWKUEWy_D4E",
+    "silver_root": "1uBAAcr24R0da3q0WBeFu-yc5r1HB5YfL",
+    "gold_root": "1FYIz-uylwZLM7HL-7MG2iH90BefMyXDw",
+    "catalog_443_file": "1lbWk0qRZZFjpV-yL1gZNUb2pCZmHDHW7"
+  },
+  "state": {
+    "manifest_name": "JARVIS_V095_ULTIMATE_R1_LATEST_STATE.json",
+    "reports_prefix": "JARVIS_V095_ULTIMATE_R1_RUN_"
+  }
+}
