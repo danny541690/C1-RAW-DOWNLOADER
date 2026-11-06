@@ -3,8 +3,6 @@ on:
   push:
     branches: [main]
     paths: [config/v093_source_release.json]
-  schedule:
-    - cron: '3,13,23,33,43,53 * * * *'
   workflow_run:
     workflows:
       - "證交所排程一之一（1-1）｜最新往舊｜受控執行入口"
