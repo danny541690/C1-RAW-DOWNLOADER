@@ -121,13 +121,13 @@
       "conclusion": "success"
     },
     "v095-202609-gold-valuation-foreign.yml": {
-      "status": "running",
+      "status": "success",
       "attempts": 1,
       "sent": "2026-11-06T02:02:26.953693+00:00",
       "prior_ids": [],
       "run_id": 42147732951,
       "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42147732951",
-      "conclusion": null
+      "conclusion": "success"
     },
     "v095-202609-tdcc-gold-weekly.yml": {
       "status": "running",
@@ -151,6 +151,6 @@
   "created_utc": "2026-11-06T00:51:08.432216+00:00",
   "production_approved": false,
   "pit_certified": false,
-  "updated_utc": "2026-11-06T02:03:12.074528+00:00",
+  "updated_utc": "2026-11-06T02:03:13.295610+00:00",
   "tdcc_partial_hold": true
 }
