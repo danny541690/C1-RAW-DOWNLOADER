@@ -22,6 +22,7 @@
     "all_443_formula_pit_verified": false,
     "catalog_443_ids": true,
     "tdcc_native_copy_marker": true,
+    "tdcc_monthly_silver_qa_pass": true,
     "drive_observation": "OBSERVED"
   },
   "candidate_scope": "2026-09",
@@ -142,13 +143,13 @@
   },
   "phase_status": {
     "bronze": "CANDIDATE_ONLY",
-    "silver": "PARTIAL_TDCC_PENDING",
+    "silver": "CANDIDATE_AWAITING_QA",
     "gold": "DESCRIPTIVE_SUBSETS_ONLY",
     "pit": "BLOCKED",
     "production": "BLOCKED"
   },
   "release_approved": false,
-  "action": "DISPATCH:v095-202609-silver-tdcc-conversion.yml",
+  "action": "MONITOR",
   "quality_conclusion": "BLOCKED_FORMULAS_PIT_SOURCE_UNIVERSE",
-  "updated_utc": "2026-11-06T02:49:03.972932+00:00"
+  "updated_utc": "2026-11-06T02:50:22.984434+00:00"
 }
