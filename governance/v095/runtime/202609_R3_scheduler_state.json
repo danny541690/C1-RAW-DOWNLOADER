@@ -1,8 +1,16 @@
 {
   "schema": "JARVIS_V095_202609_R3_CONTROL",
   "period": "2026-09",
-  "previous_actions": [],
-  "dispatch_counts": {},
+  "previous_actions": [
+    {
+      "workflow": "v095-202609-silver-tdcc-conversion.yml",
+      "sent_utc": "2026-11-06T02:49:03.972911+00:00",
+      "reason": "SILVER_TDCC_NOT_COMPLETE"
+    }
+  ],
+  "dispatch_counts": {
+    "v095-202609-silver-tdcc-conversion.yml": 1
+  },
   "created_utc": "2026-11-06T02:11:13.876849+00:00",
   "evidence": {
     "v093_to_v095_name_size": "41_OF_41_CANDIDATE_ONLY",
@@ -140,7 +148,7 @@
     "production": "BLOCKED"
   },
   "release_approved": false,
-  "action": "WAIT_ACTIVE:v095-202609-silver-tdcc-conversion.yml",
+  "action": "DISPATCH:v095-202609-silver-tdcc-conversion.yml",
   "quality_conclusion": "BLOCKED_FORMULAS_PIT_SOURCE_UNIVERSE",
-  "updated_utc": "2026-11-06T02:11:16.566220+00:00"
+  "updated_utc": "2026-11-06T02:49:03.972932+00:00"
 }
