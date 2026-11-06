@@ -16,7 +16,9 @@ def main():
    volume=r.get("volume_shares")
    label="NO_TRADE_CANDIDATE" if volume==0 else "POSITIVE_VOLUME_UNEXPLAINED" if volume is not None and volume>0 else "UNKNOWN_VOLUME"
    groups[label]+=1
-   if len(examples)<20:examples.append({"date":str(r["trade_date"]),"stock_id":r["stock_id"],"status":label,"volume":volume})
+   native=r.get("raw_ohlc_json","")
+   groups["NATIVE_PATTERN_"+str(native)[:70]]+=1
+   if len(examples)<20:examples.append({"date":str(r["trade_date"]),"stock_id":r["stock_id"],"status":label,"volume":volume,"turnover_億元":str(r.get("turnover_億元")),"native":native})
   result[market]={"counts":dict(groups),"sample":examples}
  pathlib.Path("monthly_r4").mkdir(exist_ok=True)
  pathlib.Path("monthly_r4/classification.json").write_text(json.dumps(result,ensure_ascii=False,indent=2))
