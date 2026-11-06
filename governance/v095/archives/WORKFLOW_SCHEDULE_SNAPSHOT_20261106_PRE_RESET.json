@@ -1,0 +1,1344 @@
+{
+  "schema": "JARVIS_WORKFLOW_SNAPSHOT_BEFORE_PAUSE_V1",
+  "asof": "2026-11-06",
+  "repo": "danny541690/C1-RAW-DOWNLOADER",
+  "reference_commit_sha": "c4f549879170c7b6d5ffadb7b8a50bb0aa4a93ae",
+  "restore": "Use Git history at reference_commit_sha to restore original workflow files. This archive preserves all workflow blob SHA and filenames; existing original YAML files and Drive data remain untouched.",
+  "workflow_count": 263,
+  "workflows": [
+    {
+      "name": "four-lane-live-acceptance.yml",
+      "path": ".github/workflows/four-lane-live-acceptance.yml",
+      "sha": "8a80713d2f31ecc624376cf2b58276d69cd701f5"
+    },
+    {
+      "name": "four-lane-month-integration.yml",
+      "path": ".github/workflows/four-lane-month-integration.yml",
+      "sha": "a51ab0d18340e56326124059fb9863670a4b332a"
+    },
+    {
+      "name": "four-source-repair-review.yml",
+      "path": ".github/workflows/four-source-repair-review.yml",
+      "sha": "a964a4b9964f758460794b659fd2494831d66974"
+    },
+    {
+      "name": "jarvis-acceptance-blocked-followup.yml",
+      "path": ".github/workflows/jarvis-acceptance-blocked-followup.yml",
+      "sha": "7f62b3465eb78d527e72874fa82524831dc48e67"
+    },
+    {
+      "name": "jarvis-acceptance-journal-readback.yml",
+      "path": ".github/workflows/jarvis-acceptance-journal-readback.yml",
+      "sha": "fd28e7f319e81df51efbdc833407d2f7374be8e0"
+    },
+    {
+      "name": "jarvis-acceptance-live-rehearsal.yml",
+      "path": ".github/workflows/jarvis-acceptance-live-rehearsal.yml",
+      "sha": "dcfe0a05f1c0c8a96cc63ccd697fae165a813b8b"
+    },
+    {
+      "name": "jarvis-acceptance-remote-inventory.yml",
+      "path": ".github/workflows/jarvis-acceptance-remote-inventory.yml",
+      "sha": "d0a7d3626497815c15178ce12a5f3099b75acb81"
+    },
+    {
+      "name": "jarvis-acceptance-scheduled.yml",
+      "path": ".github/workflows/jarvis-acceptance-scheduled.yml",
+      "sha": "edffba306f8341850b4a7e49c7aba257c8989ea4"
+    },
+    {
+      "name": "jarvis-blocked-gap-recovery-20261101.yml",
+      "path": ".github/workflows/jarvis-blocked-gap-recovery-20261101.yml",
+      "sha": "0acaba203c0864bf03ec4e5a518f0d8ca6762b14"
+    },
+    {
+      "name": "jarvis-checkpoint-replan-20261021.yml",
+      "path": ".github/workflows/jarvis-checkpoint-replan-20261021.yml",
+      "sha": "dc242e08d1607f922c02d4ba66518905de7c0305"
+    },
+    {
+      "name": "jarvis-checkpoint-replan-launch-20261021.yml",
+      "path": ".github/workflows/jarvis-checkpoint-replan-launch-20261021.yml",
+      "sha": "b33b47c22e9a988080b795b8dd6c6a78c280ed7c"
+    },
+    {
+      "name": "jarvis-drive-publication-retry-tests.yml",
+      "path": ".github/workflows/jarvis-drive-publication-retry-tests.yml",
+      "sha": "c86ad1989e1f8ee3d8277bccdd3b3c4b98f30364"
+    },
+    {
+      "name": "jarvis-eight-group-live-audit.yml",
+      "path": ".github/workflows/jarvis-eight-group-live-audit.yml",
+      "sha": "cac1f0aeb03d2693629a245083b0bfcee2def0da"
+    },
+    {
+      "name": "jarvis-financial-continue-20261022.yml",
+      "path": ".github/workflows/jarvis-financial-continue-20261022.yml",
+      "sha": "675bc907a00e0a6fd0486e3f2b970de77493b84d"
+    },
+    {
+      "name": "jarvis-followup-partition-tests.yml",
+      "path": ".github/workflows/jarvis-followup-partition-tests.yml",
+      "sha": "bc6b7de670911a5f943144cc2d9336c3f1e84779"
+    },
+    {
+      "name": "jarvis-four-consumers-60m-20261022.yml",
+      "path": ".github/workflows/jarvis-four-consumers-60m-20261022.yml",
+      "sha": "f13da2f8e29604ae670638cfd0555177d7074e93"
+    },
+    {
+      "name": "jarvis-live-staging-followthrough-20261021.yml",
+      "path": ".github/workflows/jarvis-live-staging-followthrough-20261021.yml",
+      "sha": "3874b437cf00be994ab71b455925c76967089b7d"
+    },
+    {
+      "name": "jarvis-parallel-four-30m-20261022.yml",
+      "path": ".github/workflows/jarvis-parallel-four-30m-20261022.yml",
+      "sha": "7a89039c426a0fbce53ba6d11cfc926b2a4172f2"
+    },
+    {
+      "name": "jarvis-pause-handoff-20261029.yml",
+      "path": ".github/workflows/jarvis-pause-handoff-20261029.yml",
+      "sha": "a459ea7b175b42d166599e6576c2901425da343c"
+    },
+    {
+      "name": "jarvis-problem-recovery-20261031.yml",
+      "path": ".github/workflows/jarvis-problem-recovery-20261031.yml",
+      "sha": "7f415f386e9d1f268a842876484f78b17d6bb73a"
+    },
+    {
+      "name": "jarvis-raw-first-live-batch-20261021.yml",
+      "path": ".github/workflows/jarvis-raw-first-live-batch-20261021.yml",
+      "sha": "f0b5705a264ba666d5d2dc56254c94c2d48ae092"
+    },
+    {
+      "name": "jarvis-raw-hourly-60m-20261022.yml",
+      "path": ".github/workflows/jarvis-raw-hourly-60m-20261022.yml",
+      "sha": "cc6cf927c485eb34936df2d6ef787b5a0fe8c5fd"
+    },
+    {
+      "name": "jarvis-raw-repair-onepass-20261027.yml",
+      "path": ".github/workflows/jarvis-raw-repair-onepass-20261027.yml",
+      "sha": "a124ac65a257952e55bdea0cb42d94cd88d454cb"
+    },
+    {
+      "name": "jarvis-release-fingerprint-audit.yml",
+      "path": ".github/workflows/jarvis-release-fingerprint-audit.yml",
+      "sha": "ebf905b08509beda1fbd00fc9295dab17bd0223f"
+    },
+    {
+      "name": "jarvis-replan-stop-20261021.yml",
+      "path": ".github/workflows/jarvis-replan-stop-20261021.yml",
+      "sha": "379cc9fd35466c6e9205fe1efd055d8804950f94"
+    },
+    {
+      "name": "jarvis-resume-201404-30-10-10-10-20261021.yml",
+      "path": ".github/workflows/jarvis-resume-201404-30-10-10-10-20261021.yml",
+      "sha": "3e70d36b94ba5bfbe59a7be13d4ba898b5810bfc"
+    },
+    {
+      "name": "jarvis-retire-legacy-20261021.yml",
+      "path": ".github/workflows/jarvis-retire-legacy-20261021.yml",
+      "sha": "0de16cbdeaabf1f22d4d62bf4ebdc40cd150083e"
+    },
+    {
+      "name": "jarvis-seven-01-twse-oldest-preview.yml",
+      "path": ".github/workflows/jarvis-seven-01-twse-oldest-preview.yml",
+      "sha": "4361d31dd881d1205ab08f3190c8d288f41f0dcd"
+    },
+    {
+      "name": "jarvis-seven-01-twse-preview.yml",
+      "path": ".github/workflows/jarvis-seven-01-twse-preview.yml",
+      "sha": "065ed902ec19e476d315b7c87513be04aa271e89"
+    },
+    {
+      "name": "jarvis-seven-02-tpex-oldest-preview.yml",
+      "path": ".github/workflows/jarvis-seven-02-tpex-oldest-preview.yml",
+      "sha": "e5dfb731867a9d356101c91249c8e48071c4d4f1"
+    },
+    {
+      "name": "jarvis-seven-02-tpex-preview.yml",
+      "path": ".github/workflows/jarvis-seven-02-tpex-preview.yml",
+      "sha": "6669098c95875a8f21b5e55cdf5957b97eb93ba7"
+    },
+    {
+      "name": "jarvis-seven-03-mops-oldest-preview.yml",
+      "path": ".github/workflows/jarvis-seven-03-mops-oldest-preview.yml",
+      "sha": "0bf192308d849e4953a4314c7e582bd6462fc193"
+    },
+    {
+      "name": "jarvis-seven-03-mops-preview.yml",
+      "path": ".github/workflows/jarvis-seven-03-mops-preview.yml",
+      "sha": "25fd32b9b8876d55059826543337acaca3259afd"
+    },
+    {
+      "name": "jarvis-seven-04-tdcc-oldest-preview.yml",
+      "path": ".github/workflows/jarvis-seven-04-tdcc-oldest-preview.yml",
+      "sha": "87ad5b3cb2838b708731416854f7561ab22f4283"
+    },
+    {
+      "name": "jarvis-seven-04-tdcc-preview.yml",
+      "path": ".github/workflows/jarvis-seven-04-tdcc-preview.yml",
+      "sha": "44730ff98e1d359e51f1a506a1405861f61c2190"
+    },
+    {
+      "name": "jarvis-seven-05-taifex-oldest-preview.yml",
+      "path": ".github/workflows/jarvis-seven-05-taifex-oldest-preview.yml",
+      "sha": "147adc2e0a534c538745f47356ee824d3e9d946f"
+    },
+    {
+      "name": "jarvis-seven-05-taifex-preview.yml",
+      "path": ".github/workflows/jarvis-seven-05-taifex-preview.yml",
+      "sha": "77e0951211414f16f479ba28ca4fe4e732fb09a9"
+    },
+    {
+      "name": "jarvis-seven-06-ndc-preview.yml",
+      "path": ".github/workflows/jarvis-seven-06-ndc-preview.yml",
+      "sha": "a75ab1018ab6dd6723c175ca5d4af246e6434450"
+    },
+    {
+      "name": "jarvis-seven-07-finmind-preview.yml",
+      "path": ".github/workflows/jarvis-seven-07-finmind-preview.yml",
+      "sha": "42b574464a01b5a0cc63b13be484a371066f9c8e"
+    },
+    {
+      "name": "jarvis-seven-action-queues.yml",
+      "path": ".github/workflows/jarvis-seven-action-queues.yml",
+      "sha": "537d1bfba494c00c8af7d3aa72183792a5fe9ede"
+    },
+    {
+      "name": "jarvis-seven-action-refresh.yml",
+      "path": ".github/workflows/jarvis-seven-action-refresh.yml",
+      "sha": "d05ad78c2700868f851c7da818a488822ab40577"
+    },
+    {
+      "name": "jarvis-seven-adapter-missing-test.yml",
+      "path": ".github/workflows/jarvis-seven-adapter-missing-test.yml",
+      "sha": "03badd13b3492f18bb9b003a1b5edf9161d28651"
+    },
+    {
+      "name": "jarvis-seven-adapter-rate-test.yml",
+      "path": ".github/workflows/jarvis-seven-adapter-rate-test.yml",
+      "sha": "ccb0067aab1bda2a33949391e9b4f11b30643530"
+    },
+    {
+      "name": "jarvis-seven-admission-audit.yml",
+      "path": ".github/workflows/jarvis-seven-admission-audit.yml",
+      "sha": "6a4d9081c4aab1bf0da6d162f7ef59f2aee9be8a"
+    },
+    {
+      "name": "jarvis-seven-admission-runtime-test.yml",
+      "path": ".github/workflows/jarvis-seven-admission-runtime-test.yml",
+      "sha": "1b7a5d7c99d330840d204c908f9b3d46e485d0b6"
+    },
+    {
+      "name": "jarvis-seven-clear-queued-20261029.yml",
+      "path": ".github/workflows/jarvis-seven-clear-queued-20261029.yml",
+      "sha": "cb2ec0913040e73f99e4edb124450cfc3758f515"
+    },
+    {
+      "name": "jarvis-seven-closed-loop-batch.yml",
+      "path": ".github/workflows/jarvis-seven-closed-loop-batch.yml",
+      "sha": "0f18a78321d70e0d625ce725e69dcf8d67a14846"
+    },
+    {
+      "name": "jarvis-seven-continuation-live-test.yml",
+      "path": ".github/workflows/jarvis-seven-continuation-live-test.yml",
+      "sha": "dc4f2860b740e4b93f70febffe6cc0e04932a6cd"
+    },
+    {
+      "name": "jarvis-seven-continuation-test.yml",
+      "path": ".github/workflows/jarvis-seven-continuation-test.yml",
+      "sha": "db6ca51ebb81cc4c5d718d4867b023d080877f42"
+    },
+    {
+      "name": "jarvis-seven-contract-audit.yml",
+      "path": ".github/workflows/jarvis-seven-contract-audit.yml",
+      "sha": "dbe2906478abe873d35b2c766f2b747d86365a1e"
+    },
+    {
+      "name": "jarvis-seven-entry-test.yml",
+      "path": ".github/workflows/jarvis-seven-entry-test.yml",
+      "sha": "1bb65b3d3063d05ccda0e3a1b880f3cc3f696ba4"
+    },
+    {
+      "name": "jarvis-seven-final-bundle.yml",
+      "path": ".github/workflows/jarvis-seven-final-bundle.yml",
+      "sha": "6dbd63dbd45be09f83d1e30ac73174c6dcb5b6ff"
+    },
+    {
+      "name": "jarvis-seven-final-handoff-catalogs.yml",
+      "path": ".github/workflows/jarvis-seven-final-handoff-catalogs.yml",
+      "sha": "38ef4abe3919a33806d6cae1b71cd069d753eb9b"
+    },
+    {
+      "name": "jarvis-seven-final-release-build.yml",
+      "path": ".github/workflows/jarvis-seven-final-release-build.yml",
+      "sha": "fcf80452cadd59741e6cd61d7896ce2f6469c440"
+    },
+    {
+      "name": "jarvis-seven-final-scope-acceptance.yml",
+      "path": ".github/workflows/jarvis-seven-final-scope-acceptance.yml",
+      "sha": "132f7f14a6956a59b55868531edc7db6f4dd3ff5"
+    },
+    {
+      "name": "jarvis-seven-formal-promotion-canary.yml",
+      "path": ".github/workflows/jarvis-seven-formal-promotion-canary.yml",
+      "sha": "c3464a11697be99e320088147d8586d37177b9b1"
+    },
+    {
+      "name": "jarvis-seven-full-state-test.yml",
+      "path": ".github/workflows/jarvis-seven-full-state-test.yml",
+      "sha": "23c1e13c6b125fc61c73426afbcf385ad61bef03"
+    },
+    {
+      "name": "jarvis-seven-handoff-replay.yml",
+      "path": ".github/workflows/jarvis-seven-handoff-replay.yml",
+      "sha": "9f1c810965d3c6477e5c9d40c6fb568c892b5cbd"
+    },
+    {
+      "name": "jarvis-seven-handoff-test.yml",
+      "path": ".github/workflows/jarvis-seven-handoff-test.yml",
+      "sha": "1cc82bf3a28660de65c1c4468382d1d8022f4f85"
+    },
+    {
+      "name": "jarvis-seven-import-test.yml",
+      "path": ".github/workflows/jarvis-seven-import-test.yml",
+      "sha": "1a467e9d6efa4f733f5835878df2b4890b6f1c2c"
+    },
+    {
+      "name": "jarvis-seven-merged-release-test.yml",
+      "path": ".github/workflows/jarvis-seven-merged-release-test.yml",
+      "sha": "c038e8196a226e4b3ec3cd09cfddc5da97d2d709"
+    },
+    {
+      "name": "jarvis-seven-missing-rules-closeout.yml",
+      "path": ".github/workflows/jarvis-seven-missing-rules-closeout.yml",
+      "sha": "dc0c9f27b2d923e73d93e9f61de0cecd46bf3d7a"
+    },
+    {
+      "name": "jarvis-seven-native-positive-batch.yml",
+      "path": ".github/workflows/jarvis-seven-native-positive-batch.yml",
+      "sha": "e45de32378152e0565ff394051d76af2898f48b2"
+    },
+    {
+      "name": "jarvis-seven-native-repair-handoff.yml",
+      "path": ".github/workflows/jarvis-seven-native-repair-handoff.yml",
+      "sha": "bae478d6e5685092d7a7aa2ac4ccdc8116f3f3c2"
+    },
+    {
+      "name": "jarvis-seven-native-reuse-test.yml",
+      "path": ".github/workflows/jarvis-seven-native-reuse-test.yml",
+      "sha": "222134f272fe4b8eed7fd9f4d76195dea8101e2d"
+    },
+    {
+      "name": "jarvis-seven-official-followup.yml",
+      "path": ".github/workflows/jarvis-seven-official-followup.yml",
+      "sha": "bc34484e0fc4e13e819a5c42fd8ce133718eb9df"
+    },
+    {
+      "name": "jarvis-seven-oldest-side-recovery.yml",
+      "path": ".github/workflows/jarvis-seven-oldest-side-recovery.yml",
+      "sha": "551608e4e6c38b9d8e49bda342e93878a485da8e"
+    },
+    {
+      "name": "jarvis-seven-overnight-prelaunch.yml",
+      "path": ".github/workflows/jarvis-seven-overnight-prelaunch.yml",
+      "sha": "fef0049a915b9e2bb86155078d4011fc22d60922"
+    },
+    {
+      "name": "jarvis-seven-production-watchdog.yml",
+      "path": ".github/workflows/jarvis-seven-production-watchdog.yml",
+      "sha": "1bc1c55ef5d9eedf40b0c068a3a04bea599e08ca"
+    },
+    {
+      "name": "jarvis-seven-publication-test.yml",
+      "path": ".github/workflows/jarvis-seven-publication-test.yml",
+      "sha": "4c8440205a8834b3d054fb54f5cd70dc83745ffa"
+    },
+    {
+      "name": "jarvis-seven-quarantine-recheck.yml",
+      "path": ".github/workflows/jarvis-seven-quarantine-recheck.yml",
+      "sha": "2a707cb4d9f7d5e2f3804419c432c69d56de0d3d"
+    },
+    {
+      "name": "jarvis-seven-release-audit.yml",
+      "path": ".github/workflows/jarvis-seven-release-audit.yml",
+      "sha": "ae8685fa6356323937a6bfd6a96f81c02adda26d"
+    },
+    {
+      "name": "jarvis-seven-tdcc-missing-test.yml",
+      "path": ".github/workflows/jarvis-seven-tdcc-missing-test.yml",
+      "sha": "0c6171a81807930b16c6be005e32fa70ab8975f7"
+    },
+    {
+      "name": "jarvis-seven-tdcc-recover-test.yml",
+      "path": ".github/workflows/jarvis-seven-tdcc-recover-test.yml",
+      "sha": "31d80e109c53b13d5a67f2e48edfb63d1769f9c8"
+    },
+    {
+      "name": "jarvis-seven-twelve-native-handoff.yml",
+      "path": ".github/workflows/jarvis-seven-twelve-native-handoff.yml",
+      "sha": "36a688071980b4306a39a7b0f0d7010a19276c5e"
+    },
+    {
+      "name": "jarvis-seven-watchdog.yml",
+      "path": ".github/workflows/jarvis-seven-watchdog.yml",
+      "sha": "8dc93823f2bfce4a9099c5707d620e0e36623fad"
+    },
+    {
+      "name": "jarvis-seven-worker.yml",
+      "path": ".github/workflows/jarvis-seven-worker.yml",
+      "sha": "34a8a69a3c930322a85859cc118d3fc8ae631d0d"
+    },
+    {
+      "name": "jarvis-source-control-live-preflight.yml",
+      "path": ".github/workflows/jarvis-source-control-live-preflight.yml",
+      "sha": "c6e24c8fb3fcf87b75d3d664a97f2ebc53a2485d"
+    },
+    {
+      "name": "jarvis-stage06-drive-publish-test-20261022.yml",
+      "path": ".github/workflows/jarvis-stage06-drive-publish-test-20261022.yml",
+      "sha": "3e8c19bd35fb0fcf46b02fac23bb40410f7c423c"
+    },
+    {
+      "name": "jarvis-stage06-financial-expand-20261022.yml",
+      "path": ".github/workflows/jarvis-stage06-financial-expand-20261022.yml",
+      "sha": "5dce72e236231df8b09781e4a538556c5cc05dc3"
+    },
+    {
+      "name": "jarvis-stage06-full-launch-20261022.yml",
+      "path": ".github/workflows/jarvis-stage06-full-launch-20261022.yml",
+      "sha": "658c31ab70ad6b6e5f01b869b03aed1215f79d7e"
+    },
+    {
+      "name": "jarvis-stage06-ledger-task-test-20261022.yml",
+      "path": ".github/workflows/jarvis-stage06-ledger-task-test-20261022.yml",
+      "sha": "4b15f77541717b1bfc50333e6cd84c8065670ddd"
+    },
+    {
+      "name": "jarvis-start-live-five-20261021.yml",
+      "path": ".github/workflows/jarvis-start-live-five-20261021.yml",
+      "sha": "be16072f84ce7cd4f5008db50daac8fa72e9dcd0"
+    },
+    {
+      "name": "jarvis-start-live-five-v2-20261021.yml",
+      "path": ".github/workflows/jarvis-start-live-five-v2-20261021.yml",
+      "sha": "a7eeafde1bd9d22735eadbaf58730fbf3f329e81"
+    },
+    {
+      "name": "jarvis-terminal-worker-recovery-20261022.yml",
+      "path": ".github/workflows/jarvis-terminal-worker-recovery-20261022.yml",
+      "sha": "cd9ce17fe795413bcf8672c085e63f6ca877e50c"
+    },
+    {
+      "name": "jarvis-unresolved-recheck-20261101.yml",
+      "path": ".github/workflows/jarvis-unresolved-recheck-20261101.yml",
+      "sha": "fe8379a6a42dea1e2cef41861bbe6a445bc6f110"
+    },
+    {
+      "name": "pause-all-finalize-20261026.yml",
+      "path": ".github/workflows/pause-all-finalize-20261026.yml",
+      "sha": "6b00114a6ab13ec08bbc4b6fbe1f908a488e595a"
+    },
+    {
+      "name": "pause-all-google-auth-20261026.yml",
+      "path": ".github/workflows/pause-all-google-auth-20261026.yml",
+      "sha": "aba6907d5c0d65a1818d3bd93c2797ad362e7e96"
+    },
+    {
+      "name": "pause-legacy-four-20261024.yml",
+      "path": ".github/workflows/pause-legacy-four-20261024.yml",
+      "sha": "d03ce8845414a7000a46bb702cbf1c3921719671"
+    },
+    {
+      "name": "provider-sample-20261016.yml",
+      "path": ".github/workflows/provider-sample-20261016.yml",
+      "sha": "b0774378b0e47fa886b9fbe7e06b965490659a34"
+    },
+    {
+      "name": "resume-audited-downloads-20261026.yml",
+      "path": ".github/workflows/resume-audited-downloads-20261026.yml",
+      "sha": "dbe6eb8674bcbdccf203b0b6c44ce6210af6a6cf"
+    },
+    {
+      "name": "taifex-v3-handoff-20261024.yml",
+      "path": ".github/workflows/taifex-v3-handoff-20261024.yml",
+      "sha": "f59fbb315dcd1003e3750baf8830b8d3a4b1b86c"
+    },
+    {
+      "name": "tdcc-timeout-handoff-20261024.yml",
+      "path": ".github/workflows/tdcc-timeout-handoff-20261024.yml",
+      "sha": "49b699500f2aa0dd745ebbab6414678a7904ce70"
+    },
+    {
+      "name": "v093-2024-four-source-annual-capture.yml",
+      "path": ".github/workflows/v093-2024-four-source-annual-capture.yml",
+      "sha": "5b5310cda17c0233824fcceb611ca94efb5ad8f6"
+    },
+    {
+      "name": "v093-2024-full-year-qa-repair-r1.yml",
+      "path": ".github/workflows/v093-2024-full-year-qa-repair-r1.yml",
+      "sha": "ffdaba55f97adf779e1f540ce203ee46f4915247"
+    },
+    {
+      "name": "v093-2024-integrity-r2.yml",
+      "path": ".github/workflows/v093-2024-integrity-r2.yml",
+      "sha": "ffb459b64ccf3fc547c83cc36acb6b1be54d4f27"
+    },
+    {
+      "name": "v093-2024-tpex-correct-r3.yml",
+      "path": ".github/workflows/v093-2024-tpex-correct-r3.yml",
+      "sha": "3275143301be98a8f3ea581aa5307ad9718e9089"
+    },
+    {
+      "name": "v093-2024-tpex-date-canary.yml",
+      "path": ".github/workflows/v093-2024-tpex-date-canary.yml",
+      "sha": "853dc86c54faecadaa9f6687cf8f9719233c9db7"
+    },
+    {
+      "name": "v093-2025-2026-443-integration-gate.yml",
+      "path": ".github/workflows/v093-2025-2026-443-integration-gate.yml",
+      "sha": "8c58c29e970a701aab2da156b63aae4a5bab2558"
+    },
+    {
+      "name": "v093-202609-deep-source-scan-fixed.yml",
+      "path": ".github/workflows/v093-202609-deep-source-scan-fixed.yml",
+      "sha": "c9a8d4e1476a1c0ee42a03d048aef016cefa5cd8"
+    },
+    {
+      "name": "v093-202609-deep-source-scan.yml",
+      "path": ".github/workflows/v093-202609-deep-source-scan.yml",
+      "sha": "3997c2788858d008e698cae8fb4058b4b4b5133a"
+    },
+    {
+      "name": "v093-actual-partial-2024.yml",
+      "path": ".github/workflows/v093-actual-partial-2024.yml",
+      "sha": "d6abfd64b2205b1f1caa512efe53347256d7be47"
+    },
+    {
+      "name": "v093-annual-plan.yml",
+      "path": ".github/workflows/v093-annual-plan.yml",
+      "sha": "e236311d3d4ef446c8b19c24d6c7f158b8fb65eb"
+    },
+    {
+      "name": "v093-audit-backlog.yml",
+      "path": ".github/workflows/v093-audit-backlog.yml",
+      "sha": "5166a7f216c3c6c13afa7296ee5c987ed7944a2d"
+    },
+    {
+      "name": "v093-bulk-drive-e2e.yml",
+      "path": ".github/workflows/v093-bulk-drive-e2e.yml",
+      "sha": "86ad9d9abde9584e67b03a31674762e0c79a8160"
+    },
+    {
+      "name": "v093-bulk-feb-dec-combined.yml",
+      "path": ".github/workflows/v093-bulk-feb-dec-combined.yml",
+      "sha": "0a828ffba9027b8255c87ad6fdfa9dbba67e264f"
+    },
+    {
+      "name": "v093-bulk-january-e2e.yml",
+      "path": ".github/workflows/v093-bulk-january-e2e.yml",
+      "sha": "f22c81abd6778d887a3393937e5cc363003c09c9"
+    },
+    {
+      "name": "v093-bulk-market-gate.yml",
+      "path": ".github/workflows/v093-bulk-market-gate.yml",
+      "sha": "4b0368f444d88d8be6f0e27e53e1eae73df9ec13"
+    },
+    {
+      "name": "v093-combined-prelaunch-fast-gate.yml",
+      "path": ".github/workflows/v093-combined-prelaunch-fast-gate.yml",
+      "sha": "69771e4d10fd4be6a4e467619ff5fa99e5caaca6"
+    },
+    {
+      "name": "v093-complete-prelaunch-audit.yml",
+      "path": ".github/workflows/v093-complete-prelaunch-audit.yml",
+      "sha": "aa2c61260b8e3759383230ba5e104a52ee5b9782"
+    },
+    {
+      "name": "v093-concurrent-multimonth-cas-integrated.yml",
+      "path": ".github/workflows/v093-concurrent-multimonth-cas-integrated.yml",
+      "sha": "8776594a1ecd61df5ec320d463137f13ad9ae500"
+    },
+    {
+      "name": "v093-consolidated-prelaunch-gates.yml",
+      "path": ".github/workflows/v093-consolidated-prelaunch-gates.yml",
+      "sha": "fd2d3551e979bb2c07f10612a9eec0b6dd3756cf"
+    },
+    {
+      "name": "v093-conversion-2023.yml",
+      "path": ".github/workflows/v093-conversion-2023.yml",
+      "sha": "ea58697c548b1c228c3acac0d9aa76d2f1dd6fa4"
+    },
+    {
+      "name": "v093-corrected-price-reconciliation.yml",
+      "path": ".github/workflows/v093-corrected-price-reconciliation.yml",
+      "sha": "d21235148e3c81dc66ca370868d5bf0375c7e212"
+    },
+    {
+      "name": "v093-cross-asset-52-second-pass.yml",
+      "path": ".github/workflows/v093-cross-asset-52-second-pass.yml",
+      "sha": "ca46fcc43b8171dcdb9edbe43d9f08b675385b6b"
+    },
+    {
+      "name": "v093-cross-asset-72-sep-pilot.yml",
+      "path": ".github/workflows/v093-cross-asset-72-sep-pilot.yml",
+      "sha": "856df84e4efa92405c7743c7eb5ab2769ba07655"
+    },
+    {
+      "name": "v093-cross-asset-third-pass-source-audit.yml",
+      "path": ".github/workflows/v093-cross-asset-third-pass-source-audit.yml",
+      "sha": "b63428b84137872ff4fa0f275bbab0de400fa503"
+    },
+    {
+      "name": "v093-cross-runner-cas-retry-merge.yml",
+      "path": ".github/workflows/v093-cross-runner-cas-retry-merge.yml",
+      "sha": "49d8ea9498e21441125674546e5ba0ff13f91572"
+    },
+    {
+      "name": "v093-cross-runner-github-cas-gate.yml",
+      "path": ".github/workflows/v093-cross-runner-github-cas-gate.yml",
+      "sha": "c26a3c7aae8d8dc0afa6b9576d2f321d37298031"
+    },
+    {
+      "name": "v093-cross-runner-recovery-integrated.yml",
+      "path": ".github/workflows/v093-cross-runner-recovery-integrated.yml",
+      "sha": "0077684a0421fd08ec161a0d661975307e7017f9"
+    },
+    {
+      "name": "v093-cross-source-price-readonly-probe.yml",
+      "path": ".github/workflows/v093-cross-source-price-readonly-probe.yml",
+      "sha": "ccfd8f9406b7af1738a705950741dbc3c2e12747"
+    },
+    {
+      "name": "v093-cross-workflow-lock-a.yml",
+      "path": ".github/workflows/v093-cross-workflow-lock-a.yml",
+      "sha": "fbeacd5f95cbe45ea9cfd5edbabfebc153915e19"
+    },
+    {
+      "name": "v093-cross-workflow-lock-b.yml",
+      "path": ".github/workflows/v093-cross-workflow-lock-b.yml",
+      "sha": "6532480b7d9e704b69c578835d1f52ca006fd375"
+    },
+    {
+      "name": "v093-data-manifest-crash-recovery.yml",
+      "path": ".github/workflows/v093-data-manifest-crash-recovery.yml",
+      "sha": "010797f897b375c09613919b692613714aa6f282"
+    },
+    {
+      "name": "v093-deep-repair-three-lane-smoke.yml",
+      "path": ".github/workflows/v093-deep-repair-three-lane-smoke.yml",
+      "sha": "0b6bcd37543c4bd7ff41179c2b86688e417bcc48"
+    },
+    {
+      "name": "v093-drive-auth-canary.yml",
+      "path": ".github/workflows/v093-drive-auth-canary.yml",
+      "sha": "4e86b8079d879d6b5c30932254687afdee90aecc"
+    },
+    {
+      "name": "v093-drive-checkpoint-canary.yml",
+      "path": ".github/workflows/v093-drive-checkpoint-canary.yml",
+      "sha": "142cdb2287bd4969a902caa806e60b1fcf185645"
+    },
+    {
+      "name": "v093-drive-concurrency-release-audit.yml",
+      "path": ".github/workflows/v093-drive-concurrency-release-audit.yml",
+      "sha": "61ce0c5e1e1b12a561d2e48f5058ea43ecfd6388"
+    },
+    {
+      "name": "v093-drive-helper-fault-injection.yml",
+      "path": ".github/workflows/v093-drive-helper-fault-injection.yml",
+      "sha": "f77a3ada01299d9da1c793097c6b4d3002e991ba"
+    },
+    {
+      "name": "v093-durable-backlog-restart-integrated.yml",
+      "path": ".github/workflows/v093-durable-backlog-restart-integrated.yml",
+      "sha": "6cb5310bb3a6457418d196805c3bfcc1275522f0"
+    },
+    {
+      "name": "v093-durable-queue-cancel-recovery.yml",
+      "path": ".github/workflows/v093-durable-queue-cancel-recovery.yml",
+      "sha": "ddfebcf0bbfb85e1efb19e0d7974e8c545d9debf"
+    },
+    {
+      "name": "v093-feature-history.yml",
+      "path": ".github/workflows/v093-feature-history.yml",
+      "sha": "0b6855e15b45811ab9d4699876752e413eca3fcd"
+    },
+    {
+      "name": "v093-finmind-canary.yml",
+      "path": ".github/workflows/v093-finmind-canary.yml",
+      "sha": "18103ece82cddeb86a05e3f021610ffb04548ab5"
+    },
+    {
+      "name": "v093-finmind-free-2026-backfill.yml",
+      "path": ".github/workflows/v093-finmind-free-2026-backfill.yml",
+      "sha": "1fd1cd5ca06c60ae9422ed30f527b70896c83f95"
+    },
+    {
+      "name": "v093-finmind-free-2026-canary.yml",
+      "path": ".github/workflows/v093-finmind-free-2026-canary.yml",
+      "sha": "4ef14f7c72a68018a49de3fd3ee82f4204d3f5cc"
+    },
+    {
+      "name": "v093-finmind-three-year-coverage-audit.yml",
+      "path": ".github/workflows/v093-finmind-three-year-coverage-audit.yml",
+      "sha": "391719d98c38f52c6517980ce2bc0bea919c4000"
+    },
+    {
+      "name": "v093-five-stage-combined-launch-gate.yml",
+      "path": ".github/workflows/v093-five-stage-combined-launch-gate.yml",
+      "sha": "c7276edda6a307700950fa374aae6105fb1cdf23"
+    },
+    {
+      "name": "v093-five-stage-dependency-smoke.yml",
+      "path": ".github/workflows/v093-five-stage-dependency-smoke.yml",
+      "sha": "438f5df722e73999fad9c714e3b46a7deb43af1d"
+    },
+    {
+      "name": "v093-five-stage-integrated-prelaunch-test.yml",
+      "path": ".github/workflows/v093-five-stage-integrated-prelaunch-test.yml",
+      "sha": "17b6763adc1cac0ed1186a882d6778f6e6f41c71"
+    },
+    {
+      "name": "v093-five-stage-policy-acceptance.yml",
+      "path": ".github/workflows/v093-five-stage-policy-acceptance.yml",
+      "sha": "6ac12dd1eea51e6bbc7302007da3b73b9d5afae1"
+    },
+    {
+      "name": "v093-four-source-mini-e2e.yml",
+      "path": ".github/workflows/v093-four-source-mini-e2e.yml",
+      "sha": "d0535330a8a62780e0a58dfd367c7b8e4c2994c5"
+    },
+    {
+      "name": "v093-full-readiness-gate.yml",
+      "path": ".github/workflows/v093-full-readiness-gate.yml",
+      "sha": "cdafae57cbd349a6368540f62e9848b0d7a55ddd"
+    },
+    {
+      "name": "v093-history-2023-to-2014-descending.yml",
+      "path": ".github/workflows/v093-history-2023-to-2014-descending.yml",
+      "sha": "0d094f1990d72d46e96aebd53f79036075279ba4"
+    },
+    {
+      "name": "v093-independent-raw.yml",
+      "path": ".github/workflows/v093-independent-raw.yml",
+      "sha": "a25f06bbe72ae4d238b8511e37cd9bc2d21f75f6"
+    },
+    {
+      "name": "v093-integrated-safety-regression.yml",
+      "path": ".github/workflows/v093-integrated-safety-regression.yml",
+      "sha": "9d01b0fab23a8001cde6e33274243c97557b968d"
+    },
+    {
+      "name": "v093-isolated-drive-race-reproduction.yml",
+      "path": ".github/workflows/v093-isolated-drive-race-reproduction.yml",
+      "sha": "3179533172351c69a9d231f0c661b824853768e5"
+    },
+    {
+      "name": "v093-l1-secondpass-qa-repair.yml",
+      "path": ".github/workflows/v093-l1-secondpass-qa-repair.yml",
+      "sha": "196389c4ef2a9342ca576667473253804e8b3688"
+    },
+    {
+      "name": "v093-l1-thirdpass-gated-repair.yml",
+      "path": ".github/workflows/v093-l1-thirdpass-gated-repair.yml",
+      "sha": "67246d04db4b4b6ab452d11845f776cc3cff0461"
+    },
+    {
+      "name": "v093-layer02-2025-2026-all-months.yml",
+      "path": ".github/workflows/v093-layer02-2025-2026-all-months.yml",
+      "sha": "98b3c485712741e4665ac4d95d28f0d7a35a2fca"
+    },
+    {
+      "name": "v093-layer02-format-probe.yml",
+      "path": ".github/workflows/v093-layer02-format-probe.yml",
+      "sha": "d744eab423401c230ab4ecfd0c5f9829ba7c2523"
+    },
+    {
+      "name": "v093-layer02-governance-policy-sync.yml",
+      "path": ".github/workflows/v093-layer02-governance-policy-sync.yml",
+      "sha": "9f58da6c2da8c8d12c7ae4612fd43a7d1a3ca37e"
+    },
+    {
+      "name": "v093-layer02-governance-tests.yml",
+      "path": ".github/workflows/v093-layer02-governance-tests.yml",
+      "sha": "47be866b30ef0726eb799a15ebf98a2001fec754"
+    },
+    {
+      "name": "v093-layer02-r3-2025-2026.yml",
+      "path": ".github/workflows/v093-layer02-r3-2025-2026.yml",
+      "sha": "08a5109f886aa578fd66330f80e8c246f83959e7"
+    },
+    {
+      "name": "v093-layer02-standard-r1-pilot.yml",
+      "path": ".github/workflows/v093-layer02-standard-r1-pilot.yml",
+      "sha": "2172e76d3cd66821ca219a9baca612af04b9ac7f"
+    },
+    {
+      "name": "v093-layer02-standard-r2.yml",
+      "path": ".github/workflows/v093-layer02-standard-r2.yml",
+      "sha": "3d2910c240cbe0b5e84733779c4e21c819620416"
+    },
+    {
+      "name": "v093-live-resume-watchdog.yml",
+      "path": ".github/workflows/v093-live-resume-watchdog.yml",
+      "sha": "86ec2461b74a83581edacdbd800b49f1c3eb7983"
+    },
+    {
+      "name": "v093-manifest-false-certification-gate.yml",
+      "path": ".github/workflows/v093-manifest-false-certification-gate.yml",
+      "sha": "1f5b43c8da76de9251bbf1762f5ea09f36ccce21"
+    },
+    {
+      "name": "v093-merged-quick-gate.yml",
+      "path": ".github/workflows/v093-merged-quick-gate.yml",
+      "sha": "fe60c31622faaf5bbb46345b11ae8337e35dfbc7"
+    },
+    {
+      "name": "v093-multiprocess-lease-crash-gate.yml",
+      "path": ".github/workflows/v093-multiprocess-lease-crash-gate.yml",
+      "sha": "82562571181cce56acfeddf027ee91cb3ca629df"
+    },
+    {
+      "name": "v093-multistock-historical-qa-readonly.yml",
+      "path": ".github/workflows/v093-multistock-historical-qa-readonly.yml",
+      "sha": "4a6c8ab239879cda1d897851fa2563973707db62"
+    },
+    {
+      "name": "v093-ndc-independent.yml",
+      "path": ".github/workflows/v093-ndc-independent.yml",
+      "sha": "0608183ef0870ca9f0dc38844cdad09144239324"
+    },
+    {
+      "name": "v093-official-first-finmind-delta-test.yml",
+      "path": ".github/workflows/v093-official-first-finmind-delta-test.yml",
+      "sha": "61512a7c4c5b119bc903939bf5af716b3f11e4d5"
+    },
+    {
+      "name": "v093-official-four-lane-repair.yml",
+      "path": ".github/workflows/v093-official-four-lane-repair.yml",
+      "sha": "b4b332772c2ecaa999a0573de29de9a3df081d16"
+    },
+    {
+      "name": "v093-official-only-repair.yml",
+      "path": ".github/workflows/v093-official-only-repair.yml",
+      "sha": "ee355a33ca7eda54e071fc951759a491c783c184"
+    },
+    {
+      "name": "v093-official-only-two-ended.yml",
+      "path": ".github/workflows/v093-official-only-two-ended.yml",
+      "sha": "4fdf8fd2a00d0f5c2e3683223077359d65b116cd"
+    },
+    {
+      "name": "v093-offline-tests.yml",
+      "path": ".github/workflows/v093-offline-tests.yml",
+      "sha": "7d4b4a5a16f63ed4b4eb3a61398c761f42342b1e"
+    },
+    {
+      "name": "v093-one-shot-acceptance.yml",
+      "path": ".github/workflows/v093-one-shot-acceptance.yml",
+      "sha": "c819aaae28829da6d63bcc0a5830137285151d68"
+    },
+    {
+      "name": "v093-operational-control.yml",
+      "path": ".github/workflows/v093-operational-control.yml",
+      "sha": "3ee23ccb64b71e0c08ba9a04fe06e4e25b5984ac"
+    },
+    {
+      "name": "v093-otc-numeric-reconciliation-retry-safe.yml",
+      "path": ".github/workflows/v093-otc-numeric-reconciliation-retry-safe.yml",
+      "sha": "8ec9dcdd7d5f504173df9a38d1da7b1365c4d517"
+    },
+    {
+      "name": "v093-otc-numeric-reconciliation-safe.yml",
+      "path": ".github/workflows/v093-otc-numeric-reconciliation-safe.yml",
+      "sha": "b163ca7d2a5f19955e7af665c43e3ee6f0bcf11c"
+    },
+    {
+      "name": "v093-otc-schema-full-regression-safe.yml",
+      "path": ".github/workflows/v093-otc-schema-full-regression-safe.yml",
+      "sha": "9475d27f3f83bfc1507daf69f9d2b9eb61081f0c"
+    },
+    {
+      "name": "v093-parallel-workers.yml",
+      "path": ".github/workflows/v093-parallel-workers.yml",
+      "sha": "be79c160622861b7ceb3e7769c70ec1ed660c68c"
+    },
+    {
+      "name": "v093-price-basis-diagnostic-readonly.yml",
+      "path": ".github/workflows/v093-price-basis-diagnostic-readonly.yml",
+      "sha": "98691579ba66ce82b5641264e7c4a202516bea75"
+    },
+    {
+      "name": "v093-production-gap-test.yml",
+      "path": ".github/workflows/v093-production-gap-test.yml",
+      "sha": "dab10993868e38e0884ed6491171d004d3fb7d19"
+    },
+    {
+      "name": "v093-production-release-readonly-gate.yml",
+      "path": ".github/workflows/v093-production-release-readonly-gate.yml",
+      "sha": "b94c3fa78be08a00a263eb24606457bb148f0d31"
+    },
+    {
+      "name": "v093-production-scheduler-conflict-audit.yml",
+      "path": ".github/workflows/v093-production-scheduler-conflict-audit.yml",
+      "sha": "f304ca106f351b9320fdbc701a33b9aca1b56685"
+    },
+    {
+      "name": "v093-queue-stress-one.yml",
+      "path": ".github/workflows/v093-queue-stress-one.yml",
+      "sha": "a475516f743d3f86183663a7a10b0421c4b6fa05"
+    },
+    {
+      "name": "v093-queue-stress-three.yml",
+      "path": ".github/workflows/v093-queue-stress-three.yml",
+      "sha": "d3f21db38d5b3626b8e5744cc9736e23266e0db9"
+    },
+    {
+      "name": "v093-queue-stress-two.yml",
+      "path": ".github/workflows/v093-queue-stress-two.yml",
+      "sha": "1f39fea032a9f4c8d515adb1fa856a6c1e3b9f4d"
+    },
+    {
+      "name": "v093-raw-2015-to-2000.yml",
+      "path": ".github/workflows/v093-raw-2015-to-2000.yml",
+      "sha": "191aa2ef08215fb108a05f597dda3c839c589544"
+    },
+    {
+      "name": "v093-raw-firstpass.yml",
+      "path": ".github/workflows/v093-raw-firstpass.yml",
+      "sha": "15599ab65efcdc8e54f89b3c9c425e240f830c2c"
+    },
+    {
+      "name": "v093-raw-resume.yml",
+      "path": ".github/workflows/v093-raw-resume.yml",
+      "sha": "844aace88f8eb52982664b4c9d71d23e5e8d7552"
+    },
+    {
+      "name": "v093-readonly-integration-probe.yml",
+      "path": ".github/workflows/v093-readonly-integration-probe.yml",
+      "sha": "45d9c9213aadd394365eaa289a27066c1f3832c5"
+    },
+    {
+      "name": "v093-remaining-sources.yml",
+      "path": ".github/workflows/v093-remaining-sources.yml",
+      "sha": "c36ec527c65f0fae36bf70887557441f421b4358"
+    },
+    {
+      "name": "v093-retry-exhaustion-corrected.yml",
+      "path": ".github/workflows/v093-retry-exhaustion-corrected.yml",
+      "sha": "fa6e338586a02ca20fd43e4ecc7ee9c793cd262b"
+    },
+    {
+      "name": "v093-retry-exhaustion-safety-gate.yml",
+      "path": ".github/workflows/v093-retry-exhaustion-safety-gate.yml",
+      "sha": "06b8bb90a1826276e7648b05261a3c7a88ec07e3"
+    },
+    {
+      "name": "v093-stop-all.yml",
+      "path": ".github/workflows/v093-stop-all.yml",
+      "sha": "9d1b4324bda829ce990308a9428f167068b04dce"
+    },
+    {
+      "name": "v093-stop-prior-raw-once.yml",
+      "path": ".github/workflows/v093-stop-prior-raw-once.yml",
+      "sha": "4ecaab6d653126b7731316fe16ca80772e07bc76"
+    },
+    {
+      "name": "v093-taifex-independent-asc.yml",
+      "path": ".github/workflows/v093-taifex-independent-asc.yml",
+      "sha": "af862f09c5ec48e9347503489615e9295e8e1a8f"
+    },
+    {
+      "name": "v093-taifex-independent.yml",
+      "path": ".github/workflows/v093-taifex-independent.yml",
+      "sha": "e6bc233829d19ad66dccd22d261a0ca790170dd7"
+    },
+    {
+      "name": "v093-tdcc-independent-asc.yml",
+      "path": ".github/workflows/v093-tdcc-independent-asc.yml",
+      "sha": "60cf20f40547377110674d71f169f27b46bb0a27"
+    },
+    {
+      "name": "v093-tdcc-independent.yml",
+      "path": ".github/workflows/v093-tdcc-independent.yml",
+      "sha": "92e37257062bdcbcce7c5979a1ef703892412ffa"
+    },
+    {
+      "name": "v093-three-year-finmind-gap-supplement.yml",
+      "path": ".github/workflows/v093-three-year-finmind-gap-supplement.yml",
+      "sha": "e20931bed0f72c045b3326c48298a6443330fb9a"
+    },
+    {
+      "name": "v093-three-year-monthly-continuation.yml",
+      "path": ".github/workflows/v093-three-year-monthly-continuation.yml",
+      "sha": "a0bc883c191b5d4389c8b6379cd4a31107f4e5d9"
+    },
+    {
+      "name": "v093-three-year-official-gap-repair.yml",
+      "path": ".github/workflows/v093-three-year-official-gap-repair.yml",
+      "sha": "38b90718aed7ccf21218253f6dd4acbeb80b4a09"
+    },
+    {
+      "name": "v093-transaction-fencing-prelaunch.yml",
+      "path": ".github/workflows/v093-transaction-fencing-prelaunch.yml",
+      "sha": "0c00b68e38da74233d1d9c9272a84feca31da6c1"
+    },
+    {
+      "name": "v093-twse-canary.yml",
+      "path": ".github/workflows/v093-twse-canary.yml",
+      "sha": "40d49930f527072906e6e8644586fdea3e7bc3c1"
+    },
+    {
+      "name": "v093-unified-annual-integration.yml",
+      "path": ".github/workflows/v093-unified-annual-integration.yml",
+      "sha": "4ac8b232744bdf413a9993d3dcd91c71cc51d127"
+    },
+    {
+      "name": "v093-unified-preflight.yml",
+      "path": ".github/workflows/v093-unified-preflight.yml",
+      "sha": "a97e4cb14d3145a0f11dc9829a5f758406fa3ea5"
+    },
+    {
+      "name": "v093-v2-01-raw.yml",
+      "path": ".github/workflows/v093-v2-01-raw.yml",
+      "sha": "04ba6c56b8421324789669cb7680b7f2e149b2b6"
+    },
+    {
+      "name": "v093-v2-02-qa.yml",
+      "path": ".github/workflows/v093-v2-02-qa.yml",
+      "sha": "2103b3c33f8eada92d66cde5bbb3d9a9ab4dc614"
+    },
+    {
+      "name": "v093-v2-03-price.yml",
+      "path": ".github/workflows/v093-v2-03-price.yml",
+      "sha": "177e60dd1b392c3e7293247b7d1772392bdddddd"
+    },
+    {
+      "name": "v093-v2-04-financial.yml",
+      "path": ".github/workflows/v093-v2-04-financial.yml",
+      "sha": "3621972ab8f03588a133578195751abc1d105171"
+    },
+    {
+      "name": "v093-v2-05-chip.yml",
+      "path": ".github/workflows/v093-v2-05-chip.yml",
+      "sha": "ab7cf223d71ebe087ed065b02794ace3708fd482"
+    },
+    {
+      "name": "v093-v2-06-reconcile-repair.yml",
+      "path": ".github/workflows/v093-v2-06-reconcile-repair.yml",
+      "sha": "38a1811e390d698476f0a7f509c84e35f6bbb301"
+    },
+    {
+      "name": "v093-v2-07-raw-ascending.yml",
+      "path": ".github/workflows/v093-v2-07-raw-ascending.yml",
+      "sha": "81e27beb186e359a253c92b6956212a1aa5e9aea"
+    },
+    {
+      "name": "v093-v2-all-month-file-metadata-combined.yml",
+      "path": ".github/workflows/v093-v2-all-month-file-metadata-combined.yml",
+      "sha": "7007b66af5e16b5a681e8133e670a2b3016e22a3"
+    },
+    {
+      "name": "v093-v2-consolidated-prelaunch-release-gate.yml",
+      "path": ".github/workflows/v093-v2-consolidated-prelaunch-release-gate.yml",
+      "sha": "643b2fa0dd49e97ff9153d3b06aaf82937c9945d"
+    },
+    {
+      "name": "v093-v2-consolidated-repair-triage-qa.yml",
+      "path": ".github/workflows/v093-v2-consolidated-repair-triage-qa.yml",
+      "sha": "a50b6d5b0ea86db3803554261032c36a23fa2975"
+    },
+    {
+      "name": "v093-v2-cutover-contract-audit.yml",
+      "path": ".github/workflows/v093-v2-cutover-contract-audit.yml",
+      "sha": "ea35bd5e51305b866d9ae2d537b30daa0be1ade2"
+    },
+    {
+      "name": "v093-v2-drive-guard-historical-adapter-gate.yml",
+      "path": ".github/workflows/v093-v2-drive-guard-historical-adapter-gate.yml",
+      "sha": "4e736a618d102c649b9b840e28355692941c42c8"
+    },
+    {
+      "name": "v093-v2-duplicate-historical-boundary-gate.yml",
+      "path": ".github/workflows/v093-v2-duplicate-historical-boundary-gate.yml",
+      "sha": "8570bc23da56f1e04a74f072d271603d52fa6607"
+    },
+    {
+      "name": "v093-v2-final-real-data-launch-smoke.yml",
+      "path": ".github/workflows/v093-v2-final-real-data-launch-smoke.yml",
+      "sha": "218ca8053574c2dfa634caf80d075ee4fec84d0e"
+    },
+    {
+      "name": "v093-v2-full-history-inventory-gate.yml",
+      "path": ".github/workflows/v093-v2-full-history-inventory-gate.yml",
+      "sha": "5a17bc3a3bab7e3436404c301ac080c4da00888d"
+    },
+    {
+      "name": "v093-v2-onepass-five-stage-acceptance.yml",
+      "path": ".github/workflows/v093-v2-onepass-five-stage-acceptance.yml",
+      "sha": "26f86f469823673dabd3df35db645fe698fc341f"
+    },
+    {
+      "name": "v093-v2-real-drive-isolated-historical-gate.yml",
+      "path": ".github/workflows/v093-v2-real-drive-isolated-historical-gate.yml",
+      "sha": "a685ae116087cf7060da3978329d29fedd92b1f3"
+    },
+    {
+      "name": "v093-v2-real-historical-sha-crc-repair-gate.yml",
+      "path": ".github/workflows/v093-v2-real-historical-sha-crc-repair-gate.yml",
+      "sha": "c3599b44365d2940df0bd2ba63642e98b2acbc75"
+    },
+    {
+      "name": "v093-v2-real-native-parser-acceptance.yml",
+      "path": ".github/workflows/v093-v2-real-native-parser-acceptance.yml",
+      "sha": "eefb7fb406187a0898eccf6b269306804b59c391"
+    },
+    {
+      "name": "v093-v2-shared-lease-adapter-integrated.yml",
+      "path": ".github/workflows/v093-v2-shared-lease-adapter-integrated.yml",
+      "sha": "0400dd85bf2279e43c411407857fc527264a66a4"
+    },
+    {
+      "name": "v095-202609-15lane-onebatch.yml",
+      "path": ".github/workflows/v095-202609-15lane-onebatch.yml",
+      "sha": "63472bf4b0ad5cf3fc098c031095a558698261d2"
+    },
+    {
+      "name": "v095-202609-3tier-reconcile.yml",
+      "path": ".github/workflows/v095-202609-3tier-reconcile.yml",
+      "sha": "37658982ecd33468de7deb750640edebe6c64d3a"
+    },
+    {
+      "name": "v095-202609-443-catalog.yml",
+      "path": ".github/workflows/v095-202609-443-catalog.yml",
+      "sha": "03433ea73b80655660bb492578579b8be99cdc4d"
+    },
+    {
+      "name": "v095-202609-B-evidence-ledger.yml",
+      "path": ".github/workflows/v095-202609-B-evidence-ledger.yml",
+      "sha": "5a7eea10a41d04edc8652c7362ad7f14b5323ddd"
+    },
+    {
+      "name": "v095-202609-B-full-audit.yml",
+      "path": ".github/workflows/v095-202609-B-full-audit.yml",
+      "sha": "c2cae0cd1406d48344771798565dac7afe157325"
+    },
+    {
+      "name": "v095-202609-B-tdcc-shards.yml",
+      "path": ".github/workflows/v095-202609-B-tdcc-shards.yml",
+      "sha": "46a4519aee4c9a711514d0f26c3fc554f09c34e7"
+    },
+    {
+      "name": "v095-202609-R3-scheduler.yml",
+      "path": ".github/workflows/v095-202609-R3-scheduler.yml",
+      "sha": "31b404a9434aca622bae731846e39e1f22485a1d"
+    },
+    {
+      "name": "v095-202609-R4-monthly-recheck.yml",
+      "path": ".github/workflows/v095-202609-R4-monthly-recheck.yml",
+      "sha": "662f6183db969b278891f58d05a36f3787da2d4e"
+    },
+    {
+      "name": "v095-202609-R5-audit.yml",
+      "path": ".github/workflows/v095-202609-R5-audit.yml",
+      "sha": "a0acf8c2dc1e6f8a93440d813f59391a736edcc0"
+    },
+    {
+      "name": "v095-202609-autopilot.yml",
+      "path": ".github/workflows/v095-202609-autopilot.yml",
+      "sha": "2867e390a1e7abcf59285c0d50fa34bbfe3e13d2"
+    },
+    {
+      "name": "v095-202609-bronze-admission.yml",
+      "path": ".github/workflows/v095-202609-bronze-admission.yml",
+      "sha": "c54be3766e0be620c0113fd8019d40ba961e6581"
+    },
+    {
+      "name": "v095-202609-finmind-free-calendar-crosscheck.yml",
+      "path": ".github/workflows/v095-202609-finmind-free-calendar-crosscheck.yml",
+      "sha": "f9795ee3294b3944f1435dce08fce117b679cf1c"
+    },
+    {
+      "name": "v095-202609-gold-descriptive-two-lane.yml",
+      "path": ".github/workflows/v095-202609-gold-descriptive-two-lane.yml",
+      "sha": "1aaa031a0c617366978f8a1ea43307a1ab903db8"
+    },
+    {
+      "name": "v095-202609-gold-three-subsets.yml",
+      "path": ".github/workflows/v095-202609-gold-three-subsets.yml",
+      "sha": "48c989917df8f7a72a3ac452cbe2d15ff8cc5430"
+    },
+    {
+      "name": "v095-202609-gold-valuation-foreign.yml",
+      "path": ".github/workflows/v095-202609-gold-valuation-foreign.yml",
+      "sha": "4e2ab2898a7111d1acb156afe6630bf33e89a14f"
+    },
+    {
+      "name": "v095-202609-institutional-convert.yml",
+      "path": ".github/workflows/v095-202609-institutional-convert.yml",
+      "sha": "f19a3008eaffaea0974035ae3a3b3997cfa9698e"
+    },
+    {
+      "name": "v095-202609-multi-silver-four-lane.yml",
+      "path": ".github/workflows/v095-202609-multi-silver-four-lane.yml",
+      "sha": "804168562d36af647ffe78bae687fb251f63d815"
+    },
+    {
+      "name": "v095-202609-ndc-official.yml",
+      "path": ".github/workflows/v095-202609-ndc-official.yml",
+      "sha": "82f0b7cd100d3219c2edaf0858852760335cffb7"
+    },
+    {
+      "name": "v095-202609-official-finmind-ohlc-sample.yml",
+      "path": ".github/workflows/v095-202609-official-finmind-ohlc-sample.yml",
+      "sha": "8847f980738e9d8d51b5e4ac6d8d603a91289d3e"
+    },
+    {
+      "name": "v095-202609-real-drive-byte-audit.yml",
+      "path": ".github/workflows/v095-202609-real-drive-byte-audit.yml",
+      "sha": "ab6d41efd84430a2345329456c2542ddcdc8a85c"
+    },
+    {
+      "name": "v095-202609-seven-source-audit-bundle.yml",
+      "path": ".github/workflows/v095-202609-seven-source-audit-bundle.yml",
+      "sha": "9688c421ae074c7be1b8cd7bc0d47659ca1bb324"
+    },
+    {
+      "name": "v095-202609-silver-mops-revenue.yml",
+      "path": ".github/workflows/v095-202609-silver-mops-revenue.yml",
+      "sha": "60d13eff05e4d14862a2e2fe4ff16cd1cb0bb4e9"
+    },
+    {
+      "name": "v095-202609-silver-price-conversion.yml",
+      "path": ".github/workflows/v095-202609-silver-price-conversion.yml",
+      "sha": "4f94c7083cc46ad4c3ae3126dcc357da2e10628e"
+    },
+    {
+      "name": "v095-202609-silver-taifex-ndc-four-lane.yml",
+      "path": ".github/workflows/v095-202609-silver-taifex-ndc-four-lane.yml",
+      "sha": "82f1446dbd7d84b958545216a83a870b24c44cfe"
+    },
+    {
+      "name": "v095-202609-silver-tdcc-conversion.yml",
+      "path": ".github/workflows/v095-202609-silver-tdcc-conversion.yml",
+      "sha": "7ae072ac86cc205f429f6228370624782af801ff"
+    },
+    {
+      "name": "v095-202609-single-closed-loop.yml",
+      "path": ".github/workflows/v095-202609-single-closed-loop.yml",
+      "sha": "33a7a8d35fa8e37521b30cb65ab56ab80400aa31"
+    },
+    {
+      "name": "v095-202609-tdcc-gold-weekly.yml",
+      "path": ".github/workflows/v095-202609-tdcc-gold-weekly.yml",
+      "sha": "1dab06f691df0b26eae07524d0b4dc44c974f8a4"
+    },
+    {
+      "name": "v095-202609-tpex-official-gap-recheck.yml",
+      "path": ".github/workflows/v095-202609-tpex-official-gap-recheck.yml",
+      "sha": "8ec0262bf6fdf1d3b7458de7c0d1668fb8625903"
+    },
+    {
+      "name": "v095-202609-twse-pe-repair.yml",
+      "path": ".github/workflows/v095-202609-twse-pe-repair.yml",
+      "sha": "328971fc0b754744e9fe12e3719d074f0cb06b20"
+    },
+    {
+      "name": "v095-202609-typed-silver-gate.yml",
+      "path": ".github/workflows/v095-202609-typed-silver-gate.yml",
+      "sha": "fdf9af17cb85e5e23f7044c908bdec61e7c40803"
+    },
+    {
+      "name": "v095-bronze-release-98-policy.yml",
+      "path": ".github/workflows/v095-bronze-release-98-policy.yml",
+      "sha": "dbdef04dce971dca3ff4f701d24d1dd9885a822b"
+    },
+    {
+      "name": "v095-combined-prelaunch-3lane.yml",
+      "path": ".github/workflows/v095-combined-prelaunch-3lane.yml",
+      "sha": "5b161bc4d945031fe7ed7bb9c562216699e12718"
+    },
+    {
+      "name": "v095-month-202609-six-official.yml",
+      "path": ".github/workflows/v095-month-202609-six-official.yml",
+      "sha": "ac76b1072bd853663ad98a089eb7c966bcd1e3ab"
+    },
+    {
+      "name": "v095-official-first-finmind-free-policy.yml",
+      "path": ".github/workflows/v095-official-first-finmind-free-policy.yml",
+      "sha": "7e829de014b8f0152506b59b1d6c83939400e14d"
+    },
+    {
+      "name": "v095-one-run-prelaunch-bundle.yml",
+      "path": ".github/workflows/v095-one-run-prelaunch-bundle.yml",
+      "sha": "00708dec4cd58865255e9e999107b0677c8a44a5"
+    },
+    {
+      "name": "v095-phase1-governance-audit.yml",
+      "path": ".github/workflows/v095-phase1-governance-audit.yml",
+      "sha": "3dec054ba474a79ec6c2758100311304dda1f6f8"
+    },
+    {
+      "name": "v095-pilot-operational.yml",
+      "path": ".github/workflows/v095-pilot-operational.yml",
+      "sha": "82dcbf3b0a6334cb549d9e288fe77298f6ce354a"
+    },
+    {
+      "name": "v095-september-silver-scoped-release.yml",
+      "path": ".github/workflows/v095-september-silver-scoped-release.yml",
+      "sha": "d3ee39df796daa0364aa66eb31805a67572aa20a"
+    },
+    {
+      "name": "v095-september-six-source-revalidation.yml",
+      "path": ".github/workflows/v095-september-six-source-revalidation.yml",
+      "sha": "932d37288c6ff10aed639f3ee093ad69f7a03aea"
+    },
+    {
+      "name": "v095-silver-header-inventory.yml",
+      "path": ".github/workflows/v095-silver-header-inventory.yml",
+      "sha": "c92848935a2cdd002bf72502e1fee99fdc86c954"
+    },
+    {
+      "name": "v095-six-source-week-canary.yml",
+      "path": ".github/workflows/v095-six-source-week-canary.yml",
+      "sha": "d06fc77667562f6c31a129ee5dcce30be63b83b6"
+    },
+    {
+      "name": "v095-tdcc-202609-native-bronze-migration.yml",
+      "path": ".github/workflows/v095-tdcc-202609-native-bronze-migration.yml",
+      "sha": "8ee86e9d51d8a05bf6463450559686e902c306dc"
+    },
+    {
+      "name": "v095-ten-minute-continuation.yml",
+      "path": ".github/workflows/v095-ten-minute-continuation.yml",
+      "sha": "b1e354e9f5ad2eb0fd527b9e8f6da43919128eb7"
+    },
+    {
+      "name": "v095-twse-credit-three-layer.yml",
+      "path": ".github/workflows/v095-twse-credit-three-layer.yml",
+      "sha": "5d4f268d2d4d7ab1c923d000670b2ec73c4872d8"
+    }
+  ],
+  "scheduled_workflows_known": [
+    {
+      "name": "v095-202609-single-closed-loop.yml",
+      "cron": "17 11 * * *"
+    },
+    {
+      "name": "v095-phase1-governance-audit.yml",
+      "cron": "10 0,6,12,18 * * *"
+    },
+    {
+      "name": "v095-pilot-operational.yml",
+      "cron": "30 10 * * 1-5"
+    },
+    {
+      "name": "v095-tdcc-202609-native-bronze-migration.yml",
+      "cron": "7,22,37,52 * * * *"
+    }
+  ],
+  "legacy_crons": "Previously retired 20 v093 and legacy JARVIS cron entries; verify all before declaring complete."
+}
