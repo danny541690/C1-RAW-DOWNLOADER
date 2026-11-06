@@ -33,7 +33,7 @@ def main():
   scope="REQUIRES_PRIOR_HISTORY" if re.search(r"(?:60|120|240)(?:D|$|_)",key) else "MONTH_POSSIBLE"
   if ref and ref[1] in tables[ref[0]].column_names:
    arr=tables[ref[0]][ref[1]];status="FIELD_EXISTS_FORMULA_UNCERTIFIED";n=len(arr)-arr.null_count
-  else:status="UNMAPPED_OR_DEPENDENCY_MISSING";n=0
+  else:status="NOT_YET_MAPPED_NOT_PROVEN_MISSING";n=0
   counts[status]+=1;mapped.append(dict(id=key,scope=scope,status=status,field=ref,non_null_rows=n))
  report=dict(period="2026-09",price=prices,exception_count=len(rows),catalog_count=len(cat),
   gold_mapping=dict(counts),historical_pit="NOT_CERTIFIED",september_revenue_asof_0930="NOT_KNOWN",
