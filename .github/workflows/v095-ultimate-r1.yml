@@ -11,6 +11,9 @@ on:
       - 'scripts/v095_ultimate_r1_14lane_worker.py'
       - 'scripts/v095_ultimate_r1_3month_reconcile.py'
       - 'scripts/v095_ultimate_r1_3month_aggregate.py'
+      - 'config/v095_publication_availability_policy.json'
+      - 'scripts/v095_publication_gate.py'
+      - 'governance/v095/JARVIS_V095_OFFICIAL_PUBLICATION_PIT_RULES_20261106.md'
       - 'scripts/v095_ultimate_r1_october_canary.py'
       - 'scripts/v095_ultimate_r1_october_bsg.py'
       - 'scripts/v095_ultimate_r1_query_october.py'
@@ -48,6 +51,8 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           JARVIS_LANE: ${{ matrix.lane }}
         run: python scripts/v095_ultimate_r1_14lane_worker.py
+      - name: Validate official dataset release timing policy
+        run: python scripts/v095_publication_gate.py
       - name: Reconcile September October November source and typed data independently
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
