@@ -135,5 +135,5 @@ def main():
   versioned=stem+"_"+sha(data)[:12]+"."+ext
   locations[versioned]=put(s,GOVERNANCE,versioned,data,dest)
  (OUT/"registry_receipt.json").write_text(json.dumps({"summary":report,"drive_files":locations},ensure_ascii=False,indent=2))
- print(json.dumps({"run_id":report["run_id"],"summary":report,"drive_files":locations},ensure_ascii=False),flush=True)
+ print(json.dumps({"run_id":os.environ.get("GITHUB_RUN_ID"),"summary":report,"drive_files":locations},ensure_ascii=False),flush=True)
 if __name__=="__main__":main()
