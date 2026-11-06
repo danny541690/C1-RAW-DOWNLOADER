@@ -1,7 +1,5 @@
 name: JARVIS v0.93 LIVE QA1
 on:
-  schedule:
-    - cron: '0 * * * *'
   workflow_call:
     inputs:
       minutes:
