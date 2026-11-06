@@ -115,7 +115,7 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: |
           python -m pip install --disable-pip-version-check pyarrow
-          python scripts/v095_ultimate_r1_november_official.py
+          PYTHONPATH=. python scripts/v095_ultimate_r1_november_official.py
       - name: Check existing September Silver Gold immutable incremental checkpoints
         if: github.event_name != 'schedule'
         env:
