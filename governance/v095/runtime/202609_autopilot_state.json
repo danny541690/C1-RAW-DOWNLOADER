@@ -40,10 +40,13 @@
       "conclusion": "success"
     },
     "v095-202609-silver-price-conversion.yml": {
-      "status": "sent",
+      "status": "running",
       "attempts": 1,
       "sent": "2026-11-06T01:16:33.365517+00:00",
-      "prior_ids": []
+      "prior_ids": [],
+      "run_id": 42142723299,
+      "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42142723299",
+      "conclusion": null
     },
     "v095-202609-multi-silver-four-lane.yml": {
       "status": "sent",
@@ -85,5 +88,5 @@
   "created_utc": "2026-11-06T00:51:08.432216+00:00",
   "production_approved": false,
   "pit_certified": false,
-  "updated_utc": "2026-11-06T01:16:48.971529+00:00"
+  "updated_utc": "2026-11-06T01:16:50.631621+00:00"
 }
