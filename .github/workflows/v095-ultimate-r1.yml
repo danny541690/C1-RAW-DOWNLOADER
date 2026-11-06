@@ -1,4 +1,4 @@
-name: JARVIS v0.95 ULTIMATE R1 - single 15m controller pilot
+name: JARVIS v0.95 ULTIMATE R1 - 14 parallel workers
 on:
   workflow_dispatch:
   push:
@@ -8,6 +8,7 @@ on:
       - 'scripts/v095_ultimate_r1_controller.py'
       - 'config/v095_ultimate_r1.json'
       - 'scripts/v095_ultimate_r1_14lane_smoke.py'
+      - 'scripts/v095_ultimate_r1_14lane_worker.py'
       - 'scripts/v095_ultimate_r1_october_canary.py'
       - 'scripts/v095_ultimate_r1_october_bsg.py'
       - 'scripts/v095_ultimate_r1_query_october.py'
@@ -22,8 +23,8 @@ concurrency:
   group: JARVIS-v095-ULTIMATE-R1-CONTROLLER
   cancel-in-progress: false
 jobs:
-  parallel-smoke:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER' && github.event_name == 'workflow_dispatch'
+  parallel-workers:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -36,15 +37,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install light metadata client
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
-      - name: Verify isolated source on real Drive without changing data
+      - name: Install per-lane data inspection runtime
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Execute isolated source or downstream data-lane workload
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           JARVIS_LANE: ${{ matrix.lane }}
-        run: python scripts/v095_ultimate_r1_14lane_smoke.py
+        run: python scripts/v095_ultimate_r1_14lane_worker.py
       - name: Preserve per-lane evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,7 +53,7 @@ jobs:
           name: v095-ultimate-${{ github.run_id }}-${{ matrix.lane }}
           path: ultimate_r1_lanes/
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 90
   pilot-controller:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     runs-on: ubuntu-latest
