@@ -2,8 +2,8 @@
   "schema": "JARVIS_V095_ULTIMATE_R1",
   "version": "0.95.ultimate.r1",
   "created_on": "2026-11-06",
-  "mode": "PILOT",
-  "description": "2026 newest to September pilot; historical before September strictly gated",
+  "mode": "PARALLEL_14_CANDIDATE",
+  "description": "14 simultaneous Bronze Silver Gold independent evidence workers each cron; stage peer support evidence-only until approved write fencing",
   "direction": "newest_to_oldest",
   "pilot": {
     "latest_month": "2026-11",
@@ -18,9 +18,9 @@
   },
   "orchestrator": {
     "cron_utc": "*/15 * * * *",
-    "global_max_active": 6,
+    "global_max_active": 14,
     "stress_max_active": 14,
-    "max_dispatch_per_tick": 6,
+    "max_dispatch_per_tick": 14,
     "lease_minutes": 75,
     "transient_retry_limit": 3,
     "backoff_minutes": [
@@ -29,7 +29,11 @@
       60
     ],
     "max_drive_requests_per_second": 2,
-    "fail_closed_on_unknown_release": true
+    "fail_closed_on_unknown_release": true,
+    "worker_concurrency": 14,
+    "peer_assistance": "read_only_fallback_no_shared_writes",
+    "durable_lane_receipts": true,
+    "data_release_requires_pit_and_lineage": true
   },
   "worker_slots": {
     "BRONZE": [
