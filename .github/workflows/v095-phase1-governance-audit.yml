@@ -6,8 +6,6 @@ on:
       - 'governance/v095/**'
       - '.github/workflows/v095-phase1-governance-audit.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '10 0,6,12,18 * * *'
 permissions:
   contents: read
 concurrency:
