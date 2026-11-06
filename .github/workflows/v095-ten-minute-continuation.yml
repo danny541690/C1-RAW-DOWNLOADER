@@ -1,12 +1,7 @@
 name: JARVIS v0.95 ten-minute continuation supervisor
 on:
-  schedule:
-    - cron: '7,17,27,37,47,57 * * * *'
+  # Legacy monitor-only heartbeat retired; R3 is the active 30-minute controller.
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-ten-minute-continuation.yml'
 permissions:
   contents: read
   actions: read
