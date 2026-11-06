@@ -76,14 +76,33 @@ def main():
    row=srcs[name][month]
    if row["files"]==0:blocked.append({"task_id":"V095:BRONZE:"+name+":"+month,"source":name,"month":month,"state":"WAITING_V093_OR_OFFICIAL_EXACT_CONTRACT","reason":row["status"]})
  blocked.append({"task_id":"V095:GOLD:443:PIT","state":"BLOCKED_FORMULA_AND_HISTORICAL_PIT","reason":"Catalog ID count is not 443 formula certification."})
- pilot_pass=False
+ # Gate is evidence-driven, not a hardcoded permanent False.
+ # Acceptance document is a separate formal evidence receipt; never infer signoff
+ # from the count of folders or from a successful GitHub job alone.
+ acceptance_name="JARVIS_V095_ULTIMATE_R1_PILOT_ACCEPTANCE_SIGNED.json"
+ acceptance_files=named(s,DRIVE["governance"],acceptance_name)
+ witness=None
+ if len(acceptance_files)==1:
+  try:witness=json.loads(retry(lambda:s.files().get_media(fileId=acceptance_files[0]["id"])).decode("utf-8"))
+  except (ValueError,UnicodeError,KeyError):witness=None
+ requirements=("bronze_source_contract_sha_pass","silver_schema_quality_pass",
+  "gold_monthly_eligible_formula_pass","pit_publication_evidence_pass",
+  "lineage_reverse_qa_pass","all_pilot_exceptions_classified")
+ pilot_pass=(observed==18 and len(ids)==443 and
+  all(x["status"]=="EXISTS_CANDIDATE" for x in candidate.values()) and
+  isinstance(witness,dict) and
+  witness.get("schema")=="JARVIS_V095_ULTIMATE_R1_PILOT_SIGNOFF_V1" and
+  witness.get("scope")==["2026-11","2026-10","2026-09"] and
+  all(witness.get(k) is True for k in requirements) and
+  len(witness.get("source_sha256_evidence",[]))>=18 and
+  bool(witness.get("pit_evidence_document_id")))
  report={"schema":"JARVIS_V095_ULTIMATE_R1_PILOT_REPORT","run_id":run,
  "date_utc":dt.datetime.now(dt.timezone.utc).isoformat(),"scope":["2026-11","2026-10","2026-09"],
  "controller":"ONE_15_MIN_CRON","slot_capacity":{"BRONZE":6,"SILVER":4,"GOLD":4,"active_limit":CFG["orchestrator"]["global_max_active"]},
  "bronze":srcs,"silver_gold_existing_candidates":candidate,"catalog_ids":len(ids),"observed_source_month_cells":observed,"expected_source_month_cells":18,"missing_source_month_cells":18-observed,
  "pit_full_pass":False,"all_443_formula_pass":False,"full_bronze_contract_pass":False,
  "historical_before_september_allowed":pilot_pass,
- "historical_mode":"BLOCKED_PENDING_PILOT_ACCEPTANCE","queue":blocked,
+ "historical_mode":"PILOT_PASSED_HISTORY_ADAPTER_REQUIRED" if pilot_pass else "BLOCKED_PENDING_PILOT_ACCEPTANCE","history_next_month":"2026-08" if pilot_pass else None,"formal_acceptance_evidence":acceptance_files[0]["id"] if pilot_pass else None,"queue":blocked,
  "retry":"ONLY_DUE_TRANSIENT_ERRORS; permanent contract gaps do not hot-loop",
  "actions_performed":["read Drive source month folders","inspect six existing Silver Gold candidate objects","verify 443 IDs","prepare blocked queue","archive specification to Drive"],
  "actions_not_performed":["download missing official datasets","convert unverified months","certify 443 formulas","certify historical PIT","open history 2026-08 to 2000"]}
@@ -103,7 +122,7 @@ def main():
  if len(prev)==1:
   try:previous=json.loads(retry(lambda:s.files().get_media(fileId=prev[0]["id"])).decode())
   except Exception:previous=None
- state={"schema":"JARVIS_V095_ULTIMATE_R1_CHECKPOINT_V1","fingerprint":fingerprint,"scope":report["scope"],"pilot_gate":"BLOCKED","last_change_run":run if (not previous or previous.get("fingerprint")!=fingerprint) else previous.get("last_change_run"),
+ state={"schema":"JARVIS_V095_ULTIMATE_R1_CHECKPOINT_V1","fingerprint":fingerprint,"scope":report["scope"],"pilot_gate":"PASSED_HISTORY_READY" if pilot_pass else "BLOCKED","last_change_run":run if (not previous or previous.get("fingerprint")!=fingerprint) else previous.get("last_change_run"),
   "last_check_run":run,"latest_source_month_cells":observed,"pending_count":len(blocked),
   "report_file_name":CFG["state"]["reports_prefix"]+run+".json" if (not previous or previous.get("fingerprint")!=fingerprint) else previous.get("report_file_name")}
  if not previous or previous.get("fingerprint")!=fingerprint:
@@ -113,6 +132,6 @@ def main():
  report["drive_published"]=published
  (ROOT/"published_readback.json").write_text(json.dumps(published,ensure_ascii=False,indent=2))
  print(json.dumps({"run_id":run,"bronze_source_month_cells":observed,"expected":18,"catalog":len(ids),
-   "pilot_gate":"BLOCKED_PENDING_QA_PIT_MISSING_SOURCES","history_before_202609":False,
+   "pilot_gate":"PILOT_PASSED_HISTORY_ADAPTER_REQUIRED" if pilot_pass else "BLOCKED_PENDING_QA_PIT_MISSING_SOURCES","history_before_202609":pilot_pass,
    "drive_documents":{k:v["id"] for k,v in published.items()}},ensure_ascii=False))
 if __name__=="__main__":main()
