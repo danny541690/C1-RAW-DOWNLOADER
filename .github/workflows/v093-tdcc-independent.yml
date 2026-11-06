@@ -6,8 +6,6 @@ on:
       - '.github/workflows/v093-tdcc-independent.yml'
       - 'scripts/v093_tdcc_independent.py'
       - 'tests/test_tdcc_download_v4.py'
-  schedule:
-    - cron: '*/10 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
