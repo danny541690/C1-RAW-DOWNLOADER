@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_SEPT2026_AUTOPILOT_V1",
   "month": "2026-09",
-  "phase": "pit",
+  "phase": "blocked_pit",
   "steps": {
     "v095-202609-real-drive-byte-audit.yml": {
       "status": "success",
@@ -151,6 +151,8 @@
   "created_utc": "2026-11-06T00:51:08.432216+00:00",
   "production_approved": false,
   "pit_certified": false,
-  "updated_utc": "2026-11-06T02:03:16.726722+00:00",
-  "tdcc_partial_hold": true
+  "updated_utc": "2026-11-06T02:03:17.778792+00:00",
+  "tdcc_partial_hold": true,
+  "pit_gate": "UNVERIFIED_PUBLICATION_TIMESTAMPS_AND_443_FORMULA_DEPENDENCIES",
+  "full_443_certified": false
 }
