@@ -30,11 +30,26 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_controller.py
+      - name: Pilot real September Gold to Silver to Bronze 2330 MA5 trace
+        if: github.event_name != 'schedule'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          JARVIS_STOCK: '2330'
+          JARVIS_INDICATOR: 'MA5'
+          JARVIS_DATE: '2026-09-30'
+          JARVIS_MARKET: 'TSE'
+        run: |
+          python -m pip install --disable-pip-version-check pyarrow
+          python scripts/v095_202609_query_trace.py
       - name: Preserve runtime manifest, queue and Drive SHA readback even when blocked
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v095-ultimate-r1-pilot-${{ github.run_id }}
-          path: ultimate_r1/
+          path: |
+            ultimate_r1/
+            v095_unified_202609/query_trace.json
           if-no-files-found: warn
           retention-days: 90
