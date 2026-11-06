@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        category: [prices]
+        category: [prices, institutional]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Official date-scoped missing original recheck (QA-only)
-        run: python tests/v095_202609_tpex_gap_recheck.py --category "${{ matrix.category }}" --only-dates "2026-09-10,2026-09-29"
+        run: python tests/v095_202609_tpex_gap_recheck.py --category "${{ matrix.category }}"
       - name: Retain official source bytes, hashes, and failures
         if: always()
         uses: actions/upload-artifact@v4
