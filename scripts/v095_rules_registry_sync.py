@@ -17,8 +17,9 @@ def main():
         nominal_deadline=s.get("nominal_deadline",""),
         release_calendar=json.dumps(s.get("confirmed_calendar",{}),ensure_ascii=False),
         pit_evidence=s["pit"],version=obj["version"]))
-    binaries={"JARVIS_V095_SYSTEM_RULES_R2.json":SOURCE.read_bytes(),
-              "JARVIS_V095_SYSTEM_RULES_R2.csv":output.getvalue().encode("utf-8-sig")}
+    suffix="R3" if obj.get("schema")=="JARVIS_V095_DATA_VALIDITY_SYSTEM_RULES_V3" else "R2"
+    binaries={"JARVIS_V095_SYSTEM_RULES_"+suffix+".json":SOURCE.read_bytes(),
+              "JARVIS_V095_SYSTEM_RULES_"+suffix+".csv":output.getvalue().encode("utf-8-sig")}
     c=Credentials(token=None,refresh_token=os.environ["GOOGLE_REFRESH_TOKEN"],
       client_id=os.environ["GOOGLE_CLIENT_ID"],client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
       token_uri="https://oauth2.googleapis.com/token",scopes=["https://www.googleapis.com/auth/drive"])
