@@ -1,7 +1,7 @@
 {
   "schema": "JARVIS_SEPT2026_AUTOPILOT_V1",
   "month": "2026-09",
-  "phase": "gold",
+  "phase": "pit",
   "steps": {
     "v095-202609-real-drive-byte-audit.yml": {
       "status": "success",
@@ -151,6 +151,6 @@
   "created_utc": "2026-11-06T00:51:08.432216+00:00",
   "production_approved": false,
   "pit_certified": false,
-  "updated_utc": "2026-11-06T02:03:15.731911+00:00",
+  "updated_utc": "2026-11-06T02:03:16.726722+00:00",
   "tdcc_partial_hold": true
 }
