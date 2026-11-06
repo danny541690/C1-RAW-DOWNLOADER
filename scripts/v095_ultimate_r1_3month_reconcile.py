@@ -6,6 +6,7 @@ Only the Sept manifest is a known enumerated Bronze file set.
 """
 import csv,datetime as dt,hashlib,io,json,os,pathlib,re,time,collections
 import pyarrow.parquet as pq
+from v095_publication_gate import classify as release_classify, SOURCE_MAP
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -112,6 +113,8 @@ def bronze(s,lane,record):
    index={x["id"] for x in mobj}
    info["legacy_09_present_ids"]=sum(x["id"] in index for x in sep["files"])
    info["legacy_09_expected_ids"]=len(sep["files"])
+  info["official_availability_policy"]=release_classify(SOURCE_MAP[source],m)
+  info["folder_absence_is_not_source_unavailable"]=True
   record["months"][m]=info
 def downstream(s,lane,record):
  stage,parent,words=GROUPS[lane]
@@ -131,6 +134,7 @@ def downstream(s,lane,record):
   all_files=inventories[month]
   matches=[x for x in all_files if any(w in x["name"].upper() for w in words)]
   record["months"][month]={"status":"CANDIDATE_SUBSET_ONLY_NOT_FULL_QA",
+   "publication_status_requires_dataset_level_evidence":True,
    "month_parent_count":sum(m==month for m,_ in folder_months),
    "observed_objects_at_month_depth":len(all_files),
    "matching_name_candidates":len(matches),
@@ -160,7 +164,8 @@ def main():
   "lane":lane,"scope":MONTHS,"created_utc":dt.datetime.now(dt.timezone.utc).isoformat(),
   "months":{},"stage":("BRONZE" if lane in SOURCES else GROUPS[lane][0]),
   "release_status":"BLOCKED_PENDING_FULL_SOURCE_DATASET_PIT_GOLD_FORMULAS",
-  "no_destructive_writes":True,"shared_checkpoint_updated":False}
+  "no_destructive_writes":True,"shared_checkpoint_updated":False,
+  "publication_policy_version":"2026-11-06-R1"}
  s=drive()
  try:
   if lane in SOURCES:bronze(s,lane,record)
