@@ -195,6 +195,12 @@ jobs:
         run: |
           python scripts/v095_publication_gate.py
           python scripts/v095_release_maturity.py
+      - name: Create 443-indicator bidirectional lineage and Sep-Nov release PIT audit registry
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=scripts python scripts/v095_443_bidirectional_lineage.py
       - name: Consolidate fourteen independent source-month and three-tier audit receipts
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
