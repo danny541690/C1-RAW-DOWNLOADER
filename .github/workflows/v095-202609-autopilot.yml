@@ -1,0 +1,47 @@
+name: JARVIS v0.95 2026-09 ONE-CLICK AUTO Bronze Silver Gold PIT
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-autopilot.yml'
+      - 'scripts/v095_202609_autopilot.py'
+  schedule:
+    - cron: '3,18,33,48 * * * *'
+permissions:
+  actions: write
+  contents: write
+concurrency:
+  group: jarvis-v095-202609-one-click-autopilot
+  cancel-in-progress: false
+jobs:
+  controller:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Resumable Bronze to Silver to Gold and PIT release gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          POLL_BUDGET_SECONDS: '2700'
+        run: python scripts/v095_202609_autopilot.py
+      - name: Preserve current checkpoint
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p v095_autopilot
+          gh api repos/${{ github.repository }}/contents/governance/v095/runtime/202609_autopilot_state.json --jq '.content' | tr -d '\n' | base64 -d > v095_autopilot/state.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sept2026-autopilot-${{ github.run_id }}
+          path: v095_autopilot/
+          retention-days: 90
+          if-no-files-found: warn
