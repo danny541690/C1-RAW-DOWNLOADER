@@ -37,7 +37,7 @@ def main():
   elif lane=="TAIFEX_PCR":
    got=sorted(rows,key=lambda r:r["trade_date"])
    preview["taifex_latest_observed"]=stringify(got[-1])
- obj={"schema":"JARVIS_V095_CHATGPT_GOLD_LOOKUP_202610_R1","run_id":os.getenv("GITHUB_RUN_ID"),"asof":"2026-11-06",
+ obj={"schema":"JARVIS_V095_CHATGPT_GOLD_LOOKUP_202610_R1","asof":"2026-11-06",
    "scope":"PARTIAL_THREE_SOURCE_DATASETS_NOT_FULL_MONTH","no_pit_certification":True,"no_full_443_claim":True,
    "dataset_index":datasets,"example_queries":preview}
  payload=json.dumps(obj,ensure_ascii=False,indent=2).encode()
