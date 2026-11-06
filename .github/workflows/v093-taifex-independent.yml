@@ -13,8 +13,6 @@ on:
       - 'tests/test_taifex_catalog_v6.py'
       - 'tests/test_taifex_official_mirror_v7.py'
       - 'tests/test_taifex_route_health_v8.py'
-  schedule:
-    - cron: '*/10 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
