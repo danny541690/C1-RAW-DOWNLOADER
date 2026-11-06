@@ -10,6 +10,7 @@ on:
       - 'scripts/v095_ultimate_r1_14lane_smoke.py'
       - 'scripts/v095_ultimate_r1_14lane_worker.py'
       - 'scripts/v095_ultimate_r1_3month_reconcile.py'
+      - 'scripts/v095_ultimate_r1_3month_aggregate.py'
       - 'scripts/v095_ultimate_r1_october_canary.py'
       - 'scripts/v095_ultimate_r1_october_bsg.py'
       - 'scripts/v095_ultimate_r1_query_october.py'
@@ -159,3 +160,33 @@ jobs:
             v095_unified_202609/resume_manifest.json
           if-no-files-found: warn
           retention-days: 90
+
+  aggregate-three-month:
+    if: always() && github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    needs: [parallel-workers]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v095-ultimate-${{ github.run_id }}-*
+          merge-multiple: true
+      - name: Install Drive report client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Consolidate fourteen independent source-month and three-tier audit receipts
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_ultimate_r1_3month_aggregate.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-ultimate-${{ github.run_id }}-three-month-aggregate
+          path: ultimate_r1_aggregate/
+          retention-days: 90
+          if-no-files-found: warn
