@@ -101,11 +101,17 @@
       "run_id": 42142754022,
       "url": "https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42142754022",
       "conclusion": "success"
+    },
+    "v095-202609-gold-descriptive-two-lane.yml": {
+      "status": "sent",
+      "attempts": 1,
+      "sent": "2026-11-06T02:02:22.509899+00:00",
+      "prior_ids": []
     }
   },
   "created_utc": "2026-11-06T00:51:08.432216+00:00",
   "production_approved": false,
   "pit_certified": false,
-  "updated_utc": "2026-11-06T02:02:20.121991+00:00",
+  "updated_utc": "2026-11-06T02:02:22.509919+00:00",
   "tdcc_partial_hold": true
 }
