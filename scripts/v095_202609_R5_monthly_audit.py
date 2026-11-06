@@ -5,7 +5,7 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 S={"TSE":"14U9bwJCipIOJvNhThliTaCBb9RSTu4Cz","OTC":"1qHYWmIq13UUIdYil4RU5L3VRLpuQVBzk"}
-G={"tse":"1OtEVfGl83HTWnPgNYumRa0OY7BE0yBgI","revenue":"1XWy7mCMqdGcJbF4owafoT6caLo3-MMyI"}
+G={"tse":"1OtEVfGl83HTWnPgNYumRa0OY7BE0yBgI","revenue":"1XWy7mCMqdGcJbF4owafoT6caLo3-MMyI","otc-price":"1KUJ6FG6XMdGOpnOAiceAgE0xszTlZ0M6","tse-flow":"18pghcU3lYeWP008NzbHQ1ZDeK85a3Hs7","otc-margin":"11kpQ1ehaY3wkUGBUblqX_-rNPYz-XYA5"}
 CAT="1lbWk0qRZZFjpV-yL1gZNUb2pCZmHDHW7"
 OUT=pathlib.Path("r5_monthly");OUT.mkdir(exist_ok=True)
 def main():
