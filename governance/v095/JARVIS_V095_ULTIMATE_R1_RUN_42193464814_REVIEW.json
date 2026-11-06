@@ -1,0 +1,79 @@
+{
+  "schema": "JARVIS_V095_ULTIMATE_R1_EXECUTION_REVIEW_V1",
+  "date": "2026-11-06",
+  "latest_run_id": 42193464814,
+  "head_sha": "374d378c08aa6b0b3809a0de66ade0f7dff3e09f",
+  "overall": "CI_SUCCESS_DATA_RELEASE_BLOCKED",
+  "jobs": {
+    "all": 15,
+    "passed": 15,
+    "bronze": 6,
+    "silver": 4,
+    "gold": 4,
+    "controller": 1
+  },
+  "october_staging": {
+    "copied_count": 3,
+    "bytes": 25513,
+    "rejected_count": 1,
+    "bronze_published": 0,
+    "items": [
+      {
+        "source": "TWSE",
+        "drive_id": "1IGvKIy9aZGkQ_15xHzKu1PyiSRW-U_Q8",
+        "name": "THREE_YEAR_OFFICIAL_GAPS_20261019_R1_valuation_2026-10-19",
+        "status": "STAGED_SHA_READBACK_PENDING_DATASET_CONTRACT"
+      },
+      {
+        "source": "TPEx",
+        "drive_id": "1Io5ls3bton2CGF79FdMqMGX25GD0reLN",
+        "name": "THREE_YEAR_OFFICIAL_GAPS_20261019_R1_indices_2026-10-19",
+        "status": "STAGED_SHA_READBACK_PENDING_DATASET_CONTRACT"
+      },
+      {
+        "source": "TAIFEX",
+        "drive_id": "10_sQcRvkMjemilqM3kKzZS1DinLtmAsq",
+        "name": "HISTORY_dlPcRatioDown_2026-10_2026-10-22",
+        "status": "STAGED_SHA_READBACK_PENDING_DATASET_CONTRACT"
+      }
+    ]
+  },
+  "september": {
+    "silver_gold_candidate_files_present": 9,
+    "trace_stock": "2330",
+    "trace_date": "2026-09-30",
+    "indicator": "MA5",
+    "trace_chain": "GOLD_SILVER_BRONZE_SHA",
+    "pit_verified": false
+  },
+  "pilot": {
+    "source_month_cells_observed": 6,
+    "source_month_cells_checked": 18,
+    "latest_month": "2026-11",
+    "earliest_month": "2026-09",
+    "historical_before_sep_allowed": false
+  },
+  "next_actions": [
+    {
+      "priority": "P0",
+      "task": "Verify three staged candidate content schema, raw timestamps, unit sign and historical availability; publish only after exact source contract"
+    },
+    {
+      "priority": "P0",
+      "task": "Add October and November v0.93 per-source gap ledger; no guessed missing records or automatic empty folder promotion"
+    },
+    {
+      "priority": "P1",
+      "task": "Connect incremental Bronze -> Silver Parquet source-version-hash dependency, then Gold eligible formulas, independently preserving PIT"
+    },
+    {
+      "priority": "P1",
+      "task": "Repair v0.95 dispatcher manifest so 15min heartbeat skips whole-Drive reread and dispatches only due tasks"
+    },
+    {
+      "priority": "P2",
+      "task": "After full pilot acceptance only, unlock August 2026 to January 2000 historical backfill"
+    }
+  ],
+  "notes": "This report records verified observable results, not completion of production data ingestion."
+}
