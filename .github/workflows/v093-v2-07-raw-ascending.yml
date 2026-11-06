@@ -3,8 +3,6 @@ on:
   push:
     paths:
       - '.github/workflows/v093-v2-07-raw-ascending.yml'
-  schedule:
-    - cron: '7 * * * *'
   workflow_dispatch:
     inputs:
       minutes:
