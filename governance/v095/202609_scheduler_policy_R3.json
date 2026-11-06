@@ -1,0 +1,168 @@
+{
+  "schema": "JARVIS_V095_202609_SCHEDULER_POLICY_R3",
+  "updated": "2026-11-06",
+  "owner_repo": "danny541690/C1-RAW-DOWNLOADER",
+  "period": "2026-09",
+  "purpose": "Single-person 3-layer lakehouse staged source-first incremental processing and PIT-safe QA",
+  "release_gate": "DENY_UNTIL_SOURCE_CONTRACTS_FORMULAS_PIT_AND_READBACK_PASS",
+  "sources_priority": [
+    {
+      "order": 1,
+      "source": "v0.93 original Drive files",
+      "action": "reuse source bytes first; SHA256, date and market/format crosscheck",
+      "on_missing": "lookup more v0.93 archives, NO full reset"
+    },
+    {
+      "order": 2,
+      "source": "TWSE,TPEx,MOPS,TDCC,TAIFEX,NDC",
+      "action": "download only exact confirmed missing/corrupt source/date/contract, retry max 3 per unit",
+      "on_missing": "isolate unavailable period"
+    },
+    {
+      "order": 3,
+      "source": "FinMind Free",
+      "action": "only after the matching official contract is exhausted, compare adjusted/unadjusted definitions and preserve fallback provenance",
+      "on_missing": "NULL with reason, do not fabricate"
+    }
+  ],
+  "exclude": [
+    "tick",
+    "minute OHLC",
+    "broker branch-by-branch transaction histories"
+  ],
+  "coverage_contracts_expected": 39,
+  "signed_contracts": false,
+  "candidate_indicator_ids": 443,
+  "formula_level_approved": false,
+  "source_0_93_first": true,
+  "official_first_new_downloads": true,
+  "immutable_bronze": true,
+  "financial_amount_unit": "NTD 100 million (億元)",
+  "markets_analysed": [
+    "TSE",
+    "OTC"
+  ],
+  "emerging_listed_scope": "raw_save_only",
+  "pools": {
+    "bronze": [
+      {
+        "id": "B1",
+        "sources": [
+          "TWSE",
+          "TPEx"
+        ],
+        "max_parallel": 2
+      },
+      {
+        "id": "B2",
+        "sources": [
+          "MOPS",
+          "NDC"
+        ],
+        "max_parallel": 2
+      },
+      {
+        "id": "B3",
+        "sources": [
+          "TAIFEX"
+        ],
+        "max_parallel": 1
+      },
+      {
+        "id": "B4",
+        "sources": [
+          "TDCC"
+        ],
+        "max_parallel": 1
+      }
+    ],
+    "silver": [
+      {
+        "id": "S1",
+        "family": "OHLCV",
+        "max_parallel": 2
+      },
+      {
+        "id": "S2",
+        "family": "institutional margin valuation",
+        "max_parallel": 2
+      },
+      {
+        "id": "S3",
+        "family": "MOPS filings and revenue",
+        "max_parallel": 1
+      },
+      {
+        "id": "S4",
+        "family": "TAIFEX NDC macro",
+        "max_parallel": 2
+      },
+      {
+        "id": "S5",
+        "family": "TDCC weekly",
+        "max_parallel": 1
+      }
+    ],
+    "gold": [
+      {
+        "id": "G1",
+        "family": "technical volume RS",
+        "max_parallel": 2
+      },
+      {
+        "id": "G2",
+        "family": "institutional ownership",
+        "max_parallel": 2
+      },
+      {
+        "id": "G3",
+        "family": "fundamental valuation",
+        "max_parallel": 1
+      },
+      {
+        "id": "G4",
+        "family": "sector macro risk",
+        "max_parallel": 1
+      }
+    ],
+    "qa": [
+      {
+        "id": "Q1",
+        "family": "completeness checksum schema keys units calendar",
+        "max_parallel": 1
+      },
+      {
+        "id": "Q2",
+        "family": "PIT dependencies corporate actions lookahead query contract",
+        "max_parallel": 1
+      }
+    ]
+  },
+  "workflow_limit_per_tick": 1,
+  "interval_minutes": 30,
+  "max_tdcc_silver_retries": 2,
+  "publish_only_verified_indicator_partition": true,
+  "missing_values": "NULL with missing_reason/quality_status, never 0",
+  "rerun_if": "new input SHA, formula version or unavailable-to-available PIT change; never redo VERIFIED partitions",
+  "accepted_success": "workflow pass is execution-only, quality and PIT via independent artifacts",
+  "archival": "append only; no delete or overwrite v0.93 or immutable v0.95 Bronze",
+  "causal_contract": [
+    "source as_of publication",
+    "first published_at",
+    "available_at",
+    "revision history",
+    "corporate-action history",
+    "historical ticker/sector membership"
+  ],
+  "current_job_ids": {
+    "master": "42145889218",
+    "silver_tdcc": "42142744262",
+    "gold_valuation": "42147732951"
+  },
+  "previous_data_evidence": {
+    "source_manifests": "41 of 41 name and size matched, NOT full source-SHA/data certification",
+    "reference_indicator_catalog": "443 IDs, 0 formula-level certified from this audit",
+    "tdcc": "prior BrokenPipe; retry-safeguard in place"
+  },
+  "ai_query": "Feature Store Parquet index + compact JSON query receipt, not direct raw scan"
+}
