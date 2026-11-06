@@ -1,0 +1,52 @@
+{
+  "schema": "JARVIS_V095_202609_202611_CLOSEOUT_V2",
+  "asof_date": "2026-11-06",
+  "scope": "2026-09-01~2026-11-06",
+  "pilot_overall_status": "PARTIAL_NOT_ALL_3_LAYERS_CERTIFIED",
+  "backfill_2026_08_to_2000": "BLOCKED_PENDING_ALL_PILOT_GATES",
+  "latest_verified": {
+    "november_price_ohlcv": {
+      "market": [
+        "TSE",
+        "OTC"
+      ],
+      "dates": [
+        "2026-11-02",
+        "2026-11-03",
+        "2026-11-04",
+        "2026-11-05",
+        "2026-11-06"
+      ],
+      "successful_source_date_partitions": 10,
+      "bronze_silver_gold_materialized": 10,
+      "nov2_3_6_run": 42200270545,
+      "nov4_5_run": 42199993322,
+      "silver_rows": 9961,
+      "gold_descriptive_rows": 9846,
+      "not_certified": [
+        "historical PIT",
+        "full security type master",
+        "all source datasets"
+      ]
+    },
+    "october": {
+      "run": 42197079223,
+      "silver_native_rows": 56830,
+      "gold_native_numeric_fields": 426118,
+      "extra_named_descriptive_rows": 1132,
+      "all_dataset_full_month_coverage": false
+    },
+    "september": {
+      "existing_silver_gold_files": 9,
+      "fully_verified_443_indicators": false,
+      "pit_pass": false
+    }
+  },
+  "next_required": [
+    "all expected daily October TSE/OTC price partitions plus MOPS/TWSE/TPEx/TDCC/TAIFEX/NDC source contracts and exact published timestamps",
+    "all November non-price source categories and completion by official release calendars",
+    "September source-to-Silver-to-Gold 443 eligible formulas, period warmups and historical PIT release",
+    "full source data/field QA and Gold->Silver->Bronze input Sha per indicator"
+  ],
+  "notes": "GitHub successful jobs and generated candidate files are not full production acceptance; 2026-11 price data is five business days only. Historical backfill must not unlock automatically."
+}
