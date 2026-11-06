@@ -8,6 +8,7 @@ on:
       - 'scripts/v095_ultimate_r1_controller.py'
       - 'config/v095_ultimate_r1.json'
       - 'scripts/v095_ultimate_r1_14lane_smoke.py'
+      - 'scripts/v095_ultimate_r1_october_canary.py'
   schedule:
     - cron: '*/15 * * * *'
 permissions:
@@ -64,6 +65,20 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_controller.py
+      - name: Bounded real October v093 to v095 staging ingestion with SHA readback
+        if: github.event_name != 'schedule'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_ultimate_r1_october_canary.py
+      - name: Check existing September Silver Gold immutable incremental checkpoints
+        if: github.event_name != 'schedule'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_unified_resume.py
       - name: Pilot real September Gold to Silver to Bronze 2330 MA5 trace
         if: github.event_name != 'schedule'
         env:
@@ -85,5 +100,6 @@ jobs:
           path: |
             ultimate_r1/
             v095_unified_202609/query_trace.json
+            v095_unified_202609/resume_manifest.json
           if-no-files-found: warn
           retention-days: 90
