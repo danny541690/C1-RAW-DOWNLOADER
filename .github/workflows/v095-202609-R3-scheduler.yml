@@ -6,8 +6,7 @@ on:
     paths:
       - '.github/workflows/v095-202609-R3-scheduler.yml'
       - 'scripts/v095_202609_R3_scheduler.py'
-  schedule:
-    - cron: '11,41 * * * *'
+  # R3 controller is now included in single-closed-loop; legacy workflow stays manual.
 permissions:
   actions: write
   contents: write
