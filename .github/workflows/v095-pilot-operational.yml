@@ -1,8 +1,5 @@
 name: "JARVIS v0.95 PILOT | isolated scheduled monitoring only"
 on:
-  schedule:
-    # 18:30 Asia/Taipei, Mon-Fri; Friday runs full evidence pass.
-    - cron: '30 10 * * 1-5'
   workflow_dispatch:
     inputs:
       mode:
