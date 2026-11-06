@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/v095-202609-single-closed-loop.yml'
       - 'scripts/v095_202609_ai_query_gate.py'
+      - 'scripts/v095_202609_R3_scheduler.py'
   schedule:
     - cron: '17 11 * * *'
 permissions:
