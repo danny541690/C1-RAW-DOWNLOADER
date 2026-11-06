@@ -1,7 +1,5 @@
 name: JARVIS v0.93 LIVE FINANCIAL
 on:
-  schedule:
-    - cron: '40 * * * *'
   workflow_call:
     inputs:
       minutes:
