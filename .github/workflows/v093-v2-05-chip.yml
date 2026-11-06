@@ -1,7 +1,5 @@
 name: JARVIS v0.93 LIVE CHIP
 on:
-  schedule:
-    - cron: '50 * * * *'
   workflow_call:
     inputs:
       minutes:
