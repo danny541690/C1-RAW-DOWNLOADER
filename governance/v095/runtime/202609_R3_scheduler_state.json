@@ -1,0 +1,146 @@
+{
+  "schema": "JARVIS_V095_202609_R3_CONTROL",
+  "period": "2026-09",
+  "previous_actions": [],
+  "dispatch_counts": {},
+  "created_utc": "2026-11-06T02:11:13.876849+00:00",
+  "evidence": {
+    "v093_to_v095_name_size": "41_OF_41_CANDIDATE_ONLY",
+    "signed_dataset_contracts": false,
+    "observed_bronze_runs_success": 4,
+    "observed_silver_runs_success": 6,
+    "observed_gold_runs_success": 5,
+    "source_pit_verified": false,
+    "all_443_formula_pit_verified": false,
+    "catalog_443_ids": true,
+    "tdcc_native_copy_marker": true,
+    "drive_observation": "OBSERVED"
+  },
+  "candidate_scope": "2026-09",
+  "source_order": [
+    {
+      "order": 1,
+      "source": "v0.93 original Drive files",
+      "action": "reuse source bytes first; SHA256, date and market/format crosscheck",
+      "on_missing": "lookup more v0.93 archives, NO full reset"
+    },
+    {
+      "order": 2,
+      "source": "TWSE,TPEx,MOPS,TDCC,TAIFEX,NDC",
+      "action": "download only exact confirmed missing/corrupt source/date/contract, retry max 3 per unit",
+      "on_missing": "isolate unavailable period"
+    },
+    {
+      "order": 3,
+      "source": "FinMind Free",
+      "action": "only after the matching official contract is exhausted, compare adjusted/unadjusted definitions and preserve fallback provenance",
+      "on_missing": "NULL with reason, do not fabricate"
+    }
+  ],
+  "pool_limits": {
+    "bronze": [
+      {
+        "id": "B1",
+        "sources": [
+          "TWSE",
+          "TPEx"
+        ],
+        "max_parallel": 2
+      },
+      {
+        "id": "B2",
+        "sources": [
+          "MOPS",
+          "NDC"
+        ],
+        "max_parallel": 2
+      },
+      {
+        "id": "B3",
+        "sources": [
+          "TAIFEX"
+        ],
+        "max_parallel": 1
+      },
+      {
+        "id": "B4",
+        "sources": [
+          "TDCC"
+        ],
+        "max_parallel": 1
+      }
+    ],
+    "silver": [
+      {
+        "id": "S1",
+        "family": "OHLCV",
+        "max_parallel": 2
+      },
+      {
+        "id": "S2",
+        "family": "institutional margin valuation",
+        "max_parallel": 2
+      },
+      {
+        "id": "S3",
+        "family": "MOPS filings and revenue",
+        "max_parallel": 1
+      },
+      {
+        "id": "S4",
+        "family": "TAIFEX NDC macro",
+        "max_parallel": 2
+      },
+      {
+        "id": "S5",
+        "family": "TDCC weekly",
+        "max_parallel": 1
+      }
+    ],
+    "gold": [
+      {
+        "id": "G1",
+        "family": "technical volume RS",
+        "max_parallel": 2
+      },
+      {
+        "id": "G2",
+        "family": "institutional ownership",
+        "max_parallel": 2
+      },
+      {
+        "id": "G3",
+        "family": "fundamental valuation",
+        "max_parallel": 1
+      },
+      {
+        "id": "G4",
+        "family": "sector macro risk",
+        "max_parallel": 1
+      }
+    ],
+    "qa": [
+      {
+        "id": "Q1",
+        "family": "completeness checksum schema keys units calendar",
+        "max_parallel": 1
+      },
+      {
+        "id": "Q2",
+        "family": "PIT dependencies corporate actions lookahead query contract",
+        "max_parallel": 1
+      }
+    ]
+  },
+  "phase_status": {
+    "bronze": "CANDIDATE_ONLY",
+    "silver": "PARTIAL_TDCC_PENDING",
+    "gold": "DESCRIPTIVE_SUBSETS_ONLY",
+    "pit": "BLOCKED",
+    "production": "BLOCKED"
+  },
+  "release_approved": false,
+  "action": "WAIT_ACTIVE:v095-202609-silver-tdcc-conversion.yml",
+  "quality_conclusion": "BLOCKED_FORMULAS_PIT_SOURCE_UNIVERSE",
+  "updated_utc": "2026-11-06T02:11:16.566220+00:00"
+}
