@@ -1,0 +1,40 @@
+{
+  "schema": "JARVIS_V095_ULTIMATE_R1_MONTHLY_PILOT_CONSOLIDATED_RESULT",
+  "asof": "2026-11-06",
+  "run_id": 42195432450,
+  "run_status": "SUCCESS_15_OF_15",
+  "scope": "2026-09_to_latest_2026-11",
+  "october_verified": {
+    "partitions": 3,
+    "bronze_files": 3,
+    "silver_parquet": 3,
+    "gold_parquet": 3,
+    "total_rows": 1132,
+    "source_rows": {
+      "TWSE_VALUATION": 1083,
+      "TPEX_INDICES": 34,
+      "TAIFEX_PCR": 15
+    },
+    "errors": 0,
+    "pit": false,
+    "chatgpt_index_drive_file_id": "1-St-Wlon645HrN7bsqVBYkJe7tSaraZX",
+    "notes": "Direct-source descriptive Gold; 443 full formula coverage and historical PIT NOT certified"
+  },
+  "september": {
+    "reused_existing_silver_gold_files": 9,
+    "example_reverse_trace": "2330 2026-09-30 MA5",
+    "historical_pit_certified": false
+  },
+  "gaps": [
+    "2026-11 official source-month coverage remains incomplete and must be obtained from v093 then official then FinMind",
+    "2026-10 remaining TSE OTC MOPS TDCC multi-dataset data still pending source-specific contracts and actual conversion",
+    "September full 443 formula PIT and source coverage not certified"
+  ],
+  "next_dispatch": [
+    "2026-10 source priority TSE/OTC OHLCV and MOPS monthly releases; preserve publication time",
+    "2026-11 trading calendar and official source backfill",
+    "Silver transforms incrementally after validated Bronze native members",
+    "Gold 443 DAG formula dependencies and PIT release gates",
+    "Do not unlock 2026-08 backwards until 2026-09 to latest pilot acceptance"
+  ]
+}
