@@ -1,4 +1,5 @@
-import json,os,io,collections,pathlib,re
+import json,os,io,collections,pathlib,re,hashlib
+from googleapiclient.http import MediaIoBaseUpload
 import pyarrow.parquet as pq
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -40,5 +41,10 @@ def main():
  (OUT/"report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
  (OUT/"price_queue.json").write_text(json.dumps(rows,ensure_ascii=False,indent=2))
  (OUT/"indicator_mapping.json").write_text(json.dumps(mapped,ensure_ascii=False,indent=2))
+ b=(json.dumps(report,ensure_ascii=False,indent=2)+"\\n").encode()
+ name="JARVIS_202609_R5_MONTHLY_QA_"+os.environ.get("GITHUB_RUN_ID","manual")+".json"
+ result=d.files().create(body={"name":name,"parents":["1XSkUNOHSkJEbdr6UGNqescxOVBUV3Uvk"]},media_body=MediaIoBaseUpload(io.BytesIO(b),mimetype="application/json"),fields="id").execute()
+ if hashlib.sha256(read(result["id"])).digest()!=hashlib.sha256(b).digest():raise ValueError("REPORT_SHA_READBACK_FAIL")
+ report["drive_report_id"]=result["id"]
  print(json.dumps(report,ensure_ascii=False))
 if __name__=="__main__":main()
