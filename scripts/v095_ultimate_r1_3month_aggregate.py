@@ -4,6 +4,7 @@ A successfully executed worker only confirms a diagnostic was run, not complete
 market-data coverage. All formal release gates fail closed.
 """
 import collections,datetime as dt,hashlib,io,json,os,pathlib
+from v095_release_maturity import source_period_maturity,combined_state
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -51,12 +52,47 @@ def main():
   except Exception as e:bad.append({"lane":name,"reason":type(e).__name__+":"+str(e)[:160]})
  observed={m:sum(v.get("observed_files",0)>0 for v in bronze[m].values()) for m in MONTHS}
  source_cells=sum(observed.values())
+ # Release maturity is separate from job success: never count folder existence
+ # as an official dataset receipt. Each source-month gets a four-state verdict.
+ maturity_by_month={}
+ for month in MONTHS:
+  maturity_by_month[month]={}
+  for name,row in bronze[month].items():
+   source=name.replace("BRONZE_","")
+   source="TPEx" if source=="TPEX" else source
+   try:
+    maturity_by_month[month][source]=source_period_maturity(
+      source,month,row.get("observed_files",0),
+      has_error=any(z.get("lane")==name and z.get("month")==month for z in bad))
+   except Exception as exc:
+    bad.append({"lane":name,"month":month,"reason":"MATURITY_ERROR:"+str(exc)[:140]})
+    maturity_by_month[month][source]={"acceptance":{"status":"ERROR","reason":"MATURITY_CALCULATION_ERROR","rmi":None}}
+ all_verdicts=[v["acceptance"]["status"] for one in maturity_by_month.values() for v in one.values()]
+ overall=combined_state(all_verdicts,technical_error=bool(bad))
+ # Downstream is not certified until schema contracts, formula DAG, PIT and
+ # lineage are all checked. Observed downstream outputs remain candidates.
+ downstream_verdicts={}
+ for month in MONTHS:
+  downstream_verdicts[month]={}
+  for stage,items in (("SILVER",silver[month]),("GOLD",gold[month])):
+   downstream_verdicts[month][stage]={
+    name:{"status":"PARTIAL" if row.get("known_parquet_pass",0)>0 or row.get("matching_candidate_names",0)>0 else "BLOCK",
+          "reason":"CANDIDATE_NOT_SCHEMA_PIT_CERTIFIED" if row.get("known_parquet_pass",0)>0 else "MISSING_OR_UNVERIFIED_OUTPUT",
+          "rmi":None} for name,row in items.items()}
  report={"schema":"JARVIS_V095_202609_11_14LANE_ACCEPTANCE_MATRIX_V1",
    "run_id":run,"generated_utc":dt.datetime.now(dt.timezone.utc).isoformat(),
    "expected_lanes":14,"observed_lanes":len(entries),"missing_or_failed_receipts":bad,
    "months":list(MONTHS),"bronze_observed_source_month_cells":source_cells,
    "bronze_expected_source_month_cells":18,
    "bronze_observed_by_month":observed,"bronze":bronze,"silver":silver,"gold":gold,
+   "execution_result":"PASS" if not bad else "ERROR",
+   "data_acceptance_result":overall,
+   "status_legend":{"PASS":"Contract+quality+PIT+lineage certified","PARTIAL":"Some actual data present, completeness not certified","BLOCK":"Not yet due or awaiting source/formula/approval","ERROR":"Transport/parser/runtime/integrity fault"},
+   "rmi_units":"Percent of verified units / expected applicable units when exact certified denominator exists; otherwise null",
+   "rmi_by_source_month":maturity_by_month,
+   "downstream_acceptance_by_month":downstream_verdicts,
+   "rmi_overall":None,
+   "release_date_monitor_note":"NOT_YET_DUE excluded from overdue denominator; early company releases must be scanned; official receipt required for PIT",
    "bronze_completeness_ge_98_percent":"NOT_CERTIFIED",
    "bronze_correctness_ge_98_percent":"NOT_CERTIFIED",
    "silver_full_dataset_contracts":"NOT_CERTIFIED",
@@ -76,7 +112,8 @@ def main():
  if sha(check)!=sha(raw):raise ValueError("AGGREGATE_READBACK_SHA_MISMATCH")
  print(json.dumps({"run_id":run,"workers_with_receipts":len(entries),"expected":14,
   "missing_receipts":len(bad),"bronze_source_month_observed":source_cells,
-  "source_month_expected":18,"by_month":observed,"formal_data_release":"BLOCKED",
+  "source_month_expected":18,"by_month":observed,"formal_data_release":"BLOCKED","execution_result":"PASS" if not bad else "ERROR","data_acceptance_result":overall,
+  "rmi_by_month":{m:{s:v["acceptance"]["status"] for s,v in mrows.items()} for m,mrows in maturity_by_month.items()},
   "drive_report_id":f["id"]},ensure_ascii=False),flush=True)
  if bad:raise RuntimeError("INCOMPLETE_14LANE_AUDIT_EVIDENCE")
 if __name__=="__main__":main()
