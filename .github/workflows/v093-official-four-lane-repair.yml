@@ -14,8 +14,6 @@ on:
       - 'tests/test_official_repair_v7.py'
       - 'tests/test_official_repair_v8.py'
   # Revalidated inward frontiers; preserve RAW and checkpoints.
-  schedule:
-    - cron: '7 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
