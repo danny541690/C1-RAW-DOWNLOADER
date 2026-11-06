@@ -7,8 +7,6 @@ on:
       - 'scripts/v095_tdcc_202609_native_bronze_migration.py'
       - 'scripts/v095_tdcc_202609_native_completion_gate.py'
   workflow_dispatch:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
 permissions:
   contents: read
   actions: write
