@@ -118,7 +118,7 @@ def main():
  reverse_rows=[{"dataset_id":d,"source":contracts.get(d,{}).get("source","UNREGISTERED"),
     "dependent_indicator_count":len(ids),"indicator_ids":sorted(ids),
     "edge_status":"CANDIDATE_NOT_SHA_VERIFIED"} for d,ids in sorted(reverse.items())]
- report={"schema":"JARVIS_V095_443_BIDIRECTIONAL_LINEAGE_R1","run_id":os.environ.get("GITHUB_RUN_ID"),
+ report={"schema":"JARVIS_V095_443_BIDIRECTIONAL_LINEAGE_R1","run_context":"2026-09_to_2026-11_validity_audit",
   "catalog_id":CATALOG_ID,"catalog_sha256":sha(b),"catalog_count":443,
   "forward_rows":len(forward),"reverse_datasets":len(reverse_rows),"monthly_audit_rows":len(audit),
   "source_family_not_mapped":dict(unknown),"formula_catalog_pending":sum(x["formula"]=="DEFINITION_PENDING" for x in inds),
@@ -131,7 +131,9 @@ def main():
  "JARVIS_V095_443_BIDIRECTIONAL_LINEAGE_SUMMARY_R1.json":json.dumps(report,ensure_ascii=False,sort_keys=True,indent=2).encode()}
  dest=listing(s,GOVERNANCE);locations={}
  for name,data in artifacts.items():
-  locations[name]=put(s,GOVERNANCE,name,data,dest)
+  stem,ext=name.rsplit(".",1)
+  versioned=stem+"_"+sha(data)[:12]+"."+ext
+  locations[versioned]=put(s,GOVERNANCE,versioned,data,dest)
  (OUT/"registry_receipt.json").write_text(json.dumps({"summary":report,"drive_files":locations},ensure_ascii=False,indent=2))
  print(json.dumps({"run_id":report["run_id"],"summary":report,"drive_files":locations},ensure_ascii=False),flush=True)
 if __name__=="__main__":main()
