@@ -1,13 +1,7 @@
 name: JARVIS v0.95 2026-09 ONE-CLICK AUTO Bronze Silver Gold PIT
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-autopilot.yml'
-      - 'scripts/v095_202609_autopilot.py'
-  schedule:
-    - cron: '3,18,33,48 * * * *'
+  # Superseded by the 2026-09 R3 controller; manual-only for historical forensic replay.
 permissions:
   actions: write
   contents: write
