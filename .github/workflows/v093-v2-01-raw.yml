@@ -7,8 +7,6 @@ on:
       - 'scripts/v093_live_five_stage.py'
       - 'scripts/v093_replanned_five_stage.py'
       - 'scripts/v093_raw_month_coordination.py'
-  schedule:
-    - cron: '1 * * * *'
   workflow_call:
     inputs:
       minutes:
