@@ -71,7 +71,13 @@ def phase_run(s,sha,phase):
 def main():
     if os.environ.get('GITHUB_REPOSITORY')!=REPO:raise RuntimeError('WRONG_REPOSITORY')
     s,sha=load()
-    if s['phase'] in PHASES:sha=phase_run(s,sha,s['phase'])
+    # Continue immediately to the next dependency phase if the prior phase has finished.
+    # Never label the controller's run as complete while there is queued work.
+    for phase in ('bronze','silver','gold'):
+        if s['phase'] == phase:
+            sha=phase_run(s,sha,phase)
+            if s['phase'] == phase or s['phase'].startswith('blocked_'):
+                break
     if s['phase']=='pit':
         s.update(phase='blocked_pit',pit_gate='UNVERIFIED_PUBLICATION_TIMESTAMPS_AND_443_FORMULA_DEPENDENCIES',full_443_certified=False)
         sha=save(s,sha)
