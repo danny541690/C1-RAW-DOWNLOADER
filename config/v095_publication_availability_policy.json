@@ -1,0 +1,207 @@
+{
+  "schema": "JARVIS_V095_PUBLICATION_AVAILABILITY_POLICY_V1",
+  "version": "2026-11-06-R1",
+  "scope": "2000-01 onward; initial empirical as-of 2026-11-06T19:32:00+08:00",
+  "rules_order": [
+    "EXPLICIT_OFFICIAL_RELEASE_RECEIPT",
+    "OFFICIAL_CALENDAR_WITH_DATASET_EXCEPTION",
+    "STATUTORY_DEADLINE_AS_EXPECTATION_ONLY",
+    "THIRD_PARTY_CROSSCHECK_ONLY"
+  ],
+  "source_priority": [
+    "original_signed_source_receipt",
+    "TWSE_TPEx_MOPS_TDCC_TAIFEX_NDC",
+    "additional_official_GOV_DATA_CUSTOMS_MOEA_FSC",
+    "FinMind_with_matching_definition_and_permission",
+    "Goodinfo_or_Yahoo_metadata_only"
+  ],
+  "report_month_semantics": {
+    "observation_month": "資料屬期",
+    "available_at": "首次確實公開時間（需證據）",
+    "downloaded_at": "實際取得時間，不得冒充可用時間",
+    "revised_at": "修正發布時間"
+  },
+  "status_states": [
+    "AVAILABLE_OFFICIAL_VERIFIED",
+    "AVAILABLE_BUT_NOT_MIGRATED",
+    "PARTIALLY_PUBLISHED",
+    "NOT_YET_DUE",
+    "DUE_CHECK_OFFICIAL",
+    "SOURCE_NOT_APPLICABLE",
+    "NO_TRADING_SESSION",
+    "OFFICIAL_SOURCE_UNAVAILABLE",
+    "SOURCE_ERROR",
+    "PIT_UNVERIFIED"
+  ],
+  "missing_denominator": [
+    "Exclude NOT_YET_DUE,NO_TRADING_SESSION,SOURCE_NOT_APPLICABLE from overdue denominator",
+    "Never count source-month folder existence as dataset completeness",
+    "Never treat PARTIALLY_PUBLISHED as 100%",
+    "Never backfill with later revisions for historical point-in-time"
+  ],
+  "source_rules": {
+    "MOPS_MONTHLY_REVENUE": {
+      "frequency": "monthly",
+      "nominal_deadline": "next_calendar_month_day_10",
+      "deadline_is_not_publication_timestamp": true,
+      "exceptions": [
+        {
+          "company_class": "insurance_or_qualifying_insurance_subsidiary",
+          "effective_from": "2026-01",
+          "nominal_deadline": "next_calendar_month_day_15",
+          "confirm_eligibility_per_company": true
+        }
+      ],
+      "examples_asof_2026_11_06": {
+        "2026-09": "DUE_CHECK_OFFICIAL",
+        "2026-10": "PARTIALLY_PUBLISHED",
+        "2026-11": "NOT_YET_DUE"
+      },
+      "official_sources": [
+        "https://twse-regulation.twse.com.tw/TW/law/DAT06.aspx?FLCODE=FL007250&FLDATE=20250930&LSER=001",
+        "https://law.fsc.gov.tw/LawContent.aspx?id=GL000593",
+        "https://mops.twse.com.tw/"
+      ],
+      "notes": [
+        "Before due date actively collect early disclosures company-by-company; never wait until day 10 to collect already published records",
+        "Track each security official first-published date and corrected releases separately"
+      ]
+    },
+    "TWSE_DAILY_MARKET": {
+      "frequency": "exchange_session_daily",
+      "release_condition": "after_official_session_close_and_dataset_publish",
+      "examples_asof_2026_11_06": {
+        "2026-09": "DUE_CHECK_OFFICIAL",
+        "2026-10": "DUE_CHECK_OFFICIAL",
+        "2026-11": "DUE_CHECK_PAST_TRADING_DAYS"
+      },
+      "official_sources": [
+        "https://www.twse.com.tw/zh/trading/historical/mi-index.html"
+      ],
+      "notes": [
+        "Daily OHLC must be checked by actual exchange session, not calendar days"
+      ]
+    },
+    "TPEX_DAILY_MARKET": {
+      "frequency": "exchange_session_daily",
+      "release_condition": "post_close; product-specific time",
+      "examples_asof_2026_11_06": {
+        "2026-09": "DUE_CHECK_OFFICIAL",
+        "2026-10": "DUE_CHECK_OFFICIAL",
+        "2026-11": "DUE_CHECK_PAST_TRADING_DAYS"
+      },
+      "official_sources": [
+        "https://data.gov.tw/dataset/11371",
+        "https://eshop.tpex.org.tw/zh/product/detail/BCDDCDFD315841EC011ED99B91DD528E"
+      ],
+      "notes": [
+        "Different TPEx products available at distinct 14:00/14:50/17:45 windows; confirm dataset and publication receipt"
+      ]
+    },
+    "TDCC_WEEKLY_OWNERSHIP": {
+      "frequency": "weekly",
+      "snapshot_rule": "last_business_day_of_week_after_business_close",
+      "release_condition": "official weekly dataset actually published",
+      "examples_asof_2026_11_06": {
+        "2026-09": "DUE_CHECK_OFFICIAL",
+        "2026-10": "DUE_CHECK_OFFICIAL",
+        "2026-11": "PARTIALLY_PUBLISHED_OR_NOT_YET_RELEASED_WEEK"
+      },
+      "official_sources": [
+        "https://www.tdcc.com.tw/portal/zh/smWeb/qryStock"
+      ],
+      "notes": [
+        "Weekly snapshot date is not the first publication timestamp",
+        "Website notes limited retention, source availability historical limits must be recorded"
+      ]
+    },
+    "TAIFEX_DAILY": {
+      "frequency": "exchange_session_daily",
+      "release_condition": "post session/market-specific settlement; exact dataset differs",
+      "examples_asof_2026_11_06": {
+        "2026-09": "DUE_CHECK_OFFICIAL",
+        "2026-10": "DUE_CHECK_OFFICIAL",
+        "2026-11": "DUE_CHECK_PAST_TRADING_DAYS"
+      },
+      "official_sources": [
+        "https://www.taifex.com.tw/cht/3/totalTableDate",
+        "https://www.taifex.com.tw/chinese/9/QA_trader.pdf"
+      ],
+      "notes": [
+        "Later session and large trader figures may publish after daytime close",
+        "Do not assume all TAIFEX products are available simultaneously"
+      ]
+    },
+    "NDC_BUSINESS_CYCLE": {
+      "frequency": "monthly",
+      "release_condition": "official announced exact date for each reference month",
+      "confirmed_calendar": {
+        "2026-09": "2026-10-29T16:00:00+08:00",
+        "2026-10": "2026-11-27T16:00:00+08:00"
+      },
+      "examples_asof_2026_11_06": {
+        "2026-09": "AVAILABLE_OFFICIAL_VERIFIED",
+        "2026-10": "NOT_YET_DUE",
+        "2026-11": "NOT_YET_DUE"
+      },
+      "official_sources": [
+        "https://www.ndc.gov.tw/nc_332_40618",
+        "https://www.ndc.gov.tw/news9_1.aspx?n=257d28e6c2dcc0f8&sms=ec9205f763e2a607"
+      ],
+      "notes": [
+        "Revisions are vintage-specific and must not be used retrospectively before revision publish"
+      ]
+    },
+    "CUSTOMS_TRADE": {
+      "frequency": "monthly",
+      "confirmed_calendar": {
+        "2026-10": "2026-11-10T10:00:00+08:00"
+      },
+      "examples_asof_2026_11_06": {
+        "2026-09": "DUE_CHECK_OFFICIAL",
+        "2026-10": "NOT_YET_DUE",
+        "2026-11": "NOT_YET_DUE"
+      },
+      "official_sources": [
+        "https://portal.sw.nat.gov.tw/APGA/GA30"
+      ]
+    },
+    "MOEA_INDUSTRIAL_PRODUCTION": {
+      "frequency": "monthly",
+      "confirmed_release": {
+        "2026-09": "2026-10-23T16:00:00+08:00"
+      },
+      "examples_asof_2026_11_06": {
+        "2026-09": "AVAILABLE_OFFICIAL_VERIFIED",
+        "2026-10": "NOT_YET_DUE",
+        "2026-11": "NOT_YET_DUE"
+      },
+      "official_sources": [
+        "https://mnscdn.moea.gov.tw/MNS/Populace/news/News.aspx?kind=1&menu_id=40&news_id=124351"
+      ]
+    }
+  },
+  "third_party": {
+    "Goodinfo": {
+      "role": "manual cross-check, availability discovery, discrepancy evidence only",
+      "canonical": false
+    },
+    "Yahoo_Finance": {
+      "role": "manual cross-check, availability discovery, discrepancy evidence only",
+      "canonical": false
+    },
+    "rules": [
+      "Do not auto-scrape, bulk mirror or copy redistribution-restricted data without terms/license review",
+      "When primary official download fails, crosscheck third-party listing then trace back to issuer or official authoritative release",
+      "Third party timestamp != official historical first publication and cannot satisfy PIT by itself"
+    ]
+  },
+  "active_plan": {
+    "keep_14_workers": true,
+    "allow_six_bronze_independent": true,
+    "worker_evidence_write": "immutable_run_lane_partition",
+    "checkpoint_owner": "single_control_aggregate_only",
+    "no_duplicate_unapproved_download": true,
+    "formal_release": "BLOCKED_UNTIL_CONTRACT_SHA_FORMULA_PIT"
+  }
+}
