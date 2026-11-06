@@ -200,7 +200,9 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_ultimate_r1_3month_aggregate.py
+        run: |
+          python scripts/v095_rules_registry_sync.py
+          python scripts/v095_ultimate_r1_3month_aggregate.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
