@@ -11,6 +11,7 @@ on:
       - 'scripts/v095_ultimate_r1_14lane_worker.py'
       - 'scripts/v095_ultimate_r1_3month_reconcile.py'
       - 'scripts/v095_ultimate_r1_3month_aggregate.py'
+      - 'scripts/v095_release_maturity.py'
       - 'scripts/v095_ultimate_r1_source_content_guard.py'
       - 'config/v095_publication_availability_policy.json'
       - 'scripts/v095_publication_gate.py'
@@ -190,6 +191,10 @@ jobs:
           merge-multiple: true
       - name: Install Drive report client
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Test four-state data acceptance and release-date maturity
+        run: |
+          python scripts/v095_publication_gate.py
+          python scripts/v095_release_maturity.py
       - name: Consolidate fourteen independent source-month and three-tier audit receipts
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
