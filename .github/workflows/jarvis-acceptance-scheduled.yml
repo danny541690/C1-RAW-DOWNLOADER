@@ -3,8 +3,6 @@ on:
   push:
     branches: [main, codex/acceptance-scheduler-3-workers-20261028]
     paths: [.github/workflows/jarvis-acceptance-scheduled.yml]
-  schedule:
-    - cron: '17 * * * *' # Every hour at :17; best-effort GitHub scheduling.
   workflow_dispatch:
     inputs:
       clear_auth_hold:
