@@ -1,0 +1,54 @@
+{
+  "schema": "JARVIS_V095_202609_TO_202611_GATE_STATUS_V1",
+  "recorded_date": "2026-11-06",
+  "scope": "2026-09-01 through 2026-11-06 (source publication dates applicable)",
+  "historical_backfill_before_202609": "BLOCKED",
+  "verified_evidence": {
+    "september": {
+      "bronze": "partial six source month candidates",
+      "silver": "nine previous Silver/Gold files exist",
+      "gold": "some descriptive features available",
+      "pit": "not formally passed",
+      "full_443": "not formula certified"
+    },
+    "october": {
+      "run_id": 42197079223,
+      "twse_source_archives": 3,
+      "tpex_source_archives": 7,
+      "native_silver_rows": 56830,
+      "native_numeric_gold_index_rows": 426118,
+      "additional_named_descriptive_rows": 1132,
+      "pit": false,
+      "coverage": "partial selected source units"
+    },
+    "november": {
+      "run_id": 42199993322,
+      "trade_dates": [
+        "2026-11-04",
+        "2026-11-05"
+      ],
+      "tse_silver_rows": 2199,
+      "tse_gold_rows": 2197,
+      "otc_silver_rows": 1785,
+      "otc_gold_rows": 1763,
+      "reverse_hashes_saved": true,
+      "pit": false,
+      "coverage": "only 2 trading dates of TSE and OTC OHLCV"
+    }
+  },
+  "latest_runs": {
+    "repair_11_04_05_source_filter": 42200231504,
+    "ingest_missing_nov_dates_run": 42200270545,
+    "latest_run_final_status": "NOT_YET_VERIFIED"
+  },
+  "critical_gaps": [
+    "September-November full official expected-vs-observed dataset inventory and exact publication schedule",
+    "Remaining November source dates incl Nov 2-3 and Nov 6 must be verified by actual run",
+    "October TSE/OTC complete trading-day price, foreign institutional chip, MOPS disclosures, TDCC and futures macro datasets",
+    "September complete source contracts/transaction histories",
+    "Silver fields correct types units and data catalog not certified for all source families",
+    "Gold 443 indicator definitions, warmup and calculation DAG not certified",
+    "Historical as-of publication PIT and Gold to Silver to Bronze lineage across all materialized rows"
+  ],
+  "acceptance_condition": "No automatic advancement to 2026-08 until source completeness, Silver QA, eligible Gold formulas, PIT and lineage are evidenced, not solely Github run success."
+}
