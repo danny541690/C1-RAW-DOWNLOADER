@@ -65,6 +65,21 @@ def drive_observations():
             ids=catalog.get("indicators",[])
             result["catalog_443_ids"]=len(ids)==443 and len({v.get("id") for v in ids})==443
             result["catalog_all_443_formulas_certified"]=False
+            # Source-of-truth: September TDCC Silver candidate and its monthly QA, not stale v1 checkpoint.
+            tdcc_folder="1pOYIYTUj1owsWk72VNuk3BW3w1SiBh4E"
+            current=s.files().list(q="'"+tdcc_folder+"' in parents and trashed = false",
+                pageSize=100,fields="files(id,name,size)").execute().get("files",[])
+            names={x["name"]:x for x in current}
+            parquet=names.get("JARVIS_v095_202609_TDCC_OWNERSHIP_CANDIDATE_R1.parquet")
+            qa=names.get("JARVIS_v095_202609_TDCC_OWNERSHIP_QA_R1.json")
+            if parquet and qa:
+                qdoc=json.loads(s.files().get_media(fileId=qa["id"]).execute().decode("utf-8"))
+                result["tdcc_monthly_silver_qa_pass"]=(
+                    qdoc.get("rows")==276097 and len(qdoc.get("week_counts",{}))==4
+                    and qdoc.get("parquet_drive_id")==parquet["id"]
+                    and qdoc.get("native_weekly_manifest_sha_verified") is True)
+            else:
+                result["tdcc_monthly_silver_qa_pass"]=False
             result["status"]="OBSERVED"
             return result
         except (OSError,ConnectionError,TimeoutError) as e:
@@ -95,6 +110,7 @@ def main():
        "source_pit_verified":False,"all_443_formula_pit_verified":False,
        "catalog_443_ids":seen.get("catalog_443_ids",False),
        "tdcc_native_copy_marker":seen.get("tdcc_native_copy_marker",False),
+       "tdcc_monthly_silver_qa_pass":seen.get("tdcc_monthly_silver_qa_pass",False),
        "drive_observation":seen.get("status")}
     if seen.get("error"):s["evidence"]["drive_error"]=seen["error"]
     s["candidate_scope"]="2026-09"
@@ -108,14 +124,14 @@ def main():
     allruns={}
     for workflow in (NATIVE,SILVER,GOLD):allruns[workflow]=runs(workflow)
     tdcc=steps.get(SILVER,{})
-    if tdcc.get("status")=="success":
+    if seen.get("tdcc_monthly_silver_qa_pass") or tdcc.get("status")=="success":
         s["phase_status"]["silver"]="CANDIDATE_AWAITING_QA"
     else:
         s["phase_status"]["silver"]="PARTIAL_TDCC_PENDING"
     action=None
     if not seen.get("tdcc_native_copy_marker") and seen.get("status")=="OBSERVED":
         action=NATIVE
-    elif tdcc.get("status")!="success" and seen.get("status")=="OBSERVED":
+    elif not seen.get("tdcc_monthly_silver_qa_pass") and tdcc.get("status")!="success" and seen.get("status")=="OBSERVED":
         action=SILVER
     if action:
         candidates=allruns[action]
