@@ -26,7 +26,7 @@ def main():
  cat=json.loads(read(CAT).decode("utf-8"))["indicators"]
  if len(cat)!=443:raise ValueError("EXPECTED_443_CATALOG")
  tables={k:pq.read_table(io.BytesIO(read(v))) for k,v in G.items()}
- aliases={"CLOSE":("tse","close_price_NTD"),"VOLUME":("tse","volume_shares"),"TURNOVER":("tse","turnover_億元"),"MA5":("tse","SMA_5"),"MA10":("tse","SMA_10"),"MA20":("tse","SMA_20"),"RETURN1D":("tse","close_change_1d_pct"),"AVG_VOL5D":("tse","avg_volume_shares_5"),"AVG_VOL10D":("tse","avg_volume_shares_10"),"AVG_VOL20D":("tse","avg_volume_shares_20")}
+ aliases={"CLOSE":("tse","close_price_NTD"),"VOLUME":("tse","volume_shares"),"TURNOVER":("tse","turnover_億元"),"MA5":("tse","SMA_5"),"MA10":("tse","SMA_10"),"MA20":("tse","SMA_20"),"RETURN1D":("tse","close_change_1d_pct"),"AVG_VOL5D":("tse","avg_volume_shares_5"),"AVG_VOL10D":("tse","avg_volume_shares_10"),"AVG_VOL20D":("tse","avg_volume_shares_20"),"OPEN":("otc-price","open"),"HIGH":("otc-price","high"),"LOW":("otc-price","low"),"REVENUE_M0":("revenue","revenue_億元"),"REVENUE_M1":("revenue","revenue_prior_month_億元"),"REVENUE_YOY_M0":("revenue","revenue_yoy_pct"),"REVENUE_MOM_M0":("revenue","revenue_mom_pct"),"TRUST_NET_1D":("tse-flow","trust_net_shares"),"TOTAL_INST_NET_1D":("tse-flow","institutional_total_net_shares"),"MARGIN_BALANCE_1D":("otc-margin","margin_balance_lots"),"SHORT_BALANCE_1D":("otc-margin","short_balance_lots")}
  mapped=[];counts=collections.Counter()
  for i in cat:
   key=i["id"];ref=aliases.get(key)
