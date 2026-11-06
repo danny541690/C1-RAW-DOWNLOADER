@@ -3,8 +3,6 @@ on:
   push:
     branches: [main]
     paths: [config/v093_official_followup_20261031.json]
-  schedule:
-    - cron: '9,19,29,39,49,59 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
