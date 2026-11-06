@@ -38,3 +38,5 @@ jobs:
           path: v095_silver_tdcc_202609/
           retention-days: 90
           if-no-files-found: warn
+
+# Revalidate observed 2026-09 candidates after 2026-11-06 source-gap audit; existing QA gates remain enforced.
