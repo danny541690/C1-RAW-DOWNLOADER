@@ -1,0 +1,41 @@
+name: JARVIS v0.95 September R4 targeted monthly recheck
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-R4-monthly-recheck.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v095-202609-R4-monthly-recheck
+  cancel-in-progress: false
+jobs:
+  targeted-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Classify 57 TSE and 412 TPEx price exceptions from original Silver
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_monthly_classify.py
+      - name: Verify TDCC typed Silver month, week and row counts
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_tdcc_monthly_verify.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-september-R4-monthly-issues-${{ github.run_id }}
+          path: monthly_r4/
+          retention-days: 90
+          if-no-files-found: warn
