@@ -1,0 +1,42 @@
+name: JARVIS v0.95 September B evidence-ledger canary
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-B-evidence-ledger.yml'
+      - 'scripts/v095_202609_B_evidence_ledger.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-sep-B-evidence-ledger
+  cancel-in-progress: false
+jobs:
+  evidence-ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install frozen run dependencies
+        run: python -m pip install --disable-pip-version-check 'pyarrow>=18,<24' 'google-api-python-client>=2,<3' 'google-auth>=2,<3' 'google-auth-httplib2>=0.2,<1'
+      - name: Self-check fail-closed partition logic
+        run: python scripts/v095_202609_B_evidence_ledger.py --self-test
+      - name: Read live September artifacts and write independently verified versioned evidence
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_B_evidence_ledger.py
+      - name: Retain manifest checkpoint lineage and P0 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-v095-202609-B-evidence-${{ github.run_id }}
+          path: v095_202609_B_evidence/
+          retention-days: 90
+          if-no-files-found: warn
