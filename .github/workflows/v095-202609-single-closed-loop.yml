@@ -7,7 +7,7 @@ on:
       - '.github/workflows/v095-202609-single-closed-loop.yml'
       - 'scripts/v095_202609_ai_query_gate.py'
   schedule:
-    - cron: '11,41 * * * *'
+    - cron: '17 11 * * *'
 permissions:
   contents: write
   actions: write
