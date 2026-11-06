@@ -99,6 +99,27 @@ def main():
             row["error"] = type(exc).__name__ + ": " + str(exc)[:180]
         row["status"] = gate(row)
         entries[label] = row
+    # Diagnose absent input_silver_sha256 separately from an actual bad checksum.
+    # Do not treat source-native hashes as hashes of the Silver Parquet bytes.
+    diagnostics_edges = []
+    for gold, silver in GOLD_SILVER.items():
+        g, sv = entries[gold], entries[silver]
+        declarations = g.get("declared_silver_sha256", [])
+        if not declarations:
+            category = "MISSING_WHOLE_SILVER_SHA_DECLARATION"
+        elif declarations == [sv.get("sha256")]:
+            category = "EXACT_WHOLE_SILVER_SHA_MATCH"
+        else:
+            category = "DECLARED_SHA_DIFFERS_FROM_CURRENT_SILVER_BYTES"
+        diag = {"gold":gold, "silver":silver, "classification":category,
+                "silver_rows":sv.get("row_count"),"gold_rows":g.get("row_count"),
+                "row_count_difference":(sv["row_count"]-g["row_count"]) if
+                  isinstance(sv.get("row_count"), int) and isinstance(g.get("row_count"), int) else None,
+                "repair":("ADD_VERIFIABLE_INPUT_VERSION_IN_NEXT_NONDESTRUCTIVE_GOLD_BUILD"
+                  if category == "MISSING_WHOLE_SILVER_SHA_DECLARATION" else
+                  "NO_SHA_REPAIR_REQUIRED" if category == "EXACT_WHOLE_SILVER_SHA_MATCH" else
+                  "INVESTIGATE_SILVER_VERSION_AND_RECOMPUTE_ONLY_IF_PROVEN")}
+        diagnostics_edges.append(diag)
     lineage = []
     for gold, silver in GOLD_SILVER.items():
         g, srow = entries[gold], entries[silver]
@@ -132,7 +153,10 @@ def main():
     lineage_doc = {"schema":"JARVIS_V095_B_LINEAGE_V1","run_id":run,
         "edges":lineage,"all_443_indicators_certified":False,
         "actual_bronze_silver_gold_pit_release":False}
-    diagnostics = {"schema":"JARVIS_V095_B_P0_V1","run_id":run,"p0":p0}
+    diagnostics = {"schema":"JARVIS_V095_B_P0_V2","run_id":run,"p0":p0,
+      "edges":diagnostics_edges,
+      "release_fingerprint_root_cause":"v093 admission code_digest hashes every scripts/*.py and all workflow YAML; adding unrelated v095 workflow/scripts changes digest and blocks existing approved release. Do not bypass or rewrite tested_code_sha256 without complete approval.",
+      "recommended_fix":"Create separately scoped v095 deployment attestation; keep legacy v093 release blocked pending full requalification."}
     payloads = {
         "manifest.json":manifest,"checkpoint.json":checkpoint,
         "lineage.json":lineage_doc,"p0_diagnostics.json":diagnostics
@@ -161,6 +185,7 @@ def main():
       "silver_gold_direct_sha_matches":sum(x["direct_silver_gold_sha_verified"] for x in lineage),
       "published_documents":len(receipts),
       "drive_readback_all":all(x["readback_verified"] for x in receipts.values()),
+      "lineage_diagnoses":{x["gold"]:x["classification"] for x in diagnostics_edges},
       "formal_release":"BLOCKED_P0_BRONZE_PIT_443_NOT_CERTIFIED"},
       ensure_ascii=False),flush=True)
 
