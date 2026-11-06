@@ -107,9 +107,10 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_enlarged_query.py
-      - name: Latest official November 4-5 TSE and OTC true Bronze Silver Gold mini batch
+      - name: Repair only failed November 4-5 TPEx Bronze Silver Gold with bounded retries
         if: github.event_name != 'schedule'
         env:
+          V095_SOURCE_FILTER: 'TPEx'
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
