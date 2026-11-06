@@ -11,7 +11,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from scripts.v093_three_year_repair import Audit,request,validate
 D=decimal.Decimal;OUT=pathlib.Path("ultimate_r1");OUT.mkdir(exist_ok=True)
-DATES=("2026-11-04","2026-11-05")
+DATES=("2026-11-02","2026-11-03","2026-11-06")
 SOURCE_FILTER=os.environ.get("V095_SOURCE_FILTER","TWSE,TPEx").split(",")
 def bounded_official_request(url):
  last=None
