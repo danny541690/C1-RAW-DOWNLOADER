@@ -72,7 +72,7 @@ def main():
  # the month-folder-level source map. Publication expectations are distinct
  # from proof that individual stock rows existed at a historical as-of date.
  canonical_rules=json.loads(pathlib.Path("config/v095_data_validity_system_rules.json").read_text(encoding="utf-8"))
- if canonical_rules.get("schema")!="JARVIS_V095_DATA_VALIDITY_SYSTEM_RULES_V2":
+ if canonical_rules.get("schema") not in ("JARVIS_V095_DATA_VALIDITY_SYSTEM_RULES_V2","JARVIS_V095_DATA_VALIDITY_SYSTEM_RULES_V3"):
   raise ValueError("UNEXPECTED_CANONICAL_RULES_VERSION")
  dataset_release_matrix={}
  now=dt.datetime.now(TZ)
