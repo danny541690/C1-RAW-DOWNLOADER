@@ -44,3 +44,5 @@ jobs:
           path: v095_202609_multi_silver/
           retention-days: 60
           if-no-files-found: warn
+
+# Revalidate observed 2026-09 candidates after 2026-11-06 source-gap audit; existing QA gates remain enforced.
