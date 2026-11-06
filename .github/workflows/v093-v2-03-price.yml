@@ -1,7 +1,5 @@
 name: JARVIS v0.93 LIVE PRICE
 on:
-  schedule:
-    - cron: '30 * * * *'
   workflow_call:
     inputs:
       minutes:
