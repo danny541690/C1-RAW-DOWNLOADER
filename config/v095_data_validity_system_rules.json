@@ -1,0 +1,220 @@
+{
+  "schema": "JARVIS_V095_DATA_VALIDITY_SYSTEM_RULES_V2",
+  "version": "2026-11-06-R2",
+  "effective_date": "2026-11-06",
+  "timezone": "Asia/Taipei",
+  "range_from": "2000-01-01",
+  "description": "Source publication calendar, dataset-specific availability, PIT, stage qualification and 4-state acceptance; authoritative rules for controller and ChatGPT query, not claims that every dataset is complete.",
+  "priority": [
+    "OFFICIAL_DATASET_RECEIPT_WITH_TIMESTAMP",
+    "OFFICIAL_PRODUCT_CALENDAR",
+    "REGULATORY_DEADLINE_EXPECTATION_ONLY",
+    "MISSING_OR_UNSUPPORTED_UNKNOWN"
+  ],
+  "registry_key": [
+    "source",
+    "dataset_id",
+    "reference_date_or_period",
+    "security_id_if_applicable",
+    "release_version"
+  ],
+  "time_fields": {
+    "period_start": "start of economic observation period",
+    "period_end": "end of observation period",
+    "effective_session": "trading or snapshot date as relevant",
+    "first_published_at": "evidenced issuer or authority publication time",
+    "available_at": "first public time for exact version and source record; null if unverifiable",
+    "downloaded_at": "our observed acquisition time; NOT historical availability",
+    "revised_at": "later publication of corrected values, with separate version",
+    "source_valid_until": "optional if dataset superseded",
+    "historical_asof": "backtest evaluation timestamp"
+  },
+  "eligibility": {
+    "can_fetch": "A record can be fetched when official endpoint exposes it, even before nominal deadline",
+    "can_aggregate": "Bronze raw complete and verified for exact dataset/date/symbol expected scope; partial allowed separately",
+    "can_transform": "Bronze source SHA+schema and release/pit metadata preserved; unit verified",
+    "can_gold": "Silver contract and all indicator dependencies certified; mark missing otherwise",
+    "can_backtest": "Every input has proven available_at <= historical_asof and correct asof vintage, no later revisions"
+  },
+  "acceptance_states": {
+    "PASS": "all expected applicable units obtained/quality and conversions/lineage/PIT certified",
+    "PARTIAL": "some applicable units available and valid but incomplete or unverified",
+    "BLOCK": "not yet published or gated for upstream, formula, approval, PIT",
+    "ERROR": "transport/parse/integrity issue; isolated finite retry"
+  },
+  "release_states": [
+    "NOT_YET_DUE",
+    "EARLY_PARTIAL_RELEASE",
+    "RELEASE_DUE_CHECK_OFFICIAL",
+    "OFFICIAL_AVAILABLE",
+    "PUBLISHED_PENDING_FETCH",
+    "FETCHED_PENDING_QA",
+    "REVISED_VERSION",
+    "NO_TRADING_SESSION",
+    "NOT_APPLICABLE",
+    "SOURCE_NOT_AVAILABLE",
+    "TIMESTAMP_UNVERIFIED"
+  ],
+  "rmi": {
+    "numerator": "verified and applicable data-unit count with exact dataset version",
+    "denominator": "officially expected and already published applicable data-unit count, excluding not-yet-due, non-trading and non-applicable",
+    "unknown": "null if exact expected number unknown; folder count cannot serve as denominator",
+    "metric": "100 * numerator / denominator only if denominator and evidence available",
+    "pit_metric": "independent % with proven first_published_at per historical asof",
+    "overdue": "A release is not overdue without an authoritative due/release schedule or official evidence; early filings included immediately"
+  },
+  "sources": [
+    {
+      "source": "TWSE",
+      "dataset_id": "TWSE_DAILY_MARKET",
+      "frequency": "session_daily",
+      "release_rule": "After official market close AND exact dataset accessible; exchange calendar/holidays and product timestamps",
+      "nominal_deadline": null,
+      "grain": [
+        "trading_session",
+        "security_id",
+        "dataset"
+      ],
+      "pit": "actual verified official first publication per dataset"
+    },
+    {
+      "source": "TPEx",
+      "dataset_id": "TPEX_DAILY_MARKET",
+      "frequency": "session_daily",
+      "release_rule": "Product-dependent release windows, actual session and official response receipt; never assume all product tables at same time",
+      "nominal_deadline": null,
+      "grain": [
+        "trading_session",
+        "security_id",
+        "dataset"
+      ],
+      "pit": "first available official dataset version"
+    },
+    {
+      "source": "MOPS",
+      "dataset_id": "MOPS_MONTHLY_REVENUE",
+      "frequency": "monthly_security",
+      "release_rule": "Each issuer may file earlier; usual nominal due next month day 10; eligible insurer exceptions may be day 15 since 2026, verify per company",
+      "nominal_deadline": "next_month_10_or_qualified_15",
+      "grain": [
+        "revenue_month",
+        "security_id",
+        "release_version"
+      ],
+      "pit": "per company filing timestamp; September filing in October not available on Sep30"
+    },
+    {
+      "source": "MOPS",
+      "dataset_id": "MOPS_QUARTERLY_FINANCIALS",
+      "frequency": "quarterly_security",
+      "release_rule": "Determine issuer class, fiscal quarter, filing schedule and actual announcement; no generic monthly due assumption",
+      "nominal_deadline": null,
+      "grain": [
+        "fiscal_quarter",
+        "security_id",
+        "report_version"
+      ],
+      "pit": "reported version's actual first disclosure"
+    },
+    {
+      "source": "TDCC",
+      "dataset_id": "TDCC_WEEKLY_OWNERSHIP",
+      "frequency": "weekly_snapshot",
+      "release_rule": "Week-ending business-day snapshot is distinct from date of public access; confirm product release and public retention limits",
+      "nominal_deadline": null,
+      "grain": [
+        "snapshot_date",
+        "security_id",
+        "ownership_band"
+      ],
+      "pit": "earliest official week data publication evidence"
+    },
+    {
+      "source": "TAIFEX",
+      "dataset_id": "TAIFEX_DAILY",
+      "frequency": "session_daily",
+      "release_rule": "Individual contracts / settlements / post-close and after-hours datasets have different release times",
+      "nominal_deadline": null,
+      "grain": [
+        "trading_session",
+        "contract",
+        "dataset"
+      ],
+      "pit": "official per-product release timestamp"
+    },
+    {
+      "source": "NDC",
+      "dataset_id": "NDC_BUSINESS_CYCLE",
+      "frequency": "monthly",
+      "release_rule": "Use authority's announced economic indicator release calendar; snapshots/version preserved",
+      "confirmed_calendar": {
+        "2026-09": "2026-10-29T16:00:00+08:00",
+        "2026-10": "2026-11-27T16:00:00+08:00"
+      },
+      "grain": [
+        "reference_month",
+        "indicator_id",
+        "vintage"
+      ],
+      "pit": "announced release actual source evidence; later revision separate"
+    },
+    {
+      "source": "CUSTOMS",
+      "dataset_id": "CUSTOMS_TRADE",
+      "frequency": "monthly",
+      "release_rule": "Actual official calendar; do not infer period month is public",
+      "confirmed_calendar": {
+        "2026-10": "2026-11-10T10:00:00+08:00"
+      },
+      "grain": [
+        "reference_month",
+        "indicator_id",
+        "vintage"
+      ],
+      "pit": "official first publication evidence"
+    },
+    {
+      "source": "MOEA",
+      "dataset_id": "MOEA_INDUSTRIAL_PRODUCTION",
+      "frequency": "monthly",
+      "release_rule": "Official industrial-production release; subsequent revisions are distinct vintages",
+      "confirmed_calendar": {
+        "2026-09": "2026-10-23T16:00:00+08:00"
+      },
+      "grain": [
+        "reference_month",
+        "indicator_id",
+        "vintage"
+      ],
+      "pit": "official first publication evidence"
+    }
+  ],
+  "guardrails": [
+    "Missing source-month folder != failed download if official publication not due",
+    "No duplicate success file re-download",
+    "Source contract must match content, especially TDCC misfiled fund records",
+    "Market data money values display 億元; raw original unit retained with conversion evidence",
+    "Save emerging market but do not include in TSE/OTC Gold analysis",
+    "Do not infer first_published_at from downloaded_at",
+    "Never promote unvalidated native Gold numeric index as one of 443 calculated indicators",
+    "Do not advance before 2026-09 while pilot source coverage/QA/PIT is unverified"
+  ],
+  "acceptance_pilot_202609_202611": {
+    "asof": "2026-11-06T23:16:00+08:00",
+    "latest_evidence_run": 42237807632,
+    "worker_execution": "PASS",
+    "dataset_acceptance": "PARTIAL",
+    "production_gate": "BLOCK",
+    "source_month_folder_cells": {
+      "observed": 11,
+      "possible": 18,
+      "by_month": {
+        "2026-09": 6,
+        "2026-10": 3,
+        "2026-11": 2
+      }
+    },
+    "meaning": "Folders/partial Parquet exist. No full 443 indicator or formal PIT approval. Source-month observation not completeness.",
+    "next_month_backfill": "2026-08_BLOCKED_UNTIL_PILOT_RELEASE"
+  }
+}
