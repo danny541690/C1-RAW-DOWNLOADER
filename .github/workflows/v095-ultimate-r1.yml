@@ -177,7 +177,7 @@ jobs:
 
   aggregate-three-month:
     if: always() && github.repository == 'danny541690/C1-RAW-DOWNLOADER'
-    needs: [parallel-workers]
+    needs: [parallel-workers, pilot-controller]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
