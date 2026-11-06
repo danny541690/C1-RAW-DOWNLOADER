@@ -23,8 +23,6 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-202609-single-closed-loop.yml'
-  schedule:
-    - cron: '17 11 * * *'
 permissions:
   contents: write
   actions: write
