@@ -5,6 +5,7 @@ market-data coverage. All formal release gates fail closed.
 """
 import collections,datetime as dt,hashlib,io,json,os,pathlib
 from v095_release_maturity import source_period_maturity,combined_state
+from v095_publication_gate import classify as official_release_classify, TZ
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -67,6 +68,40 @@ def main():
    except Exception as exc:
     bad.append({"lane":name,"month":month,"reason":"MATURITY_ERROR:"+str(exc)[:140]})
     maturity_by_month[month][source]={"acceptance":{"status":"ERROR","reason":"MATURITY_CALCULATION_ERROR","rmi":None}}
+ # Canonical source-by-dataset release registry must be consulted, not merely
+ # the month-folder-level source map. Publication expectations are distinct
+ # from proof that individual stock rows existed at a historical as-of date.
+ canonical_rules=json.loads(pathlib.Path("config/v095_data_validity_system_rules.json").read_text(encoding="utf-8"))
+ if canonical_rules.get("schema")!="JARVIS_V095_DATA_VALIDITY_SYSTEM_RULES_V2":
+  raise ValueError("UNEXPECTED_CANONICAL_RULES_VERSION")
+ dataset_release_matrix={}
+ now=dt.datetime.now(TZ)
+ source_to_gate={
+  "TWSE_DAILY_MARKET":"TWSE_DAILY_MARKET",
+  "TPEX_DAILY_MARKET":"TPEX_DAILY_MARKET",
+  "MOPS_MONTHLY_REVENUE":"MOPS_MONTHLY_REVENUE",
+  "TDCC_WEEKLY_OWNERSHIP":"TDCC_WEEKLY_OWNERSHIP",
+  "TAIFEX_DAILY":"TAIFEX_DAILY",
+  "NDC_BUSINESS_CYCLE":"NDC_BUSINESS_CYCLE",
+  "CUSTOMS_TRADE":"CUSTOMS_TRADE",
+  "MOEA_INDUSTRIAL_PRODUCTION":"MOEA_INDUSTRIAL_PRODUCTION"}
+ for month in MONTHS:
+  dataset_release_matrix[month]={}
+  for spec in canonical_rules["sources"]:
+   dataset=spec["dataset_id"]
+   gate=source_to_gate.get(dataset)
+   if gate is None:
+    result={"status":"PUBLISHED_DATE_NOT_YET_VERIFIED","count_as_missing":None}
+   else:
+    result=official_release_classify(gate,month,now=now)
+   dataset_release_matrix[month][dataset]={
+     "source":spec["source"],"release_classification":result,
+     "nominal_deadline":spec.get("nominal_deadline"),
+     "calendar_record":spec.get("confirmed_calendar",{}).get(month),
+     "receipt_evidence":"UNKNOWN_NOT_TO_BE_INFERRED_FROM_FOLDER",
+     "validated_bronze_silver_gold":False,
+     "historical_pit_approved":False,
+     "lookup_grain":spec["grain"]}
  all_verdicts=[v["acceptance"]["status"] for one in maturity_by_month.values() for v in one.values()]
  overall=combined_state(all_verdicts,technical_error=bool(bad))
  # Downstream is not certified until schema contracts, formula DAG, PIT and
@@ -89,6 +124,10 @@ def main():
    "data_acceptance_result":overall,
    "status_legend":{"PASS":"Contract+quality+PIT+lineage certified","PARTIAL":"Some actual data present, completeness not certified","BLOCK":"Not yet due or awaiting source/formula/approval","ERROR":"Transport/parser/runtime/integrity fault"},
    "rmi_units":"Percent of verified units / expected applicable units when exact certified denominator exists; otherwise null",
+   "canonical_validity_rules":{"version":canonical_rules["version"],"file":"config/v095_data_validity_system_rules.json",
+    "datasets":len(canonical_rules["sources"]),"hash_sha256":sha(pathlib.Path("config/v095_data_validity_system_rules.json").read_bytes())},
+   "dataset_release_matrix":dataset_release_matrix,
+   "release_evidence_note":"Official expected publication timing is NOT a source record's actual first_published_at; neither source-month folder nor CI pass certifies PIT.",
    "rmi_by_source_month":maturity_by_month,
    "downstream_acceptance_by_month":downstream_verdicts,
    "rmi_overall":None,
