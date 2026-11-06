@@ -1,7 +1,7 @@
 """Convert original September 2026 TDCC weekly Bronze partition JSONL to isolated Silver Parquet.
 Derived weekly JSONL from original HTML; preserve source record and native archive SHA.
 """
-import os,io,zipfile,json,re,decimal,hashlib,pathlib,collections
+import os,io,zipfile,json,re,decimal,hashlib,pathlib,collections,time,socket,ssl,http.client
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -14,9 +14,17 @@ WEEKS={"2026-09-04","2026-09-11","2026-09-18","2026-09-24"}
 def sha(x):return hashlib.sha256(x).hexdigest()
 def svc():
  c=Credentials(token=None,refresh_token=os.environ["GOOGLE_REFRESH_TOKEN"],token_uri="https://oauth2.googleapis.com/token",client_id=os.environ["GOOGLE_CLIENT_ID"],client_secret=os.environ["GOOGLE_CLIENT_SECRET"],scopes=["https://www.googleapis.com/auth/drive"]);c.refresh(Request());return build("drive","v3",credentials=c,cache_discovery=False)
-def raw(s,id):return s.files().get_media(fileId=id).execute()
+def execute_retry(factory, label, attempts=4):
+ for i in range(attempts):
+  try:return factory().execute()
+  except (BrokenPipeError,ConnectionError,TimeoutError,OSError,http.client.HTTPException,ssl.SSLError) as e:
+   if i==attempts-1:raise
+   delay=min(30,2**i*3)
+   print(json.dumps({"label":label,"attempt":i+1,"error":type(e).__name__,"backoff_seconds":delay}),flush=True)
+   time.sleep(delay)
+def raw(s,id):return execute_retry(lambda:s.files().get_media(fileId=id),"TDCC_RAW_MEDIA")
 def save(s,folder,name,b):
- a=s.files().list(q=f"'{folder}' in parents and name = '{name}' and trashed = false",fields="files(id)",pageSize=50).execute()["files"]
+ a=execute_retry(lambda:s.files().list(q=f"'{folder}' in parents and name = '{name}' and trashed = false",fields="files(id)",pageSize=50),"TDCC_FIND_OUTPUT")["files"]
  if len(a)>1:raise ValueError("AMBIGUOUS_EXISTING_FILE")
  if a:
   if sha(raw(s,a[0]["id"]))!=sha(b):raise ValueError("CONFLICT_DIFFERENT_GENERATION")
@@ -55,7 +63,7 @@ def main():
     native_record_json=json.dumps(record,ensure_ascii=False),
     published_at=None,pit_verified=False,normalization_version="TDCC_WEEKLY_202609_CANDIDATE_R1"))
  if set(counts)!=WEEKS or len(out)!=276097:raise ValueError("TDCC_PARTITION_ROW_TOTAL_MISMATCH:"+str(dict(counts)))
- a=s.files().list(q=f"'{DEST}' in parents and name = '{MONTH}' and trashed = false",pageSize=50,fields="files(id)").execute()["files"]
+ a=execute_retry(lambda:s.files().list(q=f"'{DEST}' in parents and name = '{MONTH}' and trashed = false",pageSize=50,fields="files(id)"),"TDCC_FIND_MONTH")["files"]
  if len(a)>1:raise ValueError("DUPLICATE_MONTH_FOLDER")
  folder=a[0]["id"] if a else s.files().create(body={"name":MONTH,"parents":[DEST],"mimeType":"application/vnd.google-apps.folder"},fields="id").execute()["id"]
  data=io.BytesIO();pq.write_table(pa.Table.from_pylist(out),data,compression="zstd")
