@@ -3,7 +3,7 @@ Reuse v0.93 verified URL constructor and native response validator.
 Four requests maximum; immutable Bronze original, Silver market Parquet,
 Gold descriptive daily OHLCV, all file-hash lineage; no historical PIT promise.
 """
-import io,os,re,json,decimal,hashlib,datetime as dt,collections,pathlib
+import io,os,re,json,decimal,hashlib,datetime as dt,collections,pathlib,time,http.client,urllib.error
 import pyarrow as pa,pyarrow.parquet as pq
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -12,6 +12,16 @@ from googleapiclient.http import MediaIoBaseUpload
 from scripts.v093_three_year_repair import Audit,request,validate
 D=decimal.Decimal;OUT=pathlib.Path("ultimate_r1");OUT.mkdir(exist_ok=True)
 DATES=("2026-11-04","2026-11-05")
+SOURCE_FILTER=os.environ.get("V095_SOURCE_FILTER","TWSE,TPEx").split(",")
+def bounded_official_request(url):
+ last=None
+ for attempt in range(3):
+  try:return request(url)
+  except (http.client.IncompleteRead,TimeoutError,ConnectionError,urllib.error.URLError,OSError) as err:
+   last=err
+   if attempt<2:time.sleep(2**attempt*3)
+ raise RuntimeError("OFFICIAL_TRANSPORT_RETRIES_EXHAUSTED:"+type(last).__name__)
+
 SOURCES={
  "TWSE":{"bronze":"1I83nUMJjBEYJrUDj9zUDCvl4nfKEDvjE","silver":"1Ys8iWBOa4jjBOlLOZ8aEnn_LriPh_FZ5",
   "cat":"prices_indices","title":"每日收盤行情",
@@ -84,13 +94,14 @@ def main():
  d=api();r={"schema":"V095_202611_LATEST_BSG_CANARY","run_id":os.getenv("GITHUB_RUN_ID"),
  "requested_days":list(DATES),"completed":{},"rejected":{},"pit_verified":False}
  for source,config in SOURCES.items():
+  if source not in SOURCE_FILTER:continue
   jobs={j["period"]:j for j in Audit.jobs(object.__new__(Audit),"2026-11",set())
    if j["source"]==source and j["category"]==config["cat"] and j["period"] in DATES}
   for day in DATES:
    key=source+"_"+day
    try:
     if day not in jobs:raise ValueError("NO_FROZEN_OFFICIAL_ROUTE")
-    job=jobs[day];url=job["url"];raw=request(url)
+    job=jobs[day];url=job["url"];raw=bounded_official_request(url)
     facts=validate(raw,source,job["category"],day)
     rows,unparsed=parse(raw,source,day)
     if len(rows)<300:raise ValueError("TOO_FEW_ROWS")
