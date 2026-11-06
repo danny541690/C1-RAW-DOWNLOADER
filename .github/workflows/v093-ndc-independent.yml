@@ -5,8 +5,6 @@ on:
       - '.github/workflows/v093-ndc-independent.yml'
       - 'scripts/v093_ndc_independent.py'
       - 'tests/test_ndc_independent.py'
-  schedule:
-    - cron: '*/10 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
