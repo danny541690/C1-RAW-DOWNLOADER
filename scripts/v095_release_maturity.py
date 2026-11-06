@@ -29,7 +29,8 @@ def maturity(availability,observed_count,expected_count=None,verified_count=0,ha
     # established by an actual dataset-level contract and not a month folder.
     coverage=verified/expected if expected and contract_ok else None
     rmi=round(100*coverage,2) if coverage is not None else None
-    certified=(expected is not None and verified==expected and contract_ok and pit_ok and lineage_ok)
+    certified=(expected is not None and verified==expected and contract_ok and pit_ok and lineage_ok
+               and stage=="AVAILABLE_OFFICIAL_VERIFIED" and bool(availability.get("first_published_at")))
     if certified:
         return dict(status="PASS",reason="ALL_APPLICABLE_ROWS_AND_PIT_CERTIFIED",rmi=rmi,overdue=False)
     if observed>0:
@@ -41,10 +42,10 @@ def maturity(availability,observed_count,expected_count=None,verified_count=0,ha
     return dict(status="BLOCK",reason=reason,rmi=rmi,
                 overdue=False if not_due else availability.get("count_as_missing"),availability=stage)
 
-def source_period_maturity(source,month,observed_count,now=None,**kwargs):
+def source_period_maturity(source,month,observed_count,now=None,actual_official_receipt=None,applicable=True,**kwargs):
     if source not in SOURCE_MAP:raise ValueError("SOURCE_UNMAPPED_"+source)
     if now is None:now=dt.datetime.now(TZ)
-    release=classify(SOURCE_MAP[source],month,now)
+    release=classify(SOURCE_MAP[source],month,now,actual_official_receipt=actual_official_receipt,applicable=applicable)
     return dict(source=source,reference_month=month,release=release,
                 acceptance=maturity(release,observed_count,**kwargs))
 
@@ -65,10 +66,11 @@ def selftest():
     assert x["acceptance"]["status"]=="PARTIAL" and x["acceptance"]["rmi"] is None
     x=source_period_maturity("NDC","2026-10",0,now=now)
     assert x["acceptance"]["status"]=="BLOCK" and x["acceptance"]["overdue"] is False
-    assert maturity({"status":"AVAILABLE_OFFICIAL_VERIFIED"},10,expected_count=10,verified_count=10,
+    assert maturity({"status":"AVAILABLE_OFFICIAL_VERIFIED","first_published_at":"2026-10-10T08:00:00+08:00"},10,expected_count=10,verified_count=10,
                     contract_ok=True,pit_ok=True,lineage_ok=True)["status"]=="PASS"
     assert maturity({"status":"AVAILABLE_OFFICIAL_VERIFIED"},10,expected_count=10,verified_count=10,
                     contract_ok=True,pit_ok=False,lineage_ok=True)["status"]=="PARTIAL"
+    assert maturity({"status":"DUE_CHECK_OFFICIAL"},10,expected_count=10,verified_count=10,contract_ok=True,pit_ok=True,lineage_ok=True)["status"]!="PASS"
     assert maturity({"status":"DUE_CHECK_OFFICIAL"},0,has_error=True)["status"]=="ERROR"
     assert combined_state(["BLOCK","PARTIAL"])=="PARTIAL"
     assert combined_state(["PASS","PASS"])=="PASS"
