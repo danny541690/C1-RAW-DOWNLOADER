@@ -81,6 +81,17 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_202609_ai_query_gate.py
+      - name: Daily reverse trace smoke test 2330 MA5 2026-09-30
+        if: github.event_name != 'workflow_dispatch' || inputs.mode != 'query'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          JARVIS_STOCK: '2330'
+          JARVIS_INDICATOR: 'MA5'
+          JARVIS_DATE: '2026-09-30'
+          JARVIS_MARKET: 'TSE'
+        run: python scripts/v095_202609_query_trace.py
       - name: On-demand Gold indicator lookup and backward Silver Bronze trace
         if: github.event_name == 'workflow_dispatch' && inputs.mode == 'query'
         env:
