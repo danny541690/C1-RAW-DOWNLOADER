@@ -1,0 +1,40 @@
+name: JARVIS v0.95 September B physical Bronze full audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-B-full-audit.yml'
+      - 'scripts/v095_202609_B_full_audit.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-sep-B-full-audit
+  cancel-in-progress: false
+jobs:
+  full-bronze-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive dependencies
+        run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2,<3' 'google-auth>=2,<3' 'google-auth-httplib2>=0.2,<1'
+      - name: Recheck all inventoried September Bronze bytes and ZIP member CRC
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_B_full_audit.py
+      - name: Retain Bronze audit and targeted correction queue
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-v095-202609-B-full-audit-${{ github.run_id }}
+          path: v095_202609_B_full_audit/
+          retention-days: 90
+          if-no-files-found: warn
