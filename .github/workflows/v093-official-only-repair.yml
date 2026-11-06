@@ -6,8 +6,6 @@ on:
     paths:
       - '.github/workflows/v093-official-only-repair.yml'
       - 'scripts/v093_official_repair.py'
-  schedule:
-    - cron: '5,15,25,35,45,55 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
