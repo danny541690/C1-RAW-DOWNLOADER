@@ -1,0 +1,31 @@
+name: JARVIS September R5 monthly audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-R5-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: R5 targeted evidence
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_R5_monthly_audit.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: R5-monthly-${{ github.run_id }}
+          path: r5_monthly/
+          retention-days: 90
