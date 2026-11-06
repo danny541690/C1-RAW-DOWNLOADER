@@ -1,12 +1,10 @@
-name: JARVIS v0.95 2026-09 SINGLE unified Bronze Silver Gold AI gate
+name: JARVIS v0.95 September ONE Bronze Silver Gold PIT lineage pipeline
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/v095-202609-single-closed-loop.yml'
-      - 'scripts/v095_202609_ai_query_gate.py'
-      - 'scripts/v095_202609_R3_scheduler.py'
   schedule:
     - cron: '17 11 * * *'
 permissions:
@@ -16,10 +14,10 @@ concurrency:
   group: jarvis-v095-202609-single-workflow
   cancel-in-progress: false
 jobs:
-  monthly-closed-loop:
+  full-chain:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 65
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,27 +25,47 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install source and QA runtime once
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 pyarrow
-      - name: Check source > Silver > Gold checkpoints and dispatch only real missing work
+      - name: Install runtime ONCE for all three layers and PIT
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Bronze v093 to v095 original migration inventory and source contracts
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_3tier_inventory.py
+      - name: Silver and Gold immutable partition checkpoints - no verified data redownload
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_unified_resume.py
+      - name: Reconcile source and TDCC checkpoints with live Drive; bounded dispatch if truly missing
         env:
           GH_TOKEN: ${{ github.token }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_202609_R3_scheduler.py
-      - name: Verify real Drive Gold artifacts, 443 identity coverage and AI query access contract
+      - name: Gold 443 ID mapping and bidirectional Gold Silver Bronze SHA lineage + PIT matrix
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_202609_unified_lineage.py
+      - name: AI query index and historical PIT release gate (do not confuse pass with full 443 certification)
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_202609_ai_query_gate.py
-      - name: Retain Bronze/Silver/Gold/PIT and AI readiness receipts
+      - name: Preserve ONE consolidated complete-chain receipt
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v095-202609-single-loop-${{ github.run_id }}
+          name: jarvis-v095-sep-Bronze-Silver-Gold-PIT-${{ github.run_id }}
           path: |
+            v095_202609_3tier_inventory/
+            v095_unified_202609/
             v095_202609_R3/
             v095_september_ai_query/
           retention-days: 90
