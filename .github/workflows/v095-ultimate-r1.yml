@@ -13,6 +13,7 @@ on:
       - 'scripts/v095_ultimate_r1_query_october.py'
       - 'scripts/v095_ultimate_r1_enlarged_bsg.py'
       - 'scripts/v095_ultimate_r1_enlarged_query.py'
+      - 'scripts/v095_ultimate_r1_november_official.py'
   schedule:
     - cron: '*/15 * * * *'
 permissions:
@@ -70,14 +71,14 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_controller.py
       - name: Bounded real October v093 to v095 staging ingestion with SHA readback
-        if: github.event_name != 'schedule'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_october_canary.py
       - name: Real October Bronze Silver Parquet Gold descriptive and SHA QA - 3 known partitions
-        if: github.event_name != 'schedule'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -86,26 +87,35 @@ jobs:
           python -m pip install --disable-pip-version-check pyarrow
           python scripts/v095_ultimate_r1_october_bsg.py
       - name: Publish ChatGPT query index with real October Gold Parquet examples and reverse lineage
-        if: github.event_name != 'schedule'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_query_october.py
       - name: Enlarged October official native archives TWSE TPEx Bronze Silver Gold with QA
-        if: github.event_name != 'schedule'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_enlarged_bsg.py
       - name: Build ChatGPT October enlarged source and Gold index with dates and SHA
-        if: github.event_name != 'schedule'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_enlarged_query.py
+      - name: Latest official November 4-5 TSE and OTC true Bronze Silver Gold mini batch
+        if: github.event_name != 'schedule'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m pip install --disable-pip-version-check pyarrow
+          python scripts/v095_ultimate_r1_november_official.py
       - name: Check existing September Silver Gold immutable incremental checkpoints
         if: github.event_name != 'schedule'
         env:
