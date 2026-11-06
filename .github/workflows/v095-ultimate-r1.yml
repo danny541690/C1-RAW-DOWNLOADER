@@ -11,6 +11,7 @@ on:
       - 'scripts/v095_ultimate_r1_14lane_worker.py'
       - 'scripts/v095_ultimate_r1_3month_reconcile.py'
       - 'scripts/v095_ultimate_r1_3month_aggregate.py'
+      - 'scripts/v095_ultimate_r1_source_content_guard.py'
       - 'config/v095_publication_availability_policy.json'
       - 'scripts/v095_publication_gate.py'
       - 'governance/v095/JARVIS_V095_OFFICIAL_PUBLICATION_PIT_RULES_20261106.md'
@@ -81,6 +82,13 @@ jobs:
           python-version: '3.12'
       - name: Install single shared runtime
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Block incorrectly filed October TDCC fund data before Bronze promotion
+        if: github.event_name != 'schedule'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_ultimate_r1_source_content_guard.py
       - name: Six-source pilot 2026 newest to September, archive full specs, checkpoint and gate
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
