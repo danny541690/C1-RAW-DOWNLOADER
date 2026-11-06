@@ -26,7 +26,7 @@ def classify(source,reference,now=None,actual_official_receipt=None,applicable=T
   deadline=next_month_deadline(reference,10)
   insurer=next_month_deadline(reference,15)
   if now<dt.datetime(*reference_month(reference),1,tzinfo=TZ):raise ValueError("invalid")
-  return {"status":"NOT_YET_DUE" if now<deadline else "DUE_CHECK_OFFICIAL",
+  return {"status":("NOT_YET_DUE" if now.strftime("%Y-%m")==reference else "PARTIALLY_PUBLISHED_POSSIBLE") if now<deadline else "DUE_CHECK_OFFICIAL",
    "count_as_missing":now>=deadline,
    "nominal_deadline":deadline.isoformat(),
    "insurance_special_deadline":insurer.isoformat(),
@@ -71,7 +71,7 @@ SOURCE_MAP={
 def selftest():
  t=dt.datetime(2026,11,6,19,32,tzinfo=TZ)
  assert classify("MOPS_MONTHLY_REVENUE","2026-11",t)["status"]=="NOT_YET_DUE"
- assert classify("MOPS_MONTHLY_REVENUE","2026-10",t)["status"]=="NOT_YET_DUE"
+ assert classify("MOPS_MONTHLY_REVENUE","2026-10",t)["status"]=="PARTIALLY_PUBLISHED_POSSIBLE"
  assert classify("MOPS_MONTHLY_REVENUE","2026-09",t)["status"]=="DUE_CHECK_OFFICIAL"
  assert classify("NDC_BUSINESS_CYCLE","2026-10",t)["status"]=="NOT_YET_DUE"
  assert classify("NDC_BUSINESS_CYCLE","2026-09",t)["status"]=="DUE_CHECK_OFFICIAL"
