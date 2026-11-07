@@ -1,0 +1,85 @@
+{
+  "schema": "JARVIS_V095_R8_OFFICIAL_SOURCE_SEMANTICS_V1",
+  "as_of": "2026-11-07",
+  "scope": [
+    "2026-09",
+    "2026-10",
+    "2026-11",
+    "2000-01_to_2026-11_discovery"
+  ],
+  "source_documents": [
+    {
+      "id": "TPEX_DAILY_BULK_START",
+      "url": "https://www.tpex.org.tw/zh-tw/mainboard/trading/info/pricing.html",
+      "official_document_finding": "The webpage states historical listed OTC closing quotations from 2003-08, and a distinct 2007+ main query interface.",
+      "dataset": "TPEx.DailyQuotesBulk",
+      "first_documented_month": "2003-08",
+      "coverage_before_first_documented": "NOT_AVAILABLE_IN_THIS_BULK_DATASET_DO_NOT_INFER_ALL_TPEX_HISTORY_UNAVAILABLE",
+      "verified_live_start": false
+    },
+    {
+      "id": "TDCC_SHAREHOLDERS",
+      "url": "https://s.tdcc.com.tw/portal/zh/smWeb/qryStock",
+      "official_document_finding": "Historical holdings file constructed since 2008-07 and searchable archive retention one year; weekly last-business-day balances, distribution percent is versus TDCC inventory.",
+      "dataset": "TDCC.ShareholderDistribution",
+      "first_documented_month": "2008-07",
+      "live_online_history_retention": "ONE_YEAR_PER_OFFICIAL_PAGE",
+      "verified_live_start": false
+    },
+    {
+      "id": "TPEX_SECURITY_SCOPE",
+      "url": "https://www.tpex.org.tw/zh-tw/mainboard/trading/rules/system.html",
+      "official_document_finding": "OTC system covers multiple security kinds and trading mechanisms; do not infer common stock from four-digit code alone.",
+      "dataset": "TPEx.MarketSecurityMaster",
+      "verified_live_start": false
+    }
+  ],
+  "normalization": {
+    "TDCC": {
+      "share_percent_denominator": "CUSTODIAL_INVENTORY_SHARES_NOT_ISSUED_SHARES",
+      "weekly_asof": "LAST_BUSINESS_DAY_IN_TDCC_OBSERVATION_WEEK",
+      "retention_one_year_is_NOT_publication_start": true,
+      "unverified_58_total_share_discrepancy": "HOLD_FOR_ROW_LEVEL_COMPARISON",
+      "unverified_451_ratio_warnings": "HOLD_FOR_CUSTODIAL_DENOMINATOR_COMPARISON",
+      "unknown_publication_timestamp": "PIT_UNVERIFIED",
+      "no_inferred_percent_zero": true
+    },
+    "TPEX": {
+      "non_numeric_token": "---",
+      "positive_volume_non_numeric_ohlc": 255,
+      "zero_volume_non_numeric_ohlc": 157,
+      "must_keep_original_bytes": true,
+      "check_historical_security_type_as_of": true,
+      "price_null_not_zero": true,
+      "no_inferred_suspension": true
+    },
+    "MOPS": {
+      "monthly_revenue_available_at": "OFFICIAL_FIRST_PUBLICATION_TIMESTAMP_REQUIRED",
+      "financial_revision": "APPEND_ONLY_ASOF",
+      "if_unknown": "GOLD_DISABLED_WITH_REASON"
+    }
+  },
+  "separate_release_gates": {
+    "bronze_official_bytes": "SOURCE_AND_DATE_AND_SCHEMA_AND_REMOTE_SHA_VERIFIED",
+    "silver": "BRONZE_PARENT_SHA_AND_UNITS_AND_PRIMARY_KEYS_VERIFIED",
+    "gold": "FORMULA_DIGEST_AND_PIT_AND_BIDIRECTIONAL_ROW_LINEAGE_VERIFIED",
+    "never_promote_bronze_to_gold": true
+  },
+  "history": {
+    "global_from": "2000-01",
+    "global_through": "2026-11",
+    "dataset_month_denominator": "APPLICABLE_DATASET_X_SOURCE_MARKET_X_HISTORICAL_SECURITY_UNIVERSE_X_RELEASE_CALENDAR",
+    "documented_start_is_not_live_reachability": true,
+    "unknown_dataset_start": "OFFICIAL_AVAILABILITY_UNKNOWN",
+    "no_download_for_confirmed_out_of_scope": true,
+    "source_unsupported_not_source_failure": true
+  },
+  "existing_acceptance": {
+    "r6_baseline_run_id": 42356953109,
+    "r7_problem_only_run_id": 42357744959,
+    "candidate_pass_is_not_final": true,
+    "never_download_accepted_candidate_again_without_upstream_sha_change": true
+  },
+  "formal_historical_bulk_allowed": false,
+  "gold_release_allowed": false
+}
