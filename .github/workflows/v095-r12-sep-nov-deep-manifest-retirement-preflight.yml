@@ -1,4 +1,4 @@
-name: JARVIS v0.95 R12 Deep Sep-Nov Manifest and 12-Issue Retest
+name: JARVIS v0.95 R13 Single-Pass Repair and Three-Month Preflight
 # Weekly lightweight source metadata/issue audit; no Bronze downloads or Drive writes.
 on:
   workflow_dispatch:
@@ -14,6 +14,8 @@ on:
       - 'tests/test_v095_r12_governance_gap_gate.py'
       - 'scripts/v095_r12_drive_audit_archive.py'
       - 'tests/test_v095_r12_drive_audit_archive.py'
+      - 'scripts/v095_r13_single_committer_contract.py'
+      - 'tests/test_v095_r13_single_committer_contract.py'
 permissions:
   contents: read
 concurrency:
@@ -43,6 +45,8 @@ jobs:
           python scripts/v095_r8_official_semantic_gate.py
           python scripts/v095_r7_problem_only_dispatch.py --mode plan
           python scripts/v095_r5_full_history_discovery_queue.py
+          python -m unittest discover -s tests -p 'test_v095_r13_single_committer_contract.py' -v
+          python scripts/v095_r13_single_committer_contract.py
           python scripts/v095_r11_plan_contract_gate.py
           python scripts/v095_r12_production_governance_gap_gate.py
       - name: Install official Drive metadata client
@@ -102,6 +106,7 @@ jobs:
           name: v095-r12-three-month-deep-manifest-${{ github.run_id }}
           path: |
             r11_pilot_contract/
+            r13_single_pass/result.json
             r7_problem_only/report.json
             r8_official_semantics/result.json
             r12_governance_gaps/result.json
