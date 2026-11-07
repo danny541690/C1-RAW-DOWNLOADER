@@ -5,7 +5,7 @@ Accepted scoped candidate receipts are never downloaded or rechecked here.
 Only explicitly open issues are emitted into the actionable queue. A one-day
 TWSE live source probe is read-only, not a new historical Bronze download.
 """
-import argparse,datetime as dt,hashlib,json,pathlib,urllib.request,urllib.parse,urllib.error,time
+import argparse,datetime as dt,hashlib,json,pathlib,urllib.request,urllib.parse,urllib.error,time,re
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 RECEIPTS=ROOT/"governance/v095/202609_11_R7_ACCEPTED_CANDIDATE_RECEIPTS.json"
 OUT=ROOT/"r7_problem_only"
@@ -17,11 +17,15 @@ def plan(data):
     assert len(accepted)==12 and len(open_tasks)==6
     assert not any(x.get("writes_allowed") for x in open_tasks)
     assert all(x["state"].startswith("PASS_") for x in accepted)
+    assert all(re.fullmatch(r"[0-9a-f]{64}",x.get("content_sha256","")) for x in accepted), "ACCEPTED_RECEIPT_SHA_MISSING"
+    assert all(x.get("digest_scope") in {"SILVER_CANDIDATE_SHA","SILVER_SHA","BRONZE_SHA","OFFICIAL_SNAPSHOT_SHA"} for x in accepted), "ACCEPTED_RECEIPT_DIGEST_SCOPE_UNKNOWN"
+    assert all(x.get("evidence_run_id")==data["baseline_run_id"] and x.get("evidence_artifact_id")==data["baseline_artifact_id"] for x in accepted), "ACCEPTED_RECEIPT_PROVENANCE_MISSING"
     assert data["limits"]["never_redownload_accepted"] and data["limits"]["never_recheck_accepted"]
     return {"schema":"JARVIS_V095_R7_DELTA_ONLY_V1","baseline_run_id":data["baseline_run_id"],
             "baseline_artifact_id":data["baseline_artifact_id"],
             "scope":"2026-09,2026-10,2026-11",
             "skipped_prior_candidate_count":len(accepted),"skipped_keys":keys,
+            "skip_basis":"PINNED_PRIOR_ARTIFACT_SHA_WITH_RECORDED_DIGEST_SCOPE_NOT_CURRENT_RECHECK",
             "open_issue_count":len(open_tasks),
             "actions":[{"id":x["id"],"action":x["action"],"source":x["source"],"period":x["month"],
                         "state":"OPEN","writes_allowed":False} for x in open_tasks],
