@@ -1,4 +1,5 @@
 name: JARVIS v0.95 one-run full prelaunch bundle
+# 2026-11-07 R4 one-batch independent prelaunch revalidation following November snapshot and October content-addressed repairs.
 on:
   push:
     branches: [main]
