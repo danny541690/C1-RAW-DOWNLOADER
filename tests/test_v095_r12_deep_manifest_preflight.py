@@ -1,5 +1,5 @@
 import unittest
-from scripts.v095_r12_deep_manifest_and_preflight import month_of_path,official_status,analyze,scope_preflight,MONTHS
+from scripts.v095_r12_deep_manifest_and_preflight import month_of_path,official_status,analyze,scope_preflight,candidate_state,MONTHS
 class R12BoundedDeepManifest(unittest.TestCase):
  def setUp(self):
   self.p={"issues":[{"id":x} for x in "abcdefghijkl"],"rules":{"license_and_finmind_access":"ONLY_ENABLED_AFTER_RIGHTS_VERIFIED"},
@@ -30,6 +30,12 @@ class R12BoundedDeepManifest(unittest.TestCase):
   self.assertEqual(official_status("TDCC_WEEKLY_OWNERSHIP","2000-01"),"NOT_APPLICABLE_TO_SERIES")
   self.assertEqual(official_status("TPEX_DAILY_MARKET","2001-01"),"LEGACY_DATASET_DISCOVERY_REQUIRED")
   self.assertEqual(official_status("MOPS_REVENUE","2026-10"),"EXPECTED_DENOMINATOR_UNKNOWN")
+ def test_manifest_candidate_classification_never_authenticates_by_name(self):
+  x={"is_folder":False,"observed_months":["2026-09"],"source":"TWSE"}
+  self.assertEqual(candidate_state(x),"PRESENT_UNVERIFIED_ORIGINAL_SHA")
+  self.assertEqual(candidate_state({**x,"source":"UNKNOWN"}),"UNATTRIBUTED_SOURCE")
+  self.assertEqual(candidate_state({**x,"observed_months":["2026-09","2026-10"]}),"UNKNOWN_OR_AMBIGUOUS_PERIOD")
+  self.assertEqual(candidate_state({**x,"is_folder":True}),"STRUCTURAL_FOLDER_ONLY")
  def test_release_flag_blocks_preflight(self):
   p=scope_preflight(self.p,{"BULK_COPY_APPROVED":True,"RELEASE_APPROVED":False})
   self.assertFalse(p["security_flags_safe"])
