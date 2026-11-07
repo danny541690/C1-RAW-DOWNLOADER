@@ -1,6 +1,9 @@
 name: JARVIS v0.95 R12 Deep Sep-Nov Manifest and 12-Issue Retest
+# Weekly lightweight source metadata/issue audit; no Bronze downloads or Drive writes.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '23 18 * * 0'
   push:
     branches: [main]
     paths:
