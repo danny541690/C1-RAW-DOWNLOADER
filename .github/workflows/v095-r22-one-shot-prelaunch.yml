@@ -1,0 +1,57 @@
+name: JARVIS v0.95 R22 One-Shot Prelaunch Gate (Isolated)
+on:
+  push:
+    branches:
+      - test/jarvis-v095-parquet-isolated-20261104
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-r22-oneshot-prelaunch
+  cancel-in-progress: false
+jobs:
+  combined-prelaunch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated dependencies
+        run: python -m pip install duckdb pyarrow pandas openpyxl
+      - name: Regress 79 existing safety tests
+        run: |
+          python tests/v095_isolated_parquet_integration.py
+          python tests/v095_immutable_release_isolated.py
+          python tests/v095_concurrent_release_isolated.py
+          python tests/v095_full_combined_gate.py
+          python tests/v095_release_gate_evidence.py
+          python tests/v095_real_twse_sample_parquet.py
+          python tests/v095_historical_error_regression.py
+          python tests/v095_source_config_release_audit.py
+          python tests/v095_r21_tdcc_semantic_rules.py
+      - name: Seven-source live API connectivity
+        run: python tests/v095_r17_live_source_smoke.py
+      - name: R18 official route recovery
+        run: python tests/v095_r18_recover_source_routes.py
+      - name: R19 official-source Bronze Silver Gold QA
+        run: python tests/v095_r19_live_three_layer_candidates.py
+      - name: R20 full TDCC Bronze and Parquet readback
+        run: python tests/v095_r20_tdcc_full_roundtrip.py
+      - name: R22 source-specific numeric and PIT gate
+        run: python tests/v095_r22_single_run_release_gate.py
+      - name: Archive combined evidence without publishing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r22-one-shot-prelaunch-evidence
+          path: |
+            r17_live_source_connectivity.json
+            r18_live_recovery_report.json
+            r19_live_candidates/
+            r20_tdcc_full/
+            r22_combined/
+            v095_go_live_gate_report.json
+          retention-days: 14
+          if-no-files-found: warn

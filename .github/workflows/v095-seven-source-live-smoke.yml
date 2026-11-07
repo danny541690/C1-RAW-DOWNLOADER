@@ -1,0 +1,160 @@
+name: JARVIS v0.95 Seven Source Live Data Connectivity (Test Only)
+on:
+  push:
+    branches:
+      - test/jarvis-v095-parquet-isolated-20261104
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-seven-live-probe
+  cancel-in-progress: false
+jobs:
+  seven-provider-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Seven-source bounded read-only data and connectivity probes
+        run: python tests/v095_r17_live_source_smoke.py
+      - name: R18 verify MOPS revenue, TDCC shareholding and NDC official archive
+        run: python tests/v095_r18_recover_source_routes.py
+      - name: Install isolated Parquet and spreadsheet parsing dependencies
+        run: python -m pip install pyarrow openpyxl duckdb pandas
+      - name: R19 real source data through isolated three layers
+        run: python tests/v095_r19_live_three_layer_candidates.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r19-live-three-layer-candidates
+          path: r19_live_candidates/
+          if-no-files-found: warn
+      - name: R20 full TDCC Bronze and Parquet Silver and Gold QA
+        run: python tests/v095_r20_tdcc_full_roundtrip.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r20-tdcc-full-candidates
+          path: r20_tdcc_full/
+          if-no-files-found: warn
+      - name: R24 TDCC full-dataset numeric QA Gold candidate
+        run: python tests/v095_r24_tdcc_gold_qa.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r24-tdcc-numeric-gold-qa
+          path: r24_tdcc_numeric_gold_candidate/
+          if-no-files-found: warn
+      - name: R27 official TSE OTC current snapshot join and PIT fail closed
+        run: python tests/v095_r27_current_official_security_master.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r27-current-official-security-master
+          path: r27_official_security_master/
+          if-no-files-found: warn
+      - name: One-shot migration pre-copy and pre-transform QA with parallel worker benchmark
+        run: python tests/v095_migration_combined_parallel_preflight.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-migration-combined-parallel-preflight
+          path: v095_migration_single_preflight/
+          if-no-files-found: warn
+      - name: Audit full migration layering and missing-data repair contracts
+        run: python tests/v095_migration_architecture_gate.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-migration-architecture-gate
+          path: v095_migration_architecture_audit/
+          if-no-files-found: warn
+      - name: v0.93 to v0.95 migration dry-run copy-safety regression
+        run: python tests/v095_v093_migration_preflight.py
+      - name: R22 run all 79 prior safety regressions
+        run: |
+          python tests/v095_isolated_parquet_integration.py
+          python tests/v095_immutable_release_isolated.py
+          python tests/v095_concurrent_release_isolated.py
+          python tests/v095_full_combined_gate.py
+          python tests/v095_release_gate_evidence.py
+          python tests/v095_real_twse_sample_parquet.py
+          python tests/v095_historical_error_regression.py
+          python tests/v095_source_config_release_audit.py
+          python tests/v095_r21_tdcc_semantic_rules.py
+      - name: R22 real-source numeric lineage and release gate
+        run: python tests/v095_r22_single_run_release_gate.py
+      - name: R25 real-data PIT security-master and signed publish admission
+        run: python tests/v095_r25_pit_security_publish_admission.py
+      - name: R26 reconcile previous actual evidence and full-scope production gates
+        run: python tests/v095_r26_reconciled_gate.py
+      - name: R28 official master anti-lookahead and local rollback test
+        run: python tests/v095_r28_historical_pit_and_release_rollback.py
+      - name: Final one-shot prelaunch adjudication for all 11 production gates
+        run: python tests/v095_final_oneshot_prelaunch_adjudication.py
+      - name: Preflight one consolidated operational daily pilot
+        env:
+          JARVIS_PILOT_SOURCE_BRANCH: test/jarvis-v095-parquet-isolated-20261104
+        run: python tests/v095_pilot_operational_runner.py --mode daily
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-operational-daily-pilot-preflight
+          path: v095_pilot_operational/
+          if-no-files-found: warn
+      - name: Produce actual isolated pilot manifest from this run
+        run: python tests/v095_pilot_readonly_manifest.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-pilot-readonly-first-run
+          path: v095_pilot_readonly/
+          retention-days: 30
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-oneshot-prelaunch-readiness
+          path: final_prelaunch_gate/
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r28-history-pit-rollback-evidence
+          path: r28_prelaunch/
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r26-reconciled-go-live-gate
+          path: r26_evidence_register/
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r25-pit-security-publisher-gate
+          path: r25_integrated_admission/
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r22-integrated-prelaunch-gate
+          path: |
+            r22_combined/
+            v095_go_live_gate_report.json
+          if-no-files-found: warn
+      - name: Upload independent source-by-source test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r17-seven-source-live-smoke
+          path: |
+            r17_live_source_connectivity.json
+            r18_live_recovery_report.json
+          if-no-files-found: warn
