@@ -1,4 +1,5 @@
 name: JARVIS v0.95 ULTIMATE R1 - 14 parallel workers
+# 2026-11-07 prelaunch rerun #2: repeat 2026-09/10/11 source, 14-lane B/S/G inspections, PIT+lineage audit; release stays blocked unless independently certified.
 # 2026-11-07: re-run existing 2026-09/10/11 14-lane pilot + aggregate for R2 admission baseline.
 # Successful diagnostics do not authorize 2000-2026 historical bulk backfill.
 on:
