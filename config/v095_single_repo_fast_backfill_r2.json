@@ -1,0 +1,204 @@
+{
+  "schema": "JARVIS_V095_SINGLE_REPO_FAST_BACKFILL_R2",
+  "version": "0.95.fastbackfill.r2",
+  "mode": "PLAN_AND_GATE_ONLY",
+  "activation": "MANUAL_AFTER_INDEPENDENT_PILOT_PASS",
+  "canonical_repository": "danny541690/C1-RAW-DOWNLOADER",
+  "git_visibility_policy": "PUBLIC_CODE_ONLY_NO_PRIVATE_STRATEGIES_OR_SECRETS",
+  "date_window": {
+    "start": "2000-01",
+    "end": "2026-11",
+    "month_count": 323,
+    "source_date_availability": "dataset_specific_never_assume_2000"
+  },
+  "control": {
+    "controller_jobs": 1,
+    "cron_utc": "*/15 * * * *",
+    "slot_count": 14,
+    "initial_active": 6,
+    "scale_steps": [
+      6,
+      8,
+      10,
+      14
+    ],
+    "scale_only_after": "measured_source_limits_drive_qps_qa_latency_and_no_conflicts",
+    "max_active": 14,
+    "dispatch_only_ready_tasks": true,
+    "no_duplicate_work_id": true,
+    "one_writer_per_partition": true,
+    "stage_dependencies": true
+  },
+  "lanes": {
+    "bronze": [
+      "TWSE",
+      "TPEx",
+      "MOPS",
+      "TDCC",
+      "TAIFEX",
+      "NDC"
+    ],
+    "silver": [
+      "PRICE_VOLUME",
+      "FINANCIAL_FLOWS",
+      "TDCC_HOLDINGS",
+      "FUTURES_MACRO"
+    ],
+    "gold": [
+      "TECHNICAL",
+      "CHIP_HOLDINGS",
+      "FINANCIAL_VALUATION",
+      "CROSS_MARKET"
+    ]
+  },
+  "priorities": [
+    "2026-09_P0_REPAIR",
+    "2026-10_2026-11_PILOT",
+    "LATEST_DAILY_INCREMENTAL",
+    "LATEST_TO_OLDER_HISTORY_WITH_OLDEST_TO_NEWEST_GAP_SWEEP"
+  ],
+  "sources": {
+    "official_first": [
+      "TWSE",
+      "TPEx",
+      "MOPS",
+      "TDCC",
+      "TAIFEX",
+      "NDC"
+    ],
+    "secondary": "FinMind_gap_only_if_scope_equivalent_and_legal",
+    "never_fabricate_missing": true
+  },
+  "work_unit": [
+    "source",
+    "dataset",
+    "market",
+    "period",
+    "partition",
+    "schema_version",
+    "source_revision"
+  ],
+  "retry": {
+    "transient_max": 3,
+    "backoff_minutes": [
+      15,
+      30,
+      60
+    ],
+    "nontransient": "QUARANTINE_THEN_NEXT_UNIT",
+    "resume_from_checkpoint": true
+  },
+  "checkpoint": {
+    "backend": "GITHUB_CAS_OR_ATOMIC_EXTERNAL_STATE",
+    "durable_cross_run": true,
+    "lease_fencing_required": true,
+    "stage_statuses": [
+      "WAITING_SOURCE",
+      "READY",
+      "CLAIMED",
+      "FETCHED",
+      "BRONZE_QA_PASS",
+      "SILVER_QA_PASS",
+      "PIT_PASS",
+      "GOLD_QA_PASS",
+      "LINEAGE_PASS",
+      "RELEASED",
+      "RETRY_WAIT",
+      "QUARANTINED",
+      "NO_HISTORICAL_SOURCE",
+      "NOT_APPLICABLE_HISTORY"
+    ],
+    "immutable_raw": true,
+    "readback_sha256": true
+  },
+  "partition_gate": {
+    "bronze": [
+      "official_native_bytes_or_verified_prior_version",
+      "sha256_remote_readback",
+      "source_url_or_contract",
+      "dataset_observation_date",
+      "expected_eligible_calendar",
+      "row_date_schema_units",
+      "immutable_identity"
+    ],
+    "silver": [
+      "parquet_schema",
+      "stock_market_id_asof",
+      "no_duplicate_primary_keys",
+      "unit_sign_null_checks",
+      "source_sha_reference",
+      "row_count_reconciliation",
+      "remote_sha256"
+    ],
+    "pit": [
+      "first_published_at_observed_not_inferred",
+      "available_at_lte_decision_asof",
+      "revision_at_and_knowledge_asof",
+      "history_security_master",
+      "corporate_action_asof",
+      "warmup_eligibility",
+      "timezone_market_calendar"
+    ],
+    "gold": [
+      "formula_digest",
+      "indicator_eligibility",
+      "all_parent_partition_sha256",
+      "asof_proof",
+      "stable_443_catalog",
+      "output_sha256_readback",
+      "no_missing_filled_with_zero"
+    ],
+    "lineage": [
+      "forward_input_to_output",
+      "reverse_output_to_source",
+      "no_cycle",
+      "no_orphan",
+      "sha_hash_reconciliation",
+      "code_formula_version"
+    ],
+    "release": [
+      "all_applicable_gates_pass",
+      "evidence_immutable_uri",
+      "manifest_hash",
+      "atomic_publish_pointer",
+      "rollback_to_last_good_release"
+    ]
+  },
+  "feature_policy": {
+    "catalog_target": 443,
+    "only_tse_otc_analysis": true,
+    "emerging_raw_only": true,
+    "no_unsupported_indicator_release": true,
+    "missing_indicator": "DISABLED_WITH_REASON",
+    "amount_unit": "億元",
+    "forbid_future_knowledge": true
+  },
+  "acceptance": {
+    "pilot": "2026-09_ALL_APPLICABLE_SOURCE_DATASET_AND_THREE_TIER_PIT_PASS",
+    "next": "2026-10_2026-11_EQUIVALENT_VALIDATION",
+    "historical_bulk_start_allowed": false,
+    "remaining_blockers": [
+      "PILOT_SOURCE_DATASET_CONTRACT_AND_COVERAGE",
+      "SEPT_2026_TPEX_NUMERIC_P0",
+      "443_FORMULA_PIT_REGISTRY",
+      "DURABLE_FENCED_PRODUCTION_QUEUE",
+      "FULL_HISTORY_SOURCE_AVAILABILITY_DENOMINATORS"
+    ],
+    "no_fake_success": true
+  },
+  "operational": {
+    "report_each_run": [
+      "checked",
+      "downloaded",
+      "reused",
+      "quarantined",
+      "released",
+      "remaining",
+      "source_latency",
+      "drive_errors",
+      "pit_unknown"
+    ],
+    "pause_on": "CREDENTIAL_FAULT_OR_SUSTAINED_SCHEMA_DRIFT",
+    "metrics_not_guessed": true
+  }
+}
