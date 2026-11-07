@@ -1,3 +1,5 @@
+> **2026-11-07 update (v0.95):** The historical bootstrap notes below are **not current operational status**. This public repository now contains the [v0.95 ULTIMATE R1 workflow](.github/workflows/v095-ultimate-r1.yml), which schedules 14 independent read-only candidate-evidence lanes every 15 minutes, a pilot controller, and a three-month aggregate. Successful jobs and Drive report readback **do not** certify complete Bronze/Silver/Gold data or PIT. Official full-history backfill before September 2026 remains gated. Private investment strategy, credentials, and personal information belong in the separate private C1-JARVIS repository; never add them here.
+
 # C1 RAW DOWNLOADER (JARVIS v0.93)
 
 Public-source ingestion runner. This repository is PUBLIC. Do not put investment strategies, personal holdings, access tokens, Google Drive identifiers, or proprietary QA rules here.
