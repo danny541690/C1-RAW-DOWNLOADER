@@ -13,8 +13,6 @@ on:
     paths:
       - '.github/workflows/v095-r6-merged-prelaunch-controller.yml'
       - 'scripts/v095_r6_merged_acceptance.py'
-  schedule:
-    - cron: '7,37 * * * *'
 permissions:
   contents: read
 concurrency:
