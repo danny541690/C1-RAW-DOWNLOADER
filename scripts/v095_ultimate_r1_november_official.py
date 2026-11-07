@@ -1,6 +1,6 @@
 """2026-11 controlled official TWSE/TPEx OHLCV canary (Nov 4 and 5).
 Reuse v0.93 verified URL constructor and native response validator.
-Four requests maximum; immutable Bronze original, Silver market Parquet,
+Six source/day units; verified historical source snapshots are reused before any live HTTP.\nImmutable Bronze original, Silver market Parquet,
 Gold descriptive daily OHLCV, all file-hash lineage; no historical PIT promise.
 """
 import io,os,re,json,decimal,hashlib,datetime as dt,collections,pathlib,time,http.client,urllib.error
@@ -60,6 +60,29 @@ def save(d,p,name,b):
  fid=d.files().create(body={"name":name,"parents":[p]},media_body=MediaIoBaseUpload(io.BytesIO(b),mimetype="application/octet-stream",resumable=True),fields="id").execute()["id"]
  if sha(d.files().get_media(fileId=fid).execute())!=sha(b):raise ValueError("SHA_READBACK")
  return fid,"CREATED"
+def existing_immutable_official_snapshot(d, source, day, job):
+ """Reuse only one previously archived official native JSON with verified content.
+ This proves snapshot consistency, NOT current official endpoint availability or PIT.
+ A folder/name mismatch is never assumed to be a verified historical source.
+ """
+ source_root=SOURCES[source]["bronze"]
+ existing_month=[x for x in ls(d,source_root) if x["name"]=="2026-11" and x["mimeType"]=="application/vnd.google-apps.folder"]
+ if len(existing_month)!=1:return None
+ prefix="V095_202611_"+source+"_"+day+"_"
+ candidates=[x for x in ls(d,existing_month[0]["id"]) if
+             x["name"].startswith(prefix) and x["name"].endswith(".json") and
+             x.get("mimeType")!="application/vnd.google-apps.folder"]
+ if len(candidates)!=1:return None
+ file=candidates[0]
+ raw=d.files().get_media(fileId=file["id"]).execute()
+ digest=sha(raw)
+ if file["name"] != prefix+digest[:20]+".json":
+  raise ValueError("ARCHIVED_OFFICIAL_SNAPSHOT_SHA_NAME_MISMATCH")
+ facts=validate(raw,source,job["category"],day)
+ rows,unparsed=parse(raw,source,day)
+ if len(rows)<300:raise ValueError("ARCHIVED_SOURCE_ROW_COUNT_INVALID")
+ return raw,facts,rows,unparsed,"VERIFIED_IMMUTABLE_SNAPSHOT_NOT_FRESH_HTTP"
+
 def parse(raw,source,day):
  config=SOURCES[source];obj=json.loads(raw);matches=[t for t in obj.get("tables",[]) if config["title"] in str(t.get("title",""))]
  if len(matches)!=1:raise ValueError("AMBIGUOUS_OFFICIAL_PRICE_TABLE")
@@ -101,9 +124,15 @@ def main():
    key=source+"_"+day
    try:
     if day not in jobs:raise ValueError("NO_FROZEN_OFFICIAL_ROUTE")
-    job=jobs[day];url=job["url"];raw=bounded_official_request(url)
-    facts=validate(raw,source,job["category"],day)
-    rows,unparsed=parse(raw,source,day)
+    job=jobs[day];url=job["url"]
+    reuse=existing_immutable_official_snapshot(d,source,day,job)
+    if reuse:
+     raw,facts,rows,unparsed,acquisition=reuse
+    else:
+     raw=bounded_official_request(url)
+     facts=validate(raw,source,job["category"],day)
+     rows,unparsed=parse(raw,source,day)
+     acquisition="LIVE_OFFICIAL_HTTP"
     if len(rows)<300:raise ValueError("TOO_FEW_ROWS")
     bm=folder(d,config["bronze"],"2026-11");digest=sha(raw)
     bronze_id,ba=save(d,bm,"V095_202611_"+source+"_"+day+"_"+digest[:20]+".json",raw)
@@ -123,7 +152,8 @@ def main():
     gid,ga=save(d,gm,"V095_202611_"+source+"_"+day+"_PRICE_GOLD_"+sha(gb)[:20]+".parquet",gb)
     r["completed"][key]={"bronze_id":bronze_id,"silver_id":silver_id,"gold_id":gid,
       "rows":len(rows),"gold_rows":len(gold),"native_numeric_exception_rows":unparsed,"source_date":day,
-      "official_rows":facts.get("rows"),"sha256":digest,"actions":[ba,sa,ga]}
+      "official_rows":facts.get("rows"),"sha256":digest,"actions":[ba,sa,ga],
+      "acquisition":acquisition,"official_http_currently_available":acquisition=="LIVE_OFFICIAL_HTTP"}
    except Exception as exc:r["rejected"][key]=type(exc).__name__+":"+str(exc)[:200]
  (OUT/"november_latest_bsg.json").write_text(json.dumps(r,ensure_ascii=False,indent=2))
  print(json.dumps({"run_id":r["run_id"],"completed":r["completed"],"rejected":r["rejected"],"pit":False},ensure_ascii=False))
