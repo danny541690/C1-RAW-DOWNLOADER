@@ -124,9 +124,9 @@ def traverse(s,stage,source,root_id):
    mo=month_of_path(subpath)
    rows.append({"file_id":f["id"],"name":f["name"],"stage":stage,"source":source,
     "logical_path":"/".join(subpath),"observed_months":mo,
-    "is_folder":f.get("mimeType")==FOLDER,"size_bytes":f.get("size"),
+    "is_folder":f.get("mimeType")==FOLDER_MIME,"size_bytes":f.get("size"),
     "drive_md5_not_sha256":f.get("md5Checksum"),"parent_id":folder})
-   if f.get("mimeType")==FOLDER and depth<MAX_DEPTH:
+   if f.get("mimeType")==FOLDER_MIME and depth<MAX_DEPTH:
     # Target months when known, or unlabeled first-level source/market/category folders.
     # Unknown paths are traversed boundedly for discovery, not inferred as complete.
     if (not mo or any(m in MONTHS for m in mo)):queue.append((f["id"],subpath,depth+1))
