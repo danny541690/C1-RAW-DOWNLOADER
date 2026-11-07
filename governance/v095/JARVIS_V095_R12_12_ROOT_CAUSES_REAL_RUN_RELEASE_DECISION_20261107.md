@@ -65,3 +65,12 @@
 - 生產治理主表 `MANIFEST_INDEX.csv=0`、`CHECKPOINTS.csv=0`；8個來源均 PENDING；39個 DATASET_CONTRACTS 均待驗證；正式下載 ready 0。保留 `BULK_COPY_APPROVED=false`、`RELEASE_APPROVED=false`。
 - 資安界線：公開 GitHub Artifact 僅保留匿名 file reference＋摘要；歷史上已寫入舊 Artifact 的 Drive IDs 不會自動因程式修正刪除，需要在 GitHub 另行管理。Google Drive Operations Audit 檔案只保留不敏感狀態、問題ID、計數和RunID。
 - T2 下一步：對一份已公布、確定缺失的來源原件，驗證 v0.95 原生下載 → Drive SHA讀回 → 單一正式 CAS/Checkpoint → 再執行SKIP／Stale Writer拒寫。尚未完成，**不啟動2000–2026全史下載**。
+
+## 9. R13 單次合併修復驗收（2026-11-07）
+因應使用者避免浪費額度，R6/R7 的重複定時觸發已移除（保留手動），最新唯一例行 R13 使用既有 R12 Workflow、每週一台灣時間02:23。R5歷史發現／R7問題跳過／R8官方資料契約／R11問題治理／R12深層索引及Drive歸檔，在一個 GitHub Job 執行，不為每類另設排程。
+- **實際 Run [42381358035](https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42381358035) completed/success**。新增 `scripts/v095_r13_single_committer_contract.py` 與 `tests/test_v095_r13_single_committer_contract.py`，模擬兩Worker競爭、stale owner、SHA readback錯誤、不可變發布及財報歷史as-of，6項測試通過，8個案例 `PASS_IN_MEMORY_MODEL_ONLY`、0違反。
+- R13 **不等於真實跨Runner交易保證**：報告明示 `actual_github_cas_verified=false`、`actual_drive_commit_verified=false`、`production_download_ready=false`。須完成 T2 才可解除此封鎖。
+- 既有 12 筆限定 SHA 候選繼續 SKIP；R12 551筆 metadata 候選／12類問題清冊維持，無新的來源原件下載／無市場資料寫入。
+- 每次 Run 的管理摘要已自動寫入 Google Drive 既有 Operations；本次 `PASS_DRIVE_AUDIT_BYTES_READBACK`，`action=CREATED`，內容 SHA256 `c8942491cd5e3aa7f41044fca52d1937ef71643c39558bb68b815ca49ad7d82d`。
+- **未結案的真正生產P0**：正式 `MANIFEST_INDEX.csv` 0資料列、`CHECKPOINTS.csv` 0資料列；8來源PENDING、39資料集契約候選，官方expected完整分母未知。這些不是多做靜態測試就能補上，需正式資料及外部寫入 evidence。443 Gold DAG／PIT／血緣仍按受影響資料集逐項驗收。
+- 正式大量下載與研究發布旗標保持 false；沒有自動批准2000–2026全史。
