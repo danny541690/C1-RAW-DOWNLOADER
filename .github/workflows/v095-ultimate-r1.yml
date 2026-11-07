@@ -2,36 +2,9 @@ name: JARVIS v0.95 ULTIMATE R1 - 14 parallel workers
 # 2026-11-07 prelaunch rerun #2: repeat 2026-09/10/11 source, 14-lane B/S/G inspections, PIT+lineage audit; release stays blocked unless independently certified.
 # 2026-11-07: re-run existing 2026-09/10/11 14-lane pilot + aggregate for R2 admission baseline.
 # Successful diagnostics do not authorize 2000-2026 historical bulk backfill.
+# R6 is now the single recurring orchestration entry; R1 14-lane remains manual for troubleshooting.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-ultimate-r1.yml'
-      - 'scripts/v095_ultimate_r1_controller.py'
-      - 'config/v095_ultimate_r1.json'
-      - 'scripts/v095_ultimate_r1_14lane_smoke.py'
-      - 'scripts/v095_ultimate_r1_14lane_worker.py'
-      - 'scripts/v095_ultimate_r1_3month_reconcile.py'
-      - 'scripts/v095_ultimate_r1_3month_aggregate.py'
-      - 'scripts/v095_443_bidirectional_lineage.py'
-      - 'scripts/v095_rules_registry_sync.py'
-      - 'config/v095_data_validity_system_rules.json'
-      - 'scripts/v095_release_maturity.py'
-      - 'scripts/v095_ultimate_r1_source_content_guard.py'
-      - 'config/v095_publication_availability_policy.json'
-      - 'scripts/v095_publication_gate.py'
-      - 'governance/v095/JARVIS_V095_OFFICIAL_PUBLICATION_PIT_RULES_20261106.md'
-      - 'scripts/v095_ultimate_r1_october_canary.py'
-      - 'scripts/v095_ultimate_r1_october_bsg.py'
-      - 'scripts/v095_ultimate_r1_query_october.py'
-      - 'scripts/v095_ultimate_r1_enlarged_bsg.py'
-      - 'scripts/v095_ultimate_r1_enlarged_query.py'
-      - 'scripts/v095_ultimate_r1_november_official.py'
-      - 'tests/test_v095_november_snapshot_reuse.py'
-      - 'scripts/v095_r2_canary_gate.py'
-  schedule:
-    - cron: '*/15 * * * *'
 permissions:
   contents: read
 concurrency:
