@@ -1,0 +1,132 @@
+{
+  "schema": "JARVIS_V095_R7_ACCEPTED_CANDIDATE_RECEIPTS_V1",
+  "baseline_run_id": 42356953109,
+  "baseline_artifact_id": 13568171926,
+  "receipt_scope": "ONLY_ALREADY_VERIFIED_CANDIDATE_DATA_NOT_FULL_MONTH_NOT_PIT",
+  "immutable_receipts": [
+    {
+      "key": "2026-09|TPEx|OHLCV_NATIVE_NONNUMERIC_TRIAGE",
+      "state": "PASS_NATIVE_CLASSIFICATION_ONLY",
+      "count": 412,
+      "source_rows": 17762,
+      "source_sha": "d0e1c35fb93b0caabe43cca930c32ea50db6f202a1639888e5e6946f580c03ad",
+      "next_problem": "VERIFY_OFFICIAL_MARKET_STATUS_FOR_255_POSITIVE_VOLUME_AND_157_ZERO_VOLUME"
+    },
+    {
+      "key": "2026-10|TWSE|VALUATION_3WAY_CANDIDATE",
+      "state": "PASS_DESCRIPTIVE_ONLY",
+      "source_sha": "c13ccbf929799abfe3ab2b3b757c143f751630dc2cce77b3a724931df4ee565c",
+      "next_problem": "PIT"
+    },
+    {
+      "key": "2026-10|TPEx|INDICES_3WAY_CANDIDATE",
+      "state": "PASS_DESCRIPTIVE_ONLY",
+      "source_sha": "fbbb14518916ec2287d000545b56373ad11282f9902aebbda11ebd80829b0b5d",
+      "next_problem": "PIT"
+    },
+    {
+      "key": "2026-10|TAIFEX|PCR_3WAY_CANDIDATE",
+      "state": "PASS_DESCRIPTIVE_ONLY",
+      "source_sha": "3050887605fd15d0095e223de706839e0276563554a5b81c635db3ac24accc14",
+      "next_problem": "PIT"
+    },
+    {
+      "key": "2026-10|TWSE|BOUNDED_NATIVE_ARCHIVES",
+      "state": "PASS_DESCRIPTIVE_ONLY",
+      "source_sha": "a43329b9eea2a74bf37f5979c391ab08011469919c858870acd2bc55c2c643fb",
+      "next_problem": "UNVERIFIED_FULL_MONTH_COVERAGE"
+    },
+    {
+      "key": "2026-10|TPEx|BOUNDED_NATIVE_ARCHIVES",
+      "state": "PASS_DESCRIPTIVE_ONLY",
+      "source_sha": "",
+      "next_problem": "UNVERIFIED_FULL_MONTH_COVERAGE"
+    },
+    {
+      "key": "2026-11|TWSE|2026-11-02|3WAY_CANDIDATE",
+      "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
+      "source_sha": "",
+      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+    },
+    {
+      "key": "2026-11|TWSE|2026-11-03|3WAY_CANDIDATE",
+      "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
+      "source_sha": "",
+      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+    },
+    {
+      "key": "2026-11|TWSE|2026-11-06|3WAY_CANDIDATE",
+      "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
+      "source_sha": "",
+      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+    },
+    {
+      "key": "2026-11|TPEx|2026-11-02|3WAY_CANDIDATE",
+      "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
+      "source_sha": "",
+      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+    },
+    {
+      "key": "2026-11|TPEx|2026-11-03|3WAY_CANDIDATE",
+      "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
+      "source_sha": "",
+      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+    },
+    {
+      "key": "2026-11|TPEx|2026-11-06|3WAY_CANDIDATE",
+      "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
+      "source_sha": "",
+      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+    }
+  ],
+  "known_open_work": [
+    {
+      "id": "R22_TWSE_LIVE",
+      "month": "2026-11",
+      "source": "TWSE",
+      "action": "OFFICIAL_READ_ONLY_REPROBE",
+      "writes_allowed": false
+    },
+    {
+      "id": "TDCC_SEMANTIC_58_451",
+      "month": "2026-09",
+      "source": "TDCC",
+      "action": "REQUIRE_RAW_ROW_RECONCILIATION",
+      "writes_allowed": false
+    },
+    {
+      "id": "TPEX_PRICE_STATUS_412",
+      "month": "2026-09",
+      "source": "TPEx",
+      "action": "REQUIRE_OFFICIAL_SECURITY_ASOF_MARKET_STATUS",
+      "writes_allowed": false
+    },
+    {
+      "id": "SOURCE_COVERAGE",
+      "month": "2026-09_to_2026-11",
+      "source": "SIX_OFFICIAL",
+      "action": "BUILD_OFFICIAL_DATASET_EXPECTED_DENOMINATORS",
+      "writes_allowed": false
+    },
+    {
+      "id": "443_FORMULA_PIT_LINEAGE",
+      "month": "2026-09_to_2026-11",
+      "source": "GOLD",
+      "action": "NEED_FORMULA_DEPENDENCY_AND_AVAILABLE_AT",
+      "writes_allowed": false
+    },
+    {
+      "id": "V095_DURABLE_CAS_ADAPTER",
+      "month": "2026-09_to_2026-11",
+      "source": "ALL",
+      "action": "WIRE_EXISTING_CAS_TO_REAL_WRITER",
+      "writes_allowed": false
+    }
+  ],
+  "limits": {
+    "verified_scope_cannot_be_promoted_to_full_month": true,
+    "never_redownload_accepted": true,
+    "never_recheck_accepted": true,
+    "full_history_bulk_approved": false
+  }
+}
