@@ -1,0 +1,63 @@
+name: JARVIS v0.95 R11 T1 Sep-Nov Metadata-Only Manifest Inventory
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-r11-t1-sep-nov-manifest-readonly.yml'
+      - 'scripts/v095_r11_t1_three_month_manifest.py'
+      - 'tests/test_v095_r11_t1_three_month_manifest.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-r11-t1-three-month-metadata
+  cancel-in-progress: false
+jobs:
+  scoped-three-month-real-drive-inventory:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test month parsing and no false source completeness or data promotion
+        run: |
+          python -m py_compile scripts/v095_r11_t1_three_month_manifest.py
+          python -m unittest discover -s tests -p 'test_v095_r11_t1_three_month_manifest.py' -v
+          python -m unittest discover -s tests -p 'test_v095_r11_plan_contract_gate.py' -v
+      - name: Install official Drive metadata reader
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Inventory only actual Drive metadata of 2026 September to November
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_r11_t1_three_month_manifest.py
+      - name: Verify this Run cannot authorize extra downloads or Gold PIT
+        if: always()
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          flags=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert flags['BULK_COPY_APPROVED'] is False and flags['RELEASE_APPROVED'] is False
+          p=pathlib.Path('r11_t1_manifest/report.json')
+          if not p.exists():raise SystemExit('T1_REPORT_MISSING')
+          x=json.load(p.open())
+          assert x['no_market_data_downloaded'] and x['no_drive_objects_modified']
+          assert x['ready_download_tasks']==0 and not x['pit_certified']
+          assert x['source_month_cells']==18 and x['months']==['2026-09','2026-10','2026-11']
+          assert x['scan_status']=='PASS_METADATA_PARTIAL_COVERAGE',x['scan_status']
+          print('R11_T1_READONLY_PARTIAL_COVERAGE_NOT_A_BULK_RELEASE')
+          PY
+      - name: Preserve exact metadata read and ambiguous/unverified entries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-r11-t1-actual-drive-metadata-${{ github.run_id }}
+          path: r11_t1_manifest/
+          retention-days: 90
+          if-no-files-found: warn
