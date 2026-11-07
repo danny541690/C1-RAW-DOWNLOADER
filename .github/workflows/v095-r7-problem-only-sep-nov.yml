@@ -10,8 +10,6 @@ on:
       - 'config/v095_r8_official_source_semantics_20261107.json'
       - 'tests/test_v095_r8_official_semantic_gate.py'
       - 'governance/v095/202609_11_R7_ACCEPTED_CANDIDATE_RECEIPTS.json'
-  schedule:
-    - cron: '17 */2 * * *'
 permissions:
   contents: read
 concurrency:
