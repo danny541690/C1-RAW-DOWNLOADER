@@ -58,6 +58,16 @@ jobs:
           assert r['source_data_downloads']==0 and r['drive_writes']==0
           assert r['source_expected_dataset_counts'] is None
           assert r['t2_write_gate']=='BLOCKED_NOT_PROVEN'
+          import csv
+          with pathlib.Path('r12_deep_manifest/candidate_manifest.csv').open(encoding='utf-8',newline='') as h:
+            candidates=list(csv.DictReader(h))
+          with pathlib.Path('r12_deep_manifest/repair_issue_queue.csv').open(encoding='utf-8',newline='') as h:
+            issues=list(csv.DictReader(h))
+          assert len(issues)==12
+          assert len(candidates)==r['objects_examined']
+          assert not any(x['eligible_download_task']=='True' for x in candidates)
+          assert not any(x['native_sha256'] for x in candidates)
+          print('R12_CANDIDATE_MANIFEST',len(candidates),'ISSUES',len(issues))
           print('R12_NO_UNVERIFIED_PRODUCTION_WRITES',r['scan_status'])
           PY
       - name: Keep immutable audit evidence and any truncated scan failures
