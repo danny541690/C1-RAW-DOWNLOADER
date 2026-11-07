@@ -165,7 +165,8 @@ def execute():
    report["results"][lane]={"source":source,"rows":len(rows),"source_meta":meta,"bronze_id":bronze_id,
     "bronze_sha256":digest,"silver_id":silver_id,"silver_sha256":sha(silver_bytes),
     "gold_id":gold_id,"gold_sha256":sha(gold_bytes),"actions":{"bronze":bronze_action,"silver":silver_action,"gold":gold_action},
-    "lineage":"GOLD_SILVER_BRONZE_SHA_INCLUDED","pit":"UNVERIFIED","usage":"DESCRIPTIVE_ONLY",\n    "v2_content_addressed":True,"prior_candidate_not_overwritten":True}
+    "lineage":"GOLD_SILVER_BRONZE_SHA_INCLUDED","pit":"UNVERIFIED","usage":"DESCRIPTIVE_ONLY",
+    "v2_content_addressed":True,"prior_candidate_not_overwritten":True}
   except Exception as e:
    report["errors"][lane]={"type":type(e).__name__,"message":str(e)[:250],"status":"QUARANTINED_NO_FAKE_PASS"}
   (ROOT/"october_bronze_silver_gold_receipt.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
