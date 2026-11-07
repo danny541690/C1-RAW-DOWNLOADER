@@ -1,5 +1,5 @@
 name: JARVIS v0.95 one-run full prelaunch bundle
-# 2026-11-07 R4 one-batch independent prelaunch revalidation following November snapshot and October content-addressed repairs.
+# 2026-11-07 R8 re-run exact isolated R22 TWSE endpoint with bounded retry; preserve TDCC semantic warnings, PIT and publish gate.
 on:
   push:
     branches: [main]
@@ -33,6 +33,10 @@ jobs:
           python-version: '3.12'
       - name: Install test-only dependencies
         run: python -m pip install --disable-pip-version-check pyarrow openpyxl duckdb pandas
+      - name: Verify isolated official TWSE retry remains bounded and schema fail-closed
+        run: |
+          cd candidate
+          python -m unittest discover -s tests -p 'test_v095_r17_retry_contract.py' -v
       - name: Single merged run - governance, sources, historical fixes, PIT, rollback and final gate
         env:
           JARVIS_PILOT_SOURCE_BRANCH: test/jarvis-v095-parquet-isolated-20261104
