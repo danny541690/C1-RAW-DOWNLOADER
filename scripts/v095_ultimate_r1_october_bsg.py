@@ -1,6 +1,6 @@
 """v0.95 October three-source REAL Bronze→Silver→Gold descriptive batch.
 Only three explicitly verified October candidate source files; fails closed per partition.
-No retrospective PIT certification; no historical backtest or 443 full completion claim.
+No retrospective PIT certification; no historical backtest or 443 full completion claim.\nV2 writes content-addressed immutable partitions; it does not overwrite earlier candidates.\nNever embed the current run date in deterministic Parquet rows.
 """
 import os,io,json,csv,zipfile,re,hashlib,pathlib,datetime as dt,collections
 import pyarrow as pa,pyarrow.parquet as pq
@@ -137,13 +137,13 @@ def execute():
    stamped=[]
    for row in rows:
     row.update(bronze_file_id=bronze_id,bronze_sha256=digest,v093_staging_file_id=candidate,
-     imported_at_utc=dt.datetime.now(dt.timezone.utc).date().isoformat(),
+     source_observation_month="2026-10",
      source_period="2026-10",historical_pit_verified=False)
     stamped.append(row)
    silver_parent_month=ensurefolder(s,silver_parent,"2026-10_CANDIDATE")
    # stable metadata for reproducibility; no run ID in Parquet and time stamped only to date.
    silver_bytes=asbytes(stamped)
-   silver_name="JARVIS_V095_202610_"+lane+"_SILVER_"+digest[:16]+".parquet"
+   silver_name="JARVIS_V095_202610_"+lane+"_SILVER_V2_"+sha(silver_bytes)[:20]+".parquet"
    silver_id,silver_action=immutable(s,silver_parent_month,silver_name,silver_bytes)
    # Gold descriptive: only formula-verified copies of direct source values; no fitted strategy signals.
    # Source-native PE/PB/dividend yield and index ratios are descriptive; not historical PIT.
@@ -156,16 +156,16 @@ def execute():
    features=[]
    for row in stamped:
     r={k:row[k] for k in keys};r.update(silver_sha256=sha(silver_bytes),silver_file_id=silver_id,
-     bronze_sha256=digest,bronze_file_id=bronze_id,historical_pit_verified=False,usage="DESCRIPTIVE_ONLY_ASOF_2026_11_06")
+     bronze_sha256=digest,bronze_file_id=bronze_id,historical_pit_verified=False,usage="DESCRIPTIVE_ONLY_NOT_PIT")
     features.append(r)
    gold_month=ensurefolder(s,GOLD_PARENT,"2026-10_DESCRIPTIVE_ONLY")
    gold_bytes=asbytes(features)
-   gold_name="JARVIS_V095_202610_"+lane+"_GOLD_DESCRIPTIVE_"+sha(silver_bytes)[:16]+".parquet"
+   gold_name="JARVIS_V095_202610_"+lane+"_GOLD_DESCRIPTIVE_V2_"+sha(gold_bytes)[:20]+".parquet"
    gold_id,gold_action=immutable(s,gold_month,gold_name,gold_bytes)
    report["results"][lane]={"source":source,"rows":len(rows),"source_meta":meta,"bronze_id":bronze_id,
     "bronze_sha256":digest,"silver_id":silver_id,"silver_sha256":sha(silver_bytes),
     "gold_id":gold_id,"gold_sha256":sha(gold_bytes),"actions":{"bronze":bronze_action,"silver":silver_action,"gold":gold_action},
-    "lineage":"GOLD_SILVER_BRONZE_SHA_INCLUDED","pit":"UNVERIFIED","usage":"DESCRIPTIVE_ONLY"}
+    "lineage":"GOLD_SILVER_BRONZE_SHA_INCLUDED","pit":"UNVERIFIED","usage":"DESCRIPTIVE_ONLY",\n    "v2_content_addressed":True,"prior_candidate_not_overwritten":True}
   except Exception as e:
    report["errors"][lane]={"type":type(e).__name__,"message":str(e)[:250],"status":"QUARANTINED_NO_FAKE_PASS"}
   (ROOT/"october_bronze_silver_gold_receipt.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
