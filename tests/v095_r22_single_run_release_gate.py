@@ -34,18 +34,38 @@ def validate_tdcc():
     missing=sum(set(group)!=set(range(1,18)) for group in grouped.values())
     if missing:raise AssertionError("TDCC_MISSING_TIER_GROUPS")
     discrepancy=0;share_discrepancy=0;ratio_warnings=0
-    for levels in grouped.values():
+    flagged_groups=[]
+    for (period,code),levels in grouped.items():
         holders=sum(int(levels[i]["人數"].replace(",","")) for i in range(1,17))
         shares=sum(int(levels[i]["股數"].replace(",","")) for i in range(1,17))
         total_holders=int(levels[17]["人數"].replace(",",""))
         total_shares=int(levels[17]["股數"].replace(",",""))
-        if holders!=total_holders or shares!=total_shares:discrepancy+=1
+        count_diff=(holders!=total_holders or shares!=total_shares)
+        if count_diff:discrepancy+=1
         if shares!=total_shares:share_discrepancy+=1
         pct=sum(decimal.Decimal(str(levels[i]["占集保庫存數比例%"]).replace(",","")) for i in range(1,17))
-        if abs(pct-decimal.Decimal("100"))>decimal.Decimal(".08"):ratio_warnings+=1
+        ratio_warning=abs(pct-decimal.Decimal("100"))>decimal.Decimal(".08")
+        if ratio_warning:ratio_warnings+=1
+        if count_diff or ratio_warning:
+            flagged_groups.append({"observation_date":period,"security_id":code,
+                "holders_sum_16_tiers":holders,"holders_reported_total":total_holders,
+                "shares_sum_16_tiers":shares,"shares_reported_total":total_shares,
+                "sum_share_percent_16_tiers":str(pct),
+                "ratio_uses_tdcc_inventory_not_issued_shares":True,
+                "share_total_discrepancy":shares!=total_shares,
+                "ratio_warning":ratio_warning,
+                "official_semantics_certified":False})
+    detail_path=ROOT/"TDCC_NATIVE_GROUP_WARNINGS.json"
+    detail_path.write_text(json.dumps({"schema":"JARVIS_R22_TDCC_WARNING_GROUPS_V2",
+        "source_sha256":sha(raw),"total_groups":len(grouped),
+        "flagged_groups":flagged_groups,
+        "requires_official_weekly_inventory_denominator_and_security_type":True,
+        "formal_pit_verified":False},ensure_ascii=False,indent=2))
     return {"status":"PASS_WITH_SEMANTIC_WARNINGS","records":len(rows),"groups":len(grouped),
         "discrepant_groups":discrepancy,"share_discrepant_groups":share_discrepancy,
-        "ratio_warning_groups":ratio_warnings,"sha256":sha(raw),"full_source":True,
+        "ratio_warning_groups":ratio_warnings,"warning_group_details":str(detail_path),
+        "warning_group_detail_count":len(flagged_groups),
+        "sha256":sha(raw),"full_source":True,
         "pit_verified":False,"investment_gold_approved":False}
 def validate_mops_ndc():
     report=load("r19_live_candidates/report.json")
