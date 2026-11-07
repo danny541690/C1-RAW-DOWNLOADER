@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-202610-bounded-e2e-prelaunch.yml'
+      - 'scripts/v095_ultimate_r1_october_bsg.py'
 permissions:
   contents: read
 concurrency:
