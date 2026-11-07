@@ -14,6 +14,8 @@ def payload(report,run_id):
    "governance","source_data_downloaded","silver_new_conversions",
    "gold_pit_new_computations","all_year_tier_release","official_source_missing_proven",
    "production_cas_proven","blocking_causes","release_decision")}
+ if report.get("prior_raw_archive"):
+  data["prior_raw_archive"]=report["prior_raw_archive"]
  data["run_id"]=str(run_id);data["record_type"]="AUDIT_AND_SCOPED_CANARY_NOT_FULL_YEAR_RELEASE"
  return (json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(",",":"))+"\n").encode()
 def main():
