@@ -49,3 +49,11 @@
 - TDCC R22 `ROWS 69887 GROUPS 4111 DISCREPANCIES 58 RATIO_WARNINGS 451`；需查單位／日期／週別/濃縮比例與錯誤分布後再判來源是否正確。
 - Release 旗標仍為 FALSE；全量 2000–2026 永遠不能因 11/13 QA 靜態 PASS 或 443 candidate mapping 達成而自動放行。
 Run：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42343175946
+
+## 7. 十月 V2 真實三層回歸成功（Run 42342909253）
+Run：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42342909253
+- October staging：三個候選來源，0 新複製，1 rejected 舊檔（本身不代表三層錯誤）。
+- `october_bsg` 三個明確來源分區全部完成：TWSE_VALUATION 1083 列、TPEX_INDICES 34 列、TAIFEX_PCR 15 列，`source_partitions_failed=0`；各自寫入 Bronze+Silver+Gold content-addressed V2，保留不可變檔且沒有覆蓋舊輸出。真實 SHA/Drive ID 見 GitHub 日誌。
+- 擴大檢查：TWSE 3 個原始 ZIP，Silver 5587 列、Gold numeric 74478 列；TPEx 7 個原始 ZIP，Silver 51243 列、Gold numeric 351640 列。擴大執行器 `failures={}`、後續反向索引成功，Drive query registry 已回寫。
+- **注意**：這是選定的 2026/10 原始封存檔與描述性 numeric 候選，不是整個十月來源全集，也不是符合完整公式/PIT 的正式 Gold。所有相關腳本 `pit:false`。
+- 已新增單獨十月 workflow 以避免先前 `push` 觸發時 October-only 工作被 skipped。另一回歸 Run 42342919106 含語法編譯檢查，需查最終 GitHub 結論。
