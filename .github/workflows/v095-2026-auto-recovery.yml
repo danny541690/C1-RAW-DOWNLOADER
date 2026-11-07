@@ -1,0 +1,85 @@
+name: JARVIS v0.95 2026 AUTO incremental inventory and 3-tier evidence
+# Safe interim yearly controller. NO bulk-release, no claim of full-year coverage.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-auto-recovery.yml'
+  schedule:
+    - cron: '17 */6 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2026-auto-recovery
+  cancel-in-progress: false
+jobs:
+  year-2026-reconcile:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate production remains fail-closed pending dataset-specific evidence
+        run: |
+          python - <<'PY'
+          import json
+          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert f['BULK_COPY_APPROVED'] is False and f['RELEASE_APPROVED'] is False
+          print('GATE_LOCKED: inventory and verified candidate replay ONLY')
+          PY
+      - name: Install official Drive readers and Parquet candidate verifier
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 pyarrow
+      - name: Verify checkpoint and PIT/CAS model before any candidate replay
+        run: |
+          python -m unittest discover -s tests -p 'test_v095_2026_annual_consolidated.py' -v
+          python -m unittest discover -s tests -p 'test_v095_r13_single_committer_contract.py' -v
+          python scripts/v095_r13_single_committer_contract.py
+      - name: Inventory and byte-sample existing 2026 RAW; no valid archive redownload
+        run: python -m scripts.v095_2026_prior_raw_reuse_audit
+      - name: Run bounded official Bronze/Silver/Gold candidate readback (one known day)
+        if: github.event_name != 'schedule'
+        env:
+          V095_SOURCE_FILTER: TWSE
+          V095_CANARY_DATES: '2026-11-04'
+          V095_CANARY_REQUIRE_COMPLETE: '1'
+        run: python -m scripts.v095_ultimate_r1_november_official
+      - name: Reconcile Jan-Nov 2026 source-month and B/S/G evidence, PIT and lineage status
+        run: python -m scripts.v095_2026_annual_consolidated
+      - name: Explicitly reject false full-year completion
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          r=json.loads(pathlib.Path('annual_2026/report.json').read_text())
+          assert not r['verified_2026_full_year_complete']
+          assert not r['all_year_tier_release']
+          assert not r['production_cas_proven']
+          assert r['source_month_cells']==66
+          assert not r['gold_pit_new_computations']
+          print('2026_YEAR_STATUS:',r['inspection_status'])
+          print('2026_CANDIDATE_OBJECTS:',r['object_candidates'])
+          print('BLOCKERS:',*r['blocking_causes'],sep='\n- ')
+          PY
+      - name: Archive immutable annual state in Google Drive Operations with SHA readback
+        run: python -m scripts.v095_2026_annual_drive_archive
+      - name: Retain full monthly audit, candidate checkpoint evidence and failed-run diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-auto-recovery-${{ github.run_id }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            annual_2026/
+            annual_2026_prior/
+            ultimate_r1/november_latest_bsg.json
+            r13_single_pass/result.json
