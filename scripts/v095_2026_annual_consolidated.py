@@ -166,6 +166,14 @@ def main():
   loadcsv("governance/v095/SOURCE_REGISTRY.csv"),
   loadcsv("governance/v095/MANIFEST_INDEX.csv"),
   loadcsv("governance/v095/CHECKPOINTS.csv"),prior,canary)
+ older=ROOT/"annual_2026_prior/reuse_report.json"
+ if older.exists():
+  old=json.loads(older.read_text())
+  rep["prior_raw_archive"]={k:old[k] for k in ("source_months",
+    "prior_archive_folder_source_cells","prior_archive_file_source_cells",
+    "prior_archive_total_file_candidates","bounded_zip_sha_samples_pass",
+    "bytes_sha_checked","sample_failures","months")}
+  rep["blocking_causes"].append("Existing 2026 prior RAW archives need per-dataset SHA/native contract admission; no blind migration.")
  OUT.mkdir(exist_ok=True)
  (OUT/"report.json").write_text(json.dumps(rep,ensure_ascii=False,indent=2)+"\n")
  with (OUT/"source_month_status.csv").open("w",encoding="utf-8",newline="") as f:
