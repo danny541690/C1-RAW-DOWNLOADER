@@ -1,5 +1,5 @@
 name: JARVIS v0.95 one-run full prelaunch bundle
-# 2026-11-07 R8 re-run exact isolated R22 TWSE endpoint with bounded retry; preserve TDCC semantic warnings, PIT and publish gate.
+# 2026-11-07 R8 follow-up: rerun R22 TDCC security-ID whitespace normalization and record 496 exact problem groups.
 on:
   push:
     branches: [main]
