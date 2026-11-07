@@ -18,6 +18,7 @@ on:
       - 'tests/test_v095_r13_single_committer_contract.py'
       - 'scripts/v095_ultimate_r1_november_official.py'
       - 'scripts/v095_2026_annual_consolidated.py'
+      - 'scripts/v095_2026_prior_raw_reuse_audit.py'
       - 'scripts/v095_2026_annual_drive_archive.py'
       - 'tests/test_v095_2026_annual_consolidated.py'
 permissions:
@@ -176,6 +177,14 @@ jobs:
           V095_CANARY_DATES: 2026-11-04,2026-11-06
           V095_CANARY_REQUIRE_COMPLETE: '1'
         run: python -m scripts.v095_ultimate_r1_november_official
+      - name: Audit existing 2026 earlier RAW archives by month and bounded native ZIP SHA/CRC (reuse before redownload)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m py_compile scripts/v095_2026_prior_raw_reuse_audit.py
+          python -m scripts.v095_2026_prior_raw_reuse_audit
       - name: Single real 2026 Jan-to-Nov-seven all-source three-tier path/contract scan
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -214,6 +223,7 @@ jobs:
         with:
           name: v095-2026-ytd-three-tier-evidence-${{ github.run_id }}
           path: |
+            annual_2026_prior/reuse_report.json
             annual_2026/report.json
             annual_2026/source_month_status.csv
             annual_2026/sanitized_file_index.json
