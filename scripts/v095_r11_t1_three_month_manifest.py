@@ -140,9 +140,9 @@ def main():
      "md5":x.get("md5Checksum"),"folder":parent})
   except Exception as e:discovery_errors.append({"source":stage,"type":type(e).__name__,"error":str(e)[:160]})
  report=analyse(rows,prior,p)
- report.update(scanned_folders=scanned,read_errors=discovery_errors,
+ report.update({"scanned_folders":scanned,"read_errors":discovery_errors,
    "scan_status":"PASS_METADATA_PARTIAL_COVERAGE" if not discovery_errors else "BLOCKED_INCOMPLETE_METADATA_SCAN",
-   "unattributed_stage_file_candidates":sum(r.get("source")=="UNKNOWN" for r in rows))
+   "unattributed_stage_file_candidates":sum(r.get("source")=="UNKNOWN" for r in rows)})
  OUT.mkdir(exist_ok=True)
  (OUT/"report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
  (OUT/"metadata_index.json").write_text(json.dumps(rows,ensure_ascii=False,indent=2)+"\n")
