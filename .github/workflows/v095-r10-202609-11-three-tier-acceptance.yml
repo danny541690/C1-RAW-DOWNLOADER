@@ -1,0 +1,111 @@
+name: JARVIS v0.95 R10 Sep-Oct-Nov Three-Tier Real Drive Acceptance
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-r10-202609-11-three-tier-acceptance.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-R10-202609-11-three-tier
+  cancel-in-progress: false
+jobs:
+  v095-monthly-14lane:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [BRONZE_TWSE, BRONZE_TPEX, BRONZE_MOPS, BRONZE_TDCC, BRONZE_TAIFEX, BRONZE_NDC, SILVER_PRICE, SILVER_FUNDAMENTAL, SILVER_TDCC, SILVER_MACRO, GOLD_TECHNICAL, GOLD_CHIP, GOLD_FINANCIAL, GOLD_CROSS_ASSET]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install 0.95 real-data receipt and Parquet reader
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Inspect actual 0.95 Bronze, Silver, Gold data with immutable receipts
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          JARVIS_LANE: ${{ matrix.lane }}
+        run: |
+          python -m py_compile scripts/v095_ultimate_r1_14lane_worker.py scripts/v095_ultimate_r1_3month_reconcile.py
+          python scripts/v095_ultimate_r1_14lane_worker.py
+          python scripts/v095_ultimate_r1_3month_reconcile.py
+      - name: Preserve even partial receipts for the independent three-month QA aggregation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r10-v095-${{ github.run_id }}-${{ matrix.lane }}
+          path: |
+            ultimate_r1_lanes/
+            ultimate_r1_3month/
+          retention-days: 90
+          if-no-files-found: warn
+  v095-combined-acceptance:
+    needs: [v095-monthly-14lane]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r10-v095-${{ github.run_id }}-*
+          merge-multiple: true
+          path: .
+      - name: Verify 14 independent three-month per-lane receipts exist or identify exact missing lane
+        run: |
+          python - <<'PY'
+          import pathlib
+          a=pathlib.Path('ultimate_r1_3month')
+          names='BRONZE_TWSE BRONZE_TPEX BRONZE_MOPS BRONZE_TDCC BRONZE_TAIFEX BRONZE_NDC SILVER_PRICE SILVER_FUNDAMENTAL SILVER_TDCC SILVER_MACRO GOLD_TECHNICAL GOLD_CHIP GOLD_FINANCIAL GOLD_CROSS_ASSET'.split()
+          found=[(a/(n+'.json')).is_file() for n in names]
+          print('R10_LANE_RECEIPTS',sum(found),'/',len(names),'MISSING',[n for n,ok in zip(names,found) if not ok])
+          PY
+      - name: Install runtime for v0.95 G0-G5 and dataset-month acceptance matrix
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Aggregate 2026-09 to 2026-11 source-month and three-tier actual evidence without claiming PIT certification
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          PYTHONPATH=scripts:. python scripts/v095_ultimate_r1_3month_aggregate.py
+      - name: Assert all three months remain fail-closed unless fully certified
+        if: always()
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert f['BULK_COPY_APPROVED'] is False and f['RELEASE_APPROVED'] is False
+          p=pathlib.Path('ultimate_r1_aggregate/202609_11_matrix.json')
+          if p.exists():
+            r=json.load(p.open())
+            assert set(r['months'])=={'2026-09','2026-10','2026-11'}
+            assert r['historical_pit']=='NOT_CERTIFIED' and r['data_release']=='BLOCKED'
+            print('R10_ACTUAL_MONTHLY_MATRIX',r['bronze_observed_by_month'],'LANES',r['observed_lanes'],'ERRORS',len(r['missing_or_failed_receipts']))
+          else:print('R10_AGGREGATOR_MISSING_FAIL_CLOSED')
+          PY
+      - name: Retain single true three-month dataset and stage acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r10-v095-three-month-all-stage-report-${{ github.run_id }}
+          path: |
+            ultimate_r1_aggregate/
+            ultimate_r1_3month/
+          retention-days: 90
+          if-no-files-found: warn
