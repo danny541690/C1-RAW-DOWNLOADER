@@ -25,6 +25,9 @@ jobs:
           python-version: '3.12'
       - name: Install pinned-scope October pilot dependencies
         run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Compile-check all October conversion scripts before Drive access
+        run: |
+          python -m py_compile scripts/v095_ultimate_r1_october_canary.py scripts/v095_ultimate_r1_october_bsg.py scripts/v095_ultimate_r1_enlarged_bsg.py scripts/v095_ultimate_r1_query_october.py scripts/v095_ultimate_r1_enlarged_query.py
       - name: Reconcile existing October native source bytes to isolated staging
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
