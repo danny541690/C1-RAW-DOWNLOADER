@@ -1,4 +1,4 @@
-name: JARVIS v0.95 R13 Single-Pass Repair and Three-Month Preflight
+name: JARVIS v0.95 Consolidated 2026 YTD Three-Tier Trial
 # Weekly read-only audit; explicit push/manual runs add only one bounded TWSE candidate canary.
 on:
   workflow_dispatch:
@@ -17,6 +17,9 @@ on:
       - 'scripts/v095_r13_single_committer_contract.py'
       - 'tests/test_v095_r13_single_committer_contract.py'
       - 'scripts/v095_ultimate_r1_november_official.py'
+      - 'scripts/v095_2026_annual_consolidated.py'
+      - 'scripts/v095_2026_annual_drive_archive.py'
+      - 'tests/test_v095_2026_annual_consolidated.py'
 permissions:
   contents: read
 concurrency:
@@ -24,7 +27,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deep-manifest-and-blocker-retest:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER' && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 19
     steps:
@@ -142,4 +145,80 @@ jobs:
             r12_deep_manifest/candidate_manifest_redacted.csv
             r12_deep_manifest/repair_issue_queue.csv
           retention-days: 3
+          if-no-files-found: warn
+
+  annual-2026-three-tier-once:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER' && github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: One pass compile tests and original v0.95 source governance
+        run: |
+          python -m py_compile scripts/v095_2026_annual_consolidated.py scripts/v095_2026_annual_drive_archive.py scripts/v095_ultimate_r1_november_official.py
+          python -m unittest discover -s tests -p 'test_v095_2026_annual_consolidated.py' -v
+          python -m unittest discover -s tests -p 'test_v095_r13_single_committer_contract.py' -v
+          python scripts/v095_r12_production_governance_gap_gate.py
+          python scripts/v095_r13_single_committer_contract.py
+      - name: Install existing Parquet and Drive data readback tools
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Re-run TWO real verified TWSE candidate days with 3-tier immutable SHA and lineage
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          V095_SOURCE_FILTER: TWSE
+          V095_CANARY_DATES: 2026-11-04,2026-11-06
+          V095_CANARY_REQUIRE_COMPLETE: '1'
+        run: python -m scripts.v095_ultimate_r1_november_official
+      - name: Single real 2026 Jan-to-Nov-seven all-source three-tier path/contract scan
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v095_2026_annual_consolidated
+      - name: Assert no false year-complete or PIT and count actual 2026 stage status
+        if: always()
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('annual_2026/report.json')
+          if not p.exists():raise SystemExit('ANNUAL_REPORT_MISSING')
+          r=json.loads(p.read_text())
+          assert r['source_month_cells']==66 and r['calendar_months']==11
+          assert r['eligible_dataset_denominator'] is None
+          assert not r['all_year_tier_release'] and not r['production_cas_proven']
+          assert r['governance']['production_ready_contracts']==0
+          assert r['source_data_downloaded']==0
+          assert r['current_canary']['status']=='PASS_SCOPED_REUSED_NO_PIT'
+          assert len(r['current_canary']['days'])==2
+          print('V095_2026_YTD_ACTUAL_FILE_CANDIDATES',r['object_candidates'])
+          print('V095_2026_YTD_STAGE_CANDIDATES',r['stage_candidate_files_by_month'])
+          print('V095_2026_NO_FALSE_COMPLETION',r['release_decision'])
+          PY
+      - name: Write unified 2026 Jan-Nov governance and lineage evidence to Google Drive Operations
+        if: success()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v095_2026_annual_drive_archive
+      - name: Preserve public-safe 2026 annual evidence and failed-state report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-ytd-three-tier-evidence-${{ github.run_id }}
+          path: |
+            annual_2026/report.json
+            annual_2026/source_month_status.csv
+            annual_2026/sanitized_file_index.json
+            annual_2026/drive_receipt.json
+            r12_governance_gaps/result.json
+            r13_single_pass/result.json
+          retention-days: 7
           if-no-files-found: warn
