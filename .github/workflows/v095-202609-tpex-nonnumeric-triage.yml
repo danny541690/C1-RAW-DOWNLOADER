@@ -1,0 +1,43 @@
+name: JARVIS v0.95 Sep TPEx native nonnumeric byte-level triage
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202609-tpex-nonnumeric-triage.yml'
+      - 'scripts/v095_202609_tpex_nonnumeric_triage.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-sept-tpex-exception-triage
+  cancel-in-progress: false
+jobs:
+  native-triage:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile-check actual source validator before Drive read
+        run: python -m py_compile scripts/v095_202609_silver_ohlcv_candidate.py scripts/v095_202609_tpex_nonnumeric_triage.py
+      - name: Install read-only native source parsing dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Verify original 20-day TPEx raw archives and classify row-level exceptions
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v095_202609_tpex_nonnumeric_triage.py
+      - name: Preserve native SHA/classification evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-202609-tpex-actual-nonnumeric-${{ github.run_id }}
+          path: v095_sep_tpex_triage/
+          retention-days: 90
+          if-no-files-found: warn
