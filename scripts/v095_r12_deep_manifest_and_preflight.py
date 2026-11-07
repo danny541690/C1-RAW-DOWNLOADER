@@ -190,6 +190,23 @@ def main():
   for issue in plan["issues"]:writer.writerow({"issue_id":issue["id"],"priority":issue["priority"],
     "control":issue["control"],"status":issue["current"],
     "release_allowed":False,"requires_true_dataset_identity":True})
+ # Public GitHub repository: artifact must never leak private Google Drive file IDs or file names.
+ public={k:report[k] for k in ("schema","asof","months","scan_status","objects_examined",
+    "unique_drive_file_ids","stage_counts","source_expected_dataset_counts",
+    "missing_official_dataset_units","source_data_downloads","existing_valid_data_rechecked",
+    "drive_writes","bronze_release","silver_release","gold_pit_release","preflight",
+    "open_root_issues","notes","t2_write_gate")}
+ public["scanned_roots_summary"]=[{"stage":z.get("stage"),"source":z.get("source"),
+   "folders_listed":z.get("folders_listed"),"objects_seen":z.get("objects_seen"),
+   "truncated":z.get("truncated"),"had_error":bool(z.get("error"))} for z in scans]
+ public["ambiguous_month_token_count"]=len(report["ambiguous_month_token_objects"])
+ (OUT/"public_report.json").write_text(json.dumps(public,ensure_ascii=False,indent=2)+"\n")
+ with (OUT/"candidate_manifest_redacted.csv").open("w",encoding="utf-8",newline="") as h:
+  fields=("opaque_ref","stage","source","observed_months","candidate_state")
+  writer=csv.DictWriter(h,fieldnames=fields);writer.writeheader()
+  for r in allrows:writer.writerow({"opaque_ref":hashlib.sha256(r["file_id"].encode()).hexdigest()[:16],
+    "stage":r["stage"],"source":r["source"],"observed_months":";".join(r["observed_months"]),
+    "candidate_state":candidate_state(r)})
  print(json.dumps({k:report[k] for k in ("scan_status","objects_examined","unique_drive_file_ids",
   "stage_counts","source_data_downloads","drive_writes","source_expected_dataset_counts",
   "t2_write_gate")},ensure_ascii=False),flush=True)
