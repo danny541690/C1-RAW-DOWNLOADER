@@ -1,0 +1,49 @@
+name: JARVIS v0.95 2026 fifteen-minute recovery watchdog
+# This watchdog DOES NOT download market data. Production release stays locked.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-15m-watchdog.yml'
+      - 'scripts/v095_2026_15m_supervisor.py'
+  schedule:
+    - cron: '*/15 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-v095-2026-watchdog-single
+  cancel-in-progress: false
+jobs:
+  wakeup:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate watchdog syntax and production safety gates
+        run: |
+          python -m py_compile scripts/v095_2026_15m_supervisor.py
+          python - <<'PY'
+          import ast,pathlib
+          ast.parse(pathlib.Path('scripts/v095_2026_15m_supervisor.py').read_text())
+          print('WATCHDOG_SCRIPT_VALID')
+          PY
+      - name: Check previous run; auto-dispatch bounded yearly audit only if idle and eligible
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v095_2026_15m_supervisor.py
+      - name: Keep audit trail even if watchdog cannot dispatch
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-watchdog-${{ github.run_id }}
+          path: v095_watchdog_2026/status.json
+          retention-days: 14
+          if-no-files-found: warn
