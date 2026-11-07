@@ -9,74 +9,122 @@
       "state": "PASS_NATIVE_CLASSIFICATION_ONLY",
       "count": 412,
       "source_rows": 17762,
-      "source_sha": "d0e1c35fb93b0caabe43cca930c32ea50db6f202a1639888e5e6946f580c03ad",
-      "next_problem": "VERIFY_OFFICIAL_MARKET_STATUS_FOR_255_POSITIVE_VOLUME_AND_157_ZERO_VOLUME"
+      "next_problem": "VERIFY_OFFICIAL_MARKET_STATUS_FOR_255_POSITIVE_VOLUME_AND_157_ZERO_VOLUME",
+      "content_sha256": "d0e1c35fb93b0caabe43cca930c32ea50db6f202a1639888e5e6946f580c03ad",
+      "digest_scope": "SILVER_CANDIDATE_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-10|TWSE|VALUATION_3WAY_CANDIDATE",
       "state": "PASS_DESCRIPTIVE_ONLY",
-      "source_sha": "c13ccbf929799abfe3ab2b3b757c143f751630dc2cce77b3a724931df4ee565c",
-      "next_problem": "PIT"
+      "next_problem": "PIT",
+      "content_sha256": "c13ccbf929799abfe3ab2b3b757c143f751630dc2cce77b3a724931df4ee565c",
+      "digest_scope": "BRONZE_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-10|TPEx|INDICES_3WAY_CANDIDATE",
       "state": "PASS_DESCRIPTIVE_ONLY",
-      "source_sha": "fbbb14518916ec2287d000545b56373ad11282f9902aebbda11ebd80829b0b5d",
-      "next_problem": "PIT"
+      "next_problem": "PIT",
+      "content_sha256": "fbbb14518916ec2287d000545b56373ad11282f9902aebbda11ebd80829b0b5d",
+      "digest_scope": "BRONZE_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-10|TAIFEX|PCR_3WAY_CANDIDATE",
       "state": "PASS_DESCRIPTIVE_ONLY",
-      "source_sha": "3050887605fd15d0095e223de706839e0276563554a5b81c635db3ac24accc14",
-      "next_problem": "PIT"
+      "next_problem": "PIT",
+      "content_sha256": "3050887605fd15d0095e223de706839e0276563554a5b81c635db3ac24accc14",
+      "digest_scope": "BRONZE_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-10|TWSE|BOUNDED_NATIVE_ARCHIVES",
       "state": "PASS_DESCRIPTIVE_ONLY",
-      "source_sha": "a43329b9eea2a74bf37f5979c391ab08011469919c858870acd2bc55c2c643fb",
-      "next_problem": "UNVERIFIED_FULL_MONTH_COVERAGE"
+      "next_problem": "UNVERIFIED_FULL_MONTH_COVERAGE",
+      "content_sha256": "a43329b9eea2a74bf37f5979c391ab08011469919c858870acd2bc55c2c643fb",
+      "digest_scope": "SILVER_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-10|TPEx|BOUNDED_NATIVE_ARCHIVES",
       "state": "PASS_DESCRIPTIVE_ONLY",
-      "source_sha": "",
-      "next_problem": "UNVERIFIED_FULL_MONTH_COVERAGE"
+      "next_problem": "UNVERIFIED_FULL_MONTH_COVERAGE",
+      "content_sha256": "2ebab21fd53bd9c1901cfefd7088997a8d50092ea30f103b5cf63589a20d908c",
+      "digest_scope": "SILVER_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-11|TWSE|2026-11-02|3WAY_CANDIDATE",
       "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
-      "source_sha": "",
-      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+      "next_problem": "SOURCE_COVERAGE_AND_PIT",
+      "content_sha256": "cc54afffedb6c2013eb2da2c951110838c677eae626f52d19f5203aad727c1b3",
+      "digest_scope": "OFFICIAL_SNAPSHOT_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-11|TWSE|2026-11-03|3WAY_CANDIDATE",
       "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
-      "source_sha": "",
-      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+      "next_problem": "SOURCE_COVERAGE_AND_PIT",
+      "content_sha256": "7189eaace4f558abdf5d815d6f20b99a6a619d891dc864ac81cbdd0fe84a9523",
+      "digest_scope": "OFFICIAL_SNAPSHOT_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-11|TWSE|2026-11-06|3WAY_CANDIDATE",
       "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
-      "source_sha": "",
-      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+      "next_problem": "SOURCE_COVERAGE_AND_PIT",
+      "content_sha256": "dce272ac7dc602e16d33798b721eed1a201de7aefd1e137434a3786eafcb20c0",
+      "digest_scope": "OFFICIAL_SNAPSHOT_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-11|TPEx|2026-11-02|3WAY_CANDIDATE",
       "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
-      "source_sha": "",
-      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+      "next_problem": "SOURCE_COVERAGE_AND_PIT",
+      "content_sha256": "31d42b1b626b4f3252d04a138882680b6d83ab3715c4554226ea96290c04cec4",
+      "digest_scope": "OFFICIAL_SNAPSHOT_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-11|TPEx|2026-11-03|3WAY_CANDIDATE",
       "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
-      "source_sha": "",
-      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+      "next_problem": "SOURCE_COVERAGE_AND_PIT",
+      "content_sha256": "4b8c433d085b61b7e4cb36a8cfaefe1a9ffe9b75255703961ec02ae99995400a",
+      "digest_scope": "OFFICIAL_SNAPSHOT_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     },
     {
       "key": "2026-11|TPEx|2026-11-06|3WAY_CANDIDATE",
       "state": "PASS_SNAPSHOT_CANDIDATE_NOT_LIVE_HTTP_OR_PIT",
-      "source_sha": "",
-      "next_problem": "SOURCE_COVERAGE_AND_PIT"
+      "next_problem": "SOURCE_COVERAGE_AND_PIT",
+      "content_sha256": "aee417448ca906424c05244948dbfef740cdc220e2466dbd590bab651bc80cbc",
+      "digest_scope": "OFFICIAL_SNAPSHOT_SHA",
+      "evidence_run_id": 42356953109,
+      "evidence_artifact_id": 13568171926,
+      "evidence_scope": "SCOPED_CANDIDATE_ONLY_NOT_COMPLETE_MONTH_NOT_PIT"
     }
   ],
   "known_open_work": [
@@ -128,5 +176,6 @@
     "never_redownload_accepted": true,
     "never_recheck_accepted": true,
     "full_history_bulk_approved": false
-  }
+  },
+  "receipt_provenance_note": "All 12 hashes transcribed from actual R6 GitHub artifact 13568171926; separate SHA scopes recorded. Skipping means no reprocessing this limited prior evidence, not full-month source or PIT certification."
 }
