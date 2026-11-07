@@ -1,0 +1,71 @@
+name: JARVIS v0.95 October BSG bounded prelaunch E2E
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-202610-bounded-e2e-prelaunch.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-october-bsg-bounded
+  cancel-in-progress: false
+jobs:
+  october-candidate:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned-scope October pilot dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Reconcile existing October native source bytes to isolated staging
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_ultimate_r1_october_canary.py
+      - name: October three known partitions Bronze Silver Gold immutable QA
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_ultimate_r1_october_bsg.py
+      - name: October expanded TWSE TPEx native archive BSG candidate QA
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_ultimate_r1_enlarged_bsg.py
+      - name: Index October descriptive Gold and backward source paths
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python scripts/v095_ultimate_r1_query_october.py
+          python scripts/v095_ultimate_r1_enlarged_query.py
+      - name: Keep reproducible October evidence even on fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-october-prelaunch-${{ github.run_id }}
+          path: ultimate_r1/
+          retention-days: 90
+          if-no-files-found: error
+      - name: Confirm this run did not authorize PIT or historical bulk
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert f.get('BULK_COPY_APPROVED') is False
+          assert f.get('RELEASE_APPROVED') is False
+          print("OCTOBER_CANDIDATE_ONLY_NO_PIT_NO_HISTORY_RELEASE")
+          PY
