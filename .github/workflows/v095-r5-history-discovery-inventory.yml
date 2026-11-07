@@ -1,0 +1,42 @@
+name: JARVIS v0.95 R5 2000-2026 source discovery inventory ONLY
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-r5-history-discovery-inventory.yml'
+      - 'scripts/v095_r5_full_history_discovery_queue.py'
+permissions:
+  contents: read
+jobs:
+  six-source-dataset-month-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate 2000-2026 dataset month discovery manifest
+        run: |
+          python -m py_compile scripts/v095_r5_full_history_discovery_queue.py
+          python scripts/v095_r5_full_history_discovery_queue.py
+      - name: Verify no accidental bulk or research release
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('r5_history_discovery/summary.json'))
+          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert s['candidate_dataset_months']==2261 and s['calendar_months']==323
+          assert s['download_tasks_released']==0 and s['verified_expected_dataset_months']==0
+          assert not f['BULK_COPY_APPROVED'] and not f['RELEASE_APPROVED']
+          print("HISTORY_MONTH_DISCOVERY_MANIFEST_OK_NOT_A_DOWNLOADER")
+          PY
+      - name: Preserve whole-history source-dataset-month discovery ledger
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-r5-history-discovery-${{ github.run_id }}
+          path: r5_history_discovery/
+          retention-days: 90
