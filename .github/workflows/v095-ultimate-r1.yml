@@ -28,6 +28,7 @@ on:
       - 'scripts/v095_ultimate_r1_enlarged_bsg.py'
       - 'scripts/v095_ultimate_r1_enlarged_query.py'
       - 'scripts/v095_ultimate_r1_november_official.py'
+      - 'tests/test_v095_november_snapshot_reuse.py'
       - 'scripts/v095_r2_canary_gate.py'
   schedule:
     - cron: '*/15 * * * *'
@@ -140,6 +141,11 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v095_ultimate_r1_enlarged_query.py
+      - name: Regression test reverified immutable official snapshot before network retry
+        if: github.event_name != 'schedule'
+        run: |
+          python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+          python -m unittest discover -s tests -p 'test_v095_november_snapshot_reuse.py' -v
       - name: Fill November 2-3 and 6 TSE OTC Bronze Silver Gold with bounded retries
         if: github.event_name != 'schedule'
         env:
