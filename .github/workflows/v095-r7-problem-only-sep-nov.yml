@@ -1,0 +1,60 @@
+name: JARVIS v0.95 R7 Problem-Only Sep-Oct-Nov Delta Repairs
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-r7-problem-only-sep-nov.yml'
+      - 'scripts/v095_r7_problem_only_dispatch.py'
+      - 'governance/v095/202609_11_R7_ACCEPTED_CANDIDATE_RECEIPTS.json'
+  schedule:
+    - cron: '17 */2 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-r7-problem-only
+  cancel-in-progress: false
+jobs:
+  problem-only:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile-check delta planner and verify production release remains locked
+        run: |
+          python -m py_compile scripts/v095_r7_problem_only_dispatch.py
+          python - <<'PY'
+          import json
+          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert not f['BULK_COPY_APPROVED'] and not f['RELEASE_APPROVED']
+          print('R7_NO_DUPLICATE_DOWNLOAD_NO_FULL_MONTH_REVALIDATION')
+          PY
+      - name: Generate exact pending tasks and skip all accepted candidate partitions
+        run: python scripts/v095_r7_problem_only_dispatch.py --mode plan
+      - name: Probe only blocked TWSE official transport (read-only, no Drive access)
+        run: python scripts/v095_r7_problem_only_dispatch.py --mode probe
+      - name: Verify skip count and zero repeated downloads
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open('r7_problem_only/report.json'))
+          assert r['skipped_prior_candidate_count']==12
+          assert r['open_issue_count']==6
+          assert r['download_count']==0 and r['existing_files_rechecked']==0
+          assert r['production_release_approved'] is False and r['historical_pit_certified'] is False
+          print('R7_DELTA_ONLY_RESULT: 12 old candidates skipped, six unresolved issue classes, zero duplicate downloads')
+          PY
+      - name: Retain only delta work and actual problem results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-r7-delta-problem-only-${{ github.run_id }}
+          path: r7_problem_only/report.json
+          retention-days: 90
+          if-no-files-found: warn
