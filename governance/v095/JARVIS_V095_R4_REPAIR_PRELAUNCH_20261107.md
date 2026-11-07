@@ -40,3 +40,12 @@
 
 ## 5. 驗收語義
 `GitHub Workflow success` 只代表排程與指定測試成功；`PASS_CANDIDATE_NOT_PIT` 只代表現有原始快照與描述性三層一致；真正的 `PRODUCTION_RELEASE_PASS` 需要已驗證的全部 applicable source×date、PIT/公式血緣、不可變 SHA、持久狀態等獨立證據。任何缺項不得改旗標通過。
+
+## 6. 實際整合前測試 Run 42343175946（補充查核）
+已用 GitHub Artifact `v095-one-run-prelaunch-42343175946` 的 `candidate/v095_pilot_operational/R22_lineage.log`、`PILOT_RUN_REPORT.json` 及 `prelaunch_bundle/RESULT.json` 交叉核對。
+- 13 個 bundle checks：11 PASS、2 FAIL。8 張管理帳欄位 schema、8 個 Drive ledger 鏈接清冊、15 缺失列及 release fail-closed 靜態控制通過。
+- Isolated ordered pilot 內 R17/R18/R19/R20/R24/R27 與 QA_01～QA_09 PASS；`R22_lineage FAIL`，最終 Release Gate 因依賴未完成而沒有輸出，這兩項不能強行標 PASS。
+- R22 原始日誌：`R22_SOURCE_STATUS {"TWSE":"BLOCKED","TPEx":"API_SAMPLE_PASS","TAIFEX":"API_SAMPLE_PASS","FinMind":"API_SAMPLE_PASS","TDCC":"PASS_WITH_SEMANTIC_WARNINGS","MOPS":"PASS_CANDIDATE_ONLY","NDC":"PASS_CANDIDATE_ONLY"}`；`R22_SOURCE_BLOCKED TWSE`。這是隔離候選分支對 TWSE 即時來源的測試失敗，不能用 Main 倉庫十一月快照可讀當作「R22 TWSE live API PASS」。
+- TDCC R22 `ROWS 69887 GROUPS 4111 DISCREPANCIES 58 RATIO_WARNINGS 451`；需查單位／日期／週別/濃縮比例與錯誤分布後再判來源是否正確。
+- Release 旗標仍為 FALSE；全量 2000–2026 永遠不能因 11/13 QA 靜態 PASS 或 443 candidate mapping 達成而自動放行。
+Run：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42343175946
