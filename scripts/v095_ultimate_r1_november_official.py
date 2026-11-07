@@ -12,7 +12,7 @@ from googleapiclient.http import MediaIoBaseUpload
 from scripts.v093_three_year_repair import Audit,request,validate
 D=decimal.Decimal;OUT=pathlib.Path("ultimate_r1");OUT.mkdir(exist_ok=True)
 DATES=tuple(x.strip() for x in os.environ.get("V095_CANARY_DATES","2026-11-02,2026-11-03,2026-11-06").split(",") if x.strip())
-if not DATES or len(DATES)>3 or len(set(DATES))!=len(DATES) or not all(x in ("2026-11-02","2026-11-03","2026-11-06") for x in DATES):
+if not DATES or len(DATES)>3 or len(set(DATES))!=len(DATES) or not all(x in ("2026-11-02","2026-11-03","2026-11-04","2026-11-05","2026-11-06") for x in DATES):
  raise ValueError("V095_CANARY_DATES_MUST_BE_VERIFIED_NOVEMBER_TRADING_DAYS_MAX_3")
 SOURCE_FILTER=os.environ.get("V095_SOURCE_FILTER","TWSE,TPEx").split(",")
 def bounded_official_request(url):
