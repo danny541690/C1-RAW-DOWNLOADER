@@ -12,12 +12,27 @@ YEAR_PARENT="1CAlRsbDEKTrb9BJlJ604SwYwQWRU3lpK" # prior RAW archive /2026
 SOURCES=("TWSE","TPEx","MOPS","TDCC","TAIFEX","NDC")
 MAX_BYTE_SAMPLES=24
 MAX_BYTES_PER_SAMPLE=8*1024*1024
+def list_old_folder_months(s,root):
+ result=[];token=None
+ while True:
+  z=s.files().list(q="'"+root+"' in parents and trashed=false and mimeType='"+FOLDER+"'",
+   fields="nextPageToken,incompleteSearch,files(id,name,mimeType,size)",pageSize=500,pageToken=token).execute()
+  if z.get('incompleteSearch'):raise RuntimeError('INCOMPLETE_OLD_FOLDER_DISCOVERY')
+  result+=z.get('files',[]);token=z.get('nextPageToken')
+  if len(result)>1000:raise RuntimeError('TOO_MANY_SUBFOLDERS')
+  if not token:return result
+def list_old_month_candidates(s,root):
+ z=s.files().list(q="'"+root+"' in parents and trashed=false",
+  fields="nextPageToken,incompleteSearch,files(id,name,mimeType,size)",pageSize=1000).execute()
+ if z.get('incompleteSearch'):raise RuntimeError('INCOMPLETE_MONTH_QUERY')
+ return z.get('files',[]),bool(z.get('nextPageToken'))
+
 def audit(s):
  parent={x["name"]:x["id"] for x in ls(s,YEAR_PARENT) if x.get("mimeType")==FOLDER}
  if not set(SOURCES)<=set(parent):raise RuntimeError("LEGACY_RAW_SOURCE_FOLDER_NOT_ALL_PRESENT")
  rows=[];samples=0;bytes_examined=0;sample_errors=[]
  for src in SOURCES:
-  folders=[x for x in ls(s,parent[src]) if x.get("mimeType")==FOLDER]
+  folders=list_old_folder_months(s,parent[src])
   monthmap=collections.defaultdict(list)
   for x in folders:
    if x["name"] in MONTHS:monthmap[x["name"]].append(x)
@@ -30,9 +45,16 @@ def audit(s):
          "raw_samples_byte_sha_pass":0,"raw_samples_zip_crc_pass":0,
          "state":status}
    if len(opts)==1:
-    children=ls(s,opts[0]["id"])
+    try:
+     children,partial=list_old_month_candidates(s,opts[0]["id"])
+    except Exception as exc:
+     cell["state"]="ARCHIVE_MONTH_FOLDER_QUERY_ERROR"
+     cell["folder_query_error_type"]=type(exc).__name__
+     rows.append(cell);continue
     raw=[x for x in children if x.get("mimeType")!=FOLDER]
     cell["files"]=len(raw)
+    cell["files_count_lower_bound"]=partial
+    if partial:cell["state"]="LEGACY_FOLDER_PAGE_PARTIAL_NOT_COMPLETE_DATASET"
     # only inspect bounded existing zip sample; other file types await exact adapters.
     candidates=sorted([x for x in raw if x["name"].lower().endswith(".zip")
        and 0<int(x.get("size") or 0)<=MAX_BYTES_PER_SAMPLE],
@@ -56,7 +78,7 @@ def audit(s):
       cell["sample_sha256"]=digest
       cell["sample_size_bytes"]=len(blob)
       samples+=1;bytes_examined+=len(blob)
-      cell["state"]="SCOPED_ARCHIVE_ZIP_SHA_CRC_PASS_NOT_COMPLETE_DATASET"
+      cell["state"]="SCOPED_ARCHIVE_ZIP_SHA_CRC_PASS_NOT_COMPLETE_DATASET" if not partial else "SCOPED_ZIP_SHA_PASS_FOLDER_COUNT_PARTIAL"
      except Exception as e:
       cell["sample_failure_type"]=type(e).__name__
       sample_errors.append({"month":month,"source":src,"type":type(e).__name__})
@@ -65,6 +87,7 @@ def audit(s):
    "prior_archive_folder_source_cells":sum(x["folder_count"]>0 for x in rows),
    "prior_archive_file_source_cells":sum(x["files"]>0 for x in rows),
    "prior_archive_total_file_candidates":sum(x["files"] for x in rows),
+   "months_with_partial_page_count":sum(x.get("files_count_lower_bound",False) for x in rows),
    "bounded_zip_sha_samples_pass":sum(x["raw_samples_zip_crc_pass"] for x in rows),
    "bytes_sha_checked":bytes_examined,"sample_failures":sample_errors,
    "scope":"PRIOR_RAW_ARCHIVE_CANDIDATE_ONLY_NOT_PIT_NOT_OFFICIAL_COMPLETENESS",
