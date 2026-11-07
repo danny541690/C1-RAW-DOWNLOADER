@@ -6,6 +6,9 @@ on:
     paths:
       - 'config/v095_single_repo_fast_backfill_r2.json'
       - 'scripts/v095_single_repo_plan_gate.py'
+      - 'scripts/v095_r2_full_architecture_audit.py'
+      - 'scripts/v095_r2_canary_gate.py'
+      - 'tests/test_v095_r2_canary_gate.py'
       - '.github/workflows/v095-single-repo-r2-plan-audit.yml'
 permissions:
   contents: read
@@ -23,6 +26,10 @@ jobs:
           python-version: '3.12'
       - name: Validate single-repo configuration and bulk start lock
         run: python scripts/v095_single_repo_plan_gate.py --out r2_plan_audit/report.json
+      - name: Test failure classification and non-PIT promotion policy
+        run: python -m unittest discover -s tests -p 'test_v095_r2_canary_gate.py' -v
+      - name: Perform full static architecture risk audit
+        run: python scripts/v095_r2_full_architecture_audit.py --out r2_plan_audit/full_architecture_review.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
