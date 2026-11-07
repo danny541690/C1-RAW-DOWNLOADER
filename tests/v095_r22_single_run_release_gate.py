@@ -26,7 +26,8 @@ def validate_tdcc():
     if not fields.issubset(rows[0]):raise AssertionError("TDCC_REQUIRED_FIELDS")
     grouped=collections.defaultdict(dict)
     for r in rows:
-        code=str(r["證券代號"]) # never cast to integer or strip valuable code formatting
+        code=str(r["證券代號"]).strip() # only trim padding, preserve leading zeros and suffixes
+        if not code:raise AssertionError("TDCC_EMPTY_SECURITY_ID")
         grade=int(r["持股分級"])
         period=str(r.get("\ufeff資料日期",r.get("資料日期","")))
         if grade in grouped[(period,code)]:raise AssertionError("TDCC_DUPLICATE_TIER")
@@ -60,6 +61,7 @@ def validate_tdcc():
         "source_sha256":sha(raw),"total_groups":len(grouped),
         "flagged_groups":flagged_groups,
         "requires_official_weekly_inventory_denominator_and_security_type":True,
+        "security_code_normalization":"TRIM_OUTER_WHITESPACE_ONLY_KEEP_LEADING_ZEROS",
         "formal_pit_verified":False},ensure_ascii=False,indent=2))
     return {"status":"PASS_WITH_SEMANTIC_WARNINGS","records":len(rows),"groups":len(grouped),
         "discrepant_groups":discrepancy,"share_discrepant_groups":share_discrepancy,
