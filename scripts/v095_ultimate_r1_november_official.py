@@ -11,7 +11,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from scripts.v093_three_year_repair import Audit,request,validate
 D=decimal.Decimal;OUT=pathlib.Path("ultimate_r1");OUT.mkdir(exist_ok=True)
-DATES=("2026-11-02","2026-11-03","2026-11-06")
+DATES=tuple(x.strip() for x in os.environ.get("V095_CANARY_DATES","2026-11-02,2026-11-03,2026-11-06").split(",") if x.strip())
+if not DATES or len(DATES)>3 or len(set(DATES))!=len(DATES) or not all(x in ("2026-11-02","2026-11-03","2026-11-06") for x in DATES):
+ raise ValueError("V095_CANARY_DATES_MUST_BE_VERIFIED_NOVEMBER_TRADING_DAYS_MAX_3")
 SOURCE_FILTER=os.environ.get("V095_SOURCE_FILTER","TWSE,TPEx").split(",")
 def bounded_official_request(url):
  last=None
@@ -155,6 +157,9 @@ def main():
       "official_rows":facts.get("rows"),"sha256":digest,"actions":[ba,sa,ga],
       "acquisition":acquisition,"official_http_currently_available":acquisition=="LIVE_OFFICIAL_HTTP"}
    except Exception as exc:r["rejected"][key]=type(exc).__name__+":"+str(exc)[:200]
+ OUT.mkdir(exist_ok=True)
  (OUT/"november_latest_bsg.json").write_text(json.dumps(r,ensure_ascii=False,indent=2))
  print(json.dumps({"run_id":r["run_id"],"completed":r["completed"],"rejected":r["rejected"],"pit":False},ensure_ascii=False))
+ if os.getenv("V095_CANARY_REQUIRE_COMPLETE")=="1" and (r["rejected"] or len(r["completed"])!=len(DATES)*len([z for z in SOURCES if z in SOURCE_FILTER])):
+  raise RuntimeError("V095_REAL_THREE_LAYER_CANARY_FAILED_CLOSED")
 if __name__=="__main__":main()
