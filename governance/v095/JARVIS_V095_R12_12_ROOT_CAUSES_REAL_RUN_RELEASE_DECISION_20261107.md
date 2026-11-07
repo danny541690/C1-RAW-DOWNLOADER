@@ -56,3 +56,12 @@
 
 ## 6. 不變的停止條件與安全旗標
 `BULK_COPY_APPROVED=false`、`RELEASE_APPROVED=false`、`last_evidence_verified=false`。R12 測試中的 raw download = 0、Drive data mutation = 0。**嚴禁以「程式Run SUCCESS」標成2000–2026完成；新增T2正式writer與23～27年完整度未驗證。**
+
+## 7. 2026-11-07 R12.1 更新｜例行排程及 Google Drive 履歷自動落地
+- 已在 `.github/workflows/v095-r12-sep-nov-deep-manifest-retirement-preflight.yml` 新增 `schedule: 23 18 * * 0`：每週日 UTC 18:23（台灣週一 02:23）。保留 `workflow_dispatch`／指定程式 push 觸發，僅週檢一次，不與 R6 30 分鐘、R7 2 小時的輕量清冊掃描混為新的全史抓取任務。GitHub Cron 可能延後，不能當精準交易日觸發器。
+- 新增 `scripts/v095_r12_drive_audit_archive.py`：從 R12 經測試的匿名摘要 `public_report.json` 和 `r12_governance_gaps/result.json` 組出每個 Run 的決定性 JSON，寫入 v0.95 Google Drive `60_OPERATIONS_QA` 既有 Operations 資料夾。使用 Run ID＋內容 SHA 作檔名，同名則讀回重用，禁止任意覆寫；寫後取回 bytes 重新 SHA256 驗證。不把私人 Drive 檔案名稱／ID 寫進 GitHub 公開 Artifact。
+- **真實執行 Run [42375085800](https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42375085800) completed/success**；R11/R12 合計 **23 項**自動測試通過（7+3+2+3+8）。Drive audit `action=CREATED`、`result=PASS_DRIVE_AUDIT_BYTES_READBACK`、內容 `sha256=cf6622ee4092e7be17cc7ff23cce79e0fbfd85e99b3882f9c6358f127348fc51`，來源市場資料下載0、異動0。此證據表示週檢的**紀錄寫入**可用，不表示正式市場原件Writer/雙Runner CAS已通過。
+- R12 深層掃描仍為 **551 件**（Bronze271、Silver143、Gold63、Staging74）、551 件各不重複 Drive ID；衍生 Candidate Manifest 551 列、12 筆待處理 issue queue，**不是已簽核正式 Manifest**。
+- 生產治理主表 `MANIFEST_INDEX.csv=0`、`CHECKPOINTS.csv=0`；8個來源均 PENDING；39個 DATASET_CONTRACTS 均待驗證；正式下載 ready 0。保留 `BULK_COPY_APPROVED=false`、`RELEASE_APPROVED=false`。
+- 資安界線：公開 GitHub Artifact 僅保留匿名 file reference＋摘要；歷史上已寫入舊 Artifact 的 Drive IDs 不會自動因程式修正刪除，需要在 GitHub 另行管理。Google Drive Operations Audit 檔案只保留不敏感狀態、問題ID、計數和RunID。
+- T2 下一步：對一份已公布、確定缺失的來源原件，驗證 v0.95 原生下載 → Drive SHA讀回 → 單一正式 CAS/Checkpoint → 再執行SKIP／Stale Writer拒寫。尚未完成，**不啟動2000–2026全史下載**。
