@@ -27,6 +27,7 @@ on:
       - 'scripts/v095_ultimate_r1_enlarged_bsg.py'
       - 'scripts/v095_ultimate_r1_enlarged_query.py'
       - 'scripts/v095_ultimate_r1_november_official.py'
+      - 'scripts/v095_r2_canary_gate.py'
   schedule:
     - cron: '*/15 * * * *'
 permissions:
@@ -177,6 +178,18 @@ jobs:
             ultimate_r1/
             v095_unified_202609/query_trace.json
             v095_unified_202609/resume_manifest.json
+          if-no-files-found: warn
+          retention-days: 90
+      - name: Fail closed on missing or rejected November canary source dates
+        if: always() && github.event_name != 'schedule'
+        run: |
+          python scripts/v095_r2_canary_gate.py --manifest ultimate_r1/november_latest_bsg.json --out ultimate_r1/november_canary_gate.json
+      - name: Preserve explicit source-date partial failure gate
+        if: always() && github.event_name != 'schedule'
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-november-source-date-gate-${{ github.run_id }}
+          path: ultimate_r1/november_canary_gate.json
           if-no-files-found: warn
           retention-days: 90
 
