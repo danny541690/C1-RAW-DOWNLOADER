@@ -17,7 +17,7 @@ def metadata_client():
  from googleapiclient.discovery import build
  c=Credentials(token=None,refresh_token=os.environ["GOOGLE_REFRESH_TOKEN"],
   client_id=os.environ["GOOGLE_CLIENT_ID"],client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
-  token_uri="https://oauth2.googleapis.com/token",scopes=["https://www.googleapis.com/auth/drive.metadata.readonly"])
+  token_uri="https://oauth2.googleapis.com/token",scopes=["https://www.googleapis.com/auth/drive"])
  c.refresh(Request())
  return build("drive","v3",credentials=c,cache_discovery=False)
 def files_in(s,parent,max_files=1200):
@@ -38,7 +38,7 @@ def files_in(s,parent,max_files=1200):
   if not page:return out
 def detect_month(x):
  text=x.upper()
- p=re.search(r"(?<!\d)2026[-_]?([09][0-9])(?!\d)",text)
+ p=re.search(r"(?<!\d)2026[-_]?(09|10|11)(?!\d)",text)
  if not p:return None
  val=p.group(1)
  return "2026-"+val if val in ("09","10","11") else None
@@ -116,9 +116,17 @@ def main():
      rows.append({"id":x["id"],"name":x["name"],"source":source,"month":m,
       "stage":"BRONZE","canonical":True,"size":x.get("size"),"md5":x.get("md5Checksum"),"folder":entry["id"]})
   except Exception as e:discovery_errors.append({"source":source,"type":type(e).__name__,"error":str(e)[:160]})
- # Metadata-only sample of designated October-November staging and layer roots; never broad crawl.
- for stage,rootkey in (("STAGING","c1_root"),("SILVER","silver_root"),("GOLD","gold_root")):
-  parent=roots[rootkey]
+ # Resolve actual staging folder from C1 root; do not mistake C1 root files for staging.
+ staging_parent=None
+ try:
+  c1_items=files_in(s,roots['c1_root'])
+  matches=[x for x in c1_items if x.get('mimeType')==FOLDER and x.get('name')=='10_INGEST_STAGING']
+  if len(matches)==1:staging_parent=matches[0]['id']
+  else:discovery_errors.append({'source':'STAGING','type':'MISSING_OR_AMBIGUOUS_STAGE_ROOT','error':'Stage root not unique'})
+ except Exception as e:discovery_errors.append({'source':'STAGING_ROOT','type':type(e).__name__,'error':str(e)[:160]})
+ # This is intentionally shallow. Deep historical inventory needs a separate bounded scope.
+ for stage,parent in (('STAGING',staging_parent),('SILVER',roots['silver_root']),('GOLD',roots['gold_root'])):
+  if not parent:continue
   try:
    entries=files_in(s,parent,max_files=1200)
    scanned.append({"root":stage,"folder_id":parent,"children":len(entries)})
