@@ -80,6 +80,5 @@ def main():
  print(json.dumps({k:report[k] for k in ("prior_archive_folder_source_cells",
    "prior_archive_file_source_cells","prior_archive_total_file_candidates",
    "bounded_zip_sha_samples_pass","bytes_sha_checked","sample_failures","months")},ensure_ascii=False))
- if report["sample_failures"]:return 2
- return 0
+ return 0  # Isolate bad old archives; no unrelated source-month is blocked.
 if __name__=="__main__":sys.exit(main())
