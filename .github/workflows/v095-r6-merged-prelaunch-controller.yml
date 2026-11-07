@@ -1,0 +1,100 @@
+name: JARVIS v0.95 R6 Single Controller Merged Prelaunch and Safe Resume
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'full runs real September-October-November candidate QA; quick only checks local policy and schedule'
+        type: choice
+        options: [full, quick]
+        default: full
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-r6-merged-prelaunch-controller.yml'
+      - 'scripts/v095_r6_merged_acceptance.py'
+  schedule:
+    - cron: '7,37 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-r6-one-controller
+  cancel-in-progress: false
+jobs:
+  merged-repair-and-audit:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      JARVIS_R6_FULL: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile-check safe R6 control code and unchanged release gates
+        run: |
+          python -m py_compile scripts/v095_r6_merged_acceptance.py scripts/v095_r5_full_history_discovery_queue.py scripts/v095_202609_tpex_nonnumeric_triage.py
+          python - <<'PY'
+          import json
+          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert f['BULK_COPY_APPROVED'] is False and f['RELEASE_APPROVED'] is False
+          print('R6_PRODUCTION_RELEASE_FAIL_CLOSED')
+          PY
+      - name: Prepare full-history discovery ledger without authorizing downloads
+        run: python scripts/v095_r5_full_history_discovery_queue.py
+      - name: Install verified candidate readback runtime only for full scope
+        if: env.JARVIS_R6_FULL == 'true'
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Verify existing source CAS and lease fencing local/bare-Git regressions
+        if: env.JARVIS_R6_FULL == 'true'
+        run: |
+          mkdir -p r6_merged_acceptance/cas
+          python -m unittest discover -s tests -p 'test_source_coordination.py' -v > r6_merged_acceptance/cas/coordinator.log 2>&1
+          python -m unittest discover -s tests -p 'test_source_git_store.py' -v > r6_merged_acceptance/cas/git_cas.log 2>&1
+          python -m unittest discover -s tests -p 'test_source_state_pages.py' -v > r6_merged_acceptance/cas/state_pages.log 2>&1
+          echo 'V093_CAS_TESTS_PASS_PRODUCTION_V095_WIRING_STILL_BLOCKED' > r6_merged_acceptance/cas/status.txt
+      - name: September original OTC native nonnumeric and content SHA audit
+        if: env.JARVIS_R6_FULL == 'true'
+        continue-on-error: true
+        run: PYTHONPATH=. python scripts/v095_202609_tpex_nonnumeric_triage.py
+      - name: October three bounded immutable Bronze Silver Gold source partitions
+        if: env.JARVIS_R6_FULL == 'true'
+        continue-on-error: true
+        run: python scripts/v095_ultimate_r1_october_bsg.py
+      - name: October expanded source archives to candidate Parquet with Drive SHA readback
+        if: env.JARVIS_R6_FULL == 'true'
+        continue-on-error: true
+        run: python scripts/v095_ultimate_r1_enlarged_bsg.py
+      - name: November six official archived source dates, hash and three tiers
+        if: env.JARVIS_R6_FULL == 'true'
+        continue-on-error: true
+        env:
+          V095_SOURCE_FILTER: TWSE,TPEx
+        run: PYTHONPATH=. python scripts/v095_ultimate_r1_november_official.py
+      - name: Candidate catalog 443 forward reverse dataset mapping and PIT reasons
+        if: env.JARVIS_R6_FULL == 'true'
+        continue-on-error: true
+        run: PYTHONPATH=scripts:. python scripts/v095_443_bidirectional_lineage.py
+      - name: Summarize real evidence and the still-blocked production release
+        if: always()
+        run: python scripts/v095_r6_merged_acceptance.py --out r6_merged_acceptance/summary.json
+      - name: Preserve all source receipts and explicit blocked release decision
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-r6-merged-safe-prelaunch-${{ github.run_id }}
+          path: |
+            r6_merged_acceptance/
+            r5_history_discovery/
+            v095_sep_tpex_triage/
+            ultimate_r1/october_bronze_silver_gold_receipt.json
+            ultimate_r1/october_enlarged_bsg.json
+            ultimate_r1/november_latest_bsg.json
+            ultimate_r1_lineage/registry_receipt.json
+          if-no-files-found: warn
+          retention-days: 90
