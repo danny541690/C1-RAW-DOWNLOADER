@@ -4,7 +4,7 @@
 Zero live market data requests and zero Drive writes. No source completeness claims.
 Time-aware, bounded per root. Traversal errors produce partial/blocked status.
 """
-import collections,datetime as dt,hashlib,json,os,pathlib,re,sys,time
+import collections,csv,datetime as dt,hashlib,json,os,pathlib,re,sys,time
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 MONTHS=("2026-09","2026-10","2026-11")
 SOURCES=("TWSE","TPEx","MOPS","TDCC","TAIFEX","NDC")
@@ -42,6 +42,12 @@ def scope_preflight(config,flags):
   "writer_fencing_formally_ready":False,
   "ready_to_download":False,
   "allowed_test":"BOUNDED_METADATA_RECONCILIATION_ONLY"}
+def candidate_state(row):
+ if row.get("is_folder"):return "STRUCTURAL_FOLDER_ONLY"
+ if len(row.get("observed_months",[]))!=1:return "UNKNOWN_OR_AMBIGUOUS_PERIOD"
+ if row.get("source") not in SOURCES:return "UNATTRIBUTED_SOURCE"
+ return "PRESENT_UNVERIFIED_ORIGINAL_SHA"
+
 def identity(r):
  return (r["file_id"],r["stage"])
 def analyze(objects,scans,issues,plan,flags):
@@ -168,7 +174,22 @@ def main():
  report=analyze(allrows,scans,[],plan,flags)
  OUT.mkdir(exist_ok=True)
  (OUT/"report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
- (OUT/"metadata_index.json").write_text(json.dumps(allrows,ensure_ascii=False,indent=2)+"\n")
+ (OUT/"metadata_index.json").write_text(json.dumps(allrows,ensure_ascii=False,indent=2)+"\\n")
+ with (OUT/"candidate_manifest.csv").open("w",encoding="utf-8",newline="") as h:
+  fields=("file_id","stage","source","logical_path","observed_months","size_bytes","drive_md5_not_sha256",
+    "candidate_state","native_sha256","verified_source_contract","eligible_download_task")
+  writer=csv.DictWriter(h,fieldnames=fields)
+  writer.writeheader()
+  for r in allrows:
+   writer.writerow({**{k:r.get(k,"") for k in fields},
+      "observed_months":";".join(r["observed_months"]),"candidate_state":candidate_state(r),
+      "native_sha256":"","verified_source_contract":False,"eligible_download_task":False})
+ with (OUT/"repair_issue_queue.csv").open("w",encoding="utf-8",newline="") as h:
+  fields=("issue_id","priority","control","status","release_allowed","requires_true_dataset_identity")
+  writer=csv.DictWriter(h,fieldnames=fields);writer.writeheader()
+  for issue in plan["issues"]:writer.writerow({"issue_id":issue["id"],"priority":issue["priority"],
+    "control":issue["control"],"status":issue["current"],
+    "release_allowed":False,"requires_true_dataset_identity":True})
  print(json.dumps({k:report[k] for k in ("scan_status","objects_examined","unique_drive_file_ids",
   "stage_counts","source_data_downloads","drive_writes","source_expected_dataset_counts",
   "t2_write_gate")},ensure_ascii=False),flush=True)
