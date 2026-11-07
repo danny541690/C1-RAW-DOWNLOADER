@@ -6,8 +6,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-2026-auto-recovery.yml'
-  schedule:
-    - cron: '17 */6 * * *'
+  # Schedule is owned by the 15-minute recovery watchdog; this workflow is dispatched hourly when idle.
 permissions:
   contents: read
 concurrency:
