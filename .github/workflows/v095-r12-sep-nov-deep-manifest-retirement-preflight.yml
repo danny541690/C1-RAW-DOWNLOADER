@@ -1,0 +1,68 @@
+name: JARVIS v0.95 R12 Deep Sep-Nov Manifest and 12-Issue Retest
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-r12-sep-nov-deep-manifest-retirement-preflight.yml'
+      - 'scripts/v095_r12_deep_manifest_and_preflight.py'
+      - 'tests/test_v095_r12_deep_manifest_preflight.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-r12-bounded-deep-manifest
+  cancel-in-progress: false
+jobs:
+  deep-manifest-and-blocker-retest:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run all R11-R12 fail-closed fault injection tests
+        run: |
+          python -m py_compile scripts/v095_r12_deep_manifest_and_preflight.py scripts/v095_r11_t1_three_month_manifest.py
+          python -m unittest discover -s tests -p 'test_v095_r12_deep_manifest_preflight.py' -v
+          python -m unittest discover -s tests -p 'test_v095_r11_t1_three_month_manifest.py' -v
+          python -m unittest discover -s tests -p 'test_v095_r11_plan_contract_gate.py' -v
+          python scripts/v095_r11_plan_contract_gate.py
+      - name: Install official Drive metadata client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Bounded path discovery with no source download or Drive writes
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v095_r12_deep_manifest_and_preflight.py
+      - name: Verify source download and release gates remain closed
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          flags=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert flags['BULK_COPY_APPROVED'] is False
+          assert flags['RELEASE_APPROVED'] is False
+          p=pathlib.Path('r12_deep_manifest/report.json')
+          if not p.exists():raise SystemExit('MISSING_REPORT')
+          r=json.loads(p.read_text())
+          assert not r['preflight']['ready_to_download']
+          assert r['source_data_downloads']==0 and r['drive_writes']==0
+          assert r['source_expected_dataset_counts'] is None
+          assert r['t2_write_gate']=='BLOCKED_NOT_PROVEN'
+          print('R12_NO_UNVERIFIED_PRODUCTION_WRITES',r['scan_status'])
+          PY
+      - name: Keep immutable audit evidence and any truncated scan failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-r12-three-month-deep-manifest-${{ github.run_id }}
+          path: |
+            r11_pilot_contract/
+            r12_deep_manifest/
+          retention-days: 90
+          if-no-files-found: warn
