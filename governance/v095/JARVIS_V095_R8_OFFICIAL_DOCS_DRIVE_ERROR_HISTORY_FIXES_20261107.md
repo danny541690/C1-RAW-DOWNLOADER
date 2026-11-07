@@ -25,3 +25,10 @@
 - 先完成安全 Bronze 可用來源原始歸檔的分區級合約／不覆寫語意，再讓 Silver/Gold/PIT 各自依簽核 Gate 發布；不能改寫 `BULK_COPY_APPROVED=false` 來假裝全量已啟動。
 ## 此次驗收與工作狀態
 - R8 官方文件／程式合約／歷史發現佇列／同源 R22 Retry／TDCC 詳細警告輸出已實際提交並驗證上述各 Run；其餘未完成事項仍列為明確未解，不得將「最新 GitHub Workflow SUCCESS」當作 27 年完整資料庫已驗收。
+
+## 補充：修正 TDCC 代碼空白後的實際整合測試結果
+[GitHub Run 42359498188](https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42359498188) **completed/success**；Artifact 13569112509 已讀取 `candidate/r22_combined/TDCC_NATIVE_GROUP_WARNINGS.json` 和最終 Gate。
+- TWSE：原 R17 同源 DATA_JSON PASS，R22 Source Status `TWSE=API_SAMPLE_PASS`。
+- TDCC：4,111 group，496 flagged（58 share discrepancy、451 ratio），來源日期 **2026-10-30**。證券代號已只清除外側空白，422 個 flagged 是乾淨四碼格式，當中 39 個有 share mismatch。原始內容完整保留，其他仍有疑義的代碼需歷史證券主檔判定。
+- 最終 `production_gate_blocked=11`，`release_approved=false`，即使整合流程成功也不表示歷史資料發布已驗收。
+- 下一步不應再全量重檢這 4,111 groups；只對 496 flagged groups 使用 SHA 穩定的異常清冊，優先調查 58 share discrepancy；但如原始 TDCC SHA/公式版本改變才增量重驗。
