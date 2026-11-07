@@ -174,7 +174,7 @@ def main():
  report=analyze(allrows,scans,[],plan,flags)
  OUT.mkdir(exist_ok=True)
  (OUT/"report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
- (OUT/"metadata_index.json").write_text(json.dumps(allrows,ensure_ascii=False,indent=2)+"\\n")
+ (OUT/"metadata_index.json").write_text(json.dumps(allrows,ensure_ascii=False,indent=2)+"\n")
  with (OUT/"candidate_manifest.csv").open("w",encoding="utf-8",newline="") as h:
   fields=("file_id","stage","source","logical_path","observed_months","size_bytes","drive_md5_not_sha256",
     "candidate_state","native_sha256","verified_source_contract","eligible_download_task")
