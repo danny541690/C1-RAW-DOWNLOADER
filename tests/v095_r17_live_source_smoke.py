@@ -1,7 +1,7 @@
 """R17 bounded public-source connectivity smoke; read-only, no credentials, no production writes.
 Data-bearing endpoints are distinguished from simple site reachability.
 """
-import json
+import json,time
 from pathlib import Path
 from urllib.request import Request,urlopen
 from urllib.error import HTTPError,URLError
@@ -15,7 +15,7 @@ ENDPOINTS=[
  ("TDCC","https://openapi.tdcc.com.tw/v1/opendata/1-5","DATA_JSON"),
  ("NDC","https://www.ndc.gov.tw/","SITE_ONLY")
 ]
-def check_one(source,url,kind):
+def check_one_once(source,url,kind):
     result={"source":source,"check_type":kind,"status":"BLOCKED","http_code":None,
             "data_verified":False,"reason":None}
     try:
@@ -54,6 +54,23 @@ def check_one(source,url,kind):
     except (URLError,TimeoutError,OSError) as exc:
         result["reason"]=type(exc).__name__
     return result
+def check_one(source,url,kind):
+    """Retry ONLY the identical TWSE URL on transient transport failure.
+    A changed schema, empty data or bad historical publication status stays BLOCKED.
+    """
+    max_attempts=3 if source=="TWSE" else 1
+    history=[]
+    for attempt in range(max_attempts):
+        result=check_one_once(source,url,kind)
+        history.append({"attempt":attempt+1,"reason":result.get("reason"),"http_code":result.get("http_code")})
+        retryable=result.get("reason") in ("TimeoutError","URLError","ConnectionResetError","ConnectionAbortedError","RemoteDisconnected","BrokenPipeError","OSError") or result.get("http_code") in (408,429,500,502,503,504)
+        if not (result["status"]=="BLOCKED" and retryable and attempt+1<max_attempts):
+            result["attempts"]=attempt+1
+            result["attempt_history"]=history
+            return result
+        time.sleep(2**attempt)
+    raise AssertionError("TWSE_RETRY_CONTROL_UNREACHABLE")
+
 if __name__=="__main__":
     records=[check_one(*row) for row in ENDPOINTS]
     report={"kind":"JARVIS_V095_R17_PUBLIC_SOURCE_PROBE","release_approved":False,
