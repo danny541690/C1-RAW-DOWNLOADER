@@ -6,6 +6,9 @@ on:
     paths:
       - '.github/workflows/v095-r7-problem-only-sep-nov.yml'
       - 'scripts/v095_r7_problem_only_dispatch.py'
+      - 'scripts/v095_r8_official_semantic_gate.py'
+      - 'config/v095_r8_official_source_semantics_20261107.json'
+      - 'tests/test_v095_r8_official_semantic_gate.py'
       - 'governance/v095/202609_11_R7_ACCEPTED_CANDIDATE_RECEIPTS.json'
   schedule:
     - cron: '17 */2 * * *'
@@ -35,9 +38,14 @@ jobs:
           assert not f['BULK_COPY_APPROVED'] and not f['RELEASE_APPROVED']
           print('R7_NO_DUPLICATE_DOWNLOAD_NO_FULL_MONTH_REVALIDATION')
           PY
+      - name: Verify official source semantics, history start and PIT segregation
+        run: |
+          python -m unittest discover -s tests -p 'test_v095_r8_official_semantic_gate.py' -v
+          python scripts/v095_r8_official_semantic_gate.py
       - name: Generate exact pending tasks and skip all accepted candidate partitions
         run: python scripts/v095_r7_problem_only_dispatch.py --mode plan
-      - name: Probe only blocked TWSE official transport (read-only, no Drive access)
+      - name: Probe blocked TWSE official transport only when manually requested or code changed
+        if: github.event_name != 'schedule'
         run: python scripts/v095_r7_problem_only_dispatch.py --mode probe
       - name: Verify skip count and zero repeated downloads
         run: |
@@ -55,6 +63,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: v095-r7-delta-problem-only-${{ github.run_id }}
-          path: r7_problem_only/report.json
+          path: |
+            r7_problem_only/report.json
+            r8_official_semantics/result.json
           retention-days: 90
           if-no-files-found: warn
