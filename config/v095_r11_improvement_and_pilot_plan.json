@@ -1,0 +1,223 @@
+{
+  "schema": "JARVIS_C1_V095_R11_IMPROVEMENT_PILOT_V1",
+  "date": "2026-11-07",
+  "canonical_repo": "danny541690/C1-RAW-DOWNLOADER",
+  "authority": "v0.95 Architecture Management R1 + R10 actual audit + issue ledger, not older v0.93 workflow",
+  "source_scope": {
+    "from": "2000-01",
+    "to": "2026-11",
+    "historical_eligible_dates_only": true,
+    "markets": [
+      "TSE",
+      "OTC"
+    ],
+    "emerging": "ARCHIVE_ONLY",
+    "official_sources": [
+      "TWSE",
+      "TPEx",
+      "MOPS",
+      "TDCC",
+      "TAIFEX",
+      "NDC"
+    ],
+    "finmind": "GAP_ONLY_WITH_PERMISSIONS"
+  },
+  "architecture": {
+    "controller_count": 1,
+    "logical_ingest_slots": 16,
+    "qa_stage_categories": {
+      "bronze": 6,
+      "silver": 4,
+      "gold": 4
+    },
+    "initial_live_workers": {
+      "bronze": 2,
+      "silver": 1,
+      "gold": 1
+    },
+    "worker_scaling_requires": "measured rate-limit and CAS proof",
+    "storage": "GitHub fenced state + immutable Google Drive raw and parquet; no database pretending Drive folder listing is atomic",
+    "release_layers": {
+      "bronze": "G0_G1_G2_AND_FENCED_COMMIT",
+      "silver": "PARENT_BRONZE_SHA_PLUS_TYPED_SEMANTICS",
+      "gold": "VALID_FORMULA_PLUS_POINT_IN_TIME_LINEAGE",
+      "research": "G3_G4_G5"
+    }
+  },
+  "rules": {
+    "read_only_plan": true,
+    "full_history_bulk_enabled": false,
+    "release_approved": false,
+    "no_unverified_data_mutation": true,
+    "known_good_skip_scope": "PINNED_SHA_AND_DATASET_VERSION",
+    "unknown_denominator": "UNKNOWN_NOT_ZERO_OR_FULL",
+    "transient_retry_count": 3,
+    "nontransient": "QUARANTINE_NO_SPIN",
+    "license_and_finmind_access": "ONLY_ENABLED_AFTER_RIGHTS_VERIFIED",
+    "max_pilot_units": 6
+  },
+  "issues": [
+    {
+      "id": "P0-01",
+      "priority": "P0",
+      "problem": "16 source slots vs 14 tier QA lanes",
+      "root_cause": "Two distinct task axes were treated as simultaneous schedules",
+      "control": "ONE_CONTROLLER_TWO_TASK_TYPES",
+      "remediation": "One control ledger; ingestion slots have type INGEST/REPAIR/DAILY and layer lanes have type QA/TRANSFORM; no 30 always-on runners",
+      "acceptance": "Every task has one stable ID, task_type, source, dataset, asof_month and stage; duplicate dispatch returns SKIP",
+      "current": "SPEC_ONLY"
+    },
+    {
+      "id": "P0-02",
+      "priority": "P0",
+      "problem": "Non-atomic Drive writer and checkpoint",
+      "root_cause": "Filesystem existence check cannot fence competing cloud writers",
+      "control": "CAS_COMMITTER_AND_IMMUTABLE_WRITES",
+      "remediation": "One committer with fenced lease/token and compare-and-swap state; immutable objects written under content hash",
+      "acceptance": "2 competing runners yield exactly 1 committed pointer; stale lease and crash/retry do not overwrite",
+      "current": "NEEDS_RUNTIME_INTEGRATION"
+    },
+    {
+      "id": "P0-03",
+      "priority": "P0",
+      "problem": "Fragmented manifests and mismatched paths",
+      "root_cause": "Existing candidate files in staging and other folders are counted missing in canonical source-month check",
+      "control": "CANONICAL_MANIFEST_INDEX",
+      "remediation": "Reconcile Drive id, canonical path, stage, dataset, native hash, version and validation scope; never infer from path only",
+      "acceptance": "Sep-Oct-Nov 18 source-month cells resolved into dataset/date proofs or UNKNOWN, no duplicate re-download",
+      "current": "NEEDS_REAL_DRIVE_PILOT"
+    },
+    {
+      "id": "P0-04",
+      "priority": "P0",
+      "problem": "Missing official expected denominator",
+      "root_cause": "11/18 source-months with files is not dataset or row completeness",
+      "control": "DATASET_PUBLICATION_CALENDAR",
+      "remediation": "Per dataset/observation date/security historical universe, available_at and official earliest date; explicit UNKNOWN/NOT_DUE/N_A",
+      "acceptance": "No percent returned for UNKNOWN denominator; early TDCC/TPEx versions not false failures",
+      "current": "PARTIAL_RULE_FIX"
+    },
+    {
+      "id": "P0-05",
+      "priority": "P0",
+      "problem": "PIT and revision timing",
+      "root_cause": "Financial and macro values could leak revised/future information into backtests",
+      "control": "PIT_VINTAGE_EVENT_VERSION",
+      "remediation": "Record first_published_at, available_at, revised_at and decision_asof by official original document; fail-closed asof join",
+      "acceptance": "Synthetic time-travel tests reject future records and prefer correct revision vintage",
+      "current": "NEEDS_FORMULA_LEVEL_EVIDENCE"
+    },
+    {
+      "id": "P0-06",
+      "priority": "P0",
+      "problem": "No verified complete bulk adapters in active controller",
+      "root_cause": "R6/R7 produce zero new downloads; R10 is read-only candidate QA",
+      "control": "SCOPED_BRONZE_ADAPTER_REGISTRY",
+      "remediation": "Promote one dataset-specific v0.95 adapter at a time to READY only after source schema and native checksum tests",
+      "acceptance": "One real missing source-date downloaded, readback SHA and idempotent restart produce one committed raw object",
+      "current": "NEEDS_LIVE_SOURCE_PILOT"
+    },
+    {
+      "id": "P1-07",
+      "priority": "P1",
+      "problem": "443 catalog IDs vs exact formula DAG",
+      "root_cause": "Catalog membership was interpreted as computed indicators",
+      "control": "FORMULA_REGISTRY_AND_DAG",
+      "remediation": "Formula hash, source field mapping, lookback, warmup, security asof and disabled reason per indicator",
+      "acceptance": "Only individually certified indicators materialized; rest DISABLED_WITH_REASON",
+      "current": "NEEDS_IMPLEMENTATION"
+    },
+    {
+      "id": "P1-08",
+      "priority": "P1",
+      "problem": "Candidate SHA lineage vs full graph",
+      "root_cause": "A limited 2330/MA5 or catalog mapping does not certify all Gold rows",
+      "control": "LINEAGE_GRAPH_PARTITION_SHA",
+      "remediation": "Bronze→Silver→Gold immutable SHA parent list, formula digest and forward invalidation edges",
+      "acceptance": "100% of released outputs trace to pinned parent SHA and forward-diff set is deterministic",
+      "current": "NEEDS_IMPLEMENTATION"
+    },
+    {
+      "id": "P1-09",
+      "priority": "P1",
+      "problem": "Too many repeated QA workflows",
+      "root_cause": "R6/R7 and legacy reports recheck accepted candidate or use independent status",
+      "control": "DELTA_ONLY_CLOSED_LOOP",
+      "remediation": "One issue ledger with open/claimed/fixed/quarantined/closed; rerun failed affected partitions only",
+      "acceptance": "Same unchanged prior successful receipt = no Drive read/re-download; changed upstream invalidates affected output",
+      "current": "PARTIAL_RULE_FIX"
+    },
+    {
+      "id": "P1-10",
+      "priority": "P1",
+      "problem": "Parquet nondeterminism and small-file amplification",
+      "root_cause": "Current timestamp in Silver output produced immutable filename collisions; per-day security partitions would multiply files",
+      "control": "DETERMINISTIC_PARQUET_PARTITIONS",
+      "remediation": "Partition by dataset/market/year-month where appropriate; sort keys, stable metadata, content hash and compact only after QA",
+      "acceptance": "Same input+code version yields same SHA; different code version gets separate immutable output",
+      "current": "OCTOBER_V2_PARTIAL_FIX"
+    },
+    {
+      "id": "P1-11",
+      "priority": "P1",
+      "problem": "Source semantics confused with download errors",
+      "root_cause": "TPEx --- and TDCC denominator/revision raised false raw corruption alarms",
+      "control": "NATIVE_SOURCE_QUALITY_ROUTING",
+      "remediation": "Transport/schema/value/PIT/applicability/semantic warnings separated; keep raw bytes, no forced zero, status confirmed against official docs",
+      "acceptance": "412 TPEx rows preserved, 496 TDCC flagged groups kept for group-level resolution; unproven remains HOLD",
+      "current": "PARTIAL_RULE_FIX"
+    },
+    {
+      "id": "P2-12",
+      "priority": "P2",
+      "problem": "Missing operational SLO/cost and recovery proof",
+      "root_cause": "Run success but not effective throughput/cost/recoverability",
+      "control": "SLO_REPORT_AND_RESTORE_DRILL",
+      "remediation": "Track official requests, tasks ready/done, distinct downloaded bytes, retry %, Drive quota/size and restore manifest",
+      "acceptance": "One report with true denominators; restore immutable fixture and verify SHA after rollback",
+      "current": "NEEDS_METRICS"
+    }
+  ],
+  "trial_plan": [
+    {
+      "phase": "T0",
+      "title": "No-network contract and regression suite",
+      "units": 0,
+      "goal": "Validate 12 controls, 16 vs 14 taxonomy, output policy, PIT date logic and unknown completeness; no Drive writes",
+      "pass": "all static and fault-injection tests green"
+    },
+    {
+      "phase": "T1",
+      "title": "2026-09–11 manifest inventory only",
+      "units": 3,
+      "goal": "Cross-index known-good SHA in staging/canonical folder; find true missing as-of published dates",
+      "pass": "No previously accepted source bytes redownloaded; each claimed missing item links official expected release evidence"
+    },
+    {
+      "phase": "T2",
+      "title": "One exact missing Bronze native data unit",
+      "units": 1,
+      "goal": "v0.95 adapter live HTTP → immutable Drive → SHA readback → Git CAS checkpoint; simulate duplicate and crash",
+      "pass": "one committed identity, 100% hash readback; second attempt REUSED; stale runner cannot publish"
+    },
+    {
+      "phase": "T3",
+      "title": "One Silver + one Gold lineage pilot",
+      "units": 2,
+      "goal": "Transform verified parent; use a genuinely PIT-certifiable indicator, verify reverse and forward lineage",
+      "pass": "code+formula digest, source SHA and asof assertions; noncertified indicator disabled"
+    },
+    {
+      "phase": "T4",
+      "title": "6-work-unit bounded historical Bronze canary",
+      "units": 6,
+      "goal": "Two sources, known eligible dates, use known good skips, write only provable gaps; no automatic 27-year advance",
+      "pass": "all tasks accounted, rollback/restore, zero duplicate accepted objects, explicit failed units"
+    }
+  ],
+  "references": [
+    "https://learn.microsoft.com/en-us/fabric/onelake/onelake-medallion-lakehouse-architecture",
+    "https://learn.microsoft.com/zh-tw/azure/architecture/patterns/idempotent-consumer",
+    "https://learn.microsoft.com/en-us/azure/architecture/patterns/competing-consumers"
+  ]
+}
