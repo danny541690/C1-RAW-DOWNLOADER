@@ -14,6 +14,7 @@ on:
       - 'scripts/v095_r6_merged_acceptance.py'
   schedule:
     - cron: '7,37 * * * *'
+    - cron: '11 18 * * *'
 permissions:
   contents: read
 concurrency:
@@ -28,7 +29,7 @@ jobs:
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-      JARVIS_R6_FULL: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
+      JARVIS_R6_FULL: ${{ github.event.schedule == '11 18 * * *' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,6 +46,8 @@ jobs:
           assert f['BULK_COPY_APPROVED'] is False and f['RELEASE_APPROVED'] is False
           print('R6_PRODUCTION_RELEASE_FAIL_CLOSED')
           PY
+      - name: Regression test candidate evidence is never falsely promoted to PIT or bulk
+        run: python -m unittest discover -s tests -p 'test_v095_r6_merged_acceptance.py' -v
       - name: Prepare full-history discovery ledger without authorizing downloads
         run: python scripts/v095_r5_full_history_discovery_queue.py
       - name: Install verified candidate readback runtime only for full scope
