@@ -26,3 +26,9 @@
 - 維持不重抓成功快照、不覆寫原始、每次三次有界重試、unknown 保留、每天 10 分鐘只看 P0 top 5；不需 Kubernetes、Spark、另一個 GitHub 庫。
 ## 四、最終狀態
 本輪**成功修復與複驗部分關鍵根因**，但尚未具備正式 2000–2026 全量啟動條件；承諾「全部已修、全量已上線」將違反現有 R22/TPEX/PIT/CAS 真實證據，故不將未驗證狀態假設為成功。
+
+## 五、R5 原始行追因與 27 年排程盤點
+- 原始資料 Artifact `v095-202609-tpex-actual-nonnumeric-42353269924` 中 412 筆的 OHLC 原生四欄**全部都是 `---` / ` ---`**（並非四欄隨機錯位）；255 筆成交量 >0，157 筆成交量=0。由官方原始格式造成 null 應完整保留 raw native，不將非數值資料硬轉 0。真正市場原因尚須官方資料語意判定；此資料集可能含普通股票以外有價證券，應以歷史證券主檔 as-of 排除非分析範圍。
+- 官方政府資料開放平臺「上櫃股票收盤行情」資料集說明涵蓋股票、權證、ETF、ETN（https://data.gov.tw/dataset/11371）；因此不能只用 `\d{4}` 就認定所有四碼代碼都屬普通上櫃股票。
+- `scripts/v095_r5_full_history_discovery_queue.py` 將 six official sources／seven named official datasets／2000-01～2026-11（323 個日曆月份）建立 **2261 個 dataset-month discovery 工作候選**。每一筆均 `UNVERIFIED_HISTORY_DISCOVERY`、`download_allowed=false`、`official_expected_count=UNKNOWN`；**這是任務盤點，不是 2261 個已通過的下載工作**。來源最早年份、日別資料集分母、當時證券集合需逐筆驗證才升級。
+- 已建立 GitHub R5 唯讀歷史任務盤點 Workflow `v095-r5-history-discovery-inventory.yml`，實際 Run 以該 Workflow 結束狀態為準；不得提前宣稱成功。
