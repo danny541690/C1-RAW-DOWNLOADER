@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Run all R11-R12 fail-closed fault injection tests
+      - name: Single merged R5 R7 R8 R11 R12 governance and fault-injection gate
         run: |
           python -m py_compile scripts/v095_r12_deep_manifest_and_preflight.py scripts/v095_r11_t1_three_month_manifest.py
           python -m unittest discover -s tests -p 'test_v095_r12_deep_manifest_preflight.py' -v
@@ -39,6 +39,10 @@ jobs:
           python -m unittest discover -s tests -p 'test_v095_r12_drive_audit_archive.py' -v
           python -m unittest discover -s tests -p 'test_v095_r11_t1_three_month_manifest.py' -v
           python -m unittest discover -s tests -p 'test_v095_r11_plan_contract_gate.py' -v
+          python -m unittest discover -s tests -p 'test_v095_r8_official_semantic_gate.py' -v
+          python scripts/v095_r8_official_semantic_gate.py
+          python scripts/v095_r7_problem_only_dispatch.py --mode plan
+          python scripts/v095_r5_full_history_discovery_queue.py
           python scripts/v095_r11_plan_contract_gate.py
           python scripts/v095_r12_production_governance_gap_gate.py
       - name: Install official Drive metadata client
@@ -75,6 +79,10 @@ jobs:
           assert not any(x['native_sha256'] for x in candidates)
           assert pathlib.Path('r12_deep_manifest/public_report.json').exists()
           assert pathlib.Path('r12_deep_manifest/candidate_manifest_redacted.csv').exists()
+          delta=json.load(open('r7_problem_only/report.json'))
+          assert delta['download_count']==0 and delta['existing_files_rechecked']==0
+          assert delta['skipped_prior_candidate_count']==12
+          print('R12_MERGED_R7_DELTA_REUSED',delta['skipped_prior_candidate_count'])
           print('R12_CANDIDATE_MANIFEST',len(candidates),'ISSUES',len(issues))
           print('R12_NO_UNVERIFIED_PRODUCTION_WRITES',r['scan_status'])
           PY
@@ -94,6 +102,8 @@ jobs:
           name: v095-r12-three-month-deep-manifest-${{ github.run_id }}
           path: |
             r11_pilot_contract/
+            r7_problem_only/report.json
+            r8_official_semantics/result.json
             r12_governance_gaps/result.json
             r12_governance_gaps/drive_audit_receipt_public.json
             r12_deep_manifest/public_report.json
