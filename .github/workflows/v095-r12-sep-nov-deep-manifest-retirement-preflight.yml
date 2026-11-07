@@ -67,6 +67,8 @@ jobs:
           assert len(candidates)==r['objects_examined']
           assert not any(x['eligible_download_task']=='True' for x in candidates)
           assert not any(x['native_sha256'] for x in candidates)
+          assert pathlib.Path('r12_deep_manifest/public_report.json').exists()
+          assert pathlib.Path('r12_deep_manifest/candidate_manifest_redacted.csv').exists()
           print('R12_CANDIDATE_MANIFEST',len(candidates),'ISSUES',len(issues))
           print('R12_NO_UNVERIFIED_PRODUCTION_WRITES',r['scan_status'])
           PY
@@ -78,6 +80,8 @@ jobs:
           path: |
             r11_pilot_contract/
             r12_governance_gaps/
-            r12_deep_manifest/
-          retention-days: 90
+            r12_deep_manifest/public_report.json
+            r12_deep_manifest/candidate_manifest_redacted.csv
+            r12_deep_manifest/repair_issue_queue.csv
+          retention-days: 3
           if-no-files-found: warn
