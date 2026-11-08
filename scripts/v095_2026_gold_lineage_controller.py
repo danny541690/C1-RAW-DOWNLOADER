@@ -41,7 +41,7 @@ def audit_catalog(d):
          "indicator_rows":state,"computed_count":0,"PIT_approved_count":0,
          "note":"Gold readiness inventory only; descriptive candidate Gold produced by source downstream workers"}
 def audit_lineage(d):
- rows=ls(d,"'"+OPS+"' in parents and name contains 'JARVIS_V095_'+str(YEAR)+'_RUN_RECEIPT_' and trashed = false")
+ rows=ls(d,"'"+OPS+"' in parents and name contains 'JARVIS_V095_"+str(YEAR)+"_RUN_RECEIPT_' and trashed = false")
  checks=[];errors=[];status=collections.Counter()
  for f in sorted(rows,key=lambda x:x.get("createdTime",""),reverse=True):
   if len(checks)>=60:break
