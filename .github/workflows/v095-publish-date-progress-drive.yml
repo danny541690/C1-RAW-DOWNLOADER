@@ -9,6 +9,11 @@ on:
       - '.github/workflows/v095-publish-date-progress-drive.yml'
       - 'scripts/v095_publish_date_progress_to_drive.py'
       - 'scripts/v095_publish_bsg_date_progress.py'
+      - 'scripts/v095_2026_price_incremental.py'
+      - 'scripts/v095_2026_bsg_lineage_gate.py'
+      - 'scripts/v095_2026_four_source_archive_intake.py'
+      - 'governance/v095/OFFICIAL_VS_JARVIS_FORMAT_REPAIR_20261108.md'
+      - 'governance/v095/JARVIS_V095_SCHEDULE_ERROR_PLAN_20261108.md'
 permissions:
   contents: read
 concurrency:
