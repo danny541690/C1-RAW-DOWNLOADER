@@ -58,7 +58,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_v095_2026_cash_market_calendar.py' -v
           python -m scripts.v095_2026_cash_market_calendar v095_market_calendar_2026/calendar_audit.json
-      - name: Bronze only: verify v0.95 then v0.93 original then official and checkpoint
+      - name: Bronze-only verified reuse and official checkpoint
         run: python -m scripts.v095_2026_price_incremental
       - name: Archive actual run result to Drive SHA ledger
         if: always()
