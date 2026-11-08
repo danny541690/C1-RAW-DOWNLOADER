@@ -16,6 +16,7 @@ def main():
     if SOURCE not in ("MOPS","TDCC","TAIFEX","NDC"):raise ValueError("INVALID_SOURCE")
     OUT.mkdir(exist_ok=True)
     d=service()
+    max_probe=24 if SOURCE=="MOPS" else 5
     parents=[x for x in ls(d,YEAR_PARENT) if x["name"]==SOURCE and x["mimeType"]==FOLDER]
     if len(parents)!=1:raise ValueError("LEGACY_SOURCE_FOLDER_NOT_UNIQUE")
     issues=[];valid=[];scanned=0
@@ -28,7 +29,7 @@ def main():
         if len(children)>1:raise ValueError("LEGACY_MONTH_DUPLICATE")
         for item in sorted(ls(d,children[0]["id"]),key=lambda z:z["name"]):
             if not item["name"].lower().endswith(".zip"):continue
-            if scanned>=5:break
+            if scanned>=max_probe:break
             scanned+=1
             filehash=hashlib.sha256((item["id"]+item["name"]).encode()).hexdigest()[:18]
             record={"month_folder":month,"original_id_name_digest":filehash,
@@ -77,7 +78,7 @@ def main():
                 record["status"]="STRUCTURE_REVIEW_REQUIRED"
                 record["reason"]=type(e).__name__+":"+str(e)[:95]
                 issues.append(record)
-        if scanned>=5:break
+        if scanned>=max_probe:break
     report={"source":SOURCE,"files_sampled":scanned,"strict_valid":len(valid),
        "structure_issues":len(issues),"issues":issues,"valid":valid,
        "no_original_data_promoted":True,"historical_source_pit_certified":False}
