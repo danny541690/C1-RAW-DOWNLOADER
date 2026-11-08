@@ -1,0 +1,60 @@
+name: JARVIS v0.95 2026 TPEx independent Silver and descriptive Gold catchup
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-downstream-tpex.yml'
+  schedule:
+    - cron: '29 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2026-downstream-tpex-single-writer
+  cancel-in-progress: false
+jobs:
+  transform-tpex:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V095_PRICE_SOURCE: 'TPEx'
+      V095_DOWNSTREAM_BATCH: '10'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Strict non-release checks and syntax
+        run: |
+          python -m py_compile scripts/v095_2026_equity_downstream.py
+          python - <<'PY'
+          import json
+          x=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert x['RELEASE_APPROVED'] is False and x['BULK_COPY_APPROVED'] is False
+          PY
+      - name: Install independent transformation requirements
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Convert SHA-verified existing native Bronze and verify bidirectional BSG hashes
+        run: python -u -m scripts.v095_2026_equity_downstream
+      - name: Persist full run receipt with remote SHA readback
+        if: always()
+        env:
+          V095_RECEIPT_LANE: 'SILVER_GOLD'
+        run: python -u -m scripts.v095_2026_publish_run_receipt
+      - name: Preserve per-partition conversion receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-equity-downstream-tpex-${{ github.run_id }}
+          path: |
+            v095_2026_equity_downstream/result.json
+            v095_2026_equity_downstream/lineage_receipt.json
+            v095_2026_run_receipt/drive_receipt.json
+          retention-days: 90
+          if-no-files-found: warn
