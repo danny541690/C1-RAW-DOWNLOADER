@@ -10,6 +10,7 @@ on:
       - 'scripts/v095_market_release_official_history_merge.py'
       - 'scripts/v095_market_release_tpex_history_merge.py'
       - 'scripts/v095_market_release_taifex_history_merge.py'
+      - 'scripts/v095_market_release_taifex_gap_dates_merge.py'
       - 'governance/v095/MARKET_RELEASE_CONTRACTS.json'
       - 'governance/v095/MARKET_CALENDAR_EVIDENCE_2000_2025.csv'
   schedule:
@@ -70,6 +71,12 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python -m scripts.v095_market_release_taifex_history_merge
+      - name: Reconcile 2015-2017 TAIFEX date-only salvage and 2026 positive futures sessions
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python -m scripts.v095_market_release_taifex_gap_dates_merge
       - name: Save immutable G0 calendar and evidence to Google Drive Operations
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
