@@ -1,0 +1,52 @@
+name: JARVIS v0.95 2026 cross-lane QA and exception evidence ledger
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-cross-lane-evidence-ledger.yml'
+  schedule:
+    - cron: '52 * * * *'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: jarvis-v095-2026-cross-lane-ledger-single-writer
+  cancel-in-progress: false
+jobs:
+  consolidate-2026-receipts:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate only recorded receipts; no data writes
+        run: |
+          python -m py_compile scripts/v095_2026_cross_lane_evidence_ledger.py
+          python - <<'PY'
+          import json
+          flags=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert flags['BULK_COPY_APPROVED'] is False and flags['RELEASE_APPROVED'] is False
+          PY
+      - name: Install Drive audit client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Fetch bounded recent source/transform/QA receipts, classify and store SHA readback
+        run: python -u -m scripts.v095_2026_cross_lane_evidence_ledger
+      - name: Preserve local recent event view and Drive receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-cross-lane-ledger-${{ github.run_id }}
+          path: v095_2026_cross_lane_ledger/
+          retention-days: 90
+          if-no-files-found: warn
