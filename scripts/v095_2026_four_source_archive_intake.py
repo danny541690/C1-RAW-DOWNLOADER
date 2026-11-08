@@ -7,7 +7,7 @@ CRC as verified financial contents or manufacture Silver/Gold/PIT. Missing
 eligible files are reported for dedicated official-source backfill adapters.
 """
 import datetime as dt
-import calendar
+import calendar, csv, re, decimal
 import hashlib, io, json, os, pathlib, sys, zipfile
 from scripts.v095_2026_annual_consolidated import service,BRONZE_ROOTS,FOLDER
 from scripts.v095_2026_prior_raw_reuse_audit import YEAR_PARENT
@@ -29,6 +29,46 @@ def ls(d,folder):
         if not token:return rows
 OUT=pathlib.Path("v095_2026_source_archives")
 def digest(b):return hashlib.sha256(b).hexdigest()
+def taifex_spread_order_evidence(raw,month):
+    """Official TAIFEX daily aggregate spread order report: title row + header.
+
+    CSV title is NOT its header. This is daily summary, not minute/tick data.
+    Infer no publication timestamp and do not certify downstream metrics.
+    """
+    from scripts.v093_taifex_independent import native_text
+    rows=csv.reader(io.StringIO(native_text(raw).rstrip(chr(26)+" \\t\\r\\n")))
+    title=next(rows,[])
+    header=[x.strip() for x in next(rows,[])]
+    expected=["交易日期","商品代號","價差委託成交量(B+S)","市場總成交量(B+S)","價差委託成交比率(%)"]
+    if not title or title[0].strip()!="期貨價差委託成交概況表" or header!=expected:
+        raise ValueError("TAIFEX_SPREAD_NATIVE_TITLE_HEADER_MISMATCH")
+    dates=set();n=0
+    for row in rows:
+        if not any(x.strip() for x in row):continue
+        row=[x.strip() for x in row]
+        if len(row)!=5:raise ValueError("TAIFEX_SPREAD_ROW_WIDTH")
+        stamp,symbol,spread,total,percentage=row
+        if not re.fullmatch(r"20\\d{6}",stamp) or stamp[:6]!=month.replace("-",""):
+            raise ValueError("TAIFEX_SPREAD_DATE_OUTSIDE_REQUEST_MONTH")
+        try:date=dt.datetime.strptime(stamp,"%Y%m%d").date()
+        except ValueError:raise ValueError("TAIFEX_SPREAD_INVALID_DATE")
+        if not symbol or not re.fullmatch(r"[A-Z0-9]{2,12}",symbol):
+            raise ValueError("TAIFEX_SPREAD_INVALID_CONTRACT")
+        if not re.fullmatch(r"\\d+",spread) or not re.fullmatch(r"\\d+",total):
+            raise ValueError("TAIFEX_SPREAD_VOLUME_NOT_INT")
+        if int(spread)>int(total):raise ValueError("TAIFEX_SPREAD_VOLUME_EXCEEDS_TOTAL")
+        try:ratio=decimal.Decimal(percentage)
+        except decimal.InvalidOperation:raise ValueError("TAIFEX_SPREAD_RATIO_FORMAT")
+        if not decimal.Decimal(0)<=ratio<=decimal.Decimal(100):
+            raise ValueError("TAIFEX_SPREAD_RATIO_RANGE")
+        if int(total)==0 and int(spread)>0:raise ValueError("TAIFEX_SPREAD_DIVISION_BY_ZERO")
+        if int(total)>0 and abs(ratio-(decimal.Decimal(100)*int(spread)/int(total)))>decimal.Decimal("1"):
+            raise ValueError("TAIFEX_SPREAD_RATIO_INCONSISTENT")
+        dates.add(date.isoformat());n+=1
+    if not n or len(dates)!=1:raise ValueError("TAIFEX_SPREAD_EMPTY_OR_MULTI_DATE")
+    return {"rows":n,"dates":sorted(dates),"source_native_type":"TAIFEX_DAILY_SPREAD_ORDER_SUMMARY",
+            "release_timestamp_verified":False,"PIT":False}
+
 def validate_zip(b,source,month):
     """Accept only two documented manifest layouts, never unlabeled ZIPs.
 
@@ -49,10 +89,14 @@ def validate_zip(b,source,month):
         if len(manifests)==0 and source=="TAIFEX":
             csvfiles=[x for x in infos if not x.is_dir() and x.filename.lower().endswith(".csv")]
             if len(infos)!=1 or len(csvfiles)!=1:raise ValueError("TAIFEX_NATIVE_ZIP_NOT_SINGLE_CSV")
-            from scripts.v093_taifex_independent import csv_evidence
+            from scripts.v093_taifex_independent import csv_evidence,native_text
             year,mm=map(int,month.split("-"))
             start=dt.date(year,mm,1);end=dt.date(year,mm,calendar.monthrange(year,mm)[1])
-            evidence=csv_evidence(z.read(csvfiles[0]),start,end)
+            native=z.read(csvfiles[0])
+            if native_text(native).lstrip().startswith("期貨價差委託成交概況表"):
+                evidence=taifex_spread_order_evidence(native,month)
+                return 1
+            evidence=csv_evidence(native,start,end)
             if evidence.get("rows",0)<1:raise ValueError("TAIFEX_NATIVE_CSV_NO_ROWS")
             lo=evidence.get("content_period",{}).get("min")
             hi=evidence.get("content_period",{}).get("max")
