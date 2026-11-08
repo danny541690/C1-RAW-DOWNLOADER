@@ -44,7 +44,7 @@ def dates():
 def list_cursors(d):
     out=[];token=None
     while True:
-        q="'"+OPERATIONS+"' in parents and name contains '"+PREFIX+"' and trashed=false"
+        q="'"+OPERATIONS+"' in parents and name contains '"+SOURCE_PREFIX+"' and trashed=false"
         x=d.files().list(q=q,fields="nextPageToken,incompleteSearch,files(id,name,mimeType)",pageSize=1000,pageToken=token).execute()
         if x.get("incompleteSearch"):raise RuntimeError("CURSOR_SEARCH_INCOMPLETE")
         out.extend(x.get("files",[]))
@@ -140,17 +140,18 @@ def single(d,source,day):
           for r in rows if r["close"] is not None and r["close"]>0]
     gb=base.to_parquet(gold)
     gm=base.folder(d,base.GOLD,month+"_DESCRIPTIVE_ONLY")
-    _,ga=base.save(d,gm,"V095_"+stamp+"_"+source+"_"+day+"_PRICE_GOLD_"+base.sha(gb)[:20]+".parquet",gb)
+    gold_id,ga=base.save(d,gm,"V095_"+stamp+"_"+source+"_"+day+"_PRICE_GOLD_"+base.sha(gb)[:20]+".parquet",gb)
     return {"source":source,"date":day,"rows":len(rows),"gold_rows":len(gold),
             "nonnumeric_ohlc_rows":unparsed,"source_response_rows":facts.get("rows"),
-            "actions":[ba,sa,ga],"bronze_sha256":digest,"silver_sha256":s_sha,
+            "actions":[ba,sa,ga],"bronze_id":bronze_id,"silver_id":silver_id,"gold_id":gold_id,
+            "bronze_sha256":digest,"silver_sha256":s_sha,"gold_sha256":base.sha(gb),
             "acquisition":acquisition,"pit_verified":False}
 
 def commit_cursor(d,record):
     raw=(json.dumps(record,ensure_ascii=False,sort_keys=True,separators=(",",":"))+"\n").encode()
     digest=hashlib.sha256(raw).hexdigest()
-    name=PREFIX+f"{record['generation']:04d}_"+str(os.getenv("GITHUB_RUN_ID","0"))+"_"+digest[:16]+".json"
-    conflicts=[x for x in list_cursors(d) if x["name"].startswith(PREFIX+f"{record['generation']:04d}_")]
+    name=SOURCE_PREFIX+f"{record['generation']:04d}_"+str(os.getenv("GITHUB_RUN_ID","0"))+"_"+digest[:16]+".json"
+    conflicts=[x for x in list_cursors(d) if x["name"].startswith(SOURCE_PREFIX+f"{record['generation']:04d}_")]
     if conflicts:raise RuntimeError("CONCURRENT_CURSOR_GENERATION_COLLISION")
     x=d.files().create(body={"name":name,"parents":[OPERATIONS],
       "description":"v0.95 2026 TWSE/TPEx scoped BSG progress; not PIT-certified"},
