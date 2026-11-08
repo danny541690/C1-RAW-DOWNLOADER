@@ -44,14 +44,14 @@ def main():
     now=dt.datetime.now(dt.timezone.utc)
     token=os.environ["GH_TOKEN"]
     runs=api(token,"/actions/runs?per_page=100").get("workflow_runs",[])
-    result={"schema":"V095_CONTROLLER_R2_SIX_SOURCE_FIRST_PASS","at_utc":now.isoformat(),
+    result={"schema":"V095_CONTROLLER_R3_SIX_LANES_FAST_FIRST_PASS","at_utc":now.isoformat(),
             "scope":"2026_only","full_year_verified":False,"history_2000_2025_dispatched":False,
-            "production_release":False,"source_actions":{},"source_fanout_limit":6,"first_pass_priority":"BRONZE_INCREMENTAL"}
+            "production_release":False,"source_actions":{},"source_fanout_limit":6,"first_pass_priority":"BRONZE_INCREMENTAL","quality_policy":"independent_hourly_no_release"}
     # The six native source cron workflows are primary; intervene only on stale/idle lanes.
     # First-pass source throughput: dispatch up to six distinct source writers per run; never double-write an active source.
     dispatched=0
     for source,(workflow,name) in SOURCES.items():
-        decision=choose(name,runs,now,65)
+        decision=choose(name,runs,now,20 if source in ("TWSE","TPEx") else 35)
         if decision=="DISPATCH" and dispatched>=6:decision="DEFER_CAPACITY"
         if decision=="DISPATCH":
             try:
