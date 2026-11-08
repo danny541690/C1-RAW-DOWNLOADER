@@ -1,12 +1,12 @@
 name: JARVIS v0.95 2026 MOPS independent Bronze and downstream gate
-# 2026 source-scoped writer; verified Bronze -> Silver -> available descriptive Gold immediately; PIT remains blocked.
+# 2026 source-scoped writer; Bronze-only legacy verified intake; downstream has separate independent workflow; PIT remains blocked.
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/v095-2026-source-mops.yml'
-      - 'scripts/v095_2026_immediate_silver_gold.py'
+      - 'scripts/v095_2026_four_source_archive_intake.py'
   schedule:
     - cron: '8,38 * * * *'
 permissions:
@@ -51,11 +51,9 @@ jobs:
           assert x['BULK_COPY_APPROVED'] is False and x['RELEASE_APPROVED'] is False
           print('V095_SOURCE_ISOLATED_CANDIDATE_ONLY')
           PY
-          python -m py_compile scripts/v095_2026_four_source_archive_intake.py scripts/v095_2026_immediate_silver_gold.py
+          python -m py_compile scripts/v095_2026_four_source_archive_intake.py
       - name: Admit SHA CRC manifest-proven v0.93 Bronze archive candidates only
         run: python -m scripts.v095_2026_four_source_archive_intake
-      - name: Convert available Bronze into Silver then supported descriptive Gold immediately
-        run: python -u -m scripts.v095_2026_immediate_silver_gold
       - name: Preserve full per-partition actual results, exceptions and provenance
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,7 +61,5 @@ jobs:
           name: v095-2026-mops-source-${{ github.run_id }}
           path: |
             v095_2026_source_archives/result.json
-            v095_2026_immediate_downstream/result.json
-            v095_2026_immediate_downstream/missing_indicators.json
           if-no-files-found: warn
           retention-days: 90
