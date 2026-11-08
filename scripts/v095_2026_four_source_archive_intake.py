@@ -241,6 +241,9 @@ def main():
             blocked.append({"month":month,"state":"V093_MONTH_FOLDER_NOT_UNIQUE_OR_MISSING"})
             continue
         items=ls(d,src[0]["id"],only_archives=True)
+        if not items:
+            blocked.append({"month":month,"state":"NO_V093_ZIP_CANDIDATE_NOT_PROVEN_OFFICIAL_MISSING"})
+            continue
         dest=folder(d,new,month+"_V093_REUSE_CANDIDATE")
         stored={x.get("md5Checksum") for x in ls(d,dest) if x.get("md5Checksum")}
         for item in sorted(items,key=lambda x:x["name"]):
