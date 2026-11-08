@@ -31,7 +31,7 @@ jobs:
           python-version: '3.12'
       - name: Verify strict ZIP adapter and source-specific manifest safeguards
         run: |
-          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+          python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
           python -m unittest discover -s tests -p 'test_v095_legacy_native_manifest_versions.py' -v
       - name: Read only five failing legacy archive headers, retain safe SHA evidence
         run: python -u -m scripts.v095_native_legacy_zip_structure_probe
