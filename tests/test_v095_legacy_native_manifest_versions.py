@@ -19,6 +19,17 @@ class TestV095HistoricalNativeZIPManifest(unittest.TestCase):
     self.assertEqual(validate_zip(pack("v093"),"MOPS","2026-09"),1)
  def test_tdcc_exact_path_native(self):
     self.assertEqual(validate_zip(pack("tdcc"),"TDCC","2026-09"),1)
+ def test_taifex_official_spread_order_title_row(self):
+    text="期貨價差委託成交概況表,,,, \\n交易日期,商品代號,價差委託成交量(B+S),市場總成交量(B+S),價差委託成交比率(%) \\n20260909,BRF,0,672,0\\n20260909,CAF,1146,13022,8.8\\n"
+    z=io.BytesIO()
+    with zipfile.ZipFile(z,"w",zipfile.ZIP_DEFLATED) as f:f.writestr("20260909.csv",text.encode("utf-8-sig"))
+    self.assertEqual(validate_zip(z.getvalue(),"TAIFEX","2026-09"),1)
+    with self.assertRaises(ValueError):validate_zip(z.getvalue(),"TAIFEX","2026-10")
+ def test_taifex_spread_invalid_ratio_rejected(self):
+    text="期貨價差委託成交概況表,,,, \\n交易日期,商品代號,價差委託成交量(B+S),市場總成交量(B+S),價差委託成交比率(%) \\n20260909,CAF,1146,13022,99\\n"
+    z=io.BytesIO()
+    with zipfile.ZipFile(z,"w",zipfile.ZIP_DEFLATED) as f:f.writestr("20260909.csv",text.encode("utf-8-sig"))
+    with self.assertRaises(ValueError):validate_zip(z.getvalue(),"TAIFEX","2026-09")
  def test_tdcc_r1_complement_manifest(self):
     raw=b"<html>valid native tdcc stock data</html>"
     h=hashlib.sha256(raw).hexdigest()
