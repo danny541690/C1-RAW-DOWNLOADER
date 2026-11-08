@@ -6,9 +6,11 @@ import collections,datetime as dt,hashlib,io,json,os,pathlib
 from googleapiclient.http import MediaIoBaseUpload
 from scripts.v095_market_release_calendar_drive_archive import drive,OPS
 CATALOG="1lbWk0qRZZFjpV-yL1gZNUb2pCZmHDHW7"
+YEAR=int(os.getenv("V095_DATA_YEAR","2026"))
+if YEAR not in (2025,2026):raise ValueError("GOLD_AUDIT_YEAR_OUT_OF_SCOPE")
 MODE=os.getenv("V095_AUDIT_MODE")
 if MODE not in ("GOLD_MARKET","GOLD_FUNDAMENTAL","LINEAGE"):raise ValueError("UNKNOWN_AUDIT_MODE")
-OUT=pathlib.Path("v095_2026_gold_lineage_gate")
+OUT=pathlib.Path("v095_2026_gold_lineage_gate" if YEAR==2026 else "v095_2025_gold_lineage_gate")
 MARKET={"OHLCV/MASTER","OHLC","OHLCV/SHARES","OHLC/BENCHMARK","OHLC/UNIVERSE",
         "INST_DAILY","BROKER/MARGIN","SECTOR/CONSTITUENTS"}
 def sha(b):return hashlib.sha256(b).hexdigest()
@@ -39,7 +41,7 @@ def audit_catalog(d):
          "indicator_rows":state,"computed_count":0,"PIT_approved_count":0,
          "note":"Gold readiness inventory only; descriptive candidate Gold produced by source downstream workers"}
 def audit_lineage(d):
- rows=ls(d,"'"+OPS+"' in parents and name contains 'JARVIS_V095_2026_RUN_RECEIPT_' and trashed = false")
+ rows=ls(d,"'"+OPS+"' in parents and name contains 'JARVIS_V095_'+str(YEAR)+'_RUN_RECEIPT_' and trashed = false")
  checks=[];errors=[];status=collections.Counter()
  for f in sorted(rows,key=lambda x:x.get("createdTime",""),reverse=True):
   if len(checks)>=60:break
@@ -58,10 +60,10 @@ def audit_lineage(d):
     checks.append(x);status[j["source"]]+=1
   except Exception as exc:errors.append({"id":f["id"],"error":type(exc).__name__+":"+str(exc)[:130]})
  return {"lineage_run_receipts":checks,"sources_with_lineage_receipts":dict(status),"read_errors":errors,
-    "2026_fully_lineaged":False,"PIT_certified":False,
+    "year_fully_lineaged":False,"PIT_certified":False,
     "note":"Verified source-level SHA receipts only. Complete native B/S/G row lineage for six sources and 443 factors remains open."}
 def publish(d,b):
- h=sha(b);name="JARVIS_V095_2026_"+MODE+"_GATE_"+h[:22]+".json"
+ h=sha(b);name="JARVIS_V095_"+str(YEAR)+"_"+MODE+"_GATE_"+h[:22]+".json"
  rows=ls(d,"'"+OPS+"' in parents and name = '"+name+"' and trashed=false")
  if len(rows)>1:raise ValueError("DUPLICATE_GATE")
  if rows:fid=rows[0]["id"];action="REUSED"
@@ -77,7 +79,7 @@ def main():
  assert not x["RELEASE_APPROVED"] and not x["BULK_COPY_APPROVED"]
  d=drive();body=audit_lineage(d) if MODE=="LINEAGE" else audit_catalog(d)
  summary={"schema":"JARVIS_V095_2026_GOLD_LINEAGE_GATE_R1","mode":MODE,
-  "scope":"2026","run_id":os.getenv("GITHUB_RUN_ID"),
+  "scope":str(YEAR),"run_id":os.getenv("GITHUB_RUN_ID"),
   "evaluated_utc":dt.datetime.now(dt.timezone.utc).isoformat(),
   "production_certified":False,"full_443_computed":False,"result":body}
  raw=(json.dumps(summary,ensure_ascii=False,sort_keys=True,indent=2)+"\n").encode()
