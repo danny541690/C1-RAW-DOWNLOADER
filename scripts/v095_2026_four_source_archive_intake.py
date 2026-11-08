@@ -36,7 +36,7 @@ def taifex_spread_order_evidence(raw,month):
     Infer no publication timestamp and do not certify downstream metrics.
     """
     from scripts.v093_taifex_independent import native_text
-    rows=csv.reader(io.StringIO(native_text(raw).rstrip(chr(26)+" \\t\\r\\n")))
+    rows=csv.reader(io.StringIO(native_text(raw).rstrip(chr(26)+" \t\r\n")))
     title=next(rows,[])
     header=[x.strip() for x in next(rows,[])]
     expected=["交易日期","商品代號","價差委託成交量(B+S)","市場總成交量(B+S)","價差委託成交比率(%)"]
@@ -48,13 +48,13 @@ def taifex_spread_order_evidence(raw,month):
         row=[x.strip() for x in row]
         if len(row)!=5:raise ValueError("TAIFEX_SPREAD_ROW_WIDTH")
         stamp,symbol,spread,total,percentage=row
-        if not re.fullmatch(r"20\\d{6}",stamp) or stamp[:6]!=month.replace("-",""):
+        if not re.fullmatch(r"20\d{6}",stamp) or stamp[:6]!=month.replace("-",""):
             raise ValueError("TAIFEX_SPREAD_DATE_OUTSIDE_REQUEST_MONTH")
         try:date=dt.datetime.strptime(stamp,"%Y%m%d").date()
         except ValueError:raise ValueError("TAIFEX_SPREAD_INVALID_DATE")
         if not symbol or not re.fullmatch(r"[A-Z0-9]{2,12}",symbol):
             raise ValueError("TAIFEX_SPREAD_INVALID_CONTRACT")
-        if not re.fullmatch(r"\\d+",spread) or not re.fullmatch(r"\\d+",total):
+        if not re.fullmatch(r"\d+",spread) or not re.fullmatch(r"\d+",total):
             raise ValueError("TAIFEX_SPREAD_VOLUME_NOT_INT")
         if int(spread)>int(total):raise ValueError("TAIFEX_SPREAD_VOLUME_EXCEEDS_TOTAL")
         try:ratio=decimal.Decimal(percentage)
