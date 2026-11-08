@@ -43,6 +43,12 @@ jobs:
           python -m unittest discover -s tests -p 'test_v095_2026_annual_consolidated.py' -v
           python -m unittest discover -s tests -p 'test_v095_r13_single_committer_contract.py' -v
           python scripts/v095_r13_single_committer_contract.py
+      - name: Incremental 2026 actual TWSE TPEx price Bronze Silver Gold candidate producer
+        env:
+          V095_2026_BATCH_DAYS: '6'
+        run: |
+          python -m py_compile scripts/v095_2026_price_incremental.py
+          python -m scripts.v095_2026_price_incremental
       - name: Inventory and byte-sample existing 2026 RAW; no valid archive redownload
         run: python -m scripts.v095_2026_prior_raw_reuse_audit
       - name: Combined verified native Bronze Silver descriptive Gold run (Nov 2 3 6)
@@ -108,6 +114,7 @@ jobs:
           if-no-files-found: warn
           path: |
             annual_2026/
+            v095_2026_price_incremental/
             annual_2026_prior/
             ultimate_r1/november_latest_bsg.json
             ultimate_r1/november_reuse_batch_a.json
