@@ -22,6 +22,18 @@ def main():
     with datefile.open(newline="",encoding="utf-8") as f:
         for row in csv.DictReader(f):
             counts[(row["source"],row["market_state"])]+=1
+    native_positive={
+        "TWSE":g0.get("official_historical_raw_confirmed_days"),
+        "TPEx":g0.get("tpex_official_stock_positive_days"),
+        "TAIFEX":g0.get("taifex_official_positive_session_count",0)+
+                 sum(x.get("positive_sessions",0) for x in g0.get("taifex_date_only_recovered_2015_2017",[]))+
+                 g0.get("taifex_2026_official_monthly_positive_days",0)
+    }
+    if any(not isinstance(v,int) or v<=0 for v in native_positive.values()):
+        raise ValueError("MISSING_NATIVE_SHA_POSITIVE_MARKET_DATE_RECEIPTS")
+    for source in ("TWSE","TPEx","TAIFEX"):
+        if native_positive[source]>counts[(source,"CONFIRMED_TRADING")]:
+            raise ValueError("NATIVE_POSITIVE_DAYS_GREATER_THAN_G0_SCHEDULE")
     mops=[];missing=[];verified_total=0;expected_total=0
     for a,b in SHARDS:
         base=get_report(d,a,b)
@@ -57,7 +69,9 @@ def main():
     tdcc=allcontracts[("TDCC","ownership_distribution")]
     report={"schema":"JARVIS_V095_G0_SIX_SOURCE_DATE_QUALITY_V1",
       "as_of_run_date":"2026-11-08",
-      "source_trade_session_counts":{s:counts[(s,"CONFIRMED_TRADING")] for s in ("TWSE","TPEx","TAIFEX")},
+      "source_native_evidenced_positive_trade_days":native_positive,
+      "calendar_confirmed_or_planned_session_counts":{s:counts[(s,"CONFIRMED_TRADING")] for s in ("TWSE","TPEx","TAIFEX")},
+      "count_semantics":"2026 future scheduled sessions are in calendar counts but never native observed positive dates",
       "source_trade_calendar_full_certified":False,
       "MOPS":{"monthly_board_cells_proven":verified_total,"candidate_cells_queried":expected_total,
               "source_month_cells_unverified":expected_total-verified_total,
@@ -77,7 +91,7 @@ def main():
       "rule":"A SOURCE'S ABSENCE, HOLIDAY, OBSERVATION, FILING DEADLINE AND REAL DISCLOSURE TIME ARE DISTINCT"}
     out=ROOT/"six_source_date_quality.json"
     out.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
-    print(json.dumps({"market_positive_days":report["source_trade_session_counts"],
+    print(json.dumps({"native_positive_market_days":report["source_native_evidenced_positive_trade_days"],
       "MOPS_source_month_boards_verified":verified_total,
       "MOPS_unverified_cells":expected_total-verified_total,
       "NDC_observation_months_verified":len(rows),
