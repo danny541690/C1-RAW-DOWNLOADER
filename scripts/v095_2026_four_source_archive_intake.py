@@ -44,7 +44,8 @@ def validate_zip(b,source,month):
                or ".." in pathlib.PurePosixPath(x.filename).parts for x in infos):
             raise ValueError("UNSAFE_ARCHIVE")
         if z.testzip():raise ValueError("ZIP_CRC")
-        manifests=[x.filename for x in infos if pathlib.PurePosixPath(x.filename).name=="manifest.json"]
+        manifests=[x.filename for x in infos if pathlib.PurePosixPath(x.filename).name
+                   in ("manifest.json","complement_manifest_R1.json")]
         if len(manifests)==0 and source=="TAIFEX":
             csvfiles=[x for x in infos if not x.is_dir() and x.filename.lower().endswith(".csv")]
             if len(infos)!=1 or len(csvfiles)!=1:raise ValueError("TAIFEX_NATIVE_ZIP_NOT_SINGLE_CSV")
@@ -67,14 +68,25 @@ def validate_zip(b,source,month):
             entries=m["units"];key="file";fmt="V093_UNIT_MANIFEST"
         elif isinstance(m.get("immutable_originals"),list) and m["immutable_originals"]:
             entries=m["immutable_originals"];key="archive_path";fmt="TDCC_NATIVE_ORIGINALS"
+        elif (source=="TDCC"
+              and pathlib.PurePosixPath(manifests[0]).name=="complement_manifest_R1.json"
+              and isinstance(m.get("files"),list) and m["files"]):
+            entries=m["files"];key="file";fmt="TDCC_COMPLEMENT_R1"
         else:raise ValueError("UNSUPPORTED_MANIFEST_VERSION")
         archive_names={i.filename for i in infos}
         declared=set()
         for x in entries:
             if not isinstance(x,dict):raise ValueError("MANIFEST_MEMBER_TYPE")
             path=x.get(key)
-            if not isinstance(path,str) or path not in archive_names or path==manifests[0]:
+            if not isinstance(path,str) or not path:
                 raise ValueError("MANIFEST_MEMBER_MISSING_OR_AMBIGUOUS")
+            if path not in archive_names:
+                matches=[n for n in archive_names
+                    if pathlib.PurePosixPath(n).name==pathlib.PurePosixPath(path).name]
+                if len(matches)!=1:
+                    raise ValueError("MANIFEST_MEMBER_MISSING_OR_AMBIGUOUS")
+                path=matches[0]
+            if path==manifests[0]:raise ValueError("MANIFEST_MEMBER_POINTS_TO_MANIFEST")
             if path in declared:raise ValueError("MANIFEST_DUPLICATE_MEMBER")
             declared.add(path)
             member_sha=x.get("sha256")
@@ -116,7 +128,7 @@ def main():
                 if len(b)>MAX_BYTES:raise ValueError("ARCHIVE_OVER_BOUNDED_LIMIT")
                 members=validate_zip(b,SOURCE,month)
                 with zipfile.ZipFile(io.BytesIO(b)) as zz:
-                    had_native_manifest=any(pathlib.PurePosixPath(x.filename).name=="manifest.json"
+                    had_native_manifest=any(pathlib.PurePosixPath(x.filename).name in ("manifest.json","complement_manifest_R1.json")
                                             for x in zz.infolist())
                 name="V095_V093_"+SOURCE+"_"+month+"_"+digest(b)[:24]+".zip"
                 fid,action=save(d,dest,name,b)
