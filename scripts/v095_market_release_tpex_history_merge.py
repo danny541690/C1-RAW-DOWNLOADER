@@ -13,7 +13,8 @@ PREFIX="JARVIS_V095_G0_2000_2026_"
 SHARDS=((2000,2004),(2005,2009),(2010,2014),(2015,2019),(2020,2023),(2024,2026))
 def sha(b):return hashlib.sha256(b).hexdigest()
 def find(d,name):
-    q="'"+OPS+"' in parents and name contains '"+PREFIX+name+"_' and trashed=false"
+    stem,ext=name.rsplit(".",1)
+    q="'"+OPS+"' in parents and name contains '"+PREFIX+stem+"_' and trashed=false"
     all=[];token=None
     while True:
         r=d.files().list(q=q,fields="nextPageToken,incompleteSearch,files(id,name)",pageSize=1000,pageToken=token).execute()
@@ -22,7 +23,7 @@ def find(d,name):
         if not token:break
     chosen=[]
     for f in all:
-        m=re.fullmatch(re.escape(PREFIX+name+"_")+r"([0-9a-f]{24})\.(zip|csv|json)",f["name"])
+        m=re.fullmatch(re.escape(PREFIX+stem+"_")+r"([0-9a-f]{24})\."+re.escape(ext),f["name"])
         if not m:continue
         raw=d.files().get_media(fileId=f["id"]).execute()
         if sha(raw)[:24]!=m[1]:raise ValueError("REMOTE_SHA_NOT_FILENAME")
