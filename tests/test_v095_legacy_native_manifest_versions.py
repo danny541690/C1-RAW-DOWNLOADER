@@ -1,6 +1,6 @@
 import hashlib,io,json,os,unittest,zipfile
 os.environ.setdefault("V095_BRONZE_SOURCE","TDCC")
-from scripts.v095_2026_four_source_archive_intake import validate_zip
+from scripts.v095_2026_four_source_archive_intake import validate_zip, load_quarantine_ledger
 def pack(fmt,raw=b"original rows"):
     h=hashlib.sha256(raw).hexdigest()
     if fmt=="v093":
@@ -15,6 +15,12 @@ def pack(fmt,raw=b"original rows"):
         z.writestr("manifest.json",json.dumps(m))
     return b.getvalue()
 class TestV095HistoricalNativeZIPManifest(unittest.TestCase):
+ def test_quarantine_ledger_legacy_literal_backslash_n(self):
+    sample=b'{"source":"MOPS","validator_version":"v1","immutable_zip_failures":{}}'
+    self.assertEqual(load_quarantine_ledger(sample+b"\\\\n")["source"],"MOPS")
+    self.assertEqual(load_quarantine_ledger(sample+b"\\n")["source"],"MOPS")
+    with self.assertRaises(ValueError):load_quarantine_ledger(sample+b"{}")
+    with self.assertRaises(ValueError):load_quarantine_ledger(sample+b"CORRUPT")
  def test_v093_hashed_unit(self):
     self.assertEqual(validate_zip(pack("v093"),"MOPS","2026-09"),1)
  def test_tdcc_exact_path_native(self):
