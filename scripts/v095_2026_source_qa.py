@@ -36,7 +36,7 @@ def main():
  OUT.mkdir(exist_ok=True)
  flags=json.loads(pathlib.Path("governance/v095/PHASE1_FLAGS.json").read_text())
  assert flags["BULK_COPY_APPROVED"] is False and flags["RELEASE_APPROVED"] is False
- d=drive();files=ls(d,"'"+OPS+"' in parents and name contains f'JARVIS_V095_{YEAR}_RUN_RECEIPT_' and trashed=false")
+ d=drive();files=ls(d,"'"+OPS+"' in parents and name contains 'JARVIS_V095_"+str(YEAR)+"_RUN_RECEIPT_' and trashed=false")
  candidates=sorted((f for f in files if f["name"].startswith(f"JARVIS_V095_{YEAR}_RUN_RECEIPT_")
     and ("_"+SOURCE+"_") in f["name"]),key=lambda x:x.get("createdTime",""),reverse=True)[:8]
  issues={};runs=[];errors=[]
