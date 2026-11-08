@@ -29,6 +29,19 @@ def ls(d,folder):
         if not token:return rows
 OUT=pathlib.Path("v095_2026_source_archives")
 def digest(b):return hashlib.sha256(b).hexdigest()
+def load_quarantine_ledger(raw):
+    """Read exact SHA-backed old JSON, allowing only the historic literal backslash-n suffix."""
+    if not isinstance(raw,bytes):raise ValueError("QUARANTINE_LEDGER_NOT_BYTES")
+    try:content=raw.decode("utf-8")
+    except UnicodeError:raise ValueError("QUARANTINE_LEDGER_BAD_ENCODING")
+    try:obj,end=json.JSONDecoder().raw_decode(content)
+    except json.JSONDecodeError:raise ValueError("QUARANTINE_LEDGER_BAD_JSON")
+    tail=content[end:]
+    if tail not in ("", "\\n", "\n") and tail.strip():
+        raise ValueError("QUARANTINE_LEDGER_TRAILING_CONTENT")
+    if not isinstance(obj,dict):raise ValueError("QUARANTINE_LEDGER_NOT_OBJECT")
+    return obj
+
 def taifex_spread_order_evidence(raw,month=None):
     """Official TAIFEX daily aggregate spread order report: title row + header.
 
@@ -185,7 +198,7 @@ def main():
            "silver_conversion":"BLOCKED_PENDING_APPROVED_ADAPTER",
            "gold_conversion":"BLOCKED_PENDING_SILVER_AND_PIT",
            "year_complete":False}
-        (OUT/"result.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\\n")
+        (OUT/"result.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
         print(json.dumps({"source":"NDC","new_archives":0,"scanned":0,
             "blocked":0,"unchanged_archive_skipped":1,
             "official_observation_months_reused":receipt["month_rows"],
@@ -210,7 +223,7 @@ def main():
         raw=d.files().get_media(fileId=old_ledgers[0]["id"]).execute()
         if ledger_prefix+digest(raw)[:24]+".json"!=old_ledgers[0]["name"]:
             raise ValueError("LEGACY_QUARANTINE_LEDGER_SHA_MISMATCH")
-        received=json.loads(raw)
+        received=load_quarantine_ledger(raw)
         if received.get("source")!=SOURCE or received.get("validator_version")!=validator_version:
             raise ValueError("LEGACY_QUARANTINE_LEDGER_SOURCE_VERSION_CONFLICT")
         known_failures=received.get("immutable_zip_failures",{})
@@ -279,7 +292,7 @@ def main():
             "immutable_zip_failures":known_failures,
             "policy":"REUSE_ONLY_IF_SAME_DRIVE_ID_MD5_SIZE_AND_VALIDATOR_SHA",
             "PIT_certified":False}
-    ledger_bytes=(json.dumps(ledger,ensure_ascii=False,sort_keys=True)+"\\n").encode()
+    ledger_bytes=(json.dumps(ledger,ensure_ascii=False,sort_keys=True)+"\n").encode()
     ledger_name=ledger_prefix+digest(ledger_bytes)[:24]+".json"
     ledger_id,ledger_action=save(d,new,ledger_name,ledger_bytes)
     if digest(d.files().get_media(fileId=ledger_id).execute())!=digest(ledger_bytes):
