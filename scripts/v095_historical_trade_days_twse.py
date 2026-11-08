@@ -6,7 +6,7 @@ empty/error response as a non-trading day. Every positive date must occur in
 the requested month and in a dated official native response. Records SHA,
 retrieval UTC, URL, and validation. This is NOT a full historical holiday table.
 """
-import argparse,calendar,csv,datetime as dt,hashlib,io,json,os,pathlib,re,time,urllib.parse,urllib.request,urllib.error
+import argparse,calendar,csv,datetime as dt,hashlib,io,json,os,pathlib,re,time,urllib.parse,urllib.request,urllib.error,zipfile
 ROOT=pathlib.Path("v095_historical_days")
 TZ=dt.timezone(dt.timedelta(hours=8))
 URL="https://www.twse.com.tw/rwd/zh/exchangeReport/FMTQIK"
@@ -62,6 +62,7 @@ def run(year_start,year_end,months_limit=0):
     if not 2000<=year_start<=year_end<=2026:raise ValueError("BAD_YEAR_SHARD")
     ROOT.mkdir(exist_ok=True)
     all_days=[];receipts=[];month_count=0
+    archive=zipfile.ZipFile(ROOT/f"twse_{year_start}_{year_end}_official_native.zip","w",zipfile.ZIP_DEFLATED)
     for year in range(year_start,year_end+1):
         for month in range(1,13):
             if (year,month)>(2026,11):continue
@@ -72,11 +73,12 @@ def run(year_start,year_end,months_limit=0):
                 raw=request(url)
                 dates=parse_native(raw,year,month)
                 digest=sha(raw)
+                archive.writestr(f"{year:04d}-{month:02d}_{digest[:18]}.json",raw)
                 stamp=dt.datetime.now(dt.timezone.utc).isoformat()
                 for day in dates:
                     all_days.append({"date":day,"source":"TWSE","state":"CONFIRMED_TRADING",
                      "evidence_uri":url,"source_sha256":digest,"verified_at":stamp,
-                     "explanation":"TWSE_FMТQIK_MONTHLY_DAILY_MARKET_TABLE"})
+                     "explanation":"TWSE_FMTQIK_MONTHLY_DAILY_MARKET_TABLE"})
                 receipts.append({"month":f"{year:04d}-{month:02d}","status":"CONFIRMED_OFFICIAL_TRADING_DAYS",
                                  "records":len(dates),"sha256":digest,"url":url,"retrieved_at":stamp})
             except Exception as e:
@@ -85,6 +87,7 @@ def run(year_start,year_end,months_limit=0):
             if len(receipts)%6==0:print(json.dumps({"processed_months":len(receipts),"positive_trading_days":len(all_days),
                 "unverified_months":sum(x["status"]!="CONFIRMED_OFFICIAL_TRADING_DAYS" for x in receipts)},ensure_ascii=False),flush=True)
         if months_limit and month_count>=months_limit:break
+    archive.close()
     p=ROOT/f"twse_{year_start}_{year_end}_confirmed.csv"
     with p.open("w",newline="",encoding="utf-8") as f:
         w=csv.DictWriter(f,fieldnames=("date","source","state","evidence_uri","source_sha256","verified_at","explanation"));w.writeheader();w.writerows(all_days)
@@ -93,7 +96,7 @@ def run(year_start,year_end,months_limit=0):
         "months_with_positive_official_dates":sum(x["status"]=="CONFIRMED_OFFICIAL_TRADING_DAYS" for x in receipts),
         "months_unverified":sum(x["status"]!="CONFIRMED_OFFICIAL_TRADING_DAYS" for x in receipts),
         "confirmed_unique_dates":len(set(x["date"] for x in all_days)),
-        "raw_response_sha_recorded":True,"no_inferred_holidays":True,"csv_sha256":sha(p.read_bytes()),
+        "raw_response_sha_recorded":True,"raw_zip_sha256":sha((ROOT/f"twse_{year_start}_{year_end}_official_native.zip").read_bytes()),"no_inferred_holidays":True,"csv_sha256":sha(p.read_bytes()),
         "months":receipts,"complete_year_holiday_certification":False}
     (ROOT/f"twse_{year_start}_{year_end}_result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     print(json.dumps({k:report[k] for k in ("year_start","year_end","months_checked","months_with_positive_official_dates","months_unverified","confirmed_unique_dates")},ensure_ascii=False),flush=True)
