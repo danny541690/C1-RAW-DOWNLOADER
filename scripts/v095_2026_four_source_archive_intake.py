@@ -20,10 +20,10 @@ MAX_SOURCE_FILES=min(int(os.environ.get("V095_ARCHIVE_BATCH","3")),6)
 MAX_BYTES=20_000_000
 MAX_INSPECT_PER_RUN=300
 
-def ls(d,folder):
+def ls(d,folder,only_archives=False):
     rows=[];token=None
     while True:
-        result=d.files().list(q="'"+folder+"' in parents and trashed=false",
+        result=d.files().list(q="'"+folder+"' in parents and trashed=false"+(" and name contains '.zip'" if only_archives else ""),
           fields="nextPageToken,incompleteSearch,files(id,name,size,mimeType,md5Checksum,createdTime)",pageSize=500,pageToken=token).execute()
         if result.get("incompleteSearch"):raise RuntimeError("DRIVE_INCOMPLETE_SOURCE_LIST")
         rows.extend(result.get("files",[]))
@@ -240,7 +240,7 @@ def main():
         if len(src)!=1:
             blocked.append({"month":month,"state":"V093_MONTH_FOLDER_NOT_UNIQUE_OR_MISSING"})
             continue
-        items=ls(d,src[0]["id"])
+        items=ls(d,src[0]["id"],only_archives=True)
         dest=folder(d,new,month+"_V093_REUSE_CANDIDATE")
         stored={x.get("md5Checksum") for x in ls(d,dest) if x.get("md5Checksum")}
         for item in sorted(items,key=lambda x:x["name"]):
