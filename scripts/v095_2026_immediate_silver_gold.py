@@ -77,6 +77,23 @@ def parse_mops(z,manifest,month,bronze_id,archive_sha):
        "usage":"DESCRIPTIVE_ONLY_NO_LOOKAHEAD_BACKTEST"} for r in raw]
     return raw,gold,"MONTHLY_REVENUE_ONLY"
 def parse_tdcc(z,manifest,month,bronze_id,archive_sha):
+    if "capture_receipts.json" in z.namelist() and not manifest:
+        # v0.93 TDCC_ARCHIVE contains historical third-party CSV snapshots.
+        # Parse native weekly distribution after verifying every capture receipt,
+        # keep it candidate-only and DO NOT derive official/PIT Gold.
+        from scripts.v095_legacy_tdcc_mirror_adapter import validate_capture_zip,records,sha as native_sha
+        evidence=validate_capture_zip(z,month)
+        receipts=json.loads(z.read("capture_receipts.json"))
+        out=[]
+        for receipt in receipts:
+            filename=receipt["file"];raw=z.read(filename)
+            rows=records(raw,month,source_archive_sha=archive_sha,source_file=filename)
+            for row in rows:
+                row.update(source_bronze_id=bronze_id,source_member_sha256=native_sha(raw))
+            out.extend(rows)
+        if len(out)!=sum(x["rows"] for x in evidence):
+            raise ValueError("TDCC_MIRROR_CSV_TYPED_ROWS_MISMATCH")
+        return out,[],"TDCC_MIRROR_WEEKLY_CANDIDATE_NOT_OFFICIAL"
     units=manifest.get("immutable_originals") or manifest.get("files") or manifest.get("units") or []
     rows=[];seen=set();bad=0
     for unit in units:
