@@ -1,5 +1,5 @@
 name: JARVIS v0.95 2026 resume six source incremental downloads now
-# One-shot dispatch launcher: each source worker owns its own Drive checkpoint and writer lock.
+# 2026 first-pass six-lane restart 2026-11-08; preserve existing source checkpoint; one-shot dispatch launcher: each source worker owns its own Drive checkpoint and writer lock.
 on:
   workflow_dispatch:
   push:
