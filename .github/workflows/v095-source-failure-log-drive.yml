@@ -1,0 +1,49 @@
+name: JARVIS v0.95 source error log to Drive on failed workflow
+on:
+  workflow_run:
+    workflows:
+      - JARVIS v0.95 2026 TWSE independent Bronze and downstream gate
+      - JARVIS v0.95 2026 TPEx independent Bronze and downstream gate
+      - JARVIS v0.95 2026 MOPS independent Bronze and downstream gate
+      - JARVIS v0.95 2026 TDCC independent Bronze and downstream gate
+      - JARVIS v0.95 2026 TAIFEX independent Bronze and downstream gate
+      - JARVIS v0.95 2026 NDC independent Bronze and downstream gate
+      - JARVIS v0.95 official format guided six-source native re-download and reconciliation
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: jarvis-v095-source-errors-to-drive-${{ github.event.workflow_run.id || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  record-source-run-error:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER' && github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_ACTIONS_READ_TOKEN: ${{ github.token }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check failed run report syntax
+        run: python -m py_compile scripts/v095_publish_failed_source_run.py
+      - name: Record failed source run and exact CI steps as SHA-readback immutable Drive audit
+        run: |
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+          python -u -m scripts.v095_publish_failed_source_run
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-source-failure-report-${{ github.run_id }}
+          path: v095_source_run_errors/
+          retention-days: 90
+          if-no-files-found: warn
