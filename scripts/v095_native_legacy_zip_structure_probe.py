@@ -45,6 +45,28 @@ def main():
                         for info in z.infolist() if not info.is_dir()))
                     record["manifest_paths"]=[info.filename for info in z.infolist()
                         if "manifest" in pathlib.PurePosixPath(info.filename).name.lower()][:5]
+                    if SOURCE=="TDCC" and not record["manifest_paths"]:
+                        record["sidecar_schema"]=[]
+                        for member in z.infolist():
+                            if member.is_dir() or member.file_size>2_000_000:continue
+                            if member.filename.lower().endswith(".json"):
+                                try:
+                                    obj=json.loads(z.read(member))
+                                    record["sidecar_schema"].append({
+                                      "keys":sorted(str(k) for k in obj)[:20] if isinstance(obj,dict) else [],
+                                      "source":obj.get("source") if isinstance(obj,dict) else None,
+                                      "month":obj.get("month") if isinstance(obj,dict) else None,
+                                      "period":obj.get("period") if isinstance(obj,dict) else None,
+                                      "csv_sha256":obj.get("csv_sha256") if isinstance(obj,dict) else None,
+                                      "sha256":obj.get("sha256") if isinstance(obj,dict) else None})
+                                except Exception as e:record["sidecar_json_error"]=type(e).__name__
+                            if member.filename.lower().endswith(".csv"):
+                                try:
+                                    raw=z.read(member)
+                                    decoded=raw.decode("utf-8-sig",errors="replace")
+                                    record["csv_sample_rows"]=[r[:12] for r in list(csv.reader(decoded.splitlines()[:5]))[:3]]
+                                    record["csv_source_sha256"]=hashlib.sha256(raw).hexdigest()
+                                except Exception as e:record["csv_schema_error"]=type(e).__name__
                     if SOURCE=="TAIFEX" and not record["manifest_paths"]:
                         from scripts.v093_taifex_independent import native_text
                         for member in z.infolist()[:2]:
