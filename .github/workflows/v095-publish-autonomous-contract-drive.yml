@@ -1,0 +1,37 @@
+name: JARVIS v0.95 publish autonomous 2026 rules to Google Drive
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-publish-autonomous-contract-drive.yml'
+      - 'governance/v095/JARVIS_V095_2026_AUTONOMOUS_CONTROLLER_CONTRACT_20261108.md'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2026-autonomous-drive-document
+  cancel-in-progress: false
+jobs:
+  publish-governance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Publish signed contract bytes and read back SHA
+        run: python -m scripts.v095_publish_2026_autonomous_contract_drive
+      - name: Preserve publication receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-governance-drive-${{ github.run_id }}
+          path: v095_2026_controller/drive_contract_receipt.json
+          if-no-files-found: warn
