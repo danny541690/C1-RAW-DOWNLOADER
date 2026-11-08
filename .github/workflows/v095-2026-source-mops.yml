@@ -59,6 +59,11 @@ jobs:
         env:
           V095_RECEIPT_LANE: 'BRONZE'
         run: python -u -m scripts.v095_2026_publish_run_receipt
+      - name: Archive actual run result to Drive SHA ledger
+        if: always()
+        env:
+          V095_RECEIPT_LANE: 'BRONZE'
+        run: python -u -m scripts.v095_2026_publish_run_receipt
       - name: Preserve full per-partition actual results, exceptions and provenance
         if: always()
         uses: actions/upload-artifact@v4
