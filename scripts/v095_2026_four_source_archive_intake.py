@@ -8,7 +8,7 @@ eligible files are reported for dedicated official-source backfill adapters.
 """
 import datetime as dt
 import calendar, csv, re, decimal
-import hashlib, io, json, os, pathlib, sys, zipfile
+import hashlib, io, json, os, pathlib, sys, zipfile, inspect
 from scripts.v095_2026_annual_consolidated import service,BRONZE_ROOTS,FOLDER
 from scripts.v095_2026_prior_raw_reuse_audit import YEAR_PARENT
 from scripts.v095_ultimate_r1_november_official import folder,save
@@ -213,7 +213,10 @@ def main():
     # Source ZIPs are immutable. Store a durable per-validator SHA exception
     # ledger in the source Bronze root so unchanged bad ZIPs are not reopened
     # every run. Any code change invalidates the cache automatically.
-    validator_version=digest(pathlib.Path(__file__).read_bytes())[:20]
+    validator_fingerprint=(inspect.getsource(validate_zip)
+         +inspect.getsource(taifex_spread_order_evidence)
+         +str(MAX_BYTES))
+    validator_version=digest(validator_fingerprint.encode("utf-8"))[:20]
     ledger_prefix="V095_QUARANTINE_"+SOURCE+"_"+validator_version+"_"
     old_ledgers=[x for x in ls(d,new) if x["name"].startswith(ledger_prefix)
                  and x["name"].endswith(".json")]
