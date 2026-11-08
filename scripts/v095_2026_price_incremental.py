@@ -191,9 +191,12 @@ def main():
             failed.append(err)
             prior=next((x for x in repair if x["source"]==source and x["date"]==day),None)
             attempts=(prior or {}).get("attempts",0)+1
-            if attempts<5:
+            if attempts<3:
                 queue.append({"source":source,"date":day,"attempts":attempts})
-            else:err["quarantined_after_cycles"]=attempts
+            else:
+                err["quarantined_after_cycles"]=attempts
+                err["state"]="NULL_AFTER_THREE_ATTEMPTS"
+                err["next_action"]="QA_REVIEW_OR_ADAPTER_VERSION_CHANGE"
     # Preserve actionable errors in both artifact and job log; never hide a partial batch as year completion.
     for failure in failed:
         print(json.dumps({"state":"SOURCE_DAY_FAILED", **failure},ensure_ascii=False),flush=True)
