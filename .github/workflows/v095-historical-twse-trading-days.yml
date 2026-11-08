@@ -1,0 +1,81 @@
+name: JARVIS v0.95 official historical trading-days 2000-2026 evidence harvest
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-historical-twse-trading-days.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-historical-market-calendar-single-harvest
+  cancel-in-progress: false
+jobs:
+  gather-official-monthly-market-days:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - shard: 2000-2004
+            first: 2000
+            last: 2004
+          - shard: 2005-2009
+            first: 2005
+            last: 2009
+          - shard: 2010-2014
+            first: 2010
+            last: 2014
+          - shard: 2015-2019
+            first: 2015
+            last: 2019
+          - shard: 2020-2023
+            first: 2020
+            last: 2023
+          - shard: 2024-2026
+            first: 2024
+            last: 2026
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate historical response parser against isolated cases
+        run: |
+          python -m py_compile scripts/v095_historical_trade_days_twse.py
+          python -m unittest discover -s tests -p 'test_v095_historical_trade_days_twse.py' -v
+      - name: Retrieve official TWSE monthly daily market tables and preserve native responses
+        run: python -u -m scripts.v095_historical_trade_days_twse --start ${{ matrix.first }} --end ${{ matrix.last }}
+      - name: Preserve evidence shards in persistent Drive Operations with SHA readback
+        env:
+          G0_SHARD: ${{ matrix.shard }}
+        run: |
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+          python - <<'PY'
+          import json,os,pathlib
+          from scripts.v095_market_release_calendar_drive_archive import drive,archive
+          d=drive()
+          result=[]
+          for p in sorted(pathlib.Path('v095_historical_days').glob('twse_*')):
+            result.append(archive(d,p))
+          print(json.dumps({'shard':os.environ['G0_SHARD'],
+              'archived':len(result),'actions':[x['action'] for x in result],
+              'sha_readback_verified':True,'historical_holiday_fully_certified':False}))
+          PY
+      - name: Retain native source bytes and dated provenance locally as GitHub artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-official-twse-trading-dates-${{ matrix.shard }}-${{ github.run_id }}
+          path: v095_historical_days/
+          retention-days: 90
+          if-no-files-found: warn
