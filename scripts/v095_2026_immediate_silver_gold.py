@@ -19,13 +19,15 @@ from scripts.v095_2026_four_source_archive_intake import ls,validate_zip,taifex_
 from scripts.v095_ultimate_r1_november_official import folder,save
 from scripts.v095_market_release_taifex_history_merge import load as load_sha_archived
 from scripts.v095_market_release_calendar_drive_archive import archive as publish_audit
+YEAR=int(os.environ.get("V095_DATA_YEAR","2026"))
+if YEAR not in (2025,2026):raise ValueError("ONLY_2025_2026")
 SOURCE=os.environ.get("V095_BRONZE_SOURCE","")
 SILVER={"MOPS":"1ick4kRSlmz1ukibDq3TOD7QQxiBHtzWb",
 "TDCC":"1uF0qhHMd41-_mF1czgYgNCBu6A5zjC5U",
 "TAIFEX":"1TmZXrdW2sqOmgoMHgK7W2ifyTjz4UFH8",
 "NDC":"1_KDD5xM9IeyBLSfDRppnrjAYQTEnGPRz"}
 GOLD="1XT_54SXjGDksTz6PAdwhsVA8czZ1FTE3"
-OUT=pathlib.Path("v095_2026_immediate_downstream")
+OUT=pathlib.Path("v095_2026_immediate_downstream" if YEAR==2026 else "v095_2025_immediate_downstream")
 MAX_PER_RUN=max(1,min(6,int(os.getenv("V095_DOWNSTREAM_BATCH","3"))))
 D=decimal.Decimal
 def sha(x):return hashlib.sha256(x).hexdigest()
@@ -220,11 +222,11 @@ def write_pair(d,source,month,bronze_id,bronze_sha,silver,gold,dataset):
 def candidate_files(d):
     root=BRONZE_ROOTS[SOURCE]
     months=[x for x in ls(d,root) if x["mimeType"]==FOLDER
-        and re.fullmatch(r"2026-\d{2}_V093_REUSE_CANDIDATE",x["name"])]
+        and re.fullmatch(fr"{YEAR}-\d{{2}}_V093_REUSE_CANDIDATE",x["name"])]
     output=[]
     for m in sorted(months,key=lambda x:x["name"]):
         for f in ls(d,m["id"]):
-            match=re.fullmatch(r"V095_V093_"+SOURCE+r"_(2026-\d{2})_([a-f0-9]{24})\.zip",f["name"])
+            match=re.fullmatch(r"V095_V093_"+SOURCE+fr"_({YEAR}-\d{{2}})_([a-f0-9]{{24}})\.zip",f["name"])
             if match and match[1]==m["name"][:7]:output.append((match[1],f,match[2]))
     return output
 def parse_ndc(d):
@@ -294,7 +296,9 @@ def main():
     if SOURCE not in SILVER:raise ValueError("IMMEDIATE_DOWNSTREAM_SOURCE_UNKNOWN")
     OUT.mkdir(exist_ok=True);d=service()
     done=[];reused=0;blocked=[];considered=0
-    if SOURCE=="NDC":
+    if SOURCE=="NDC" and YEAR==2025:
+        blocked.append({"month":"2025","source_archive_id":None,"state":"BLOCKED_NDC_2025_HISTORICAL_VINTAGE_ADAPTER_NOT_CERTIFIED","reason":"Requires dedicated historical vintage and observation period validation"})
+    elif SOURCE=="NDC":
         def execute_ndc():
             rows,h=parse_ndc(d)
             return write_pair(d,SOURCE,"2026-09","OFFICIAL_G0_SHA_ARCHIVE",h,rows,[],
@@ -344,7 +348,7 @@ def main():
       "gold_descriptive_created":sum(x.get("gold_id") is not None for x in done),
       "candidate_reused":reused,"blocked":blocked,"blocked_count":len(blocked),
       "run_bronze_incremental_independently":True,"whole_month_complete":False,
-      "historical_PIT_certified":False,"Gold_400plus_certified":False}
+      "historical_PIT_certified":False,"Gold_400plus_certified":False,"data_year":YEAR}
     p=OUT/"result.json";p.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
     print(json.dumps({"source":SOURCE,"silver_converted":len(done),
       "gold_descriptive_created":result["gold_descriptive_created"],
