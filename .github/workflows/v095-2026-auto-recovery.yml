@@ -45,13 +45,42 @@ jobs:
           python scripts/v095_r13_single_committer_contract.py
       - name: Inventory and byte-sample existing 2026 RAW; no valid archive redownload
         run: python -m scripts.v095_2026_prior_raw_reuse_audit
-      - name: Run bounded official Bronze/Silver/Gold candidate readback (one known day)
-        if: github.event_name != 'schedule'
+      - name: Combined verified native Bronze Silver descriptive Gold run (Nov 2 3 6)
         env:
-          V095_SOURCE_FILTER: TWSE
-          V095_CANARY_DATES: '2026-11-04'
-          V095_CANARY_REQUIRE_COMPLETE: '1'
-        run: python -m scripts.v095_ultimate_r1_november_official
+          V095_SOURCE_FILTER: 'TWSE,TPEx'
+          V095_CANARY_DATES: '2026-11-02,2026-11-03,2026-11-06'
+          V095_CANARY_REQUIRE_COMPLETE: '0'
+        run: |
+          python -m scripts.v095_ultimate_r1_november_official
+          cp ultimate_r1/november_latest_bsg.json ultimate_r1/november_reuse_batch_a.json
+      - name: Combined second verified native BSG run (Nov 4 5)
+        env:
+          V095_SOURCE_FILTER: 'TWSE,TPEx'
+          V095_CANARY_DATES: '2026-11-04,2026-11-05'
+          V095_CANARY_REQUIRE_COMPLETE: '0'
+        run: |
+          python -m scripts.v095_ultimate_r1_november_official
+          cp ultimate_r1/november_latest_bsg.json ultimate_r1/november_reuse_batch_b.json
+      - name: Consolidate native candidate receipts and forward/reverse hash lineage status
+        run: |
+          python - <<'PY'
+          import json,pathlib,os
+          a=json.loads(pathlib.Path('ultimate_r1/november_reuse_batch_a.json').read_text())
+          b=json.loads(pathlib.Path('ultimate_r1/november_reuse_batch_b.json').read_text())
+          combined={**a['completed'],**b['completed']}
+          rejected={**a['rejected'],**b['rejected']}
+          out={'run_id':os.getenv('GITHUB_RUN_ID'),
+               'date_scope':'2026-11-02..2026-11-06',
+               'completed':combined,'rejected':rejected,
+               'units_verified':len(combined),
+               'new_bronze_files':sum('CREATED'==v['actions'][0] for v in combined.values()),
+               'new_silver_files':sum('CREATED'==v['actions'][1] for v in combined.values()),
+               'new_gold_files':sum('CREATED'==v['actions'][2] for v in combined.values()),
+               'scoped_lineage_present':sum(all(v.get(k) for k in ('bronze_id','silver_id','gold_id','sha256')) for v in combined.values()),
+               'historical_pit_verified':False,'full_year_complete':False}
+          pathlib.Path('ultimate_r1/november_combined_receipt.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps({k:out[k] for k in ('units_verified','new_bronze_files','new_silver_files','new_gold_files','scoped_lineage_present','rejected','historical_pit_verified')},ensure_ascii=False))
+          PY
       - name: Reconcile Jan-Nov 2026 source-month and B/S/G evidence, PIT and lineage status
         run: python -m scripts.v095_2026_annual_consolidated
       - name: Explicitly reject false full-year completion
@@ -81,4 +110,7 @@ jobs:
             annual_2026/
             annual_2026_prior/
             ultimate_r1/november_latest_bsg.json
+            ultimate_r1/november_reuse_batch_a.json
+            ultimate_r1/november_reuse_batch_b.json
+            ultimate_r1/november_combined_receipt.json
             r13_single_pass/result.json
