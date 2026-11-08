@@ -45,6 +45,8 @@ def main():
         raise RuntimeError("NOT_ALLOWED_TO_ARCHIVE_FALSE_COMPLETION")
     s=drive()
     receipt=[archive(s,ROOT/name) for name in ("market_dates_2000_2026.csv","report.json")]
+    supplementary=ROOT/"historic_weekday_no_market_row_candidates.csv"
+    if supplementary.is_file():receipt.append(archive(s,supplementary))
     p=ROOT/"drive_receipt.json"
     p.write_text(json.dumps({"run_id":os.getenv("GITHUB_RUN_ID"),"files":receipt,
            "readback_verified":True,"historical_release_certified":False},ensure_ascii=False,indent=2)+"\n")
