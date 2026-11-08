@@ -45,6 +45,8 @@ def main():
         raise RuntimeError("NOT_ALLOWED_TO_ARCHIVE_FALSE_COMPLETION")
     s=drive()
     receipt=[archive(s,ROOT/name) for name in ("market_dates_2000_2026.csv","report.json")]
+    source_audit=ROOT/"six_source_date_quality.json"
+    if source_audit.is_file():receipt.append(archive(s,source_audit))
     supplementary=ROOT/"historic_weekday_no_market_row_candidates.csv"
     if supplementary.is_file():receipt.append(archive(s,supplementary))
     p=ROOT/"drive_receipt.json"
