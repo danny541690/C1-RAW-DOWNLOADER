@@ -3,14 +3,8 @@ name: JARVIS v0.95 2026 parallel Bronze source lanes
 # FinMind is NOT silently substituted; unavailable data are isolated for later gap pass.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-2026-parallel-bronze.yml'
-      - 'scripts/v095_2026_price_incremental.py'
-      - 'scripts/v095_2026_legacy_first.py'
-  schedule:
-    - cron: '7,22,37,52 * * * *'
+  # Retired from push; separate source workflows own automated scheduling.
+  # Replaced by six independent source workflows. Manual replay only.
 permissions:
   contents: read
 concurrency:
