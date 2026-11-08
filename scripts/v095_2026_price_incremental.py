@@ -19,7 +19,7 @@ from scripts import v095_ultimate_r1_november_official as base
 from scripts.v093_three_year_repair import Audit, validate
 from scripts.v095_r12_drive_audit_archive import OPERATIONS
 from scripts.v095_2026_legacy_first import legacy_snapshot
-from scripts.v095_2026_cash_market_calendar import is_verified_closed
+from scripts.v095_2026_cash_market_calendar import is_verified_closed, load_calendar, status as calendar_status
 from googleapiclient.http import MediaIoBaseUpload
 
 OUT=pathlib.Path("v095_2026_price_incremental")
@@ -165,6 +165,7 @@ def main():
     OUT.mkdir(exist_ok=True)
     flags=json.loads(pathlib.Path("governance/v095/PHASE1_FLAGS.json").read_text())
     assert not flags["BULK_COPY_APPROVED"] and not flags["RELEASE_APPROVED"]
+    calendar_lookup,calendar_sha,calendar_counts=load_calendar()
     d=base.api();state=cursor_state(d)
     calendar=dates()
     start=state["offset"]
@@ -177,7 +178,7 @@ def main():
     done=[];failed=[];closed=[];new_files=collections.Counter()
     for source,day,retry in tasks:
         if is_verified_closed(day,source):
-            closed.append({'source':source,'date':day,'state':'VERIFIED_OFFICIAL_MARKET_CLOSED'})
+            closed.append({'source':source,'date':day,'state':'VERIFIED_OFFICIAL_MARKET_CLOSED','calendar_type':calendar_status(day,source)})
             continue
         try:
             result=single(d,source,day)
@@ -198,6 +199,7 @@ def main():
         print(json.dumps({"state":"SOURCE_DAY_FAILED", **failure},ensure_ascii=False),flush=True)
     report={"schema":"V095_2026_PRICE_INCREMENTAL_CANDIDATE_V1","active_source":ACTIVE_SOURCE or "TWSE_TPEx",
             "run_id":os.getenv("GITHUB_RUN_ID"),"start_offset":start,
+            "cash_calendar_sha256":calendar_sha,"cash_calendar_yearly_counts":calendar_counts,
             "next_offset":start+len(selected),"eligible_weekdays_so_far":len(calendar),
             "selected_new_days":selected,"completed":done,"failed":failed,
             "retry_queue_length":len(queue),"verified_market_closed":closed,"created_by_stage":dict(new_files),
@@ -206,7 +208,8 @@ def main():
     receipt={"generation":state["generation"]+1,"offset":start+len(selected),
              "retry_queue":queue,"prior_sha":state["prior_sha"],"run_id":os.getenv("GITHUB_RUN_ID"),
              "success_units":len(done),"failed_units":len(failed),"verified_market_closed":closed,"created_by_stage":dict(new_files),
-             "failed_items":failed,"latest_cutoff":CUTOFF.isoformat()}
+             "failed_items":failed,"latest_cutoff":CUTOFF.isoformat(),
+             "cash_calendar_sha256":calendar_sha}
     receipt_sha=commit_cursor(d,receipt)
     report["durable_cursor_sha256"]=receipt_sha
     (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
