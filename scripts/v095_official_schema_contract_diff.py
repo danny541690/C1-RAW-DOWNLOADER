@@ -24,8 +24,8 @@ OFFICIAL={
  "notes":"Legacy t21sc03_N_M.html versus _0.html; NTD1000 -> 億元 divide 100000; report month is NOT submitted_at"},
 "TDCC":{"document":"https://www.tdcc.com.tw/portal/zh/smWeb/qryStock",
  "official_fields":["資料日期","證券代號","持股分級","人數","股數","占集保庫存數比例%"],
- "formats":["jsonl_legacy_partition"],"time_field":"weekly_snapshot_date","release_verified":False,
- "notes":"Source is weekly last-business-day inventory, start 2008-07; historical portal 1-year retention; no daily gap denominator"},
+ "formats":["json","csv"],"time_field":"weekly_snapshot_date","release_verified":False,
+ "notes":"Official fields and source dates belong to CSV/JSON tables. v0.95 JSONL legacy partition is internal archive serialization, not an official wire format. Weekly last-business-day inventory, start 2008-07; portal 1-year retention."},
 "TAIFEX":{"document":"https://www.taifex.com.tw/cht/3/futDailyMarketView",
  "official_fields":["日期","契約代號","到期月份(週別)","開盤價","最高價","最低價","最後成交價","合計成交量","結算價","未沖銷契約數","交易時段"],
  "formats":["csv"],"time_field":"trade_date","release_verified":False,
@@ -49,7 +49,11 @@ def main():
         source=x["source_class_id"];rule=OFFICIAL[source]
         counts[source]+=1
         issue=[]
-        if x["raw_format"] not in rule["formats"]:issue.append("RAW_FORMAT_CONTRACT_DIFFERS_FROM_OFFICIAL_REFERENCE")
+        if x["raw_format"] not in rule["formats"]:
+            if source=="TDCC" and x["raw_format"]=="jsonl_legacy_partition":
+                issue.append("INTERNAL_JSONL_IS_NOT_OFFICIAL_NATIVE_WIRE_FORMAT_REQUIRE_ORIGINAL_SOURCE_SHA_AND_FIELD_MAP")
+            else:
+                issue.append("RAW_FORMAT_CONTRACT_DIFFERS_FROM_OFFICIAL_REFERENCE")
         if x["native_unit"] in ("NTD","NTD1000") and x["standard_unit"]!="億元":
             issue.append("MONETARY_UNIT_NOT_CONVERTED_TO_YI")
         if x["standard_unit"]=="億元" and x["native_unit"]=="NTD1000":
