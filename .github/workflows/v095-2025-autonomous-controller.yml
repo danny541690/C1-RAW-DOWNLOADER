@@ -1,0 +1,41 @@
+name: JARVIS v0.95 2025 autonomous six-source resume controller
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2025-autonomous-controller.yml'
+  schedule:
+    - cron: '7,37 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-v095-2025-autonomous-controller-single
+  cancel-in-progress: false
+jobs:
+  supervise-2025:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate 2025 source lane dispatch supervisor
+        run: python -m py_compile scripts/v095_2025_autonomous_controller.py
+      - name: Wake only missing and inactive 2025 source runs
+        run: python -u -m scripts.v095_2025_autonomous_controller
+      - name: Store 2025 source dispatch receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2025-autonomous-controller-${{ github.run_id }}
+          path: v095_2025_controller/result.json
+          if-no-files-found: warn
+          retention-days: 90
