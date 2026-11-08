@@ -118,5 +118,9 @@ def main():
         "rows":len(records),"files":receipts,
         "summary":[{"source":s,"bronze":next(r for r in records if r["來源"]==s and r["階層"]=="BRONZE")["階層最新候選日期"],
                     "silver":next(r for r in records if r["來源"]==s and r["階層"]=="SILVER")["階層最新候選日期"],
-                    "gold":next(r for r in records if r["來源"]==s and r["階層"]=="GOLD")["階層最新候選日期"]} for s in SOURCES]},ensure_ascii=False))
+                    "gold":next(r for r in records if r["來源"]==s and r["階層"]=="GOLD")["階層最新候選日期"],
+                    "inspected_pct":next(r for r in records if r["來源"]==s and r["階層"]=="BRONZE")["巡檢平日候選進度%"],
+                    "bronze_candidate_file_coverage_pct":next(r for r in records if r["來源"]==s and r["階層"]=="BRONZE")["候選檔日期覆蓋率%"],
+                    "silver_candidate_file_coverage_pct":next(r for r in records if r["來源"]==s and r["階層"]=="SILVER")["候選檔日期覆蓋率%"],
+                    "gold_candidate_file_coverage_pct":next(r for r in records if r["來源"]==s and r["階層"]=="GOLD")["候選檔日期覆蓋率%"]} for s in SOURCES]},ensure_ascii=False))
 if __name__=="__main__":main()
