@@ -29,7 +29,7 @@ def ls(d,folder):
         if not token:return rows
 OUT=pathlib.Path("v095_2026_source_archives")
 def digest(b):return hashlib.sha256(b).hexdigest()
-def taifex_spread_order_evidence(raw,month):
+def taifex_spread_order_evidence(raw,month=None):
     """Official TAIFEX daily aggregate spread order report: title row + header.
 
     CSV title is NOT its header. This is daily summary, not minute/tick data.
@@ -48,7 +48,7 @@ def taifex_spread_order_evidence(raw,month):
         row=[x.strip() for x in row]
         if len(row)!=5:raise ValueError("TAIFEX_SPREAD_ROW_WIDTH")
         stamp,symbol,spread,total,percentage=row
-        if not re.fullmatch(r"20\d{6}",stamp) or stamp[:6]!=month.replace("-",""):
+        if not re.fullmatch(r"20\d{6}",stamp) or (month is not None and stamp[:6]!=month.replace("-","")):
             raise ValueError("TAIFEX_SPREAD_DATE_OUTSIDE_REQUEST_MONTH")
         try:date=dt.datetime.strptime(stamp,"%Y%m%d").date()
         except ValueError:raise ValueError("TAIFEX_SPREAD_INVALID_DATE")
@@ -217,13 +217,30 @@ def main():
                 if int(item.get("size",0))>MAX_BYTES:raise ValueError("ARCHIVE_OVER_BOUNDED_LIMIT")
                 b=d.files().get_media(fileId=item["id"]).execute()
                 if len(b)>MAX_BYTES:raise ValueError("ARCHIVE_OVER_BOUNDED_LIMIT")
-                members=validate_zip(b,SOURCE,month)
+                target_month=month
+                try:
+                    members=validate_zip(b,SOURCE,month)
+                except ValueError as ex:
+                    if SOURCE!="TAIFEX" or str(ex)!="TAIFEX_SPREAD_DATE_OUTSIDE_REQUEST_MONTH":
+                        raise
+                    with zipfile.ZipFile(io.BytesIO(b)) as zz:
+                        csv_members=[i for i in zz.infolist() if i.filename.lower().endswith(".csv")]
+                        if len(zz.infolist())!=1 or len(csv_members)!=1:
+                            raise ValueError("TAIFEX_DATE_REROUTE_INVALID_ZIP")
+                        native=taifex_spread_order_evidence(zz.read(csv_members[0]),None)
+                    target_month=native["dates"][0][:7]
+                    if target_month not in months or dt.date.fromisoformat(native["dates"][0])>today:
+                        raise ValueError("TAIFEX_DATE_REROUTE_OUTSIDE_VERIFIED_SCOPE")
+                    members=validate_zip(b,SOURCE,target_month)
                 with zipfile.ZipFile(io.BytesIO(b)) as zz:
                     had_native_manifest=any(pathlib.PurePosixPath(x.filename).name in ("manifest.json","complement_manifest_R1.json")
                                             for x in zz.infolist())
-                name="V095_V093_"+SOURCE+"_"+month+"_"+digest(b)[:24]+".zip"
-                fid,action=save(d,dest,name,b)
-                completed.append({"month":month,"source":SOURCE,"member_count":members,
+                name="V095_V093_"+SOURCE+"_"+target_month+"_"+digest(b)[:24]+".zip"
+                actual_dest=dest if target_month==month else folder(d,new,target_month+"_V093_REUSE_CANDIDATE")
+                fid,action=save(d,actual_dest,name,b)
+                completed.append({"month":target_month,"legacy_folder_month":month,
+                                  "source_month_reassigned_from_native_date":target_month!=month,
+                                  "source":SOURCE,"member_count":members,
                                   "sha256":digest(b),"file_id":fid,"action":action,
                                   "state":("STORAGE_SHA_CRC_MANIFEST_PASS_NATIVE_SCHEMA_PENDING" if had_native_manifest
                                    else "TAIFEX_SINGLE_CSV_NATIVE_SCHEMA_DATE_PASS_PIT_PENDING")})
