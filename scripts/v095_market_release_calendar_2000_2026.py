@@ -84,9 +84,15 @@ def build(output):
                 writer.writerow([d.isoformat(),s,state,evidence,int(eligible)])
                 counter[(s,state)]+=1;n+=1
             d+=dt.timedelta(days=1)
+    with (BASE/"DATASET_CONTRACTS.csv").open(newline="",encoding="utf-8-sig") as reader:
+        candidate_contracts=list(csv.DictReader(reader))
+    candidate_sources=collections.Counter(x["source_class_id"] for x in candidate_contracts)
     result={"schema":"JARVIS_V095_G0_MARKET_RELEASE_CALENDAR_V1",
       "date_start":"2000-01-01","date_end":"2026-12-31","calendar_rows":n,
       "sources":list(SOURCES),"dataset_contracts":len(con),
+      "existing_scoped_dataset_contracts":len(candidate_contracts),
+      "existing_scoped_contracts_by_source":dict(candidate_sources),
+      "existing_scoped_contracts_ready":sum(x.get("status")=="READY" for x in candidate_contracts),
       "historical_primary_evidence_rows":len(ev),"market_status_counts":{
         s:{state:k for (src,state),k in counter.items() if src==s} for s in SOURCES},
       "official_cash_2026_counts":cash_count,"official_cash_2026_sha256":official_sha,
