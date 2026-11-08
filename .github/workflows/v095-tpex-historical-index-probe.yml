@@ -1,0 +1,42 @@
+name: JARVIS TPEx historic trading-day official source probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-tpex-historical-index-probe.yml'
+permissions:
+  contents: read
+jobs:
+  tpex-calendar-endpoint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe official TPEx day index sources for historical date reach
+        run: |
+          python - <<'PY'
+          import urllib.request,json
+          paths=[
+            'https://www.tpex.org.tw/openapi/v1/tpex_index',
+            'https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/st41_result.php?l=zh-tw&d=89%2F01&s=0%2Casc%2C0&o=htm',
+            'https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/st41_result.php?l=zh-tw&d=115%2F01&s=0%2Casc%2C0&o=htm',
+            'https://www.tpex.org.tw/www/zh-tw/afterTrading/indexSummary?date=2026%2F01%2F02&response=json'
+          ]
+          for url in paths:
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'application/json,text/html'})
+              with urllib.request.urlopen(req,timeout=18) as res:
+                raw=res.read(2000000)
+                try:
+                  value=json.loads(raw);shape={'type':type(value).__name__,'rows':len(value.get('data',[])) if isinstance(value,dict) else len(value),
+                        'keys':list(value)[:7] if isinstance(value,dict) else [],
+                        'first':str(value[:1] if isinstance(value,list) else value.get('data',[])[:1])[:180]}
+                except Exception:shape={'html_head':raw[:160].decode('utf-8','replace')}
+                print(json.dumps({'url':url,'status':res.status,'ctype':res.headers.get('Content-Type'),
+                   'bytes':len(raw),'shape':shape},ensure_ascii=False),flush=True)
+            except Exception as e:print(json.dumps({'url':url,'error':type(e).__name__+':'+str(e)[:100]}))
+          PY
