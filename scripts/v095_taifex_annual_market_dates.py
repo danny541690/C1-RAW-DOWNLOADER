@@ -63,7 +63,7 @@ def run(start,end):
             except Exception as e:
                 receipt["error"]=type(e).__name__+":"+str(e)[:180]
             records.append(receipt)
-            print(json.dumps({"year":year,"state":receipt["state"],"days":receipt.get("days",0)},ensure_ascii=False),flush=True)
+            print(json.dumps({"year":year,"state":receipt["state"],"days":receipt.get("days",0),"error":receipt.get("error")},ensure_ascii=False),flush=True)
     if len({x["date"] for x in dates})!=len(dates):raise ValueError("ANNUAL_DATE_OVERLAP")
     p=OUT/f"taifex_{start}_{end}_confirmed.csv"
     with p.open("w",newline="",encoding="utf-8") as f:
