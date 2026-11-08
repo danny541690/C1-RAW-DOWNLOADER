@@ -17,8 +17,9 @@ def pack(fmt,raw=b"original rows"):
 class TestV095HistoricalNativeZIPManifest(unittest.TestCase):
  def test_quarantine_ledger_legacy_literal_backslash_n(self):
     sample=b'{"source":"MOPS","validator_version":"v1","immutable_zip_failures":{}}'
-    self.assertEqual(load_quarantine_ledger(sample+b"\\\\n")["source"],"MOPS")
     self.assertEqual(load_quarantine_ledger(sample+b"\\n")["source"],"MOPS")
+    self.assertEqual(load_quarantine_ledger(sample+b"\n")["source"],"MOPS")
+    with self.assertRaises(ValueError):load_quarantine_ledger(sample+b"\\\\n")
     with self.assertRaises(ValueError):load_quarantine_ledger(sample+b"{}")
     with self.assertRaises(ValueError):load_quarantine_ledger(sample+b"CORRUPT")
  def test_v093_hashed_unit(self):
