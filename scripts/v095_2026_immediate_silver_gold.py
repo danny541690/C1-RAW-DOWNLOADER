@@ -57,11 +57,11 @@ def parse_mops(z,manifest,month,bronze_id,archive_sha):
             vals=[numeric(x) for x in cells[2:10]]
             if vals[0] is None:bad+=1
             raw.append(dict(source="MOPS",market=market,stock_id=cells[0],report_month=month,
-              name=cells[1],native_revenue_thousand_ntd=str(vals[0]) if vals[0] is not None else None,
-              revenue_億元=str(vals[0]/D("100000")) if vals[0] is not None else None,
-              prior_month_億元=str(vals[1]/D("100000")) if vals[1] is not None else None,
-              yoy_pct_reported=str(vals[4]) if vals[4] is not None else None,
-              mom_pct_reported=str(vals[3]) if vals[3] is not None else None,
+              name=cells[1],native_revenue_thousand_ntd=vals[0],
+              revenue_億元=vals[0]/D("100000") if vals[0] is not None else None,
+              prior_month_億元=vals[1]/D("100000") if vals[1] is not None else None,
+              yoy_pct_reported=vals[4],
+              mom_pct_reported=vals[3],
               raw_note=cells[10],source_bronze_id=bronze_id,source_zip_sha256=archive_sha,
               source_member=member[0],source_member_sha256=sha(b),
               published_at=None,pit_verified=False))
@@ -105,7 +105,7 @@ def parse_tdcc(z,manifest,month,bronze_id,archive_sha):
                 bad+=1;continue
             rows.append(dict(source="TDCC",snapshot_date=f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}",
              stock_id=code,holding_tier=tier,people_count=int(people),shares=int(shares),
-             share_percent=str(ratio),native_record_json=json.dumps(record,ensure_ascii=False),
+             share_percent=ratio,native_record_json=json.dumps(record,ensure_ascii=False),
              source_bronze_id=bronze_id,source_zip_sha256=archive_sha,source_member=member,
              source_member_sha256=sha(b),native_row_index=idx,published_at=None,pit_verified=False))
     if bad:raise ValueError("TDCC_INVALID_NATIVE_NUMERIC_ROWS")
@@ -138,10 +138,10 @@ def parse_taifex(z,month,bronze_id,archive_sha):
         day=f"{date[:4]}-{date[4:6]}-{date[6:]}"
         rows.append(dict(source="TAIFEX",trade_date=day,contract_code=symbol,
            spread_volume=int(spread),total_market_volume=int(total),
-           reported_spread_pct=ratio,source_member=members[0],source_bronze_id=bronze_id,
+           reported_spread_pct=D(ratio),source_member=members[0],source_bronze_id=bronze_id,
            source_zip_sha256=archive_sha,published_at=None,pit_verified=False))
         gold.append(dict(source="TAIFEX",trade_date=day,contract_code=symbol,
-           spread_volume=int(spread),reported_spread_pct=ratio,
+           spread_volume=int(spread),reported_spread_pct=D(ratio),
            source_zip_sha256=archive_sha,historical_pit_verified=False,
            usage="DESCRIPTIVE_ONLY_NO_LOOKAHEAD_BACKTEST"))
     return rows,gold,"DAILY_SPREAD_ORDER_SUMMARY"
@@ -208,7 +208,7 @@ def parse_ndc(d):
 def main():
     if SOURCE not in SILVER:raise ValueError("IMMEDIATE_DOWNSTREAM_SOURCE_UNKNOWN")
     OUT.mkdir(exist_ok=True);d=service()
-    done=[];reused=0;blocked=[]
+    done=[];reused=0;blocked=[];considered=0
     if SOURCE=="NDC":
         rows,h=parse_ndc(d)
         result=write_pair(d,SOURCE,"2026-09","OFFICIAL_G0_SHA_ARCHIVE",h,rows,[],
@@ -216,7 +216,8 @@ def main():
         done.append(result)
     else:
         for month,f,prefix in candidate_files(d):
-            if len(done)>=MAX_PER_RUN:break
+            if len(done)>=MAX_PER_RUN or considered>=MAX_PER_RUN*12:break
+            considered+=1
             name=f["name"]
             sf=folder(d,SILVER[SOURCE],month+"_INCREMENTAL_CANDIDATE")
             recorded=ls(d,sf)
@@ -241,7 +242,7 @@ def main():
                     "sha_prefix":prefix,"reason":type(exc).__name__+":"+str(exc)[:110],
                     "state":"ADAPTER_PENDING_OR_SOURCE_QUARANTINE"})
                 if len(blocked)>=12:break
-    result={"source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),
+    result={"source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),"candidate_files_examined":considered,
       "converted":done,"silver_converted":len(done),
       "gold_descriptive_created":sum(x.get("gold_id") is not None for x in done),
       "candidate_reused":reused,"blocked":blocked,"blocked_count":len(blocked),
