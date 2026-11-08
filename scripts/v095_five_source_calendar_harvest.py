@@ -45,7 +45,7 @@ class HtmlText(HTMLParser):
     def __init__(self):super().__init__();self.text=[]
     def handle_data(self,v):self.text.append(v)
 def public_html_content(raw):
-    html=raw.decode("utf-8","replace")
+    html=raw.decode("cp950","replace")
     parser=HtmlText();parser.feed(html)
     text=" ".join(parser.text)
     if len(text)<60:raise ValueError("NO_DOCUMENT_BODY")
@@ -56,7 +56,12 @@ def dated_evidence(source,raw,year,month,code):
         # Revenue public archives may be restated, or contain undated HTML.
         # Record bytes for manual schema/PIT verification, not a publication day.
         txt=public_html_content(raw)
+        roc=year-1911
+        if not re.search(r"(?<!\\d)"+str(roc)+r"\\s*年\\s*"+str(month)+r"\\s*月",txt):
+            raise ValueError("MOPS_OFFICIAL_MONTH_YEAR_NOT_CONFIRMED")
         if "查無" in txt[:500] or "not found" in txt[:500].lower():raise ValueError("OFFICIAL_EMPTY_OR_ERROR_PAGE")
+        if len(re.findall(r"<tr",raw.decode("cp950","replace"),re.I))<20:
+            raise ValueError("MOPS_OFFICIAL_TABLE_ROWS_INSUFFICIENT")
         return [],"ARCHIVED_MONTHLY_REPORT_BYTES_ONLY_PIT_UNVERIFIED"
     if source=="TDCC":
         # OpenAPI documentation gives route/capture metadata, not weekly vintages.
@@ -87,7 +92,8 @@ def jobs(source):
             for month in range(1,13):
                 if (year,month)>(2026,11):continue
                 for board in ("sii","otc"):
-                    url=f"https://mopsov.twse.com.tw/nas/t21/{board}/t21sc03_{year-1911}_{month}_0.html"
+                    suffix="" if year-1911<=98 else "_0"
+                    url=f"https://mopsov.twse.com.tw/nas/t21/{board}/t21sc03_{year-1911}_{month}{suffix}.html"
                     yield year,month,board,url
     else:
         if source=="TAIFEX":url="https://openapi.taifex.com.tw/swagger.json"
