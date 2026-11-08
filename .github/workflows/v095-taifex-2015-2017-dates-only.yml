@@ -1,0 +1,44 @@
+name: JARVIS v0.95 recover only TAIFEX 2015-2017 date rows
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-taifex-2015-2017-dates-only.yml'
+permissions:
+  contents: read
+jobs:
+  source-date-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        year: [2015,2016,2017]
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile strict source native date-only verifier
+        run: python -m py_compile scripts/v095_taifex_2015_2017_dates_only.py
+      - name: Extract independently verified session date columns without claiming full numeric certification
+        run: |
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+          python -u -m scripts.v095_taifex_2015_2017_dates_only --year ${{ matrix.year }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: taifex-date-only-${{ matrix.year }}-${{ github.run_id }}
+          path: |
+            v095_taifex_2015_2017_date_only/*date_receipt.json
+            v095_taifex_2015_2017_date_only/*dates_only.csv
+          retention-days: 90
+          if-no-files-found: warn
