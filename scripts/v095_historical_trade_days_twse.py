@@ -82,6 +82,7 @@ def run(year_start,year_end,months_limit=0):
                 receipts.append({"month":f"{year:04d}-{month:02d}","status":"CONFIRMED_OFFICIAL_TRADING_DAYS",
                                  "records":len(dates),"sha256":digest,"url":url,"retrieved_at":stamp})
             except Exception as e:
+                if len(receipts)<3:print(json.dumps({"diagnostic_month":f"{year:04d}-{month:02d}","error":type(e).__name__+":"+str(e)[:180]},ensure_ascii=False),flush=True)
                 receipts.append({"month":f"{year:04d}-{month:02d}","status":"UNVERIFIED_NOT_ABSENCE",
                     "error":type(e).__name__+":"+str(e)[:170],"url":url})
             if len(receipts)%6==0:print(json.dumps({"processed_months":len(receipts),"positive_trading_days":len(all_days),
