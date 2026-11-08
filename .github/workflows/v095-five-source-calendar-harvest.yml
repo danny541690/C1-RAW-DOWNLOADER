@@ -52,9 +52,11 @@ jobs:
           python -m py_compile scripts/v095_five_source_calendar_harvest.py
           python -m unittest discover -s tests -p 'test_v095_market_release_calendar_2000_2026.py' -v
       - name: Fetch and date-validate official history or evidence of source limitations
+        if: github.event_name != 'push' || matrix.source == 'MOPS'
         run: |
           python -u -m scripts.v095_five_source_calendar_harvest --source '${{ matrix.source }}' --start ${{ matrix.first }} --end ${{ matrix.last }} --batch 120
       - name: Preserve native source ZIP, dated evidence and per-request error ledger with SHA
+        if: github.event_name != 'push' || matrix.source == 'MOPS'
         env:
           G0_SOURCE: ${{ matrix.source }}
         run: |
