@@ -227,7 +227,7 @@ def main():
     known_failures={}
     if old_ledgers:
         raw=d.files().get_media(fileId=old_ledgers[0]["id"]).execute()
-        if ledger_prefix+digest(raw)[:24]+".json"!=old_ledgers[0]["name"]:
+        if not (old_ledgers[0]["name"]==ledger_prefix+digest(raw)[:24]+".json" or old_ledgers[0]["name"].endswith("_"+digest(raw)[:24]+".json")):
             raise ValueError("LEGACY_QUARANTINE_LEDGER_SHA_MISMATCH")
         received=load_quarantine_ledger(raw)
         if received.get("source")!=SOURCE or received.get("validator_version")!=validator_version:
@@ -302,7 +302,7 @@ def main():
             "policy":"REUSE_ONLY_IF_SAME_DRIVE_ID_MD5_SIZE_AND_VALIDATOR_SHA",
             "PIT_certified":False}
     ledger_bytes=(json.dumps(ledger,ensure_ascii=False,sort_keys=True)+"\n").encode()
-    ledger_name=ledger_prefix+digest(ledger_bytes)[:24]+".json"
+    ledger_name=ledger_prefix+str(os.getenv("GITHUB_RUN_ID","LOCAL"))+"_"+digest(ledger_bytes)[:24]+".json"
     ledger_id,ledger_action=save(d,new,ledger_name,ledger_bytes)
     if digest(d.files().get_media(fileId=ledger_id).execute())!=digest(ledger_bytes):
         raise ValueError("LEGACY_QUARANTINE_LEDGER_DRIVE_READBACK_SHA_MISMATCH")
