@@ -5,7 +5,8 @@ from googleapiclient.http import MediaIoBaseUpload
 from scripts.v095_market_release_calendar_drive_archive import drive,OPS
 PATHS=("v095_2026_price_incremental/result.json","v095_2026_source_archives/result.json",
 "v095_2026_immediate_downstream/result.json","v095_2026_immediate_downstream/missing_indicators.json",
-"annual_2026/report.json")
+"annual_2026/report.json","v095_2026_equity_downstream/result.json",
+"v095_2026_equity_downstream/lineage_receipt.json")
 def sha(x):return hashlib.sha256(x).hexdigest()
 def main():
   data={}
