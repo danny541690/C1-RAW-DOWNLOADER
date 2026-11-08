@@ -54,12 +54,34 @@ def non_price_stages(d,source):
         first,last=v["candidate_month_start"],v["candidate_month_end"]
         label="來源原始 ZIP 候選（只證實有部分月檔）"
         candidate_count=v["candidate_files_observed"]
-    return {"BRONZE":{"first":first,"last":last,"candidate_date_count":candidate_count,
-             "complete":False,"PIT":False,"label":label},
-       "SILVER":{"first":None,"last":None,"candidate_date_count":None,
-             "complete":False,"PIT":False,"label":"尚無可確認的 dated typed Silver 正式驗收"},
-       "GOLD":{"first":None,"last":None,"candidate_date_count":None,
-             "complete":False,"PIT":False,"label":"尚無可確認的 400+ 指標 Gold／PIT 正式驗收"}}
+    result={"BRONZE":{"first":first,"last":last,"candidate_date_count":candidate_count,
+             "complete":False,"PIT":False,"label":label}}
+    from scripts.v095_2026_immediate_silver_gold import SILVER,GOLD
+    for stage in ("SILVER","GOLD"):
+        root=SILVER[source] if stage=="SILVER" else GOLD
+        names=[]
+        subdirs=remote_files(d,root,"2026-")
+        suffix="_INCREMENTAL_CANDIDATE" if stage=="SILVER" else "_INCREMENTAL_DESCRIPTIVE_"+source
+        for sub in subdirs:
+            if sub.get("mimeType")!="application/vnd.google-apps.folder" or not re.fullmatch(r"2026-\\d{2}"+suffix,sub["name"]):
+                continue
+            ym=sub["name"][:7]
+            files=remote_files(d,sub["id"],"V095_"+source+"_")
+            for file in files:
+                pattern=r"V095_"+source+r"_"+ym.replace("-","")+r"_[0-9a-f]{20}_"+(
+                    r"SILVER_[A-Z0-9_]+" if stage=="SILVER" else r"GOLD_DESCRIPTIVE_[A-Z0-9_]+")+r"\\.parquet"
+                if re.fullmatch(pattern,file["name"]):names.append(ym)
+        months=sorted(set(names))
+        result[stage]={"first":months[0] if months else None,
+            "last":months[-1] if months else None,
+            "candidate_date_count":len(names),
+            "complete":False,"PIT":False,
+            "label":("有檔案的來源資料 typed Silver 候選；月份可能不完整"
+                     if stage=="SILVER" and names else
+                     "描述性 Gold 候選；非正式 400+ PIT" if stage=="GOLD" and names else
+                     "未找到此層合格候選檔；不得推定無資料")}
+    return result
+
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
     d=drive(); days=weekdays()
