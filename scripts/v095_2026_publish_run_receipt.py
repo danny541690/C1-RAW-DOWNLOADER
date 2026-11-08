@@ -8,7 +8,9 @@ PATHS=("v095_2026_price_incremental/result.json","v095_2026_source_archives/resu
 "annual_2026/report.json","v095_2026_equity_downstream/result.json",
 "v095_2026_equity_downstream/lineage_receipt.json",
 "v095_2025_equity_downstream/result.json","v095_2025_equity_downstream/lineage_receipt.json",
-"v095_2025_four_source_inventory/result.json")
+"v095_2025_four_source_inventory/result.json",
+"v095_2025_source_archives/result.json","v095_2025_immediate_downstream/result.json",
+"v095_2025_immediate_downstream/missing_indicators.json")
 def sha(x):return hashlib.sha256(x).hexdigest()
 def main():
   data={}
