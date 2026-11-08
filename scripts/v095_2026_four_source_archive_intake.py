@@ -111,7 +111,9 @@ def main():
                                 "reason":type(e).__name__+":"+str(e)[:110]})
         if len(completed)>=MAX_SOURCE_FILES or scanned>=MAX_INSPECT_PER_RUN:break
     import collections
-    blocked_reasons=dict(collections.Counter(x.get("reason",x.get("state","")).split(":")[0] for x in blocked))
+    blocked_reasons=dict(collections.Counter(
+        str(x.get("reason",x.get("state",""))).split(":",1)[-1].split(":",1)[0]
+        for x in blocked))
     out={"source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),"completed_archives":completed,
          "blocked":blocked[:50],"blocked_reason_counts":blocked_reasons,"scanned":scanned,"previously_reused_archive_skips":reused,
          "new_bronze_candidate_archives":sum(x["action"]=="CREATED" for x in completed),
