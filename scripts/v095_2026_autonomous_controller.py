@@ -44,15 +44,15 @@ def main():
     now=dt.datetime.now(dt.timezone.utc)
     token=os.environ["GH_TOKEN"]
     runs=api(token,"/actions/runs?per_page=100").get("workflow_runs",[])
-    result={"schema":"V095_CONTROLLER_R1","at_utc":now.isoformat(),
+    result={"schema":"V095_CONTROLLER_R2_SIX_SOURCE_FIRST_PASS","at_utc":now.isoformat(),
             "scope":"2026_only","full_year_verified":False,"history_2000_2025_dispatched":False,
-            "production_release":False,"source_actions":{}}
+            "production_release":False,"source_actions":{},"source_fanout_limit":6,"first_pass_priority":"BRONZE_INCREMENTAL"}
     # The six native source cron workflows are primary; intervene only on stale/idle lanes.
-    # Dispatch max 2 sources per control run, never the same active writer.
+    # First-pass source throughput: dispatch up to six distinct source writers per run; never double-write an active source.
     dispatched=0
     for source,(workflow,name) in SOURCES.items():
         decision=choose(name,runs,now,65)
-        if decision=="DISPATCH" and dispatched>=2:decision="DEFER_CAPACITY"
+        if decision=="DISPATCH" and dispatched>=6:decision="DEFER_CAPACITY"
         if decision=="DISPATCH":
             try:
                 api(token,"/actions/workflows/"+workflow+"/dispatches","POST",{"ref":"main"})
