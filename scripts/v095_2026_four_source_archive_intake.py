@@ -16,6 +16,9 @@ SOURCE=os.environ.get("V095_BRONZE_SOURCE","")
 YEAR=int(os.environ.get("V095_DATA_YEAR","2026"))
 if YEAR not in (2025,2026):raise ValueError("ONLY_2025_2026_ARCHIVES")
 LEGACY_YEAR_ROOT=YEAR_PARENT if YEAR==2026 else "1VB9s43UHEQeZbPbLHOCcFAQewUDfjBOm"
+# Verified separate historical TDCC native-original complement archive folder (not the
+# same as /2026/TDCC); optional and source-specific, never assume its contents valid.
+TDCC_ARCHIVE_SOURCE_FOLDER="103Mc52wF1brnIqfB0mL85UaeW-LcnmXo" if YEAR==2026 else None
 MAX_SOURCE_FILES=min(int(os.environ.get("V095_ARCHIVE_BATCH","3")),6)
 MAX_BYTES=20_000_000
 MAX_INSPECT_PER_RUN=300
@@ -128,7 +131,13 @@ def validate_zip(b,source,month):
         complete_unit_provenance=(source=="MOPS" and isinstance(units_m,list) and bool(units_m)
             and all(isinstance(u,dict) and u.get("source")==source and u.get("month")==month
                     for u in units_m))
-        root_identity=(m.get("source")==source and manifest_period==month)
+        # v0.93 TDCC complement manifests carry source=TDCC_ARCHIVE, not TDCC.
+        # Only accept that alias with exact complement manifest, matching month and
+        # member SHA validation below; retain the alias as an origin label.
+        tdcc_complement=(source=="TDCC" and m.get("source")=="TDCC_ARCHIVE"
+             and pathlib.PurePosixPath(manifests[0]).name=="complement_manifest_R1.json"
+             and manifest_period==month and isinstance(m.get("files"),list))
+        root_identity=(m.get("source")==source and manifest_period==month) or tdcc_complement
         old_mops_unit_identity=(m.get("source") is None and manifest_period is None
                                and complete_unit_provenance)
         if not (root_identity or old_mops_unit_identity):
@@ -236,13 +245,25 @@ def main():
         if not isinstance(known_failures,dict):raise ValueError("LEGACY_QUARANTINE_LEDGER_BAD_TYPE")
     completed=[];blocked=[];scanned=0;reused=0;cached_quarantine_skips=0
     for month in months:
-        src=[x for x in ls(d,old[0]["id"]) if x["name"]==month and x["mimeType"]==FOLDER]
-        if len(src)!=1:
+        # Combine *all verified legacy parent directories* before declaring no ZIP.
+        # Avoid a false official gap when TDCC original content is under TDCC_ARCHIVE.
+        month_locations=[]
+        for origin,source_root in [("TDCC" if SOURCE=="TDCC" else SOURCE,old[0]["id"])]+extra_tdcc_roots:
+            src=[x for x in ls(d,source_root) if x["name"]==month and x["mimeType"]==FOLDER]
+            if len(src)>1:
+                blocked.append({"month":month,"origin":origin,"state":"V093_MONTH_FOLDER_AMBIGUOUS"})
+            elif src:
+                month_locations.append((origin,src[0]["id"]))
+        if not month_locations:
             blocked.append({"month":month,"state":"V093_MONTH_FOLDER_NOT_UNIQUE_OR_MISSING"})
             continue
-        items=ls(d,src[0]["id"],only_archives=True)
+        items=[]
+        for origin,folder_id in month_locations:
+            for candidate in ls(d,folder_id,only_archives=True):
+                items.append(dict(candidate,_legacy_origin=origin))
         if not items:
-            blocked.append({"month":month,"state":"NO_V093_ZIP_CANDIDATE_NOT_PROVEN_OFFICIAL_MISSING"})
+            blocked.append({"month":month,"state":"NO_V093_ZIP_IN_ANY_LEGACY_ROOT_NOT_PROVEN_OFFICIAL_MISSING",
+                            "searched_origins":[x[0] for x in month_locations]})
             continue
         dest=folder(d,new,month+"_V093_REUSE_CANDIDATE")
         stored={x.get("md5Checksum") for x in ls(d,dest) if x.get("md5Checksum")}
@@ -284,13 +305,14 @@ def main():
                 fid,action=save(d,actual_dest,name,b)
                 completed.append({"month":target_month,"legacy_folder_month":month,
                                   "source_month_reassigned_from_native_date":target_month!=month,
-                                  "source":SOURCE,"member_count":members,
+                                  "source":SOURCE,"legacy_source_folder":item.get("_legacy_origin"),"member_count":members,
                                   "sha256":digest(b),"file_id":fid,"action":action,
                                   "state":("STORAGE_SHA_CRC_MANIFEST_PASS_NATIVE_SCHEMA_PENDING" if had_native_manifest
                                    else "TAIFEX_SINGLE_CSV_NATIVE_SCHEMA_DATE_PASS_PIT_PENDING")})
             except Exception as e:
                 reason=type(e).__name__+":"+str(e)[:110]
-                blocked.append({"month":month,"name_digest":digest(item["name"].encode())[:12],
+                blocked.append({"month":month,"legacy_source_folder":item.get("_legacy_origin"),
+                                "name_digest":digest(item["name"].encode())[:12],
                                 "reason":reason})
                 # Network and Drive/credential failures must NOT be cached.
                 if item.get("md5Checksum") and isinstance(e,ValueError):
