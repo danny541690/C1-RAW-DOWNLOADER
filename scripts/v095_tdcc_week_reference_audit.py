@@ -11,6 +11,19 @@ from scripts.v095_market_release_calendar_drive_archive import drive,archive
 from scripts.v093_tdcc_independent import REPORT
 OUT=pathlib.Path("v095_tdcc_week_inventory")
 FOLDERS=("TDCC_INDEPENDENT_STAGE05","TDCC_INDEPENDENT_STAGE05_ASC")
+MAX_HISTORY_FILES=150
+def history_files(d,parent):
+    q="'"+parent+"' in parents and name contains 'HISTORY_' and trashed=false"
+    items=[];token=None
+    while True:
+        r=d.files().list(q=q,pageSize=500,fields="nextPageToken,incompleteSearch,files(id,name,size)",pageToken=token).execute()
+        if r.get("incompleteSearch"):raise ValueError("TDCC_HISTORY_LIST_INCOMPLETE")
+        items += [x for x in r.get("files",[]) if re.fullmatch(r"HISTORY_\\d{8}\\.json",x["name"])]
+        if len(items)>2000:raise ValueError("TDCC_HISTORY_MANIFEST_OVER_BOUNDED_LIMIT")
+        token=r.get("nextPageToken")
+        if not token:break
+    return sorted(items,key=lambda x:x["name"],reverse=True)
+
 def sha(b):return hashlib.sha256(b).hexdigest()
 def ls(d,parent,name):
     q="'"+parent+"' in parents and name = '"+name+"' and trashed=false"
@@ -47,8 +60,18 @@ def main():
         if receiptdate:
             raw=read(d,directory,"HISTORY_"+receiptdate+".json")
             if raw:ledger=json.loads(raw)
+        history=history_files(d,directory)
+        ledgers=[(receiptdate or "CURSOR",ledger)]
+        for sourcefile in history[:MAX_HISTORY_FILES]:
+            item=json.loads(d.files().get_media(fileId=sourcefile["id"]).execute())
+            if not isinstance(item,dict):raise ValueError("TDCC_HISTORY_FILE_NOT_LEDGER")
+            ledgers.append((sourcefile["name"],item))
         good=0
-        for key,record in ledger.items():
+        seen=set()
+        for ledger_file,ledger in ledgers:
+          for key,record in ledger.items():
+            if (key,str(record.get("file_id"))) in seen:continue
+            seen.add((key,str(record.get("file_id"))))
             scanned+=1
             if not is_saved(record):continue
             m=re.fullmatch(r"(20\d{2})(\d{2})(\d{2})\|([0-9A-Za-z]+)",key)
@@ -62,7 +85,9 @@ def main():
             dates[date.isoformat()].append({"stock":m[4],"sha256":record["sha256"],"file_id":record["file_id"]})
             good+=1
         directories.append({"folder":label,"status":"RECEIPTS_SCANNED","cursor_sha256":sha(snapshot),
-                            "history_receipts_inspected":len(ledger),"fully_qualified_verified_receipts":good})
+                            "history_files_found":len(history),"history_files_read":min(len(history),MAX_HISTORY_FILES),
+                            "history_files_remaining":max(0,len(history)-MAX_HISTORY_FILES),
+                            "history_receipts_inspected":scanned,"fully_qualified_verified_receipts":good})
     out=OUT/"tdcc_positive_week_reference_dates.csv"
     with out.open("w",newline="",encoding="utf-8") as f:
         w=csv.writer(f);w.writerow(["date","source","state","verified_security_receipts","publication_timestamp_verified"])
@@ -70,6 +95,7 @@ def main():
             w.writerow([date,"TDCC","DATE_IN_POSITIVE_SOURCE_RECEIPT",len(rec),"false"])
     report={"source":"TDCC","date_start":"2008-07","date_end":"2026-11-08",
       "unique_positive_source_reference_dates":len(dates),"receipts_inspected":scanned,
+      "all_preexisting_history_manifests_read":all(x.get("history_files_remaining",0)==0 for x in directories),
       "directories":directories,"date_parse_errors":errors[:25],
       "source_date_vs_published_at_distinct":True,
       "weekly_full_universe_certified":False,"historical_published_at_PIT_certified":False,
