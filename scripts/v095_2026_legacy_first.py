@@ -13,15 +13,16 @@ import zipfile
 from scripts import v095_ultimate_r1_november_official as base
 from scripts.v093_three_year_repair import validate
 
-OLD_YEAR_ROOT="1CAlRsbDEKTrb9BJlJ604SwYwQWRU3lpK"
+OLD_YEAR_ROOTS={"2025":"1VB9s43UHEQeZbPbLHOCcFAQewUDfjBOm",
+                "2026":"1CAlRsbDEKTrb9BJlJ604SwYwQWRU3lpK"}
 FOLDER="application/vnd.google-apps.folder"
 MAX_ARCHIVES=14
 MAX_ZIP_BYTES=20_000_000
 MAX_NATIVE_BYTES=8_000_000
 
 def legacy_snapshot(d,source,day,job):
-    if source not in ("TWSE","TPEx") or not day.startswith("2026-"):return None
-    src=[x for x in base.ls(d,OLD_YEAR_ROOT) if x["name"]==source and x.get("mimeType")==FOLDER]
+    if source not in ("TWSE","TPEx") or day[:4] not in OLD_YEAR_ROOTS:return None
+    src=[x for x in base.ls(d,OLD_YEAR_ROOTS[day[:4]]) if x["name"]==source and x.get("mimeType")==FOLDER]
     if len(src)!=1:return None
     month=[x for x in base.ls(d,src[0]["id"]) if x["name"]==day[:7] and x.get("mimeType")==FOLDER]
     if len(month)!=1:return None
