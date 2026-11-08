@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-2026-source-tpex.yml'
+      - 'governance/v095/CASH_MARKET_CALENDAR_2026.csv'
+      - 'scripts/v095_2026_cash_market_calendar.py'
   schedule:
     - cron: '6,21,36,51 * * * *'
 permissions:
@@ -42,6 +44,10 @@ jobs:
           print('V095_SOURCE_ISOLATED_CANDIDATE_ONLY')
           PY
           python -m py_compile scripts/v095_2026_price_incremental.py scripts/v095_2026_legacy_first.py scripts/v095_2026_bsg_lineage_gate.py
+      - name: Preflight 2026 official cash-market calendar before any source requests
+        run: |
+          python -m unittest discover -s tests -p 'test_v095_2026_cash_market_calendar.py' -v
+          python -m scripts.v095_2026_cash_market_calendar v095_market_calendar_2026/calendar_audit.json
       - name: Bronze v0.93 verified first then live official; immediately Silver and descriptive Gold
         run: python -m scripts.v095_2026_price_incremental
       - name: Independently read back all three tiers and validate bidirectional SHA and row lineage
@@ -54,5 +60,6 @@ jobs:
           path: |
             v095_2026_price_incremental/result.json
             v095_2026_price_incremental/lineage_receipt.json
+            v095_market_calendar_2026/calendar_audit.json
           if-no-files-found: warn
           retention-days: 90
