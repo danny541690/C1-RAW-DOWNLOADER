@@ -160,6 +160,9 @@ def main():
             if attempts<5:
                 queue.append({"source":source,"date":day,"attempts":attempts})
             else:err["quarantined_after_cycles"]=attempts
+    # Preserve actionable errors in both artifact and job log; never hide a partial batch as year completion.
+    for failure in failed:
+        print(json.dumps({"state":"SOURCE_DAY_FAILED", **failure},ensure_ascii=False),flush=True)
     report={"schema":"V095_2026_PRICE_INCREMENTAL_CANDIDATE_V1",
             "run_id":os.getenv("GITHUB_RUN_ID"),"start_offset":start,
             "next_offset":start+len(selected),"eligible_weekdays_so_far":len(calendar),
@@ -169,7 +172,8 @@ def main():
     (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     receipt={"generation":state["generation"]+1,"offset":start+len(selected),
              "retry_queue":queue,"prior_sha":state["prior_sha"],"run_id":os.getenv("GITHUB_RUN_ID"),
-             "success_units":len(done),"failed_units":len(failed),"created_by_stage":dict(new_files)}
+             "success_units":len(done),"failed_units":len(failed),"created_by_stage":dict(new_files),
+             "failed_items":failed,"latest_cutoff":CUTOFF.isoformat()}
     receipt_sha=commit_cursor(d,receipt)
     report["durable_cursor_sha256"]=receipt_sha
     (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
@@ -178,7 +182,7 @@ def main():
         "completed_units":len(done),"failed_units":len(failed),
         "created_by_stage":dict(new_files),"retry_queue_length":len(queue),
         "checkpoint_committed":True,"year_complete":False,"PIT":False},ensure_ascii=False),flush=True)
-    # Known source/holiday failures are quarantined in ledger, not global pipeline failure.
+    # Failed units remain explicit; a complete yearly release requires separate PIT/coverage certification.
     return 0
 
 if __name__=="__main__":
