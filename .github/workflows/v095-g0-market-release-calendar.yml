@@ -1,0 +1,60 @@
+name: JARVIS v0.95 G0 2000-2026 market and publication calendars
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-g0-market-release-calendar.yml'
+      - 'scripts/v095_market_release_calendar_2000_2026.py'
+      - 'governance/v095/MARKET_RELEASE_CONTRACTS.json'
+      - 'governance/v095/MARKET_CALENDAR_EVIDENCE_2000_2025.csv'
+  schedule:
+    - cron: '13 1 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-g0-calendars
+  cancel-in-progress: false
+jobs:
+  certify-known-vs-unknown:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test market-date calendar and source-specific publication contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_v095_2026_cash_market_calendar.py' -v
+          python -m unittest discover -s tests -p 'test_v095_market_release_calendar_2000_2026.py' -v
+      - name: Generate every 2000-2026 source/day state with source SHA and unknown markers
+        run: python -m scripts.v095_market_release_calendar_2000_2026
+      - name: Confirm no historic closures or release timestamps have been fabricated
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          a=json.loads(Path('v095_market_release_calendar/report.json').read_text())
+          assert a['calendar_rows']==9862*6
+          assert a['dataset_contracts']==26
+          assert a['historical_primary_evidence_rows']==0
+          assert not a['g0_coverage_denominator_certified']
+          assert not a['PIT_APPROVED']
+          print('G0_CALENDAR_GENERATED_NO_FALSE_MISSING_CLAIMS')
+          PY
+      - name: Retain G0 calendars, denominator status, dataset clocks and source evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-g0-market-release-${{ github.run_id }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            v095_market_release_calendar/
+            governance/v095/MARKET_RELEASE_CONTRACTS.json
+            governance/v095/MARKET_CALENDAR_EVIDENCE_2000_2025.csv
+            governance/v095/CASH_MARKET_CALENDAR_2026.csv
