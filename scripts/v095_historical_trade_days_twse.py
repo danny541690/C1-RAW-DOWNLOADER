@@ -9,7 +9,7 @@ retrieval UTC, URL, and validation. This is NOT a full historical holiday table.
 import argparse,calendar,csv,datetime as dt,hashlib,io,json,os,pathlib,re,time,urllib.parse,urllib.request,urllib.error,zipfile
 ROOT=pathlib.Path("v095_historical_days")
 TZ=dt.timezone(dt.timedelta(hours=8))
-URL="https://www.twse.com.tw/rwd/zh/exchangeReport/FMTQIK"
+URL="https://www.twse.com.tw/exchangeReport/FMTQIK"
 def sha(b):return hashlib.sha256(b).hexdigest()
 def normalize_date(s):
     s=re.sub(r"<[^>]*>","",str(s)).strip()
