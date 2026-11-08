@@ -5,7 +5,7 @@ Read-only: up to 5 official/legacy archives per source; only ZIP member metadata
 source/period fields, CRC and error codes; raw contents NEVER reclassified,
 overwritten or promoted. Report goes to Drive with SHA readback.
 """
-import collections,datetime as dt,hashlib,io,json,os,pathlib,zipfile
+import collections,datetime as dt,hashlib,io,json,os,pathlib,zipfile,csv,re
 from scripts.v095_2026_four_source_archive_intake import ls,validate_zip,digest
 from scripts.v095_2026_prior_raw_reuse_audit import YEAR_PARENT
 from scripts.v095_2026_annual_consolidated import service,FOLDER
@@ -44,6 +44,15 @@ def main():
                         for info in z.infolist() if not info.is_dir()))
                     record["manifest_paths"]=[info.filename for info in z.infolist()
                         if "manifest" in pathlib.PurePosixPath(info.filename).name.lower()][:5]
+                    if SOURCE=="TAIFEX" and not record["manifest_paths"]:
+                        from scripts.v093_taifex_independent import native_text
+                        for member in z.infolist()[:2]:
+                            if member.filename.lower().endswith(".csv") and member.file_size<3_000_000:
+                                native=native_text(z.read(member))
+                                lines=native.splitlines()
+                                record["first_line_field_candidates"]=next(csv.reader(lines[:1]),[])[:22] if lines else []
+                                record["first_lines_count"]=len(lines)
+                                record["csv_first_line_numeric"]=sum(1 for v in record["first_line_field_candidates"] if re.fullmatch(r"[-+]?\\d+",v))
                     if len(record["manifest_paths"])==1:
                         name=record["manifest_paths"][0]
                         if z.getinfo(name).file_size<=500000:
@@ -55,6 +64,9 @@ def main():
                                 record["manifest_keys"]=sorted(str(k) for k in manifest)[:14]
                                 record["manifest_units_count"]=len(manifest.get("units",[]))
                                 record["manifest_originals_count"]=len(manifest.get("immutable_originals",[]))
+                                record["manifest_files_count"]=len(manifest.get("files",[]))
+                                record["manifest_units_first"]=str(manifest.get("units",[])[:1])[:260]
+                                record["manifest_files_first"]=str(manifest.get("files",[])[:1])[:260]
                             except Exception as ex:
                                 record["manifest_metadata_error"]=type(ex).__name__
                 validate_zip(blob,SOURCE,month)
