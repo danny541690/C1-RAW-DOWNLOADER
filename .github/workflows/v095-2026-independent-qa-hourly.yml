@@ -1,0 +1,73 @@
+name: JARVIS v0.95 2026 independent hourly QA and gap ledger
+# Separate quality inspection from the six independently scheduled Bronze downloaders.
+# Read-only inventory and evidence report; never certifies an incomplete year.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-independent-qa-hourly.yml'
+  schedule:
+    - cron: '12 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2026-independent-qa
+  cancel-in-progress: false
+jobs:
+  check-year-evidence:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install QA-only readers (fix missing openpyxl)
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl google-api-python-client google-auth google-auth-httplib2
+      - name: Validate ZIP quarantine compatibility, source schemas and PIT safety
+        run: |
+          python -m unittest discover -s tests -p 'test_v095_legacy_native_manifest_versions.py' -v
+          python -m unittest discover -s tests -p 'test_v095_2026_cash_market_calendar.py' -v
+          python -m unittest discover -s tests -p 'test_v095_market_release_calendar_2000_2026.py' -v
+          python -m unittest discover -s tests -p 'test_v095_2026_annual_consolidated.py' -v
+          python - <<'PY'
+          import json
+          flags=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert flags['BULK_COPY_APPROVED'] is False
+          assert flags['RELEASE_APPROVED'] is False
+          print('QA_ONLY_NO_RELEASE_NO_REDOWNLOAD')
+          PY
+      - name: Read back 2026 data and build independent annual gap inventory
+        run: python -m scripts.v095_2026_annual_consolidated
+      - name: Enforce honest Bronze/Silver/Gold/PIT completion state
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('annual_2026/report.json')
+          r=json.loads(p.read_text())
+          assert 'verified_2026_full_year_complete' in r
+          assert 'blocking_causes' in r
+          assert 'source_month_cells' in r
+          print('2026_QA_EVIDENCE',json.dumps({
+            'complete':r['verified_2026_full_year_complete'],
+            'source_month_cells':r['source_month_cells'],
+            'blockers':r['blocking_causes'],
+            'inspection_status':r.get('inspection_status')
+          },ensure_ascii=False))
+          PY
+      - name: Preserve inspection output and failures without stalling source downloaders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-independent-qa-${{ github.run_id }}
+          path: annual_2026/
+          if-no-files-found: warn
+          retention-days: 30
