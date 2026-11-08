@@ -1,0 +1,44 @@
+name: JARVIS v0.95 NDC 2000-2026 official monthly observation history
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-ndc-historical-months.yml'
+permissions:
+  contents: read
+jobs:
+  official-historical-months:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Parse original official NDC series month observations from native source archive
+        run: python -u -m scripts.v095_ndc_official_historical_months
+      - name: Persist original NDC ZIP, month presence and PIT-not-verified receipt
+        run: |
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+          python - <<'PY'
+          import pathlib
+          from scripts.v095_market_release_calendar_drive_archive import drive,archive
+          d=drive()
+          for p in pathlib.Path('v095_ndc_historical_publication').glob('*'):
+            archive(d,p)
+          print('NDC_SOURCE_MONTHS_SAVED_SHA_READBACK')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-ndc-historical-months-${{ github.run_id }}
+          path: |
+            v095_ndc_historical_publication/ndc_observation_months.csv
+            v095_ndc_historical_publication/ndc_monthly_manifest.json
+          retention-days: 90
+          if-no-files-found: warn
