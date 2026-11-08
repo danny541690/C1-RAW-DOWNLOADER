@@ -21,7 +21,7 @@ def ls(d,folder):
     rows=[];token=None
     while True:
         result=d.files().list(q="'"+folder+"' in parents and trashed=false",
-          fields="nextPageToken,incompleteSearch,files(id,name,size,mimeType,md5Checksum)",pageSize=500,pageToken=token).execute()
+          fields="nextPageToken,incompleteSearch,files(id,name,size,mimeType,md5Checksum,createdTime)",pageSize=500,pageToken=token).execute()
         if result.get("incompleteSearch"):raise RuntimeError("DRIVE_INCOMPLETE_SOURCE_LIST")
         rows.extend(result.get("files",[]))
         if len(rows)>15000:raise RuntimeError("DRIVE_SOURCE_LIST_TOO_LARGE_FOR_BOUNDED_BATCH")
@@ -197,7 +197,25 @@ def main():
     old=[x for x in ls(d,YEAR_PARENT) if x["name"]==SOURCE and x["mimeType"]==FOLDER]
     if len(old)!=1:raise RuntimeError("UNIQUE_LEGACY_SOURCE_DIRECTORY_MISSING")
     new=BRONZE_ROOTS[SOURCE]
-    completed=[];blocked=[];scanned=0;reused=0
+    # Source ZIPs are immutable. Store a durable per-validator SHA exception
+    # ledger in the source Bronze root so unchanged bad ZIPs are not reopened
+    # every run. Any code change invalidates the cache automatically.
+    validator_version=digest(pathlib.Path(__file__).read_bytes())[:20]
+    ledger_prefix="V095_QUARANTINE_"+SOURCE+"_"+validator_version+"_"
+    old_ledgers=[x for x in ls(d,new) if x["name"].startswith(ledger_prefix)
+                 and x["name"].endswith(".json")]
+    old_ledgers.sort(key=lambda x:x.get("createdTime",""),reverse=True)
+    known_failures={}
+    if old_ledgers:
+        raw=d.files().get_media(fileId=old_ledgers[0]["id"]).execute()
+        if ledger_prefix+digest(raw)[:24]+".json"!=old_ledgers[0]["name"]:
+            raise ValueError("LEGACY_QUARANTINE_LEDGER_SHA_MISMATCH")
+        received=json.loads(raw)
+        if received.get("source")!=SOURCE or received.get("validator_version")!=validator_version:
+            raise ValueError("LEGACY_QUARANTINE_LEDGER_SOURCE_VERSION_CONFLICT")
+        known_failures=received.get("immutable_zip_failures",{})
+        if not isinstance(known_failures,dict):raise ValueError("LEGACY_QUARANTINE_LEDGER_BAD_TYPE")
+    completed=[];blocked=[];scanned=0;reused=0;cached_quarantine_skips=0
     for month in months:
         src=[x for x in ls(d,old[0]["id"]) if x["name"]==month and x["mimeType"]==FOLDER]
         if len(src)!=1:
@@ -211,6 +229,10 @@ def main():
             if len(completed)>=MAX_SOURCE_FILES or scanned>=MAX_INSPECT_PER_RUN:break
             if item.get("md5Checksum") and item["md5Checksum"] in stored:
                 reused+=1
+                continue
+            candidate_key=item["id"]+"|"+str(item.get("md5Checksum",""))+"|"+str(item.get("size",""))
+            if item.get("md5Checksum") and candidate_key in known_failures:
+                cached_quarantine_skips+=1
                 continue
             scanned+=1
             try:
@@ -245,21 +267,37 @@ def main():
                                   "state":("STORAGE_SHA_CRC_MANIFEST_PASS_NATIVE_SCHEMA_PENDING" if had_native_manifest
                                    else "TAIFEX_SINGLE_CSV_NATIVE_SCHEMA_DATE_PASS_PIT_PENDING")})
             except Exception as e:
+                reason=type(e).__name__+":"+str(e)[:110]
                 blocked.append({"month":month,"name_digest":digest(item["name"].encode())[:12],
-                                "reason":type(e).__name__+":"+str(e)[:110]})
+                                "reason":reason})
+                # Network and Drive/credential failures must NOT be cached.
+                if item.get("md5Checksum") and isinstance(e,ValueError):
+                    known_failures[candidate_key]={"month":month,"reason":str(e)[:120]}
         if len(completed)>=MAX_SOURCE_FILES or scanned>=MAX_INSPECT_PER_RUN:break
     import collections
+    ledger={"source":SOURCE,"validator_version":validator_version,
+            "immutable_zip_failures":known_failures,
+            "policy":"REUSE_ONLY_IF_SAME_DRIVE_ID_MD5_SIZE_AND_VALIDATOR_SHA",
+            "PIT_certified":False}
+    ledger_bytes=(json.dumps(ledger,ensure_ascii=False,sort_keys=True)+"\\n").encode()
+    ledger_name=ledger_prefix+digest(ledger_bytes)[:24]+".json"
+    ledger_id,ledger_action=save(d,new,ledger_name,ledger_bytes)
+    if digest(d.files().get_media(fileId=ledger_id).execute())!=digest(ledger_bytes):
+        raise ValueError("LEGACY_QUARANTINE_LEDGER_DRIVE_READBACK_SHA_MISMATCH")
     blocked_reasons=dict(collections.Counter(
         str(x.get("reason",x.get("state",""))).split(":",1)[-1].split(":",1)[0]
         for x in blocked))
     out={"source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),"completed_archives":completed,
-         "blocked":blocked[:50],"blocked_reason_counts":blocked_reasons,"scanned":scanned,"previously_reused_archive_skips":reused,
+         "blocked":blocked[:50],"blocked_reason_counts":blocked_reasons,"cached_quarantine_skips":cached_quarantine_skips,
+         "known_immutable_format_exceptions":len(known_failures),"scanned":scanned,"previously_reused_archive_skips":reused,
          "new_bronze_candidate_archives":sum(x["action"]=="CREATED" for x in completed),
          "native_dataset_schema_verified":False,"silver_conversion":"BLOCKED_PENDING_APPROVED_ADAPTER",
          "gold_conversion":"BLOCKED_PENDING_SILVER_AND_PIT",
          "historical_pit_verified":False,"year_complete":False}
     (OUT/"result.json").write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
     print(json.dumps({"source":SOURCE,"new_archives":out["new_bronze_candidate_archives"],
-                      "scanned":scanned,"blocked":len(blocked),"blocked_reasons":blocked_reasons,"unchanged_archive_skipped":reused,
+                      "scanned":scanned,"blocked":len(blocked),"blocked_reasons":blocked_reasons,
+                      "cached_quarantine_skips":cached_quarantine_skips,
+                      "known_immutable_format_exceptions":len(known_failures),"unchanged_archive_skipped":reused,
                       "silver":out["silver_conversion"],"gold":out["gold_conversion"]},ensure_ascii=False))
 if __name__=="__main__":main()
