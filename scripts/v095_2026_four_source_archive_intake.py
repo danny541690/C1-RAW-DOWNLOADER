@@ -8,13 +8,25 @@ eligible files are reported for dedicated official-source backfill adapters.
 """
 import datetime as dt
 import hashlib, io, json, os, pathlib, sys, zipfile
-from scripts.v095_2026_annual_consolidated import service,ls,BRONZE_ROOTS,FOLDER
+from scripts.v095_2026_annual_consolidated import service,BRONZE_ROOTS,FOLDER
 from scripts.v095_2026_prior_raw_reuse_audit import YEAR_PARENT
 from scripts.v095_ultimate_r1_november_official import folder,save
 SOURCE=os.environ.get("V095_BRONZE_SOURCE","")
 if SOURCE not in ("MOPS","TDCC","TAIFEX","NDC"):raise ValueError("INVALID_SOURCE")
 MAX_SOURCE_FILES=min(int(os.environ.get("V095_ARCHIVE_BATCH","3")),6)
 MAX_BYTES=20_000_000
+MAX_INSPECT_PER_RUN=300
+
+def ls(d,folder):
+    rows=[];token=None
+    while True:
+        result=d.files().list(q="'"+folder+"' in parents and trashed=false",
+          fields="nextPageToken,incompleteSearch,files(id,name,size,mimeType,md5Checksum)",pageSize=500,pageToken=token).execute()
+        if result.get("incompleteSearch"):raise RuntimeError("DRIVE_INCOMPLETE_SOURCE_LIST")
+        rows.extend(result.get("files",[]))
+        if len(rows)>15000:raise RuntimeError("DRIVE_SOURCE_LIST_TOO_LARGE_FOR_BOUNDED_BATCH")
+        token=result.get("nextPageToken")
+        if not token:return rows
 OUT=pathlib.Path("v095_2026_source_archives")
 def digest(b):return hashlib.sha256(b).hexdigest()
 def validate_zip(b,source,month):
@@ -45,23 +57,27 @@ def main():
     old=[x for x in ls(d,YEAR_PARENT) if x["name"]==SOURCE and x["mimeType"]==FOLDER]
     if len(old)!=1:raise RuntimeError("UNIQUE_LEGACY_SOURCE_DIRECTORY_MISSING")
     new=BRONZE_ROOTS[SOURCE]
-    completed=[];blocked=[];scanned=0
+    completed=[];blocked=[];scanned=0;reused=0
     for month in months:
         src=[x for x in ls(d,old[0]["id"]) if x["name"]==month and x["mimeType"]==FOLDER]
         if len(src)!=1:
             blocked.append({"month":month,"state":"V093_MONTH_FOLDER_NOT_UNIQUE_OR_MISSING"})
             continue
         items=ls(d,src[0]["id"])
+        dest=folder(d,new,month+"_V093_REUSE_CANDIDATE")
+        stored={x.get("md5Checksum") for x in ls(d,dest) if x.get("md5Checksum")}
         for item in sorted(items,key=lambda x:x["name"]):
             if not item["name"].lower().endswith(".zip"):continue
-            if len(completed)>=MAX_SOURCE_FILES:break
+            if len(completed)>=MAX_SOURCE_FILES or scanned>=MAX_INSPECT_PER_RUN:break
+            if item.get("md5Checksum") and item["md5Checksum"] in stored:
+                reused+=1
+                continue
             scanned+=1
             try:
                 if int(item.get("size",0))>MAX_BYTES:raise ValueError("ARCHIVE_OVER_BOUNDED_LIMIT")
                 b=d.files().get_media(fileId=item["id"]).execute()
                 if len(b)>MAX_BYTES:raise ValueError("ARCHIVE_OVER_BOUNDED_LIMIT")
                 members=validate_zip(b,SOURCE,month)
-                dest=folder(d,new,month+"_V093_REUSE_CANDIDATE")
                 name="V095_V093_"+SOURCE+"_"+month+"_"+digest(b)[:24]+".zip"
                 fid,action=save(d,dest,name,b)
                 completed.append({"month":month,"source":SOURCE,"member_count":members,
@@ -70,15 +86,15 @@ def main():
             except Exception as e:
                 blocked.append({"month":month,"name_digest":digest(item["name"].encode())[:12],
                                 "reason":type(e).__name__+":"+str(e)[:110]})
-        if len(completed)>=MAX_SOURCE_FILES:break
+        if len(completed)>=MAX_SOURCE_FILES or scanned>=MAX_INSPECT_PER_RUN:break
     out={"source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),"completed_archives":completed,
-         "blocked":blocked[:50],"scanned":scanned,
+         "blocked":blocked[:50],"scanned":scanned,"previously_reused_archive_skips":reused,
          "new_bronze_candidate_archives":sum(x["action"]=="CREATED" for x in completed),
          "native_dataset_schema_verified":False,"silver_conversion":"BLOCKED_PENDING_APPROVED_ADAPTER",
          "gold_conversion":"BLOCKED_PENDING_SILVER_AND_PIT",
          "historical_pit_verified":False,"year_complete":False}
     (OUT/"result.json").write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
     print(json.dumps({"source":SOURCE,"new_archives":out["new_bronze_candidate_archives"],
-                      "scanned":scanned,"blocked":len(blocked),
+                      "scanned":scanned,"blocked":len(blocked),"unchanged_archive_skipped":reused,
                       "silver":out["silver_conversion"],"gold":out["gold_conversion"]},ensure_ascii=False))
 if __name__=="__main__":main()
