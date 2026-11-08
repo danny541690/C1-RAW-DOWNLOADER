@@ -1,11 +1,12 @@
 name: JARVIS v0.95 2026 TAIFEX independent Bronze and downstream gate
-# 2026 source-scoped writer; v0.93 archive-byte admission first; typed Silver/Gold adapter not yet certified.
+# 2026 source-scoped writer; verified Bronze -> Silver -> available descriptive Gold immediately; PIT remains blocked.
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/v095-2026-source-taifex.yml'
+      - 'scripts/v095_2026_immediate_silver_gold.py'
   schedule:
     - cron: '12,42 * * * *'
 permissions:
@@ -41,7 +42,7 @@ jobs:
           print('SOURCE_G0_MARKET_STATE:',state)
           PY
       - name: Install exact common Drive, Arrow and source adapter dependencies once
-        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl google-api-python-client google-auth google-auth-httplib2
       - name: Check non-release gates and compile source-specific adapters
         run: |
           python - <<'PY'
@@ -50,9 +51,11 @@ jobs:
           assert x['BULK_COPY_APPROVED'] is False and x['RELEASE_APPROVED'] is False
           print('V095_SOURCE_ISOLATED_CANDIDATE_ONLY')
           PY
-          python -m py_compile scripts/v095_2026_four_source_archive_intake.py
+          python -m py_compile scripts/v095_2026_four_source_archive_intake.py scripts/v095_2026_immediate_silver_gold.py
       - name: Admit SHA CRC manifest-proven v0.93 Bronze archive candidates only
         run: python -m scripts.v095_2026_four_source_archive_intake
+      - name: Convert available Bronze into Silver then supported descriptive Gold immediately
+        run: python -u -m scripts.v095_2026_immediate_silver_gold
       - name: Preserve full per-partition actual results, exceptions and provenance
         if: always()
         uses: actions/upload-artifact@v4
@@ -60,5 +63,7 @@ jobs:
           name: v095-2026-taifex-source-${{ github.run_id }}
           path: |
             v095_2026_source_archives/result.json
+            v095_2026_immediate_downstream/result.json
+            v095_2026_immediate_downstream/missing_indicators.json
           if-no-files-found: warn
           retention-days: 90
