@@ -139,7 +139,7 @@ def parse_taifex(z,month,bronze_id,archive_sha,manifest=None):
         filename=members[0];raw=z.read(filename)
         if sha(raw)!=units[0].get("sha256"):raise ValueError("TAIFEX_HISTORY_MEMBER_SHA")
         evidence=inspect_month_csv(raw,{"資料集":dataset,"期間":month})
-        reader=csv.reader(io.StringIO(native_text(raw).rstrip(chr(26)+" \\t\\r\\n")))
+        reader=csv.reader(io.StringIO(native_text(raw).rstrip(chr(26)+chr(32)+chr(9)+chr(13)+chr(10))))
         header=next(reader,[])
         if header!=SCHEMAS[dataset]:raise ValueError("TAIFEX_HISTORY_HEADER_CONTRACT_MISMATCH")
         rows=[]
