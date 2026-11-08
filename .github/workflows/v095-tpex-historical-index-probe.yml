@@ -24,7 +24,10 @@ jobs:
             'https://www.tpex.org.tw/openapi/v1/tpex_index',
             'https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/st41_result.php?l=zh-tw&d=89%2F01&s=0%2Casc%2C0&o=htm',
             'https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/st41_result.php?l=zh-tw&d=115%2F01&s=0%2Casc%2C0&o=htm',
-            'https://www.tpex.org.tw/www/zh-tw/afterTrading/indexSummary?date=2026%2F01%2F02&response=json'
+            'https://www.tpex.org.tw/www/zh-tw/afterTrading/indexSummary?date=2026%2F01%2F02&response=json',
+            'https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/st41_result.php?l=zh-tw&d=89%2F01&o=json',
+            'https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/st41_result.php?l=zh-tw&d=99%2F01&o=json',
+            'https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/st41_result.php?l=en-us&d=2000%2F01&o=json'
           ]
           for url in paths:
             try:
@@ -34,7 +37,7 @@ jobs:
                 try:
                   value=json.loads(raw);shape={'type':type(value).__name__,'rows':len(value.get('data',[])) if isinstance(value,dict) else len(value),
                         'keys':list(value)[:7] if isinstance(value,dict) else [],
-                        'first':str(value[:1] if isinstance(value,list) else value.get('data',[])[:1])[:180]}
+                        'first':str(value[:1] if isinstance(value,list) else value.get('data',value.get('aaData',[]))[:1])[:180]}
                 except Exception:shape={'html_head':raw[:160].decode('utf-8','replace')}
                 print(json.dumps({'url':url,'status':res.status,'ctype':res.headers.get('Content-Type'),
                    'bytes':len(raw),'shape':shape},ensure_ascii=False),flush=True)
