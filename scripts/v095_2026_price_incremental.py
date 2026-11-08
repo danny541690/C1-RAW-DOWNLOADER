@@ -31,6 +31,7 @@ ACTIVE_SOURCES=(ACTIVE_SOURCE,) if ACTIVE_SOURCE else SOURCES
 SOURCE_PREFIX=PREFIX+ACTIVE_SOURCE+"_" if ACTIVE_SOURCE else PREFIX
 BATCH_DAYS=min(10,max(1,int(os.getenv("V095_2026_BATCH_DAYS","6"))))
 MAX_REPAIR_PER_RUN=2
+BRONZE_ONLY=os.getenv("V095_BRONZE_ONLY","0")=="1"
 CUTOFF=min(dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date(),dt.date(2026,12,31))
 
 def dates():
@@ -128,6 +129,11 @@ def single(d,source,day):
     month=day[:7];stamp=month.replace("-","")
     bm=base.folder(d,cfg["bronze"],month)
     bronze_id,ba=base.save(d,bm,"V095_"+stamp+"_"+source+"_"+day+"_"+digest[:20]+".json",raw)
+    if BRONZE_ONLY:
+        return {"source":source,"date":day,"rows":len(rows),"gold_rows":0,
+                "nonnumeric_ohlc_rows":unparsed,"source_response_rows":facts.get("rows"),
+                "actions":[ba],"bronze_id":bronze_id,"bronze_sha256":digest,
+                "acquisition":acquisition,"pit_verified":False,"stage":"BRONZE_ONLY"}
     for row in rows:
         row.update(bronze_file_id=bronze_id,bronze_sha256=digest,source_url=job["url"])
     sb=base.to_parquet(rows);s_sha=base.sha(sb)
@@ -206,7 +212,7 @@ def main():
             "next_offset":start+len(selected),"eligible_weekdays_so_far":len(calendar),
             "selected_new_days":selected,"completed":done,"failed":failed,
             "retry_queue_length":len(queue),"verified_market_closed":closed,"created_by_stage":dict(new_files),
-            "production_release":False,"year_complete":False,"pit_certified":False}
+            "production_release":False,"year_complete":False,"pit_certified":False,"stage_mode":"BRONZE_ONLY" if BRONZE_ONLY else "LEGACY_COUPLED"}
     (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     receipt={"generation":state["generation"]+1,"offset":start+len(selected),
              "retry_queue":queue,"prior_sha":state["prior_sha"],"run_id":os.getenv("GITHUB_RUN_ID"),
