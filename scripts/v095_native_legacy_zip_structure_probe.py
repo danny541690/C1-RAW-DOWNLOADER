@@ -52,6 +52,7 @@ def main():
                                 lines=native.splitlines()
                                 record["first_line_field_candidates"]=next(csv.reader(lines[:1]),[])[:22] if lines else []
                                 record["first_lines_count"]=len(lines)
+                                record["first_six_csv_rows"]=[row[:12] for row in list(csv.reader(lines[:10]))[:6]]
                                 record["csv_first_line_numeric"]=sum(1 for v in record["first_line_field_candidates"] if re.fullmatch(r"[-+]?\\d+",v))
                     if len(record["manifest_paths"])==1:
                         name=record["manifest_paths"][0]
