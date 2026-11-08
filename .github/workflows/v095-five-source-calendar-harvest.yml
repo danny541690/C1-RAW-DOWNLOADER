@@ -1,0 +1,77 @@
+name: JARVIS v0.95 five remaining source market-publication history harvest
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-five-source-calendar-harvest.yml'
+      - 'scripts/v095_five_source_calendar_harvest.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-five-source-calendar-evidence-shards
+  cancel-in-progress: false
+jobs:
+  source-specific-historical-evidence:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        include:
+          - {source: 'TPEx', first: 2000, last: 2004}
+          - {source: 'TPEx', first: 2005, last: 2009}
+          - {source: 'TPEx', first: 2010, last: 2014}
+          - {source: 'TPEx', first: 2015, last: 2019}
+          - {source: 'TPEx', first: 2020, last: 2023}
+          - {source: 'TPEx', first: 2024, last: 2026}
+          - {source: 'MOPS', first: 2000, last: 2004}
+          - {source: 'MOPS', first: 2005, last: 2009}
+          - {source: 'MOPS', first: 2010, last: 2014}
+          - {source: 'MOPS', first: 2015, last: 2019}
+          - {source: 'MOPS', first: 2020, last: 2023}
+          - {source: 'MOPS', first: 2024, last: 2026}
+          - {source: 'TAIFEX', first: 2000, last: 2026}
+          - {source: 'TDCC', first: 2000, last: 2026}
+          - {source: 'NDC', first: 2000, last: 2026}
+    runs-on: ubuntu-latest
+    timeout-minutes: 38
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Preflight source-specific calendar/availability invariants
+        run: |
+          python -m py_compile scripts/v095_five_source_calendar_harvest.py
+          python -m unittest discover -s tests -p 'test_v095_market_release_calendar_2000_2026.py' -v
+      - name: Fetch and date-validate official history or evidence of source limitations
+        run: |
+          python -u -m scripts.v095_five_source_calendar_harvest --source '${{ matrix.source }}' --start ${{ matrix.first }} --end ${{ matrix.last }} --batch 120
+      - name: Preserve native source ZIP, dated evidence and per-request error ledger with SHA
+        env:
+          G0_SOURCE: ${{ matrix.source }}
+        run: |
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+          python - <<'PY'
+          import pathlib,json,os
+          from scripts.v095_market_release_calendar_drive_archive import drive,archive
+          folder=pathlib.Path('v095_five_source_calendar')
+          d=drive()
+          receipts=[archive(d,p) for p in sorted(folder.glob('*')) if p.is_file()]
+          print(json.dumps({'source':os.environ['G0_SOURCE'],'native_and_ledger_files_archived':len(receipts),
+               'verified_sha_readback':True,'historical_market_calendar_certified':False},ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-g0-five-sources-${{ matrix.source }}-${{ matrix.first }}-${{ matrix.last }}-${{ github.run_id }}
+          path: v095_five_source_calendar/
+          retention-days: 90
+          if-no-files-found: warn
