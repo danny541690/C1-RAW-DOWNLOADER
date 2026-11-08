@@ -228,31 +228,26 @@ def candidate_files(d):
             if match and match[1]==m["name"][:7]:output.append((match[1],f,match[2]))
     return output
 def parse_ndc(d):
+    from scripts.v093_ndc_independent import parse_bundle
     original,h=load_sha_archived(d,"ndc_current_revised_source","zip")
     receipt_raw,_=load_sha_archived(d,"ndc_monthly_manifest","json")
     meta=json.loads(receipt_raw)
     if meta.get("native_zip_sha256")!=h:raise ValueError("NDC_NATIVE_ZIP_SHA")
-    rows=[];seen=set()
-    with zipfile.ZipFile(io.BytesIO(original)) as z:
-        if z.testzip():raise ValueError("NDC_ZIP_CRC")
-        for filename in z.namelist():
-            if not filename.lower().endswith(".xlsx"):continue
-            content=z.read(filename);bsha=sha(content)
-            wb=load_workbook(io.BytesIO(content),read_only=True,data_only=True)
-            for sheet in wb:
-                for idx,r in enumerate(sheet.iter_rows(values_only=True),1):
-                    if not any(v is not None and str(v).strip() for v in r):continue
-                    cells=[v.isoformat() if isinstance(v,(dt.datetime,dt.date)) else str(v)
-                           if v is not None else None for v in r]
-                    key=(filename,sheet.title,idx)
-                    if key in seen:raise ValueError("NDC_DUPLICATE_NATIVE_ROW")
-                    seen.add(key)
-                    rows.append(dict(source="NDC",workbook=filename,sheet=sheet.title,
-                      row_index=idx,source_native_cells_json=json.dumps(cells,ensure_ascii=False),
-                      native_workbook_sha256=bsha,source_zip_sha256=h,
-                      observation_month_certified=False,published_at=None,pit_verified=False))
-            wb.close()
-    if not rows:raise ValueError("NDC_WORKBOOK_EMPTY")
+    tables=parse_bundle(original)
+    rows=[]
+    for table in tables:
+        for month,values in sorted(table["rows"].items()):
+            if month<"2000-01" or month>"2026-11":continue
+            rows.append(dict(source="NDC",observation_month=month,
+              original_table=table["name"],source_row_index=table["row_numbers"][month],
+              native_header_json=json.dumps(table["header"],ensure_ascii=False),
+              native_values_json=json.dumps(values,ensure_ascii=False),
+              source_zip_sha256=h,observation_month_certified=True,
+              historical_vintage_certified=False,published_at=None,pit_verified=False))
+    if not rows:raise ValueError("NDC_NO_OFFICIAL_OBSERVATION_ROWS")
+    months={r["observation_month"] for r in rows}
+    if len(months)!=meta.get("month_rows"):
+        raise ValueError("NDC_OFFICIAL_MANIFEST_MONTH_COUNT_DIFFERENCE")
     return rows,h
 def missing_factor_register(source,done,blocked):
     import csv as _csv
