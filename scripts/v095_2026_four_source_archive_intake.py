@@ -30,25 +30,48 @@ def ls(d,folder):
 OUT=pathlib.Path("v095_2026_source_archives")
 def digest(b):return hashlib.sha256(b).hexdigest()
 def validate_zip(b,source,month):
+    """Accept only two documented manifest layouts, never unlabeled ZIPs.
+
+    V093_UNIT_MANIFEST: source/month/units[file,sha256]
+    TDCC_NATIVE_ORIGINALS: source/period/immutable_originals[archive_path,sha256]
+    Both must be SHA-verifiable at member level; no legacy bare-archive promote.
+    """
     with zipfile.ZipFile(io.BytesIO(b)) as z:
         infos=z.infolist()
-        if not infos or len(infos)>200 or sum(x.file_size for x in infos)>150_000_000:raise ValueError("ZIP_EXPANSION_LIMIT")
-        if any(x.flag_bits & 1 or x.file_size>MAX_BYTES or x.filename.startswith("/") or ".." in pathlib.PurePosixPath(x.filename).parts for x in infos):raise ValueError("UNSAFE_ARCHIVE")
+        if not infos or len(infos)>200 or sum(x.file_size for x in infos)>150_000_000:
+            raise ValueError("ZIP_EXPANSION_LIMIT")
+        if any(x.flag_bits & 1 or x.file_size>MAX_BYTES or x.filename.startswith("/")
+               or ".." in pathlib.PurePosixPath(x.filename).parts for x in infos):
+            raise ValueError("UNSAFE_ARCHIVE")
         if z.testzip():raise ValueError("ZIP_CRC")
-        manifests=[x.filename for x in infos if x.filename.endswith("manifest.json")]
+        manifests=[x.filename for x in infos if pathlib.PurePosixPath(x.filename).name=="manifest.json"]
         if len(manifests)!=1:raise ValueError("MISSING_OR_DUPLICATE_MANIFEST")
         m=json.loads(z.read(manifests[0]))
-        if m.get("source")!=source or m.get("month")!=month:raise ValueError("MANIFEST_SOURCE_MONTH_MISMATCH")
-        units=m.get("units",[])
-        if not isinstance(units,list) or not units:raise ValueError("MANIFEST_NO_UNITS")
-        rawmembers={pathlib.PurePosixPath(x.filename).name for x in infos if x.filename!=manifests[0]}
-        for x in units:
-            if not isinstance(x,dict) or not x.get("file") or pathlib.PurePosixPath(x["file"]).name not in rawmembers:
-                raise ValueError("MANIFEST_MEMBER_MISSING")
-            if x.get("sha256"):
-                member=next(i.filename for i in infos if pathlib.PurePosixPath(i.filename).name==pathlib.PurePosixPath(x["file"]).name)
-                if digest(z.read(member))!=x["sha256"]:raise ValueError("MANIFEST_MEMBER_SHA_MISMATCH")
-        return len(units)
+        manifest_period=m.get("month",m.get("period"))
+        if m.get("source")!=source or manifest_period!=month:
+            raise ValueError("MANIFEST_SOURCE_MONTH_MISMATCH")
+        if isinstance(m.get("units"),list) and m["units"]:
+            entries=m["units"];key="file";fmt="V093_UNIT_MANIFEST"
+        elif isinstance(m.get("immutable_originals"),list) and m["immutable_originals"]:
+            entries=m["immutable_originals"];key="archive_path";fmt="TDCC_NATIVE_ORIGINALS"
+        else:raise ValueError("UNSUPPORTED_MANIFEST_VERSION")
+        archive_names={i.filename for i in infos}
+        declared=set()
+        for x in entries:
+            if not isinstance(x,dict):raise ValueError("MANIFEST_MEMBER_TYPE")
+            path=x.get(key)
+            if not isinstance(path,str) or path not in archive_names or path==manifests[0]:
+                raise ValueError("MANIFEST_MEMBER_MISSING_OR_AMBIGUOUS")
+            if path in declared:raise ValueError("MANIFEST_DUPLICATE_MEMBER")
+            declared.add(path)
+            member_sha=x.get("sha256")
+            if not isinstance(member_sha,str) or len(member_sha)!=64 or any(c not in "0123456789abcdef" for c in member_sha):
+                raise ValueError("MANIFEST_MEMBER_SHA_REQUIRED")
+            if digest(z.read(path))!=member_sha:raise ValueError("MANIFEST_MEMBER_SHA_MISMATCH")
+        if set(archive_names)-{manifests[0]}!=declared:
+            raise ValueError("UNDECLARED_OR_MISSING_ARCHIVE_MEMBER")
+        return len(entries)
+
 def main():
     OUT.mkdir(exist_ok=True)
     today=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date()
@@ -87,14 +110,16 @@ def main():
                 blocked.append({"month":month,"name_digest":digest(item["name"].encode())[:12],
                                 "reason":type(e).__name__+":"+str(e)[:110]})
         if len(completed)>=MAX_SOURCE_FILES or scanned>=MAX_INSPECT_PER_RUN:break
+    import collections
+    blocked_reasons=dict(collections.Counter(x.get("reason",x.get("state","")).split(":")[0] for x in blocked))
     out={"source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),"completed_archives":completed,
-         "blocked":blocked[:50],"scanned":scanned,"previously_reused_archive_skips":reused,
+         "blocked":blocked[:50],"blocked_reason_counts":blocked_reasons,"scanned":scanned,"previously_reused_archive_skips":reused,
          "new_bronze_candidate_archives":sum(x["action"]=="CREATED" for x in completed),
          "native_dataset_schema_verified":False,"silver_conversion":"BLOCKED_PENDING_APPROVED_ADAPTER",
          "gold_conversion":"BLOCKED_PENDING_SILVER_AND_PIT",
          "historical_pit_verified":False,"year_complete":False}
     (OUT/"result.json").write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
     print(json.dumps({"source":SOURCE,"new_archives":out["new_bronze_candidate_archives"],
-                      "scanned":scanned,"blocked":len(blocked),"unchanged_archive_skipped":reused,
+                      "scanned":scanned,"blocked":len(blocked),"blocked_reasons":blocked_reasons,"unchanged_archive_skipped":reused,
                       "silver":out["silver_conversion"],"gold":out["gold_conversion"]},ensure_ascii=False))
 if __name__=="__main__":main()
