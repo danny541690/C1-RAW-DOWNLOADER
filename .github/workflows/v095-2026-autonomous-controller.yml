@@ -1,0 +1,37 @@
+name: JARVIS v0.95 2026 autonomous source and QA supervisor
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-autonomous-controller.yml'
+  schedule:
+    - cron: '17,47 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-v095-2026-autonomous-controller-single
+  cancel-in-progress: false
+jobs:
+  supervise-2026:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate controller
+        run: python -m py_compile scripts/v095_2026_autonomous_controller.py
+      - name: Wake overdue existing 2026 workflows only
+        run: python -m scripts.v095_2026_autonomous_controller
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Keep dispatch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-autonomous-controller-${{ github.run_id }}
+          path: v095_2026_controller/
+          retention-days: 60
