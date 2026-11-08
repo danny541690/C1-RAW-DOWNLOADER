@@ -1,0 +1,67 @@
+name: JARVIS v0.95 TWSE annual official holidays 2000-2026 harvesting
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-historical-twse-holiday-years.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-historical-official-yearly-holidays
+  cancel-in-progress: false
+jobs:
+  official-yearly-calendar:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - {first: 2000, last: 2008}
+          - {first: 2009, last: 2017}
+          - {first: 2018, last: 2026}
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate offline dated event parser
+        run: |
+          python -m py_compile scripts/v095_historical_official_holidays_twse.py
+          python - <<'PY'
+          import json
+          from scripts.v095_historical_official_holidays_twse import native_year
+          example={'stat':'OK','title':'中華民國115年有價證券集中交易市場開休市日期表',
+            'data':[['01月01日','開國紀念日','放假'],['01月02日','開始交易','開始交易'],['02月12日','市場無交易，僅辦理結算交割作業',''],
+                ['02月15日','農曆春節','放假'],['02月16日','農曆春節','放假']]}
+          items=native_year(json.dumps(example,ensure_ascii=False).encode(),2026)
+          assert len(items)==5 and items[2]['state']=='CONFIRMED_SETTLEMENT_ONLY'
+          PY
+      - name: Fetch and classify year-specific official calendar without pretending absence equals holiday
+        run: python -u -m scripts.v095_historical_official_holidays_twse --start ${{ matrix.first }} --end ${{ matrix.last }}
+      - name: Save immutable native yearly evidence and audit report in Drive
+        run: |
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+          python - <<'PY'
+          import pathlib,json
+          from scripts.v095_market_release_calendar_drive_archive import drive,archive
+          d=drive();a=[archive(d,p) for p in sorted(pathlib.Path('v095_official_holidays').glob('twse_*'))]
+          print(json.dumps({'historical_holiday_archive_shard_files':len(a),'remote_sha_verified':True,
+             'fully_verified_closures_all_years':False}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-annual-holidays-${{ matrix.first }}-${{ matrix.last }}-${{ github.run_id }}
+          retention-days: 90
+          path: v095_official_holidays/
+          if-no-files-found: warn
