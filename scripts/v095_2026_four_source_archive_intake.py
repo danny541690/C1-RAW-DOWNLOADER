@@ -122,6 +122,12 @@ def validate_zip(b,source,month):
             if not lo or not hi or lo[:7]!=month or hi[:7]!=month:
                 raise ValueError("TAIFEX_NATIVE_CSV_MONTH_INCONSISTENT")
             return 1
+        if len(manifests)==0 and source=="TDCC" and "capture_receipts.json" in z.namelist():
+            from scripts.v095_legacy_tdcc_mirror_adapter import validate_capture_zip
+            # Legacy third-party archive with exact native CSV receipt/row SHA.
+            # Do not invent a manifest or misattribute to official TDCC.
+            details=validate_capture_zip(z,month)
+            return len(details)
         if len(manifests)!=1:raise ValueError("MISSING_OR_DUPLICATE_MANIFEST")
         m=json.loads(z.read(manifests[0]))
         manifest_period=m.get("month",m.get("period"))
@@ -322,6 +328,7 @@ def main():
                                   "native_csv_adapter_evidence":native_csv_evidence,
                                   "sha256":digest(b),"file_id":fid,"action":action,
                                   "state":("STORAGE_SHA_CRC_MANIFEST_PASS_NATIVE_SCHEMA_PENDING" if had_native_manifest
+                                   else "TDCC_EXTERNAL_MIRROR_CSV_SHA_SCHEMA_ONLY_NOT_OFFICIAL" if SOURCE=="TDCC"
                                    else "TAIFEX_SINGLE_CSV_NATIVE_SCHEMA_DATE_PASS_PIT_PENDING")})
             except Exception as e:
                 reason=type(e).__name__+":"+str(e)[:110]
