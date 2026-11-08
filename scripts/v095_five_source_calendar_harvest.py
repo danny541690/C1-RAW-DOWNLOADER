@@ -57,7 +57,7 @@ def dated_evidence(source,raw,year,month,code):
         # Record bytes for manual schema/PIT verification, not a publication day.
         txt=public_html_content(raw)
         roc=year-1911
-        if not re.search(r"(?<!\\d)"+str(roc)+r"\\s*年\\s*"+str(month)+r"\\s*月",txt):
+        if not re.search(r"(?<!\d)"+str(roc)+r"\s*年\s*"+str(month)+r"\s*月",txt):
             raise ValueError("MOPS_OFFICIAL_MONTH_YEAR_NOT_CONFIRMED")
         if "查無" in txt[:500] or "not found" in txt[:500].lower():raise ValueError("OFFICIAL_EMPTY_OR_ERROR_PAGE")
         if len(re.findall(r"<tr",raw.decode("cp950","replace"),re.I))<20:
