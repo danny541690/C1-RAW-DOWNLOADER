@@ -1,0 +1,55 @@
+name: JARVIS v0.95 2026 TDCC independent Silver Gold candidate worker
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-downstream-tdcc.yml'
+  schedule:
+    - cron: '28 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2026-downstream-tdcc-single-writer
+  cancel-in-progress: false
+jobs:
+  downstream-tdcc:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V095_BRONZE_SOURCE: 'TDCC'
+      V095_DOWNSTREAM_BATCH: '6'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify fail-closed 2026 candidate scope
+        run: |
+          python -m py_compile scripts/v095_2026_immediate_silver_gold.py
+          python - <<'PY'
+          import json
+          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert not f['BULK_COPY_APPROVED'] and not f['RELEASE_APPROVED']
+          print('SOURCE_SCOPED_CANDIDATE_ONLY;NO_443_RELEASE')
+          PY
+      - name: Install separate transform dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl google-api-python-client google-auth google-auth-httplib2
+      - name: Read existing verified Bronze and incrementally transform to Silver and descriptive Gold
+        run: python -u -m scripts.v095_2026_immediate_silver_gold
+      - name: Preserve per-partition downstream and missing-indicator receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-downstream-tdcc-${{ github.run_id }}
+          path: |
+            v095_2026_immediate_downstream/result.json
+            v095_2026_immediate_downstream/missing_indicators.json
+          if-no-files-found: warn
+          retention-days: 90
