@@ -1,0 +1,45 @@
+# JARVIS C1 v0.95 — 2025/01/01 to 2026 latest published data — GitHub unattended operating contract
+Revision R1; 2026-11-08 Asia/Taipei. This is an operational candidate setup, NOT a production/PIT/443-factor completion certificate.
+
+## Single instruction, persistent operations
+ChatGPT issues one authorization/request to configure GitHub workflows. After initial install, GitHub Actions scheduled workflows continue downloading, SHA-verifying, recording exceptions and converting already validated Bronze without additional ChatGPT prompts. ChatGPT is not the executor and does not continuously observe runs; GitHub workflow runs and Google Drive SHA-backed evidence are authoritative. Repeated GitHub cron triggers are best-effort and may be delayed, queued or skipped by capacity/concurrency. Do not claim 100% unattended recovery when adapters or 443 definitions are missing.
+
+## Scope and frozen gates
+2025-01-01 through date of actual official publication, not forecast or future days; 2026-11-08 is a Sunday so do not assume current-date cash trades. Covered: TSE/OTC daily or longer; emerging market raw preservation only, no indicator analysis; monetary amount expressed in 億元; no tick/minute feeds or broker-branch unlicensed detailed transactions.
+governance/v095/PHASE1_FLAGS.json keeps BULK_COPY_APPROVED=false and RELEASE_APPROVED=false. This 2025+2026 bounded processing is not approval for bulk historical 2000-2024 import or production release.
+
+## Logical jobs for each year (22), total 44
+D01-D06: .github/workflows/v095-{year}-source-{twse,tpex,mops,tdcc,taifex,ndc}.yml, six source-scoped single writers, incremental and with source/month/date controls.
+Q01-Q06: .github/workflows/v095-{year}-qa-{twse,tpex,mops,tdcc,taifex,ndc}.yml; five-class exception parsing from durable recent source receipts, write Drive SHA-verified exception artifacts. Q is not yet an autonomous adapter repairer.
+S01-S06: .github/workflows/v095-{year}-downstream-{twse,tpex,mops,tdcc,taifex,ndc}.yml; only read existing verified Bronze, produce typed Silver and available descriptive Gold; source-specific SHA-protected versions, no future data.
+G01/G02: .github/workflows/v095-{year}-gold-market.yml and v095-{year}-gold-fundamental.yml; 443-catalog READINESS audit split 339 market and 104 other. These do NOT compute 443 production indicators.
+L01: .github/workflows/v095-{year}-lineage-audit.yml, evidence/exception collection. Only some newly produced equity candidate stages have row-level Bronze/Silver/Gold SHA bidirectional verification. 443 full dependency reverse lineage remains BLOCK.
+C01: .github/workflows/v095-{year}-autonomous-controller.yml, 30-minute idle source workflow dispatch on top of native cron schedules; source-specific GitHub concurrency preserves at most one active writer for a source/year. Year 2025 and year 2026 have distinct cursors. Other annual QA, cross-lane and integrity checks are auxiliary jobs outside 44 logical jobs.
+
+## Ordered source fallback
+1. Reuse existing verified v0.95 native original (remote SHA re-read). 2. Read signed/validated native v0.93 original ZIP or JSON in actual Drive folder year 2025 (ID 1VB9s43UHEQeZbPbLHOCcFAQewUDfjBOm) or 2026 (ID 1CAlRsbDEKTrb9BJlJ604SwYwQWRU3lpK); validate source/month/date, native schema, CRC and member SHA before versioned copy to v0.95 isolated candidate folders. 3. If exact official supported adapter is available, request the official source and independently validate. 4. FinMind FREE only when exact missing official unit is proven, dataset+market+unit+time+frequency equivalent and rolling rate budget is available; keep fallback as a separately attributed source. **Currently four non-price 2025 source workers are migration-first only, not all official/freemind fallbacks. v0.95 free exact-gap integration across all source types remains pending.** Never mislabel an inaccessible official HTTP endpoint as proof official data is unavailable.
+
+## Clock, money and data validity
+2026 equity market day source calendar is signed, but 2025 historical market calendar is NOT complete. A 2025 weekday is a request candidate, not a guaranteed trading day. Distinguish trading confirmed, closure confirmed, status unverified, absent official response, not yet published, PIT unknown.
+Silver normalizes TSE/OTC ticker and dates, currency 億元, detects duplicate day/stock and invalid values; unsupported source dataset adapters produce NULL and record a reason. Gold must use exact formula, sufficient prior history, historical release vintage and PIT as-of. Do not look ahead. No synthetic zero for missing factors.
+The actual canonical 443-catalog Drive file ID 1lbWk0qRZZFjpV-yL1gZNUb2pCZmHDHW7 has 443 rows with all 443 formula fields DEFINITION_PENDING and catalog flags release_approved=false, pit_verified=false (verified on 2026-11-08). The proposed 339/104 Gold worker split is catalog readiness only. Real descriptive downstream Gold exists, but full 443 generation is not yet technically available or certified.
+
+## Five defects and incremental recovery
+(1) download/network; (2) empty/corrupt/CRC; (3) date/calendar/publication; (4) field/schema/unit; (5) numeric/semantic anomaly. Every source or conversion run must record Run ID, source/dataset/date/market, original filename/URL, native SHA, Bronze/Silver/Gold SHA where present, exact exception, attempt count and provenance. Source download retries max 3 including first attempt, then explicit queue/quarantine and leave NULL; deterministic data adapter errors must not be endlessly re-downloaded. Subsequent QA must target only the recorded failed partition, with adapter-code version-aware reprocessing. Current QA only aggregates recent receipts; full permanent cross-run deduplicated repair queue and automatic schema adapter fixes are not implemented.
+2025 TDCC source original source folder can exceed 15,000 metadata entries; fixed to server-side ZIP filtering plus bounded paging. If no valid ZIP, record NO_V093_ZIP_CANDIDATE_NOT_PROVEN_OFFICIAL_MISSING; do not claim official source data absent. 2026 TAIFEX had duplicate Drive quarantine ledger filename; fixed new run-unique ledger names while checking SHA of old and new forms.
+
+## Audited real first-run evidence
+GitHub two-year 44-lane config/compile check Run 42498288543 SUCCESS, 44/44 logical lanes, 0 static errors, six unresolved production/quality caveats. 2025 first Bronze: TWSE run 42497402737 completed 9/10 request candidates; TPEx run 42497405892 9/10; source SHA receipts and separate 2025 checkpoints committed. 2025 Silver/descriptive Gold: TWSE run 42497577604 converted 6 partitions and verified 6 triplets forward/backward SHA; TPEx run 42497582795 did likewise. MOPS run 42497540496 moved 3 SHA/CRC-verified native archives and downstream run 42497593816 converted 3 supported candidate partitions. TAIFEX/NDC 2025 first-pass native candidate additions 0, not a verified gap coverage rate. NDC 2025 vintage typed Silver/Gold blocked. 2025 TDCC initial metadata scan exceeded bound and was repaired in scripts; retry run 42497801604 succeeded but produced zero archive additions. Six 2025 source QA runs completed SUCCESS. 2025 autonomous 6-source controller Run 42497932609 SUCCESS.
+2025 independent L01 initially failed due malformed Drive search name filter, fixed and retested Run 42498204459 SUCCESS. 2026 source/QA/downstream lanes and checkpoint remain operational. Weekday cursor counts ARE NOT a proof of every official source expected-day/stock presence. Drive and GitHub 2026 controls must remain separate.
+
+## Acceptance tiers and unresolved P0
+Bronze: expected source-specific units versus validated native SHA; legacy candidate admission must not be confused with official dataset semantic QA.
+Silver: only typed fully validated native rows; row uniqueness, units, missing value and source SHA.
+Gold: each of 443 item formulas and dependencies actually computed or explicitly DISABLED; must count values, warmup, absence/PIT, no leakage.
+Lineage: both directions per row, exact input and downstream immutable hash, source vintage and formula code version, no unresolved source/metric join.
+Completion requires all four gates and measured denominators. This contract has not achieved them.
+P0 queue: (A) finish 2025/2026 four-source official adapters + verified v0.93 reuser; (B) exact FinMind free fallback gated on missing unit and quota; (C) permanent source-specific manifest/checkpoint/retry dedup; (D) typed nonprice source formats; (E) define 443 formula DAGs and PIT-vintage availability; (F) produce whole-period backward/forward row lineage and numerical coverages. Treat every stage's GitHub SUCCESS separately from actual accepted data coverage.
+
+## Operational monitoring
+GitHub Actions page: https://github.com/danny541690/C1-RAW-DOWNLOADER/actions
+Every worker run uploads expiring GitHub logs and stage source results; durable per-run Drive receipt publisher writes with SHA readback. Official raw SHA provenance and exception classification take precedence over workflow green ticks. Failure recovery is bounded; no infinite retry loops.
