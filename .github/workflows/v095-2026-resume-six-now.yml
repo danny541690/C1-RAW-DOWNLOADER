@@ -1,0 +1,37 @@
+name: JARVIS v0.95 2026 resume six source incremental downloads now
+# One-shot dispatch launcher: each source worker owns its own Drive checkpoint and writer lock.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-resume-six-now.yml'
+permissions:
+  contents: read
+  actions: write
+jobs:
+  dispatch-six-existing-source-workers:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check production gate and dispatch only existing incremental source workers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json
+          flags=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert flags['BULK_COPY_APPROVED'] is False and flags['RELEASE_APPROVED'] is False
+          print('DISPATCH_ONLY_SOURCE_SCOPED_INCREMENTAL_WORKERS')
+          PY
+          set -euo pipefail
+          for src in twse tpex mops tdcc taifex ndc; do
+            wf="v095-2026-source-${src}.yml"
+            echo "Dispatching ${wf}"
+            gh workflow run "${wf}" --repo "${GITHUB_REPOSITORY}" --ref main
+          done
+          echo "Six source workers requested. Their own manifests, checkpoints and QA gates remain authoritative."
