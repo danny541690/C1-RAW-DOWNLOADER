@@ -77,3 +77,25 @@
 - 避免假缺漏的六來源日期總表：`scripts/v095_g0_six_source_date_quality.py`
 
 記錄規則：此報告是按 2026-11-08 已完成的執行收據建立。未來來源完成或失敗要以新 Run 的收據新增版本，不得靜默改寫舊報告。
+
+## G. 日期化進度管理（2026-11-08，新格式已成功寫入 Google Drive）
+
+**基準：2026-11-08 15:37 台灣時間；即時來源為 SHA 驗證的 Google Drive durable checkpoint，不以歷史回答當即時狀態。**
+
+| 來源 | 進度所指的日期 | 下一待處理日期 / 驗收 | 日期性質 |
+|---|---|---|---|
+| TWSE | 已巡檢平日候選至 **2026-09-17**（offset=186；Run #42458778942） | **2026-09-18**；另外 **2026-07-10** 有失敗收據 | 巡檢游標，不表示全部原始日檔成功 |
+| TPEx | 已巡檢平日候選至 **2026-09-17**（offset=186；同上） | **2026-09-18**；另外 **2026-07-10** 有失敗收據 | 巡檢游標，不能算完整率 |
+| MOPS | 2026-01～2026-09 各有部分候選封存檔 | 檢查尚缺的原始發布日期及每個月份應有的報表 | 月份存在候選檔，不是完整月度履歷 |
+| TDCC | 2026-08～2026-10 有候選封存檔 | 補歷史週基準日與公告時間，仍有個別無 manifest ZIP 隔離 | 週基準日與發布日分離 |
+| TAIFEX | 2026-09～2026-10 有候選封存檔 | 整理 ZIP 內有效交易日期與錯放月份檔、來源格式異常 | 月份有候選封存，不表示全月行情完整 |
+| NDC | **321 個觀察月份**（官方原始資料 ZIP 的修訂版） | 補真正首次公布日期與原始歷史版本 | 觀察月不等於 PIT 發布時點 |
+
+### Google Drive 最新日期進度表
+
+- CSV：https://drive.google.com/file/d/1SUbQ_AJE7QdkxdYimHbTgFo_lpuydp-i/view
+- JSON：https://drive.google.com/file/d/1hd5Vxt7UsNoq0p_8qmjJzSE5CR3L79vU/view
+- Markdown：https://drive.google.com/file/d/1QWNuseY5sqBFgM2-WzF3eZ0O1phQqe8A/view
+- 實際 Run：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42459724943 ，已成功，Drive SHA 回讀通過。
+
+**日期制下一輪原則：** 每來源一定要記 `last_inspected_date`、`last_verified_date`（只有有證據才填）、`next_expected_date`、`failed_dates[]`、`source_earliest_eligible_date`、`PIT_published_at`（未知為 null）。以實際 source calendar 和 frequency 計應有數，不得按平日或月份自動將未知日標成缺漏。
