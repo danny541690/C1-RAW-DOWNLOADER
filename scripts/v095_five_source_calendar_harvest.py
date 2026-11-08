@@ -96,13 +96,13 @@ def jobs(source):
             from scripts.v093_ndc_independent import ZIP_URL
             url=ZIP_URL
         yield (2026,11,"catalog",url)
-def main(source,batch):
+def main(source,batch,year_start,year_end):
     if source not in SOURCES:raise ValueError("SOURCE_NOT_ALLOWED")
     OUT.mkdir(exist_ok=True)
     files=[];attempts=[];good=[];seen_days=set();seen_raw={}
     # A source's official market/publishing calendar is bounded to dated,
     # original evidence. FinMind and other sources cannot certify it.
-    slots=list(jobs(source))
+    slots=[x for x in jobs(source) if year_start<=x[0]<=year_end]
     for idx,(year,month,category,url) in enumerate(slots[:batch]):
         entry={"source":source,"year":year,"month":month,"category":category,
                "url":url,"state":"UNVERIFIED_NOT_MISSING","confirmed_days":0}
@@ -130,7 +130,7 @@ def main(source,batch):
         attempts.append(entry)
         if len(attempts)%20==0:print(json.dumps({"source":source,"source_requests":len(attempts),
           "confirmed_positive_unique_days":len(good),"rejected_or_unknown":sum(x["state"]=="UNVERIFIED_NOT_MISSING" for x in attempts)},ensure_ascii=False),flush=True)
-    stem=f"{source.lower()}_historical_evidence"
+    stem=f"{source.lower()}_{year_start}_{year_end}_historical_evidence"
     zpath=OUT/(stem+".zip")
     with zipfile.ZipFile(zpath,"w",zipfile.ZIP_DEFLATED) as z:
         for name,b in files:z.writestr(name,b)
@@ -138,7 +138,7 @@ def main(source,batch):
     with p.open("w",encoding="utf-8",newline="") as f:
         w=csv.DictWriter(f,fieldnames=["date","source","state","evidence_uri","source_sha256","verified_at","explanation"])
         w.writeheader();w.writerows(sorted(good,key=lambda x:x["date"]))
-    report={"source":source,"run_id":os.environ.get("GITHUB_RUN_ID"),
+    report={"source":source,"year_start":year_start,"year_end":year_end,"run_id":os.environ.get("GITHUB_RUN_ID"),
         "sample_requests":len(attempts),"available_jobs":len(slots),
         "positive_dates_unique":len(good),
         "official_native_responses_preserved":len(files),
@@ -151,4 +151,7 @@ def main(source,batch):
         "positive_dates_unique","official_native_responses_preserved","market_calendar_complete")},ensure_ascii=False),flush=True)
 if __name__=="__main__":
     ap=argparse.ArgumentParser();ap.add_argument("--source",required=True,choices=SOURCES)
-    ap.add_argument("--batch",type=int,default=54);a=ap.parse_args();main(a.source,a.batch)
+    ap.add_argument("--batch",type=int,default=120)
+    ap.add_argument("--start",type=int,default=2000)
+    ap.add_argument("--end",type=int,default=2026)
+    a=ap.parse_args();main(a.source,a.batch,a.start,a.end)
