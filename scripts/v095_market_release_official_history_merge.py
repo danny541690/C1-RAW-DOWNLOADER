@@ -35,7 +35,7 @@ def load_verified(s,files,name,expected_digest=None):
     return raw
 def best_version(s,files,start,end):
     prefix=f"twse_{start}_{end}"
-    reports=[x for x in files if re.fullmatch(re.escape(PREFIX+prefix+"_result_")+r"[0-9a-f]{24}\\.json",x["name"])]
+    reports=[x for x in files if re.fullmatch(re.escape(PREFIX+prefix+"_result_")+r"[0-9a-f]{24}\.json",x["name"])]
     valid=[]
     for f in reports:
         b=s.files().get_media(fileId=f["id"]).execute()
@@ -62,7 +62,7 @@ def verify_shard(s,files,start,end):
     with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
         if z.testzip():raise ValueError("OFFICIAL_NATIVE_ZIP_CRC")
         for info in z.infolist():
-            m=re.fullmatch(r"(\\d{4})-(\\d{2})_([0-9a-f]{18})\\.json",info.filename)
+            m=re.fullmatch(r"(\d{4})-(\d{2})_([0-9a-f]{18})\.json",info.filename)
             if not m:raise ValueError("UNEXPECTED_OFFICIAL_SOURCE_MEMBER")
             year,month=int(m[1]),int(m[2]);raw=z.read(info)
             if sha(raw)[:18]!=m[3]:raise ValueError("SOURCE_MEMBER_SHA_IN_NAME_MISMATCH")
@@ -115,7 +115,7 @@ def main():
     report["market_calendar_source_positive_only"]=True
     report["historical_closures_fully_certified"]=False
     report["g0_coverage_denominator_certified"]=False
-    report_path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\\n")
+    report_path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     result={"source":"TWSE","shards":statuses,
        "positive_days":len(all_rows),"historical_days_promoted":adjusted,
        "official_negative_days_inferred":0,"tpEx_dates_promoted":0}
