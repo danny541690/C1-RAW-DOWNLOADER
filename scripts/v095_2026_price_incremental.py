@@ -18,11 +18,16 @@ import time
 from scripts import v095_ultimate_r1_november_official as base
 from scripts.v093_three_year_repair import Audit, validate
 from scripts.v095_r12_drive_audit_archive import OPERATIONS
+from scripts.v095_2026_legacy_first import legacy_snapshot
 from googleapiclient.http import MediaIoBaseUpload
 
 OUT=pathlib.Path("v095_2026_price_incremental")
 PREFIX="JARVIS_V095_2026_PRICE_CURSOR_"
 SOURCES=("TWSE","TPEx")
+ACTIVE_SOURCE=os.getenv("V095_PRICE_SOURCE","").strip()
+if ACTIVE_SOURCE and ACTIVE_SOURCE not in SOURCES:raise ValueError("UNKNOWN_PRICE_SOURCE")
+ACTIVE_SOURCES=(ACTIVE_SOURCE,) if ACTIVE_SOURCE else SOURCES
+SOURCE_PREFIX=PREFIX+ACTIVE_SOURCE+"_" if ACTIVE_SOURCE else PREFIX
 BATCH_DAYS=min(10,max(1,int(os.getenv("V095_2026_BATCH_DAYS","6"))))
 MAX_REPAIR_PER_RUN=2
 CUTOFF=min(dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date(),dt.date(2026,12,31))
@@ -45,17 +50,35 @@ def list_cursors(d):
         out.extend(x.get("files",[]))
         token=x.get("nextPageToken")
         if not token:break
-    return [x for x in out if re.fullmatch(PREFIX+r"\d{4}_\d+_[0-9a-f]{16}\.json",x["name"])]
+    return [x for x in out if re.fullmatch(re.escape(SOURCE_PREFIX)+r"\d{4}_\d+_[0-9a-f]{16}\.json",x["name"])]
 
 def cursor_state(d):
     files=list_cursors(d)
-    if not files:return {"offset":0,"retry_queue":[],"generation":0,"prior_sha":None}
-    files.sort(key=lambda x:int(x["name"].split(PREFIX)[1].split("_")[0]),reverse=True)
+    if not files:
+        # Seed both source lanes from last verified single-controller cursor.
+        if ACTIVE_SOURCE:
+            token=SOURCE_PREFIX
+            try:
+                globals()["SOURCE_PREFIX"]=PREFIX
+                old=list_cursors(d)
+            finally:
+                globals()["SOURCE_PREFIX"]=token
+            if old:
+                old.sort(key=lambda x:int(x["name"].split(PREFIX)[1].split("_")[0]),reverse=True)
+                f=old[0];raw=d.files().get_media(fileId=f["id"]).execute()
+                digest=hashlib.sha256(raw).hexdigest()
+                if not f["name"].endswith("_"+digest[:16]+".json"):raise RuntimeError("LEGACY_CHECKPOINT_SHA_MISMATCH")
+                rec=json.loads(raw)
+                return {"offset":rec["offset"],
+                        "retry_queue":[x for x in rec.get("retry_queue",[]) if x["source"]==ACTIVE_SOURCE],
+                        "generation":0,"prior_sha":digest}
+        return {"offset":0,"retry_queue":[],"generation":0,"prior_sha":None}
+    files.sort(key=lambda x:int(x["name"].split(SOURCE_PREFIX)[1].split("_")[0]),reverse=True)
     f=files[0];raw=d.files().get_media(fileId=f["id"]).execute()
     digest=hashlib.sha256(raw).hexdigest()
     if not f["name"].endswith("_"+digest[:16]+".json"):raise RuntimeError("CHECKPOINT_SHA_MISMATCH")
     j=json.loads(raw)
-    if j["generation"]!=int(f["name"].split(PREFIX)[1].split("_")[0]):raise RuntimeError("CURSOR_GENERATION_MISMATCH")
+    if j["generation"]!=int(f["name"].split(SOURCE_PREFIX)[1].split("_")[0]):raise RuntimeError("CURSOR_GENERATION_MISMATCH")
     if j["offset"]<0 or j["offset"]>len(dates()):raise RuntimeError("CURSOR_OUT_OF_RANGE")
     return {"offset":j["offset"],"retry_queue":j["retry_queue"],"generation":j["generation"],"prior_sha":digest}
 
@@ -91,10 +114,15 @@ def single(d,source,day):
     if old:
         raw,facts,rows,unparsed,acquisition=old
     else:
-        raw=base.bounded_official_request(job["url"])
-        facts=validate(raw,source,job["category"],day)
-        rows,unparsed=base.parse(raw,source,day)
-        acquisition="LIVE_OFFICIAL_HTTP"
+        legacy=legacy_snapshot(d,source,day,job)
+        if legacy:
+            raw,facts,rows,unparsed,acquisition=legacy
+        else:
+            raw=base.bounded_official_request(job["url"])
+        if not legacy:
+            facts=validate(raw,source,job["category"],day)
+            rows,unparsed=base.parse(raw,source,day)
+            acquisition="LIVE_OFFICIAL_HTTP"
     digest=base.sha(raw)
     month=day[:7];stamp=month.replace("-","")
     bm=base.folder(d,cfg["bronze"],month)
@@ -140,7 +168,7 @@ def main():
     start=state["offset"]
     selected=calendar[start:start+BATCH_DAYS]
     queue=list(state["retry_queue"])
-    tasks=[(s,day,False) for day in selected for s in SOURCES]
+    tasks=[(s,day,False) for day in selected for s in ACTIVE_SOURCES]
     repair=queue[:MAX_REPAIR_PER_RUN]
     tasks.extend((i["source"],i["date"],True) for i in repair)
     queue=queue[MAX_REPAIR_PER_RUN:]
@@ -163,7 +191,7 @@ def main():
     # Preserve actionable errors in both artifact and job log; never hide a partial batch as year completion.
     for failure in failed:
         print(json.dumps({"state":"SOURCE_DAY_FAILED", **failure},ensure_ascii=False),flush=True)
-    report={"schema":"V095_2026_PRICE_INCREMENTAL_CANDIDATE_V1",
+    report={"schema":"V095_2026_PRICE_INCREMENTAL_CANDIDATE_V1","active_source":ACTIVE_SOURCE or "TWSE_TPEx",
             "run_id":os.getenv("GITHUB_RUN_ID"),"start_offset":start,
             "next_offset":start+len(selected),"eligible_weekdays_so_far":len(calendar),
             "selected_new_days":selected,"completed":done,"failed":failed,
