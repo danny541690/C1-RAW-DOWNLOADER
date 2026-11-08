@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-2026-downstream-twse.yml'
+      - 'scripts/v095_2026_equity_downstream.py'
+      - 'scripts/v095_2026_publish_run_receipt.py'
   schedule:
     - cron: '25 * * * *'
 permissions:
