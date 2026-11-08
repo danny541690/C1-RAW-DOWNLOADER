@@ -23,7 +23,9 @@ from scripts.v095_2026_cash_market_calendar import is_verified_closed, load_cale
 from googleapiclient.http import MediaIoBaseUpload
 
 OUT=pathlib.Path("v095_2026_price_incremental")
-PREFIX="JARVIS_V095_2026_PRICE_CURSOR_"
+DATA_YEAR=int(os.getenv("V095_DATA_YEAR","2026"))
+if DATA_YEAR not in (2025,2026):raise ValueError("ONLY_2025_2026_SUPPORTED")
+PREFIX=f"JARVIS_V095_{DATA_YEAR}_PRICE_CURSOR_"
 SOURCES=("TWSE","TPEx")
 ACTIVE_SOURCE=os.getenv("V095_PRICE_SOURCE","").strip()
 if ACTIVE_SOURCE and ACTIVE_SOURCE not in SOURCES:raise ValueError("UNKNOWN_PRICE_SOURCE")
@@ -32,10 +34,19 @@ SOURCE_PREFIX=PREFIX+ACTIVE_SOURCE+"_" if ACTIVE_SOURCE else PREFIX
 BATCH_DAYS=min(10,max(1,int(os.getenv("V095_2026_BATCH_DAYS","6"))))
 MAX_REPAIR_PER_RUN=2
 BRONZE_ONLY=os.getenv("V095_BRONZE_ONLY","0")=="1"
-CUTOFF=min(dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date(),dt.date(2026,12,31))
+CUTOFF=min(dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date(),dt.date(DATA_YEAR,12,31))
+if DATA_YEAR==2025:
+    from scripts.v095_market_release_calendar_2000_2026 import history_evidence,market_day
+    HISTORICAL_EVIDENCE=history_evidence()
+def actual_status(day,source):
+    if DATA_YEAR==2026:return calendar_status(day,source)
+    return market_day(day,source,HISTORICAL_EVIDENCE)[0]
+def confirmed_closed(day,source):
+    if DATA_YEAR==2026:return is_verified_closed(day,source)
+    return actual_status(day,source) in ("CONFIRMED_CLOSED","CONFIRMED_SETTLEMENT_ONLY")
 
 def dates():
-    d=dt.date(2026,1,1)
+    d=dt.date(DATA_YEAR,1,1)
     end=CUTOFF
     result=[]
     while d<=end:
@@ -58,7 +69,7 @@ def cursor_state(d):
     files=list_cursors(d)
     if not files:
         # Seed both source lanes from last verified single-controller cursor.
-        if ACTIVE_SOURCE:
+        if ACTIVE_SOURCE and DATA_YEAR==2026:
             token=SOURCE_PREFIX
             try:
                 globals()["SOURCE_PREFIX"]=PREFIX
@@ -171,7 +182,11 @@ def main():
     OUT.mkdir(exist_ok=True)
     flags=json.loads(pathlib.Path("governance/v095/PHASE1_FLAGS.json").read_text())
     assert not flags["BULK_COPY_APPROVED"] and not flags["RELEASE_APPROVED"]
-    calendar_lookup,calendar_sha,calendar_counts=load_calendar()
+    if DATA_YEAR==2026:
+        calendar_lookup,calendar_sha,calendar_counts=load_calendar()
+    else:
+        calendar_lookup={};calendar_sha="2025_HISTORY_UNKNOWN_DAYS_NOT_CERTIFIED"
+        calendar_counts={"verified_historical_date_entries":len(HISTORICAL_EVIDENCE),"year":2025}
     d=base.api();state=cursor_state(d)
     calendar=dates()
     start=state["offset"]
@@ -183,8 +198,8 @@ def main():
     queue=queue[MAX_REPAIR_PER_RUN:]
     done=[];failed=[];closed=[];new_files=collections.Counter()
     for source,day,retry in tasks:
-        if is_verified_closed(day,source):
-            closed.append({'source':source,'date':day,'state':'VERIFIED_OFFICIAL_MARKET_CLOSED','calendar_type':calendar_status(day,source)})
+        if confirmed_closed(day,source):
+            closed.append({'source':source,'date':day,'state':'VERIFIED_OFFICIAL_MARKET_CLOSED','calendar_type':actual_status(day,source)})
             continue
         try:
             result=single(d,source,day)
@@ -212,7 +227,7 @@ def main():
             "next_offset":start+len(selected),"eligible_weekdays_so_far":len(calendar),
             "selected_new_days":selected,"completed":done,"failed":failed,
             "retry_queue_length":len(queue),"verified_market_closed":closed,"created_by_stage":dict(new_files),
-            "production_release":False,"year_complete":False,"pit_certified":False,"stage_mode":"BRONZE_ONLY" if BRONZE_ONLY else "LEGACY_COUPLED"}
+            "production_release":False,"year_complete":False,"pit_certified":False,"stage_mode":"BRONZE_ONLY" if BRONZE_ONLY else "LEGACY_COUPLED","data_year":DATA_YEAR,"historical_calendar_fully_verified":DATA_YEAR==2026}
     (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     receipt={"generation":state["generation"]+1,"offset":start+len(selected),
              "retry_queue":queue,"prior_sha":state["prior_sha"],"run_id":os.getenv("GITHUB_RUN_ID"),
