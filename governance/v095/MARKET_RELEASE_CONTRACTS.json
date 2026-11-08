@@ -191,10 +191,14 @@
           "id": "ownership_distribution",
           "frequency": "weekly",
           "publish_day_rule": "weekly_after_last_business_day",
-          "earliest_official_date_verified": null,
+          "earliest_official_date_verified": "2008-07-01",
           "PIT_available_at_verified": false,
           "publication_timestamp_required": true,
-          "source_started_later_possible": true
+          "source_started_later_possible": true,
+          "historical_query_retention": "one_year",
+          "source_start_precision": "month_only",
+          "source_evidence_url": "https://www.tdcc.com.tw/portal/zh/smWeb/qryStock",
+          "evidence_note": "Official historical archive started ROC 97 July; present query retention one year, not 2000-onward."
         },
         {
           "id": "historical_query_archive",
