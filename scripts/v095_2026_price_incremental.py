@@ -19,6 +19,7 @@ from scripts import v095_ultimate_r1_november_official as base
 from scripts.v093_three_year_repair import Audit, validate
 from scripts.v095_r12_drive_audit_archive import OPERATIONS
 from scripts.v095_2026_legacy_first import legacy_snapshot
+from scripts.v095_2026_cash_market_calendar import is_verified_closed
 from googleapiclient.http import MediaIoBaseUpload
 
 OUT=pathlib.Path("v095_2026_price_incremental")
@@ -173,8 +174,11 @@ def main():
     repair=queue[:MAX_REPAIR_PER_RUN]
     tasks.extend((i["source"],i["date"],True) for i in repair)
     queue=queue[MAX_REPAIR_PER_RUN:]
-    done=[];failed=[];new_files=collections.Counter()
+    done=[];failed=[];closed=[];new_files=collections.Counter()
     for source,day,retry in tasks:
+        if is_verified_closed(day,source):
+            closed.append({'source':source,'date':day,'state':'VERIFIED_OFFICIAL_MARKET_CLOSED'})
+            continue
         try:
             result=single(d,source,day)
             done.append(result)
@@ -196,19 +200,19 @@ def main():
             "run_id":os.getenv("GITHUB_RUN_ID"),"start_offset":start,
             "next_offset":start+len(selected),"eligible_weekdays_so_far":len(calendar),
             "selected_new_days":selected,"completed":done,"failed":failed,
-            "retry_queue_length":len(queue),"created_by_stage":dict(new_files),
+            "retry_queue_length":len(queue),"verified_market_closed":closed,"created_by_stage":dict(new_files),
             "production_release":False,"year_complete":False,"pit_certified":False}
     (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     receipt={"generation":state["generation"]+1,"offset":start+len(selected),
              "retry_queue":queue,"prior_sha":state["prior_sha"],"run_id":os.getenv("GITHUB_RUN_ID"),
-             "success_units":len(done),"failed_units":len(failed),"created_by_stage":dict(new_files),
+             "success_units":len(done),"failed_units":len(failed),"verified_market_closed":closed,"created_by_stage":dict(new_files),
              "failed_items":failed,"latest_cutoff":CUTOFF.isoformat()}
     receipt_sha=commit_cursor(d,receipt)
     report["durable_cursor_sha256"]=receipt_sha
     (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     print(json.dumps({"run_id":report["run_id"],"new_days":len(selected),
         "next_offset":receipt["offset"],"total_candidate_weekdays":len(calendar),
-        "completed_units":len(done),"failed_units":len(failed),
+        "completed_units":len(done),"failed_units":len(failed),"closed_units":len(closed),
         "created_by_stage":dict(new_files),"retry_queue_length":len(queue),
         "checkpoint_committed":True,"year_complete":False,"PIT":False},ensure_ascii=False),flush=True)
     # Failed units remain explicit; a complete yearly release requires separate PIT/coverage certification.
