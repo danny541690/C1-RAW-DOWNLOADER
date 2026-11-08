@@ -34,7 +34,7 @@ jobs:
       GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
       V095_PRICE_SOURCE: ${{ matrix.source }}
       V095_BRONZE_SOURCE: ${{ matrix.source }}
-      V095_ARCHIVE_BATCH: '3'
+      V095_ARCHIVE_BATCH: '6'
       V095_2026_BATCH_DAYS: '10'
     steps:
       - uses: actions/checkout@v4
