@@ -1,109 +1,91 @@
 #!/usr/bin/env python3
-"""2026 recent workflow receipt rollup: read only GitHub artifacts; SHA-archive in Drive.
-This audit does not itself repair, redownload, PIT-certify or modify market data.
+"""2026 source/QA/transform evidence rollup directly from immutable Drive run receipts.
+Reads only records persisted by each lane; does not mutate market data or run repair.
 """
-import collections,datetime as dt,hashlib,io,json,os,pathlib,urllib.request,zipfile
+import collections,datetime as dt,hashlib,io,json,os,pathlib
 from googleapiclient.http import MediaIoBaseUpload
 from scripts.v095_market_release_calendar_drive_archive import drive,OPS
-REPO="danny541690/C1-RAW-DOWNLOADER"
 OUT=pathlib.Path("v095_2026_cross_lane_ledger")
-NAMES={**{f"JARVIS v0.95 2026 {s} independent Bronze and downstream gate":("D",s) for s in ("TWSE","TPEx","MOPS","TDCC","TAIFEX","NDC")},
-       **{f"JARVIS v0.95 2026 {s} independent Silver Gold candidate worker":("S_G",s) for s in ("MOPS","TDCC","TAIFEX","NDC")},
-       "JARVIS v0.95 2026 independent hourly QA and gap ledger":("Q","ALL")}
-def http(path,token,binary=False):
-    req=urllib.request.Request("https://api.github.com/repos/"+REPO+path,
-       headers={"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json",
-       "X-GitHub-Api-Version":"2022-11-28","User-Agent":"JARVIS-v095-2026-evidence"})
-    with urllib.request.urlopen(req,timeout=35) as r:b=r.read()
-    return b if binary else json.loads(b)
-def dig(blob):return hashlib.sha256(blob).hexdigest()
+PREFIX="JARVIS_V095_2026_RUN_RECEIPT_"
+def sha(b):return hashlib.sha256(b).hexdigest()
+def list_pages(d,q):
+ out=[];page=None
+ while True:
+  x=d.files().list(q=q,fields="nextPageToken,incompleteSearch,files(id,name,createdTime,size)",
+    pageSize=500,pageToken=page).execute()
+  if x.get("incompleteSearch"):raise ValueError("DRIVE_SEARCH_INCOMPLETE")
+  out.extend(x.get("files",[]))
+  if len(out)>6000:raise ValueError("RECEIPT_LIST_OVER_BUDGET")
+  page=x.get("nextPageToken")
+  if not page:return out
+def event(source,lane,run,kind,reason,period=None,attempts=None,state=None):
+ return {"source":source,"lane":lane,"run_id":run,"type":kind,"reason":str(reason)[:220],
+  "period":period,"attempts":attempts,"status":state or "REQUIRES_QA",
+  "next_action":"TARGETED_REVALIDATE_OR_ADAPTER_CHANGE;NO_GLOBAL_REDOWNLOAD"}
+def collect(obj,source,lane,run):
+ issues=[]
+ for item in obj.get("failed",[]) if isinstance(obj.get("failed"),list) else []:
+  if isinstance(item,dict):issues.append(event(source,lane,run,"FAILED",item.get("message"),item.get("date") or item.get("month"),item.get("quarantined_after_cycles"),item.get("state")))
+ for item in obj.get("blocked",[]) if isinstance(obj.get("blocked"),list) else []:
+  if isinstance(item,dict):issues.append(event(source,lane,run,"BLOCKED",item.get("reason") or item.get("state"),item.get("month"),item.get("attempts"),item.get("state")))
+ if obj.get("retry_queue_length"):
+  issues.append(event(source,lane,run,"RETRY_QUEUE",obj["retry_queue_length"],state="RETRY_PENDING"))
+ for reason in obj.get("blocking_causes",[]) if isinstance(obj.get("blocking_causes"),list) else []:
+  issues.append(event(source,lane,run,"ANNUAL_GATE",reason,state="BLOCKS_CERTIFICATION"))
+ if obj.get("verified_2026_full_year_complete") is False:
+  issues.append(event(source,lane,run,"YEAR_NOT_CERTIFIED","Independent annual QA incomplete",state="NOT_CERTIFIED"))
+ return issues
 def publish(d,b):
-    h=dig(b);name="JARVIS_V095_2026_CROSS_LANE_LEDGER_"+h[:24]+".json"
-    q="'"+OPS+"' in parents and name = '"+name+"' and trashed = false"
-    existing=d.files().list(q=q,fields="files(id,name),nextPageToken",pageSize=100).execute()
-    if existing.get("nextPageToken"):raise RuntimeError("LEDGER_NAME_QUERY_PAGINATED")
-    files=existing.get("files",[])
-    if len(files)>1:raise RuntimeError("DUPLICATE_LEDGER_NAME")
-    if files:fid=files[0]["id"];action="REUSED"
-    else:
-        fid=d.files().create(body={"name":name,"parents":[OPS],
-              "description":"2026 recent GitHub source/downstream QA receipts; not full-year certified"},
-              media_body=MediaIoBaseUpload(io.BytesIO(b),mimetype="application/json",resumable=False),
-              fields="id").execute()["id"]
-        action="CREATED"
-    read=d.files().get_media(fileId=fid).execute()
-    if dig(read)!=h:raise RuntimeError("LEDGER_REMOTE_SHA_MISMATCH")
-    return {"name":name,"drive_id":fid,"sha256":h,"action":action,"sha_readback":"PASS"}
-def events(obj,lane,source,run_id,path):
-    records=[]
-    def add(typ,reason,part=None,attempts=None,status=None):
-        records.append({"lane":lane,"source":source,"run_id":str(run_id),"artifact":path,
-            "dataset_id":None,"period":part,"type":typ,"reason":str(reason)[:220],
-            "attempts":attempts,"state":status or "REQUIRES_QA_REVIEW",
-            "next_action":"REVALIDATE_PARTITION_ONLY_IF_NEW_SOURCE_OR_ADAPTER"})
-    for item in (obj.get("failed",[]) if isinstance(obj.get("failed"),list) else []):
-        add(item.get("kind","DOWNLOAD_OR_TRANSFORM_FAILURE"),item.get("message","UNKNOWN"),
-            item.get("date") or item.get("month"),item.get("quarantined_after_cycles") or item.get("attempts"),
-            item.get("state"))
-    for item in (obj.get("blocked",[]) if isinstance(obj.get("blocked"),list) else []):
-        if isinstance(item,dict):add("SOURCE_OR_CONVERSION_BLOCK",item.get("reason") or item.get("state"),item.get("month"),
-                                 item.get("attempts"),item.get("state"))
-    for item in (obj.get("blocked_details",[]) if isinstance(obj.get("blocked_details"),list) else []):
-        if isinstance(item,dict):add("DOWNSTREAM_BLOCK",item.get("reason"),item.get("month"),item.get("attempts"))
-    if obj.get("retry_queue_length"):
-        add("OPEN_RETRY_QUEUE","RECORDED_SOURCE_RETRY_ITEMS",None,None,"RETRY_QUEUE_OPEN")
-    if obj.get("blocking_causes"):
-        for err in obj["blocking_causes"][:30]:
-            add("ANNUAL_QA_GATE",json.dumps(err,ensure_ascii=False) if not isinstance(err,str) else err,
-                None,None,"BLOCKS_FORMAL_YEAR_RELEASE")
-    if obj.get("verified_2026_full_year_complete") is False:
-        add("YEAR_NOT_CERTIFIED","YEAR_COMPLETE_FALSE",None,None,"NOT_CERTIFIED")
-    return records
+ h=sha(b);name="JARVIS_V095_2026_CROSS_LANE_LEDGER_"+h[:24]+".json"
+ rows=list_pages(d,"'"+OPS+"' in parents and name = '"+name+"' and trashed = false")
+ if len(rows)>1:raise ValueError("MULTIPLE_SAME_SHA")
+ if rows:fid=rows[0]["id"];action="REUSED"
+ else:
+  fid=d.files().create(body={"name":name,"parents":[OPS]},
+   media_body=MediaIoBaseUpload(io.BytesIO(b),mimetype="application/json",resumable=False),
+   fields="id").execute()["id"]
+  action="CREATED"
+ if sha(d.files().get_media(fileId=fid).execute())!=h:raise ValueError("LEDGER_SHA_READBACK")
+ return {"name":name,"drive_id":fid,"sha256":h,"action":action,"sha_readback":"PASS"}
 def main():
-    OUT.mkdir(exist_ok=True)
-    token=os.environ["GH_TOKEN"]
-    runs=http("/actions/runs?per_page=100",token).get("workflow_runs",[])
-    # Latest completed run per active workflow name, plus last 2 for changes
-    grouped=collections.defaultdict(list)
-    for r in runs:
-        if r.get("name") in NAMES and r.get("status")=="completed" and len(grouped[r["name"]])<2:
-            grouped[r["name"]].append(r)
-    records=[];events_all=[];fetch_errors=[]
-    for name,items in grouped.items():
-        lane,source=NAMES[name]
-        for run in items:
-            rid=run["id"]
-            rec={"run_id":rid,"lane":lane,"source":source,"conclusion":run.get("conclusion"),
-                 "created_at":run.get("created_at"),"artifacts":[]}
-            try:
-                arts=http(f"/actions/runs/{rid}/artifacts?per_page=30",token).get("artifacts",[])[:5]
-                for art in arts:
-                    if art.get("expired"):continue
-                    raw=http(f"/actions/artifacts/{art['id']}/zip",token,True)
-                    if len(raw)>30_000_000:raise ValueError("ARTIFACT_OVER_SIZE_LIMIT")
-                    with zipfile.ZipFile(io.BytesIO(raw)) as z:
-                        for member in z.infolist():
-                            if member.file_size>3_000_000 or not member.filename.endswith((".json",)) or ".." in pathlib.PurePosixPath(member.filename).parts:continue
-                            if not member.filename.endswith(("result.json","report.json","missing_indicators.json")):continue
-                            obj=json.loads(z.read(member))
-                            if isinstance(obj,dict):
-                                ev=events(obj,lane,source,rid,member.filename)
-                                events_all.extend(ev)
-                                rec["artifacts"].append({"name":member.filename,"sha256":dig(z.read(member)),
-                                  "issue_events":len(ev)})
-            except Exception as ex:
-                fetch_errors.append({"run_id":rid,"source":source,"type":type(ex).__name__,"message":str(ex)[:130]})
-            records.append(rec)
-    output={"schema":"JARVIS_V095_2026_CROSS_LANE_LEDGER_R1",
-      "created_at":dt.datetime.now(dt.timezone.utc).isoformat(),"scope":"2026","read_only":True,
-      "source_run_receipts":records,"issues":events_all,"artifact_fetch_errors":fetch_errors,
-      "repair_executed":False,"finmind_gapfill_executed":False,"full_year_certified":False,
-      "notes":"Bounded latest 2 per workflow only; not exhaustive historical defect ledger or complete dataset denominator"}
-    blob=(json.dumps(output,ensure_ascii=False,sort_keys=True,indent=2)+"\n").encode()
-    (OUT/"ledger.json").write_bytes(blob)
-    result=publish(drive(),blob)
-    (OUT/"drive_receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
-    print(json.dumps({"run_id":os.environ.get("GITHUB_RUN_ID"),"receipt_runs":len(records),
-         "issues":len(events_all),"artifact_errors":len(fetch_errors),"Drive":result,
-         "year_certified":False},ensure_ascii=False))
+ OUT.mkdir(exist_ok=True)
+ d=drive()
+ files=list_pages(d,"'"+OPS+"' in parents and name contains '"+PREFIX+"' and trashed = false")
+ files=sorted((f for f in files if f["name"].startswith(PREFIX)),key=lambda f:f.get("createdTime",""),reverse=True)
+ seen=collections.Counter();runs=[];issues=[];read_errors=[]
+ for item in files:
+  # Recent 3 receipts per lane/source, safe bounded readback and no full history scan.
+  parts=item["name"].split("_")
+  if len(runs)>=45:break
+  try:
+   raw=d.files().get_media(fileId=item["id"]).execute()
+   h=sha(raw)
+   if not item["name"].endswith("_"+h[:20]+".json"):raise ValueError("RECEIPT_FILENAME_SHA_MISMATCH")
+   data=json.loads(raw)
+   if data.get("schema")!="JARVIS_V095_2026_DURABLE_LANE_RECEIPT_R1":raise ValueError("RECEIPT_SCHEMA_MISMATCH")
+   key=(data["lane"],data["source"])
+   if seen[key]>=3:continue
+   seen[key]+=1
+   stats={"run_id":data["run_id"],"lane":data["lane"],"source":data["source"],
+     "receipt_sha256":h,"receipt_drive_id":item["id"],"source_result_count":data.get("result_count")}
+   if data.get("result_absent"):
+    issues.append(event(data["source"],data["lane"],data["run_id"],"MISSING_WORKFLOW_RESULT",
+      "No JSON result generated in source job",state="INVESTIGATE_RUN"))
+   for p,val in data.get("source_results",{}).items():
+    obj=val.get("data")
+    if isinstance(obj,dict):issues.extend(collect(obj,data["source"],data["lane"],data["run_id"]))
+   runs.append(stats)
+  except Exception as exc:
+   read_errors.append({"drive_file_id":item["id"],"error":type(exc).__name__+":"+str(exc)[:140]})
+ report={"schema":"JARVIS_V095_2026_CROSS_LANE_LEDGER_R2","as_of":dt.datetime.now(dt.timezone.utc).isoformat(),
+   "scope":"2026_only","read_only":True,"runs":runs,"issues":issues,"receipt_read_errors":read_errors,
+   "missing_indicator_registry_not_yet_certified":True,"QA_repair_executed":False,
+   "FinMind_gapfill_executed":False,"year_certified":False,
+   "status":"PARTIAL_RECENT_RECEIPT_RECONCILIATION_NOT_FULL_HISTORY"}
+ b=(json.dumps(report,sort_keys=True,ensure_ascii=False,indent=2)+"\n").encode()
+ (OUT/"ledger.json").write_bytes(b)
+ result=publish(d,b)
+ (OUT/"drive_receipt.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
+ print(json.dumps({"run_id":os.getenv("GITHUB_RUN_ID"),"receipts":len(runs),"issues":len(issues),
+  "errors":len(read_errors),"Drive":result,"formal_completion":False},ensure_ascii=False))
 if __name__=="__main__":main()
