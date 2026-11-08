@@ -48,6 +48,11 @@ jobs:
         env:
           V095_RECEIPT_LANE: 'SILVER_GOLD'
         run: python -u -m scripts.v095_2026_publish_run_receipt
+      - name: Archive actual downstream result to Drive SHA ledger
+        if: always()
+        env:
+          V095_RECEIPT_LANE: 'SILVER_GOLD'
+        run: python -u -m scripts.v095_2026_publish_run_receipt
       - name: Preserve per-partition downstream and missing-indicator receipts
         if: always()
         uses: actions/upload-artifact@v4
