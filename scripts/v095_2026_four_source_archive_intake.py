@@ -106,8 +106,19 @@ def validate_zip(b,source,month):
         if len(manifests)!=1:raise ValueError("MISSING_OR_DUPLICATE_MANIFEST")
         m=json.loads(z.read(manifests[0]))
         manifest_period=m.get("month",m.get("period"))
-        if m.get("source")!=source or manifest_period!=month:
+        # Older v0.93 MOPS financial statement manifests omit top-level
+        # source/month but stamp every unit. Accept only if ALL units agree.
+        units_m=m.get("units",[])
+        complete_unit_provenance=(source=="MOPS" and isinstance(units_m,list) and bool(units_m)
+            and all(isinstance(u,dict) and u.get("source")==source and u.get("month")==month
+                    for u in units_m))
+        root_identity=(m.get("source")==source and manifest_period==month)
+        old_mops_unit_identity=(m.get("source") is None and manifest_period is None
+                               and complete_unit_provenance)
+        if not (root_identity or old_mops_unit_identity):
             raise ValueError("MANIFEST_SOURCE_MONTH_MISMATCH")
+        if root_identity and source=="MOPS" and units_m and not complete_unit_provenance:
+            raise ValueError("MANIFEST_UNIT_SOURCE_MONTH_INCONSISTENT")
         if isinstance(m.get("units"),list) and m["units"]:
             entries=m["units"];key="file";fmt="V093_UNIT_MANIFEST"
         elif isinstance(m.get("immutable_originals"),list) and m["immutable_originals"]:
