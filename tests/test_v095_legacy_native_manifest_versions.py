@@ -19,6 +19,22 @@ class TestV095HistoricalNativeZIPManifest(unittest.TestCase):
     self.assertEqual(validate_zip(pack("v093"),"MOPS","2026-09"),1)
  def test_tdcc_exact_path_native(self):
     self.assertEqual(validate_zip(pack("tdcc"),"TDCC","2026-09"),1)
+ def test_tdcc_r1_complement_manifest(self):
+    raw=b"<html>valid native tdcc stock data</html>"
+    h=hashlib.sha256(raw).hexdigest()
+    b=io.BytesIO()
+    with zipfile.ZipFile(b,"w",zipfile.ZIP_DEFLATED) as z:
+        z.writestr("source/snapshot.html",raw)
+        z.writestr("complement_manifest_R1.json",json.dumps({"source":"TDCC",
+            "month":"2026-09","files":[{"file":"snapshot.html","sha256":h}]}))
+    self.assertEqual(validate_zip(b.getvalue(),"TDCC","2026-09"),1)
+ def test_tdcc_r1_reject_invalid_hash(self):
+    b=io.BytesIO()
+    with zipfile.ZipFile(b,"w",zipfile.ZIP_DEFLATED) as z:
+        z.writestr("snapshot.html","original")
+        z.writestr("complement_manifest_R1.json",json.dumps({"source":"TDCC",
+            "month":"2026-09","files":[{"file":"snapshot.html","sha256":"a"*64}]}))
+    with self.assertRaises(ValueError):validate_zip(b.getvalue(),"TDCC","2026-09")
  def test_source_and_month_are_not_interchangeable(self):
     with self.assertRaises(ValueError):validate_zip(pack("tdcc"),"MOPS","2026-09")
     with self.assertRaises(ValueError):validate_zip(pack("tdcc"),"TDCC","2026-10")
