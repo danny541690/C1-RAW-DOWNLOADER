@@ -1,0 +1,31 @@
+name: JARVIS v0.95 historical trading-days API diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-historical-trading-days-diagnostic.yml'
+permissions:
+  contents: read
+jobs:
+  probe-three-vintages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        year: [2000,2010,2026]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch one official monthly candidate and report exact source error
+        run: python -u -m scripts.v095_historical_trade_days_twse --start ${{ matrix.year }} --end ${{ matrix.year }} --max-months 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: diagnostic-${{ matrix.year }}-${{ github.run_id }}
+          path: v095_historical_days
+          retention-days: 30
+          if-no-files-found: warn
