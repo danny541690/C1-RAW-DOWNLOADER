@@ -5,9 +5,11 @@ Never repairs or certifies 443 PIT; explicitly emits deduplicated actionable gap
 import collections,datetime as dt,hashlib,io,json,os,pathlib
 from scripts.v095_market_release_calendar_drive_archive import drive,OPS
 from googleapiclient.http import MediaIoBaseUpload
+YEAR=int(os.getenv("V095_DATA_YEAR","2026"))
+if YEAR not in (2025,2026):raise ValueError("BAD_SOURCE_QA_YEAR")
 SOURCE=os.getenv("V095_QA_SOURCE","")
 if SOURCE not in ("TWSE","TPEx","MOPS","TDCC","TAIFEX","NDC"):raise ValueError("INVALID_QA_SOURCE")
-OUT=pathlib.Path("v095_2026_source_qa")
+OUT=pathlib.Path("v095_2026_source_qa" if YEAR==2026 else "v095_2025_source_qa")
 def sha(b):return hashlib.sha256(b).hexdigest()
 def ls(d,q):
  rows=[];token=None
@@ -34,8 +36,8 @@ def main():
  OUT.mkdir(exist_ok=True)
  flags=json.loads(pathlib.Path("governance/v095/PHASE1_FLAGS.json").read_text())
  assert flags["BULK_COPY_APPROVED"] is False and flags["RELEASE_APPROVED"] is False
- d=drive();files=ls(d,"'"+OPS+"' in parents and name contains 'JARVIS_V095_2026_RUN_RECEIPT_' and trashed=false")
- candidates=sorted((f for f in files if f["name"].startswith("JARVIS_V095_2026_RUN_RECEIPT_")
+ d=drive();files=ls(d,"'"+OPS+"' in parents and name contains f'JARVIS_V095_{YEAR}_RUN_RECEIPT_' and trashed=false")
+ candidates=sorted((f for f in files if f["name"].startswith(f"JARVIS_V095_{YEAR}_RUN_RECEIPT_")
     and ("_"+SOURCE+"_") in f["name"]),key=lambda x:x.get("createdTime",""),reverse=True)[:8]
  issues={};runs=[];errors=[]
  for f in candidates:
@@ -65,13 +67,13 @@ def main():
      if ("UNKNOWN","OPEN_RETRY_QUEUE") in issues:issues[("UNKNOWN","OPEN_RETRY_QUEUE")]["run_ids"].append(rid)
      else:issues[("UNKNOWN","OPEN_RETRY_QUEUE")]=x
   except Exception as exc:errors.append({"id":f["id"],"type":type(exc).__name__,"message":str(exc)[:130]})
- report={"schema":"V095_2026_SOURCE_QA_R1","source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),
+ report={"schema":f"V095_{YEAR}_SOURCE_QA_R1","source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),
   "recent_receipts":runs,"deduplicated_issues":list(issues.values()),"receipt_errors":errors,
-  "scope":"2026","full_history_coverage":False,"PIT_certified":False,
+  "scope":str(YEAR),"full_history_coverage":False,"PIT_certified":False,
   "performed_repair":False,"year_certified":False}
  (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
  data=(json.dumps(report,ensure_ascii=False,sort_keys=True)+"\n").encode();h=sha(data)
- name="JARVIS_V095_2026_SOURCE_QA_"+SOURCE+"_"+os.getenv("GITHUB_RUN_ID","LOCAL")+"_"+h[:20]+".json"
+ name=f"JARVIS_V095_{YEAR}_SOURCE_QA_"+SOURCE+"_"+os.getenv("GITHUB_RUN_ID","LOCAL")+"_"+h[:20]+".json"
  target=d.files().create(body={"name":name,"parents":[OPS]},
   media_body=MediaIoBaseUpload(io.BytesIO(data),mimetype="application/json",resumable=False),
   fields="id").execute()["id"]
