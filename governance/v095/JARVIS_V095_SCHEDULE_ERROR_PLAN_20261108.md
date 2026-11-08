@@ -99,3 +99,26 @@
 - 實際 Run：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42459724943 ，已成功，Drive SHA 回讀通過。
 
 **日期制下一輪原則：** 每來源一定要記 `last_inspected_date`、`last_verified_date`（只有有證據才填）、`next_expected_date`、`failed_dates[]`、`source_earliest_eligible_date`、`PIT_published_at`（未知為 null）。以實際 source calendar 和 frequency 計應有數，不得按平日或月份自動將未知日標成缺漏。
+
+## H. 六來源 Bronze／Silver／Gold 分層日期進度（新增 2026-11-08）
+
+**正式日期進度表**：https://drive.google.com/file/d/1Gx4tDU3rrEb1CtcboaDWTbHyqEG7XYrd/view  
+**JSON 管理帳**：https://drive.google.com/file/d/1SrrpwjZYJMxij8Q3aRTUkI8nt3tBjC04/view  
+**說明報告**：https://drive.google.com/file/d/1sv3tAGhq2UN9LR6FizO46kvqKspaPSUF/view  
+**GitHub 實測 Run**：https://github.com/danny541690/C1-RAW-DOWNLOADER/actions/runs/42460495966 （成功，18 列，三檔 SHA256 Drive 讀回驗證 PASS）。
+
+- 全歷史目標：**2000-01-01 至 2026-11-08**；2026 年度優先驗收：**2026-01-01 至 2026-11-08**。TDCC 股權分散表按最早官方可取得的 2008-07 另立實際來源起點。
+- **TWSE**：Bronze 最新候選檔日期 **2026-11-06**；Silver 最新候選檔 **2026-11-06**；Gold（僅描述性候選）最新候選檔 **2026-11-06**。但持續增量巡檢游標只到 **2026-09-17**，下一個日為 **2026-09-18**，另有歷史失敗日需要獨立補修；**不得以 11/06 認定 1/01–11/06 連續全部完成**。
+- **TPEx**：Bronze／Silver／描述性 Gold 最新候選檔同為 **2026-11-06**；增量巡檢游標同為 **2026-09-17**，下一個日 **2026-09-18**。仍需檢查缺日及歷史來源。
+- **MOPS**：Bronze 候選原始月檔最新月份 **2026-09**；尚無可核定 typed Silver 及 Gold 正式日期。
+- **TDCC**：Bronze 候選原始月檔最新月份 **2026-10**；尚無可核定 typed Silver 及 Gold 正式日期，週基準日另查。
+- **TAIFEX**：Bronze 候選原始月檔最新月份 **2026-10**；尚無可核定 typed Silver 及 Gold 正式日期；解析異常 ZIP 仍隔離。
+- **NDC**：官方 ZIP 的最新觀察月份 **2026-09**；歷史修訂版可重用 321 個觀察月份； typed Silver、Gold 日期未認證，真正歷史公布日 PIT 未認證。
+
+### 排程改善：每個來源／階層獨立日期進度
+
+每輪按來源 × 三層共 18 列，包含建庫起始／目標結束、2026 年度起始／目標結束、增量巡檢至、下一巡檢日、最早/最新候選日期、日期／檔案證據數、失敗日期、PIT及完整驗收狀態。
+
+**不可跨階層冒用日期**：Bronze 的月度封存不代表已轉成 Silver；Silver 的表可讀不代表 Gold 400+ 指標完成；最新候選日期不等於連續覆蓋。沒有 SHA／血緣證據的資料均不宣稱正式完成。
+
+此表跟隨現有每日上午 09:25／晚間 21:25（台灣時間）更新日期報告的同一個 GitHub Actions 作業；官方資料下載工作排程不變。
