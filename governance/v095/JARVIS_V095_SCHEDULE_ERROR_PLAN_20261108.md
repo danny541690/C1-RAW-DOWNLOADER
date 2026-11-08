@@ -122,3 +122,15 @@
 **不可跨階層冒用日期**：Bronze 的月度封存不代表已轉成 Silver；Silver 的表可讀不代表 Gold 400+ 指標完成；最新候選日期不等於連續覆蓋。沒有 SHA／血緣證據的資料均不宣稱正式完成。
 
 此表跟隨現有每日上午 09:25／晚間 21:25（台灣時間）更新日期報告的同一個 GitHub Actions 作業；官方資料下載工作排程不變。
+
+## I. 來源排程年份與異常閉環（2026-11-08）
+
+**目前真正連續執行的六條來源下載排程，都是 2026 年增量候選資料搬運。** TWSE/TPEx `v095_2026_price_incremental.py` 由 2026-01-01 到台灣當日；MOPS/TDCC/TAIFEX/NDC `v095_2026_four_source_archive_intake.py` 主要檢查 2026 年現有來源原始檔與異常。獨立 G0 工作流程涵蓋 2000-01-01 至當日的歷史日期和六來源發布規則，並不等於歷史 2000–2026 全量 Bronze/Silver/Gold 已下載／轉換。
+
+**新增錯誤紀錄與重新驗證閉環**：
+- 六來源工作或六來源合併重跑若 GitHub workflow 失敗，由 `.github/workflows/v095-source-failure-log-drive.yml` 接收 `workflow_run completed` 的 `failure`，記錄來源、Run ID、失敗 job/step、Git commit SHA 與重驗要求，使用 Drive immutable SHA readback 存到 Operations。這只識別 GitHub job failure；**來源批次內的個別日期失敗，仍需讀原來源 result.json / quarantines，不可被忽略**。
+- 失敗後必須先辨識官方原始來源錯誤／格式／授權／時間／Checkpoint 等原因。已驗證成功的不重抓；不安全原始檔保持隔離。排程只可在官方來源或內部邏輯修正、測試通過後復跑。
+- 相關下載器、血緣驗證器、錯誤履歷或日期進度程式提交修正後，自動觸發日期報告工作，重新發布來源 × Bronze/Silver/Gold 的日期進度至 Drive；每日台灣 09:25/21:25 仍定時彙整真實 Checkpoint。
+- **修復程式不是由 workflow 自動編寫**：自動化可以偵測、分類和保留錯誤、執行既有有界重試、發布報告；對需修改程式才能修正的錯誤，應經過程式調整和測試，不能宣稱 GitHub Actions 會自行理解並修好任何新型錯誤。
+- 2026 優先驗收通過後，另以獨立歷史批次工作擴展 2000–2026；必須保存來源最早可得日期，避免興櫃資料混入正式上市上櫃指標。
+
