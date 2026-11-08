@@ -1,0 +1,81 @@
+name: JARVIS v0.95 official format guided six-source native re-download and reconciliation
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-six-source-format-guided-retry.yml'
+permissions:
+  contents: read
+jobs:
+  source-format-native-retry:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 38
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - {source: TWSE, mode: daily}
+          - {source: TPEx, mode: daily}
+          - {source: MOPS, mode: archive}
+          - {source: TDCC, mode: archive}
+          - {source: TAIFEX, mode: archive}
+          - {source: NDC, mode: archive}
+    concurrency:
+      group: jarvis-v095-2026-source-${{ matrix.source }}-single-writer
+      cancel-in-progress: false
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V095_PRICE_SOURCE: ${{ matrix.source }}
+      V095_BRONZE_SOURCE: ${{ matrix.source }}
+      V095_ARCHIVE_BATCH: '3'
+      V095_2026_BATCH_DAYS: '10'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install scoped official-source dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Compare all source formats, keys, units and date rules before fetch
+        run: |
+          python -m scripts.v095_official_schema_contract_diff
+          python -m unittest discover -s tests -p 'test_v095_2026_cash_market_calendar.py' -v
+          python -m unittest discover -s tests -p 'test_v095_market_release_calendar_2000_2026.py' -v
+          python -m unittest discover -s tests -p 'test_v095_g0_bronze_download_gate.py' -v
+          python - <<'PY'
+          import json,os
+          src=os.environ["V095_BRONZE_SOURCE"]
+          x=json.load(open('v095_official_schema_reconciliation/official_vs_v095_contracts.json'))
+          assert src in x['source_contract_counts']
+          assert not x['formal_pit_release_approved']
+          flags=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert flags['BULK_COPY_APPROVED'] is False and flags['RELEASE_APPROVED'] is False
+          print('SAFE_SOURCE_FORMAT_RETRY',src)
+          PY
+      - name: Re-download only missing 2026 source batches, keep already verified source files
+        run: |
+          if [ "${{ matrix.mode }}" = "daily" ]; then
+            python -m scripts.v095_2026_price_incremental
+            python -m scripts.v095_2026_bsg_lineage_gate
+          else
+            python -m scripts.v095_2026_four_source_archive_intake
+          fi
+      - name: Preserve the exact source retry and format difference receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-source-retry-${{ matrix.source }}-${{ github.run_id }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            v095_official_schema_reconciliation/official_vs_v095_contracts.json
+            v095_2026_price_incremental/result.json
+            v095_2026_price_incremental/lineage_receipt.json
+            v095_2026_source_archives/result.json
