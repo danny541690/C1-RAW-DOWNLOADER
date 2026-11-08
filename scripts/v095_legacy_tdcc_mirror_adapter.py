@@ -23,7 +23,7 @@ def records(raw,month,source_archive_sha=None,source_file=None):
   if not re.fullmatch(r"20\d{6}",stamp) or stamp[:6]!=month.replace("-",""):
    raise ValueError("TDCC_CSV_DATE_OUTSIDE_REQUEST_MONTH")
   dt.datetime.strptime(stamp,"%Y%m%d")
-  if not re.fullmatch(r"\d{4,8}",code) or not re.fullmatch(r"\d{1,2}",tier):
+  if not re.fullmatch(r"[0-9A-Z]{4,8}",code) or not re.fullmatch(r"\d{1,2}",tier):
    raise ValueError("TDCC_CSV_SECURITY_TIER_BAD")
   key=(stamp,code,tier)
   if key in seen:raise ValueError("TDCC_CSV_DUPLICATE_STOCK_TIER_DAY")
