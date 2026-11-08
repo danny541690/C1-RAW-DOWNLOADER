@@ -60,11 +60,6 @@ jobs:
           python -m scripts.v095_2026_cash_market_calendar v095_market_calendar_2026/calendar_audit.json
       - name: Bronze only: verify v0.95 then v0.93 original then official and checkpoint
         run: python -m scripts.v095_2026_price_incremental
-      - name: Save original run outcome to durable Google Drive evidence ledger
-        if: always()
-        env:
-          V095_RECEIPT_LANE: 'BRONZE'
-        run: python -u -m scripts.v095_2026_publish_run_receipt
       - name: Archive actual run result to Drive SHA ledger
         if: always()
         env:
@@ -77,6 +72,6 @@ jobs:
           name: v095-2026-tpex-source-${{ github.run_id }}
           path: |
             v095_2026_price_incremental/result.json
-                        v095_market_calendar_2026/calendar_audit.json
+            v095_market_calendar_2026/calendar_audit.json
           if-no-files-found: warn
           retention-days: 90
