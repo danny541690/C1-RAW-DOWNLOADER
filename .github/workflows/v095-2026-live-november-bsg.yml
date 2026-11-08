@@ -1,0 +1,66 @@
+name: JARVIS v0.95 2026 November real-source BSG recovery batch
+# Actual bounded candidate data download on missing verified November dates.
+# Not a full-year, all-source, or PIT-certified production release.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-live-november-bsg.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2026-nov-source-bsg
+  cancel-in-progress: false
+jobs:
+  capture-real-native-and-convert:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V095_SOURCE_FILTER: 'TWSE,TPEx'
+      V095_CANARY_DATES: '2026-11-02,2026-11-03,2026-11-06'
+      V095_CANARY_REQUIRE_COMPLETE: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install actual native reader and Parquet conversion dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Confirm production release is still protected
+        run: |
+          python - <<'PY'
+          import json
+          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert f['BULK_COPY_APPROVED'] is False and f['RELEASE_APPROVED'] is False
+          print('SCOPED_REAL_SOURCE_CANDIDATES_ONLY')
+          PY
+      - name: Attempt six real TWSE TPEx source-day jobs; create B/S/G for verified source bytes only
+        run: python -m scripts.v095_ultimate_r1_november_official
+      - name: Summarize actual CREATED, REUSED, REJECTED units without false success
+        if: always()
+        run: |
+          python - <<'PY'
+          import pathlib,json,os
+          p=pathlib.Path('ultimate_r1/november_latest_bsg.json')
+          if not p.exists():raise SystemExit('MISSING_CANDIDATE_RECEIPT')
+          r=json.loads(p.read_text())
+          created=sum('CREATED' in v.get('actions',[]) for v in r['completed'].values())
+          reused=sum(v.get('actions')==['REUSED']*3 for v in r['completed'].values())
+          print(json.dumps({'run_id':os.getenv('GITHUB_RUN_ID'),'completed_units':len(r['completed']),
+                            'new_file_units':created,'fully_reused_units':reused,'rejected_units':r['rejected'],
+                            'historical_PIT_certified':False,'year_complete':False},ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-2026-nov-real-bsg-${{ github.run_id }}
+          path: ultimate_r1/november_latest_bsg.json
+          retention-days: 90
+          if-no-files-found: warn
