@@ -1,0 +1,277 @@
+{
+  "schema": "JARVIS_V095_SOURCE_PUBLICATION_CONTRACT_V1",
+  "version": "2026-11-08",
+  "historical_release_proven": false,
+  "sources": [
+    {
+      "source": "TWSE",
+      "market_calendar": "TSE_CASH",
+      "datasets": [
+        {
+          "id": "cash_prices",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "institutional_flows",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "margin_balance",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "security_lending",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "valuation",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "foreign_holdings",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "corporate_actions",
+          "frequency": "irregular",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        }
+      ]
+    },
+    {
+      "source": "TPEx",
+      "market_calendar": "OTC_CASH",
+      "datasets": [
+        {
+          "id": "cash_prices",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "institutional_flows",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "margin_balance",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "security_lending",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "valuation",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "market_cap",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "indices",
+          "frequency": "daily_cash",
+          "publish_day_rule": "same_day_after_close",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "corporate_actions",
+          "frequency": "irregular",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        }
+      ]
+    },
+    {
+      "source": "MOPS",
+      "market_calendar": "PUBLISHING_NOT_CASH_TRADING",
+      "datasets": [
+        {
+          "id": "monthly_revenue",
+          "frequency": "monthly",
+          "publish_day_rule": "next_month_10_approx",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "financial_reports",
+          "frequency": "quarterly",
+          "publish_day_rule": "next_quarter_deadline_approx",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "material_events",
+          "frequency": "irregular",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        }
+      ]
+    },
+    {
+      "source": "TDCC",
+      "market_calendar": "PUBLISHING_NOT_CASH_TRADING",
+      "datasets": [
+        {
+          "id": "ownership_distribution",
+          "frequency": "weekly",
+          "publish_day_rule": "weekly_after_last_business_day",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "historical_query_archive",
+          "frequency": "irregular",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        }
+      ]
+    },
+    {
+      "source": "TAIFEX",
+      "market_calendar": "TAIFEX_SPECIFIC",
+      "datasets": [
+        {
+          "id": "futures_daily",
+          "frequency": "daily_exchange_specific",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "options_daily",
+          "frequency": "daily_exchange_specific",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "institutional_positions",
+          "frequency": "daily_exchange_specific",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "contract_calendar",
+          "frequency": "irregular",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        }
+      ]
+    },
+    {
+      "source": "NDC",
+      "market_calendar": "PUBLISHING_NOT_CASH_TRADING",
+      "datasets": [
+        {
+          "id": "business_cycle_indicators",
+          "frequency": "monthly",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        },
+        {
+          "id": "economic_series",
+          "frequency": "monthly",
+          "publish_day_rule": "source_specific_unknown",
+          "earliest_official_date_verified": null,
+          "PIT_available_at_verified": false,
+          "publication_timestamp_required": true,
+          "source_started_later_possible": true
+        }
+      ]
+    }
+  ]
+}
