@@ -24,7 +24,7 @@ def priced_stages(d,source):
                 filename=entry["name"]
                 mid={"BRONZE":"","SILVER":"_OHLCV","GOLD":"_PRICE_GOLD"}[stage]
                 ext="json" if stage=="BRONZE" else "parquet"
-                pattern=(r"V095_2026\d{4}_"+re.escape(source)
+                pattern=(r"V095_2026\d{2}_"+re.escape(source)
                   +r"_(2026-\d{2}-\d{2})"+mid+r"_[a-f0-9]{20}\."+ext)
                 m=re.fullmatch(pattern,filename)
                 if m and m[1][:7]==name[:7] and m[1]<=TODAY.isoformat():found.add(m[1])
