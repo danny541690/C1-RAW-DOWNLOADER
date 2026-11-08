@@ -12,7 +12,6 @@ from scripts.v095_2026_annual_consolidated import service,BRONZE_ROOTS,FOLDER
 from scripts.v095_2026_prior_raw_reuse_audit import YEAR_PARENT
 from scripts.v095_ultimate_r1_november_official import folder,save
 SOURCE=os.environ.get("V095_BRONZE_SOURCE","")
-if SOURCE not in ("MOPS","TDCC","TAIFEX","NDC"):raise ValueError("INVALID_SOURCE")
 MAX_SOURCE_FILES=min(int(os.environ.get("V095_ARCHIVE_BATCH","3")),6)
 MAX_BYTES=20_000_000
 MAX_INSPECT_PER_RUN=300
@@ -73,6 +72,7 @@ def validate_zip(b,source,month):
         return len(entries)
 
 def main():
+    if SOURCE not in ("MOPS","TDCC","TAIFEX","NDC"):raise ValueError("INVALID_SOURCE")
     OUT.mkdir(exist_ok=True)
     today=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date()
     months=[f"2026-{n:02d}" for n in range(1,today.month+1)]
