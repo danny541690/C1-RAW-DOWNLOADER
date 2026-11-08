@@ -63,6 +63,11 @@ jobs:
             'inspection_status':r.get('inspection_status')
           },ensure_ascii=False))
           PY
+      - name: Archive annual QA evidence in immutable Google Drive run receipt
+        if: always()
+        env:
+          V095_RECEIPT_LANE: 'QA'
+        run: python -u -m scripts.v095_2026_publish_run_receipt
       - name: Preserve inspection output and failures without stalling source downloaders
         if: always()
         uses: actions/upload-artifact@v4
