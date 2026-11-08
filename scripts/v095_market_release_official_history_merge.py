@@ -23,7 +23,8 @@ def all_files(s):
         rows.extend(x.get("files",[]));token=x.get("nextPageToken")
         if not token:return rows
 def load_verified(s,files,name,expected_digest=None):
-    arr=[x for x in files if x["name"].startswith(PREFIX+name+"_")]
+    stem,suffix=name.rsplit(".",1)
+    arr=[x for x in files if x["name"].startswith(PREFIX+stem+"_") and x["name"].endswith("."+suffix)]
     if expected_digest:
         arr=[x for x in arr if x["name"].endswith("_"+expected_digest[:24]+pathlib.Path(name).suffix)]
     if len(arr)!=1:raise RuntimeError("UNIQUE_OFFICIAL_ARCHIVE_NOT_FOUND_"+name)
