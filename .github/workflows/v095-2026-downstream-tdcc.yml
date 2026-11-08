@@ -43,6 +43,11 @@ jobs:
         run: python -m pip install --disable-pip-version-check pyarrow openpyxl google-api-python-client google-auth google-auth-httplib2
       - name: Read existing verified Bronze and incrementally transform to Silver and descriptive Gold
         run: python -u -m scripts.v095_2026_immediate_silver_gold
+      - name: Save original run outcome to durable Google Drive evidence ledger
+        if: always()
+        env:
+          V095_RECEIPT_LANE: 'SILVER_GOLD'
+        run: python -u -m scripts.v095_2026_publish_run_receipt
       - name: Preserve per-partition downstream and missing-indicator receipts
         if: always()
         uses: actions/upload-artifact@v4
