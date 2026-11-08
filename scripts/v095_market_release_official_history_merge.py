@@ -92,6 +92,28 @@ def main():
     with base_path.open(newline="",encoding="utf-8") as f:
         rowlist=list(csv.DictReader(f))
     for item in all_rows:all_dates[item["date"]]=item
+    month_hashes={}
+    for item in all_rows:
+        ym=item["date"][:7]
+        prior=month_hashes.setdefault(ym,item["source_sha256"])
+        if prior!=item["source_sha256"]:raise ValueError("MULTIPLE_MONTH_NATIVE_HASHES")
+    # A month with verified index data and no row on a weekday is a documented
+    # no-market-row candidate, not yet proof of a named official holiday.
+    non_session=[]
+    for row in rowlist:
+        if row["source"]!="TWSE" or row["date"].startswith("2026-"):continue
+        day=row["date"];month=day[:7]
+        if month not in month_hashes or day in all_dates:continue
+        if dt.date.fromisoformat(day).weekday()>4:continue
+        non_session.append({"date":day,"source":"TWSE",
+          "classification":"NO_DAILY_ROW_IN_VALIDATED_OFFICIAL_MONTH",
+          "month":month,"monthly_source_sha256":month_hashes[month],
+          "named_holiday_verified":False,"should_attempt_daily_price_download":False})
+    no_row_path=OUT/"historic_weekday_no_market_row_candidates.csv"
+    with no_row_path.open("w",newline="",encoding="utf-8") as f:
+        writer=csv.DictWriter(f,fieldnames=["date","source","classification",
+          "month","monthly_source_sha256","named_holiday_verified","should_attempt_daily_price_download"])
+        writer.writeheader();writer.writerows(non_session)
     adjusted=0
     for r in rowlist:
         if r["source"]!="TWSE":continue
@@ -113,13 +135,16 @@ def main():
     report["official_historical_raw_confirmed_days"]=len(all_rows)
     report["historical_cash_market_dates_promoted"]=adjusted
     report["calendar_csv_sha256"]=sha(base_path.read_bytes())
+    report["historical_weekday_without_full_market_month_record"]=len(non_session)
+    report["historical_weekday_no_record_csv_sha256"]=sha(no_row_path.read_bytes())
+    report["historical_nontrading_reason_officially_certified"]=False
     report["market_calendar_source_positive_only"]=True
     report["historical_closures_fully_certified"]=False
     report["g0_coverage_denominator_certified"]=False
     report_path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     result={"source":"TWSE","shards":statuses,
        "positive_days":len(all_rows),"historical_days_promoted":adjusted,
-       "official_negative_days_inferred":0,"tpEx_dates_promoted":0}
+       "official_negative_days_inferred":0,"weekday_no_market_row_candidates":len(non_session),"tpEx_dates_promoted":0}
     print(json.dumps(result,ensure_ascii=False),flush=True)
     return result
 if __name__=="__main__":main()
