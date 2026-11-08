@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-historical-twse-trading-days.yml'
+      - 'tests/test_v095_historical_trade_days_twse.py'
 permissions:
   contents: read
 concurrency:
