@@ -28,6 +28,13 @@ def main():
         name=f"mops_{a}_{b}_repair_receipt"
         raw,h=read_sha_archived(d,name,"json")
         repair=json.loads(raw)
+        if "new_verified" not in repair and "rescued" in repair:
+            # Versioned receipt may contain exact detailed candidates but no rollup.
+            repair["new_verified"]=len(repair["rescued"])
+        if "still_unverified" not in repair and "unverified" in repair:
+            repair["still_unverified"]=len(repair["unverified"])
+        if not all(k in repair for k in ("prior_verified","new_verified","still_unverified","unverified")):
+            raise ValueError("INCOMPATIBLE_MOPS_REPAIR_RECEIPT_SCHEMA")
         attempted=len(base["source_rows"]);passed=repair["prior_verified"]+repair["new_verified"]
         unresolved=repair["still_unverified"]
         if passed+unresolved!=attempted:raise ValueError("MOPS_REPAIR_LEDGER_INCONSISTENT")
