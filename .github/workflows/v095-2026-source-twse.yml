@@ -1,5 +1,5 @@
 name: JARVIS v0.95 2026 TWSE independent Bronze and downstream gate
-# 2026 source-scoped writer; real official fallback and immediate BSG candidate plus lineage.
+# SOURCE ONLY: only Bronze and checkpoint. Independent Silver/Gold has its own writer.
 on:
   workflow_dispatch:
   push:
@@ -26,6 +26,7 @@ jobs:
       GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
       V095_PRICE_SOURCE: 'TWSE'
       V095_2026_BATCH_DAYS: '10'
+      V095_BRONZE_ONLY: '1'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,15 +53,13 @@ jobs:
           assert x['BULK_COPY_APPROVED'] is False and x['RELEASE_APPROVED'] is False
           print('V095_SOURCE_ISOLATED_CANDIDATE_ONLY')
           PY
-          python -m py_compile scripts/v095_2026_price_incremental.py scripts/v095_2026_legacy_first.py scripts/v095_2026_bsg_lineage_gate.py
+          python -m py_compile scripts/v095_2026_price_incremental.py scripts/v095_2026_legacy_first.py scripts/v095_2026_equity_downstream.py
       - name: Preflight 2026 official cash-market calendar before any source requests
         run: |
           python -m unittest discover -s tests -p 'test_v095_2026_cash_market_calendar.py' -v
           python -m scripts.v095_2026_cash_market_calendar v095_market_calendar_2026/calendar_audit.json
-      - name: Bronze v0.93 verified first then live official; immediately Silver and descriptive Gold
+      - name: Bronze only: verify v0.95 then v0.93 original then official and checkpoint
         run: python -m scripts.v095_2026_price_incremental
-      - name: Independently read back all three tiers and validate bidirectional SHA and row lineage
-        run: python -m scripts.v095_2026_bsg_lineage_gate
       - name: Save original run outcome to durable Google Drive evidence ledger
         if: always()
         env:
@@ -78,7 +77,6 @@ jobs:
           name: v095-2026-twse-source-${{ github.run_id }}
           path: |
             v095_2026_price_incremental/result.json
-            v095_2026_price_incremental/lineage_receipt.json
-            v095_market_calendar_2026/calendar_audit.json
+                        v095_market_calendar_2026/calendar_audit.json
           if-no-files-found: warn
           retention-days: 90
