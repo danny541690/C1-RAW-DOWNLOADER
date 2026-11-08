@@ -155,6 +155,38 @@ def validate_zip(b,source,month):
 def main():
     if SOURCE not in ("MOPS","TDCC","TAIFEX","NDC"):raise ValueError("INVALID_SOURCE")
     OUT.mkdir(exist_ok=True)
+    if SOURCE=="NDC":
+        # NDC official series is an observation-month XLSX bundle in one ZIP,
+        # not a separate 2026-09/10/11 directory for each publication.
+        # Reuse G0's verified native ZIP and receipt instead of inventing gaps.
+        from scripts.v095_market_release_taifex_history_merge import load as read_archive
+        d=service()
+        source_bytes,source_sha=read_archive(d,"ndc_current_revised_source","zip")
+        receipt_bytes,_=read_archive(d,"ndc_monthly_manifest","json")
+        receipt=json.loads(receipt_bytes)
+        if (source_sha!=receipt.get("native_zip_sha256")
+                or receipt.get("month_rows",0)<200
+                or receipt.get("monthly_observation_last","")<"2026-09"):
+            raise ValueError("NDC_OFFICIAL_REVISED_SERIES_MISSING_OR_SHA_MISMATCH")
+        result={"source":"NDC","run_id":os.getenv("GITHUB_RUN_ID"),
+           "completed_archives":[],"blocked":[],"scanned":0,
+           "previously_reused_archive_skips":1,
+           "new_bronze_candidate_archives":0,
+           "source_archive_sha256":source_sha,
+           "confirmed_observation_months":receipt["month_rows"],
+           "last_official_observation_month":receipt["monthly_observation_last"],
+           "state":"REUSED_SHA_VERIFIED_OFFICIAL_REVISED_SERIES",
+           "per_month_legacy_folders_required":False,
+           "historical_vintage_PIT_verified":False,
+           "silver_conversion":"BLOCKED_PENDING_APPROVED_ADAPTER",
+           "gold_conversion":"BLOCKED_PENDING_SILVER_AND_PIT",
+           "year_complete":False}
+        (OUT/"result.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\\n")
+        print(json.dumps({"source":"NDC","new_archives":0,"scanned":0,
+            "blocked":0,"unchanged_archive_skipped":1,
+            "official_observation_months_reused":receipt["month_rows"],
+            "silver":result["silver_conversion"],"gold":result["gold_conversion"]},ensure_ascii=False))
+        return
     today=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date()
     months=[f"2026-{n:02d}" for n in range(1,today.month+1)]
     d=service()
