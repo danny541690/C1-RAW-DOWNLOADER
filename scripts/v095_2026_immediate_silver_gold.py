@@ -126,7 +126,38 @@ def parse_tdcc(z,manifest,month,bronze_id,archive_sha):
           usage="DESCRIPTIVE_ONLY_NO_LOOKAHEAD_BACKTEST"))
         previous[key]=row
     return rows,gold,"WEEKLY_OWNERSHIP_PARTITION"
-def parse_taifex(z,month,bronze_id,archive_sha):
+def parse_taifex(z,month,bronze_id,archive_sha,manifest=None):
+    # Two distinct native TAIFEX formats: daily spread summary and monthly
+    # historical original CSV in hash-verified manifest wrapper.
+    units=(manifest or {}).get("units") or []
+    dataset=units[0].get("dataset") if len(units)==1 and isinstance(units[0],dict) else None
+    if dataset in ("futDataDown","largeTraderFutDown","dlLargeTraderOptDown"):
+        from scripts.v093_taifex_monthly_content import inspect_month_csv,SCHEMAS
+        from scripts.v093_taifex_independent import native_text,parse_date
+        members=[x for x in z.namelist() if x.lower().endswith(".csv")]
+        if len(members)!=1:raise ValueError("TAIFEX_HISTORY_CSV_MEMBER_NOT_UNIQUE")
+        filename=members[0];raw=z.read(filename)
+        if sha(raw)!=units[0].get("sha256"):raise ValueError("TAIFEX_HISTORY_MEMBER_SHA")
+        evidence=inspect_month_csv(raw,{"資料集":dataset,"期間":month})
+        reader=csv.reader(io.StringIO(native_text(raw).rstrip(chr(26)+" \\t\\r\\n")))
+        header=next(reader,[])
+        if header!=SCHEMAS[dataset]:raise ValueError("TAIFEX_HISTORY_HEADER_CONTRACT_MISMATCH")
+        rows=[]
+        for n,values in enumerate(reader,1):
+            if not any(x.strip() for x in values):continue
+            if len(values)==1 and values[0].startswith(("備註","月份類別格式","交易人類別格式","-表")):continue
+            if len(values)!=len(header):raise ValueError("TAIFEX_HISTORY_ROW_WIDTH_UNVERIFIED")
+            when=parse_date(values[0])
+            if not when or when.isoformat()[:7]!=month:
+                raise ValueError("TAIFEX_HISTORY_TRADE_DATE_MISMATCH")
+            rows.append(dict(source="TAIFEX",trade_date=when.isoformat(),dataset=dataset,
+                raw_record_json=json.dumps(dict(zip(header,values)),ensure_ascii=False),
+                source_member=filename,source_member_sha256=sha(raw),
+                source_bronze_id=bronze_id,source_zip_sha256=archive_sha,
+                origin_legacy_file_id=units[0].get("origin_legacy_file_id"),
+                native_numeric_pit_verified=False,published_at=None,pit_verified=False))
+        if not rows or len(rows)!=evidence["rows"]:raise ValueError("TAIFEX_HISTORY_ROW_COUNT_DISAGREES_WITH_SOURCE_VALIDATOR")
+        return rows,[],"DAILY_HISTORY_"+dataset+"_NATIVE_VALUES"
     members=[x for x in z.namelist() if x.lower().endswith(".csv")]
     if len(members)!=1:raise ValueError("TAIFEX_TYPED_SPREAD_REQUIRES_SINGLE_CSV")
     from scripts.v093_taifex_independent import native_text
@@ -331,7 +362,7 @@ def main():
                     manifest=json.loads(z.read(manifests[0])) if manifests else {}
                     if SOURCE=="MOPS":sil,go,dataset=parse_mops(z,manifest,month,f["id"],h)
                     elif SOURCE=="TDCC":sil,go,dataset=parse_tdcc(z,manifest,month,f["id"],h)
-                    else:sil,go,dataset=parse_taifex(z,month,f["id"],h)
+                    else:sil,go,dataset=parse_taifex(z,month,f["id"],h,manifest)
                 return write_pair(d,SOURCE,month,f["id"],h,sil,go,dataset)
             success,errors=convert_with_three_attempts(convert,SOURCE,month,f["id"])
             if success:
