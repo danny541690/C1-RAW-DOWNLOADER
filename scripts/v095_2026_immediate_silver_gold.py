@@ -340,6 +340,17 @@ def convert_with_three_attempts(do,source,month,identifier):
             # Repeat only the bounded candidate, not the whole run.
     return None,errors
 
+def adapter_version(source):
+    import inspect
+    body=inspect.getsource({"MOPS":parse_mops,"TDCC":parse_tdcc,
+                             "TAIFEX":parse_taifex,"NDC":parse_ndc}[source])
+    if source=="TDCC":
+        from scripts.v095_legacy_tdcc_mirror_adapter import records
+        body+=inspect.getsource(records)
+    if source=="TAIFEX":
+        from scripts.v095_legacy_taifex_csv_adapter import package
+        body+=inspect.getsource(package)
+    return sha(body.encode("utf-8"))[:16]
 def main():
     if SOURCE not in SILVER:raise ValueError("IMMEDIATE_DOWNSTREAM_SOURCE_UNKNOWN")
     OUT.mkdir(exist_ok=True);d=service()
@@ -365,7 +376,7 @@ def main():
             if any(x["name"].startswith(silver_prefix) and x["name"].endswith(".parquet")
                    for x in recorded):
                 reused+=1;continue
-            quarantine_name=f"V095_{SOURCE}_{month.replace('-','')}_{prefix[:20]}_DOWNSTREAM_NULL_3X.json"
+            quarantine_name=f"V095_{SOURCE}_{month.replace('-','')}_{prefix[:20]}_DOWNSTREAM_NULL_{adapter_version(SOURCE)}_3X.json"
             if any(x["name"]==quarantine_name for x in recorded):
                 reused+=1;continue
             def convert():
