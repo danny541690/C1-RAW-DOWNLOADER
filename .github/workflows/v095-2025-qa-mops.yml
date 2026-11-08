@@ -1,0 +1,46 @@
+name: JARVIS v0.95 2025 MOPS independent QA exception inventory
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2025-qa-mops.yml'
+  schedule:
+    - cron: '37 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2025-qa-mops-single
+  cancel-in-progress: false
+jobs:
+  qa-mops:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V095_DATA_YEAR: '2025'
+      V095_QA_SOURCE: 'MOPS'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install source QA dependency
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Verify independent source quality reader
+        run: python -m py_compile scripts/v095_2026_source_qa.py
+      - name: Read only 2025 source and transformation receipts and persist exceptions
+        run: python -u -m scripts.v095_2026_source_qa
+      - name: Retain QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2025-qa-mops-${{ github.run_id }}
+          path: v095_2025_source_qa/result.json
+          if-no-files-found: warn
+          retention-days: 90
