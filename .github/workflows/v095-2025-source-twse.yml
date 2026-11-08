@@ -1,0 +1,66 @@
+name: JARVIS v0.95 2025 TWSE isolated Bronze official-first backfill
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2025-source-twse.yml'
+  schedule:
+    - cron: '9,39 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2025-source-twse-single-writer
+  cancel-in-progress: false
+jobs:
+  historical-twse:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V095_PRICE_SOURCE: 'TWSE'
+      V095_DATA_YEAR: '2025'
+      V095_2026_BATCH_DAYS: '10'
+      V095_BRONZE_ONLY: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install historical source dependencies
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Preflight original-date validator and 2025 year isolation
+        run: |
+          python -m py_compile scripts/v095_2026_price_incremental.py scripts/v095_market_release_calendar_2000_2026.py
+          python - <<'PY'
+          import json,os
+          from scripts.v095_market_release_calendar_2000_2026 import contracts,market_day
+          contracts()
+          assert os.environ['V095_DATA_YEAR']=='2025'
+          s,e=market_day('2025-01-02',os.environ['V095_PRICE_SOURCE'])
+          print('HISTORICAL_DAY_STATE',s,e)
+          x=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert x['BULK_COPY_APPROVED'] is False and x['RELEASE_APPROVED'] is False
+          PY
+      - name: Acquire 2025 immutable Bronze using independent year-specific checkpoint
+        run: python -u -m scripts.v095_2026_price_incremental
+      - name: Persist SHA-verified 2025 outcome to Drive
+        if: always()
+        env:
+          V095_RECEIPT_LANE: 'BRONZE'
+        run: python -u -m scripts.v095_2026_publish_run_receipt
+      - name: Preserve source run evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2025-twse-bronze-${{ github.run_id }}
+          path: |
+            v095_2026_price_incremental/result.json
+            v095_2026_run_receipt/drive_receipt.json
+          if-no-files-found: warn
+          retention-days: 90
