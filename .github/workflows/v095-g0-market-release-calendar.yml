@@ -13,6 +13,8 @@ on:
       - 'scripts/v095_market_release_taifex_gap_dates_merge.py'
       - 'scripts/v095_g0_six_source_date_quality.py'
       - 'scripts/v095_tdcc_week_reference_audit.py'
+      - 'scripts/v095_g0_bronze_download_gate.py'
+      - 'tests/test_v095_g0_bronze_download_gate.py'
       - 'governance/v095/MARKET_RELEASE_CONTRACTS.json'
       - 'governance/v095/MARKET_CALENDAR_EVIDENCE_2000_2025.csv'
   schedule:
@@ -85,6 +87,10 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python -m scripts.v095_g0_six_source_date_quality
+      - name: Validate Bronze download eligibility separately from historical publication/PIT coverage
+        run: |
+          python -m unittest discover -s tests -p 'test_v095_g0_bronze_download_gate.py' -v
+          python -m scripts.v095_g0_bronze_download_gate
       - name: Save immutable G0 calendar and evidence to Google Drive Operations
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
