@@ -30,6 +30,16 @@ class TestV095HistoricalNativeZIPManifest(unittest.TestCase):
     z=io.BytesIO()
     with zipfile.ZipFile(z,"w",zipfile.ZIP_DEFLATED) as f:f.writestr("20260909.csv",text.encode("utf-8-sig"))
     with self.assertRaises(ValueError):validate_zip(z.getvalue(),"TAIFEX","2026-09")
+ def test_mops_financial_manifest_without_root_source(self):
+    raw=b"historical balance sheet original bytes"
+    h=hashlib.sha256(raw).hexdigest()
+    b=io.BytesIO()
+    with zipfile.ZipFile(b,"w",zipfile.ZIP_DEFLATED) as z:
+        z.writestr("financial.raw",raw)
+        z.writestr("manifest.json",json.dumps({"numeric_verified":False,"pit_verified":False,
+            "units":[{"source":"MOPS","month":"2026-03","file":"financial.raw","sha256":h}]}))
+    self.assertEqual(validate_zip(b.getvalue(),"MOPS","2026-03"),1)
+    with self.assertRaises(ValueError):validate_zip(b.getvalue(),"MOPS","2026-04")
  def test_tdcc_r1_complement_manifest(self):
     raw=b"<html>valid native tdcc stock data</html>"
     h=hashlib.sha256(raw).hexdigest()
