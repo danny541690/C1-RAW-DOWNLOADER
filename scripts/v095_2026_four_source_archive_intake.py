@@ -7,6 +7,7 @@ CRC as verified financial contents or manufacture Silver/Gold/PIT. Missing
 eligible files are reported for dedicated official-source backfill adapters.
 """
 import datetime as dt
+import calendar
 import hashlib, io, json, os, pathlib, sys, zipfile
 from scripts.v095_2026_annual_consolidated import service,BRONZE_ROOTS,FOLDER
 from scripts.v095_2026_prior_raw_reuse_audit import YEAR_PARENT
@@ -44,6 +45,19 @@ def validate_zip(b,source,month):
             raise ValueError("UNSAFE_ARCHIVE")
         if z.testzip():raise ValueError("ZIP_CRC")
         manifests=[x.filename for x in infos if pathlib.PurePosixPath(x.filename).name=="manifest.json"]
+        if len(manifests)==0 and source=="TAIFEX":
+            csvfiles=[x for x in infos if not x.is_dir() and x.filename.lower().endswith(".csv")]
+            if len(infos)!=1 or len(csvfiles)!=1:raise ValueError("TAIFEX_NATIVE_ZIP_NOT_SINGLE_CSV")
+            from scripts.v093_taifex_independent import csv_evidence
+            year,mm=map(int,month.split("-"))
+            start=dt.date(year,mm,1);end=dt.date(year,mm,calendar.monthrange(year,mm)[1])
+            evidence=csv_evidence(z.read(csvfiles[0]),start,end)
+            if evidence.get("rows",0)<1:raise ValueError("TAIFEX_NATIVE_CSV_NO_ROWS")
+            lo=evidence.get("content_period",{}).get("min")
+            hi=evidence.get("content_period",{}).get("max")
+            if not lo or not hi or lo[:7]!=month or hi[:7]!=month:
+                raise ValueError("TAIFEX_NATIVE_CSV_MONTH_INCONSISTENT")
+            return 1
         if len(manifests)!=1:raise ValueError("MISSING_OR_DUPLICATE_MANIFEST")
         m=json.loads(z.read(manifests[0]))
         manifest_period=m.get("month",m.get("period"))
@@ -101,11 +115,15 @@ def main():
                 b=d.files().get_media(fileId=item["id"]).execute()
                 if len(b)>MAX_BYTES:raise ValueError("ARCHIVE_OVER_BOUNDED_LIMIT")
                 members=validate_zip(b,SOURCE,month)
+                with zipfile.ZipFile(io.BytesIO(b)) as zz:
+                    had_native_manifest=any(pathlib.PurePosixPath(x.filename).name=="manifest.json"
+                                            for x in zz.infolist())
                 name="V095_V093_"+SOURCE+"_"+month+"_"+digest(b)[:24]+".zip"
                 fid,action=save(d,dest,name,b)
                 completed.append({"month":month,"source":SOURCE,"member_count":members,
                                   "sha256":digest(b),"file_id":fid,"action":action,
-                                  "state":"STORAGE_SHA_CRC_MANIFEST_PASS_NATIVE_SCHEMA_PENDING"})
+                                  "state":("STORAGE_SHA_CRC_MANIFEST_PASS_NATIVE_SCHEMA_PENDING" if had_native_manifest
+                                   else "TAIFEX_SINGLE_CSV_NATIVE_SCHEMA_DATE_PASS_PIT_PENDING")})
             except Exception as e:
                 blocked.append({"month":month,"name_digest":digest(item["name"].encode())[:12],
                                 "reason":type(e).__name__+":"+str(e)[:110]})
