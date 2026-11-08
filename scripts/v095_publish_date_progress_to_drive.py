@@ -138,9 +138,10 @@ def main():
        "sources":per,
        "no_fake_gaps":True,"historical_publication_date_complete":False,
        "all_six_sources_complete":False,"PIT_RELEASE_APPROVED":False}
-    jsonpath=OUT/"JARVIS_V095_DATE_PROGRESS_20261108.json"
+    date_suffix=TODAY.strftime("%Y%m%d")
+    jsonpath=OUT/("JARVIS_V095_DATE_PROGRESS_"+date_suffix+".json")
     jsonpath.write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    csvpath=OUT/"JARVIS_V095_DATE_PROGRESS_20261108.csv"
+    csvpath=OUT/("JARVIS_V095_DATE_PROGRESS_"+date_suffix+".csv")
     with csvpath.open("w",newline="",encoding="utf-8-sig") as f:
         writer=csv.writer(f)
         writer.writerow(["來源","日期單位","已巡檢至","下一待巡檢日","候選來源月份起","候選來源月份迄","候選月份清單","週基準日正向收據數","觀察月起","觀察月迄","觀察月數","最新失敗日期","待重試日期","狀態","完成認證"])
@@ -171,7 +172,7 @@ def main():
          "- TDCC 週資料來源起點不同，週基準日與公布日不可混用。",
          "- NDC 觀察月份不等於資料初次公布時間；PIT 及 Gold 正式回測持續隔離。",
          "- 未來新排程應逐輪產出 completed_dates/failed_dates，並與官方應有日期交集計算來源覆蓋率。"]
-    mdpath=OUT/"JARVIS_V095_DATE_PROGRESS_20261108.md"
+    mdpath=OUT/("JARVIS_V095_DATE_PROGRESS_"+date_suffix+".md")
     mdpath.write_text("\n".join(md)+"\n",encoding="utf-8")
     receipts=[archive(d,x) for x in (csvpath,jsonpath,mdpath)]
     result={"state":"DRIVE_SHA_READBACK_PASS","snapshot_date":TODAY.isoformat(),
