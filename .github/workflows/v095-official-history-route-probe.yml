@@ -1,0 +1,52 @@
+name: JARVIS historical official endpoint route probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-official-history-route-probe.yml'
+permissions:
+  contents: read
+jobs:
+  official-api-routes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe small source routes without storing source HTML as valid dates
+        run: |
+          python - <<'PY'
+          import urllib.request,urllib.parse,json,hashlib
+          roots=[
+            'https://www.twse.com.tw/rwd/zh/exchangeReport/FMTQIK',
+            'https://www.twse.com.tw/exchangeReport/FMTQIK',
+            'https://openapi.twse.com.tw/v1/exchangeReport/FMTQIK'
+          ]
+          queries=[
+            {'response':'json','date':'20260101'},
+            {'response':'json','date':'20000101'},
+            {'response':'json','date':'20260101'},
+            {'response':'json','date':'20000101'},
+            {},{}
+          ]
+          for root,items in ((roots[0],queries[:2]),(roots[1],queries[2:4]),(roots[2],queries[4:])):
+            for query in items:
+              url=root+('?' + urllib.parse.urlencode(query) if query else '')
+              try:
+                req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'application/json'})
+                with urllib.request.urlopen(req,timeout=16) as res:
+                  raw=res.read(1000000)
+                  try:
+                    obj=json.loads(raw)
+                    shape={'root_type':type(obj).__name__,'status':obj.get('stat') if isinstance(obj,dict) else None,
+                           'rows':len(obj.get('data',[])) if isinstance(obj,dict) else len(obj),
+                           'title':obj.get('title') if isinstance(obj,dict) else None}
+                  except Exception:shape={'non_json_head':repr(raw[:110])}
+                  print(json.dumps({'host':root,'date':query.get('date'),'http':res.status,
+                    'ctype':res.headers.get('Content-Type'),'bytes':len(raw),'shape':shape},ensure_ascii=False),flush=True)
+              except Exception as e:
+                print(json.dumps({'host':root,'date':query.get('date'),'error':type(e).__name__+':'+str(e)[:100]}),flush=True)
+          PY
