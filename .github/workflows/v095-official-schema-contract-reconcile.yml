@@ -1,0 +1,44 @@
+name: JARVIS v0.95 official-vs-native format reconciliation and focused revalidation
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-official-schema-contract-reconcile.yml'
+      - 'scripts/v095_official_schema_contract_diff.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-source-format-contract-audit
+  cancel-in-progress: false
+jobs:
+  compare-39-datasets-and-six-sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile audit and require six official sources and non-ready PIT gates
+        run: |
+          python -m py_compile scripts/v095_official_schema_contract_diff.py
+          python -m scripts.v095_official_schema_contract_diff
+          python - <<'PY'
+          import json
+          d=json.load(open('v095_official_schema_reconciliation/official_vs_v095_contracts.json'))
+          assert len(d['source_contract_counts'])==6
+          assert d['contract_rows_checked']>=35
+          assert not d['formal_pit_release_approved']
+          print('OFFICIAL_SCHEMA_V095_CONTRACT_COMPARISON_PASS')
+          PY
+      - name: Upload official format mismatch and remediation ledger
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-official-native-format-diff-${{ github.run_id }}
+          path: v095_official_schema_reconciliation/
+          retention-days: 90
+          if-no-files-found: warn
