@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-2026-cross-lane-evidence-ledger.yml'
+      - 'scripts/v095_2026_cross_lane_evidence_ledger.py'
   schedule:
     - cron: '52 * * * *'
 permissions:
