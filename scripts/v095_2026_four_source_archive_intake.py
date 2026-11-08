@@ -234,9 +234,19 @@ def main():
     # Source ZIPs are immutable. Store a durable per-validator SHA exception
     # ledger in the source Bronze root so unchanged bad ZIPs are not reopened
     # every run. Any code change invalidates the cache automatically.
+    # Include imported native validator code in the quarantine fingerprint.
+    # Otherwise an adapter fix will silently keep all previously rejected ZIPs
+    # quarantined forever under an old error code.
+    adapter_source=""
+    if SOURCE=="TDCC":
+        from scripts.v095_legacy_tdcc_mirror_adapter import validate_capture_zip,records
+        adapter_source=inspect.getsource(validate_capture_zip)+inspect.getsource(records)
+    elif SOURCE=="TAIFEX":
+        from scripts.v095_legacy_taifex_csv_adapter import package
+        adapter_source=inspect.getsource(package)
     validator_fingerprint=(inspect.getsource(validate_zip)
          +inspect.getsource(taifex_spread_order_evidence)
-         +str(MAX_BYTES))
+         +adapter_source+str(MAX_BYTES))
     validator_version=digest(validator_fingerprint.encode("utf-8"))[:20]
     ledger_prefix="V095_QUARANTINE_"+str(YEAR)+"_"+SOURCE+"_"+validator_version+"_"
     old_ledgers=[x for x in ls(d,new) if x["name"].startswith(ledger_prefix)
