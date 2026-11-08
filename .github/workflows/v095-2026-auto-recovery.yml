@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-2026-auto-recovery.yml'
+      - 'scripts/v095_2026_price_incremental.py'
   # Schedule is owned by the 15-minute recovery watchdog; this workflow is dispatched hourly when idle.
 permissions:
   contents: read
@@ -45,7 +46,7 @@ jobs:
           python scripts/v095_r13_single_committer_contract.py
       - name: Incremental 2026 actual TWSE TPEx price Bronze Silver Gold candidate producer
         env:
-          V095_2026_BATCH_DAYS: '6'
+          V095_2026_BATCH_DAYS: '10'
         run: |
           python -m py_compile scripts/v095_2026_price_incremental.py
           python -m scripts.v095_2026_price_incremental
