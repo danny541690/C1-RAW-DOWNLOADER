@@ -13,6 +13,10 @@ class TestG0MarketReleaseCalendar(unittest.TestCase):
         self.assertEqual(market_day("2026-02-12","TWSE")[0],"CONFIRMED_SETTLEMENT_ONLY")
         self.assertEqual(market_day("2026-01-02","TPEx")[0],"CONFIRMED_TRADING")
         self.assertEqual(market_day("2026-01-02","TAIFEX")[0],"WEEKDAY_UNVERIFIED")
+    def test_tdcc_pre_2008_is_not_missing(self):
+        now=dt.datetime(2026,11,8,11,0,tzinfo=dt.timezone(dt.timedelta(hours=8)))
+        self.assertEqual(due("TDCC","ownership_distribution","2005-01-07",now),
+                         "SOURCE_NOT_YET_AVAILABLE_CONFIRMED")
     def test_gap_and_due_separation(self):
         now=dt.datetime(2026,11,8,11,0,tzinfo=dt.timezone(dt.timedelta(hours=8)))
         self.assertEqual(due("TWSE","cash_prices","2026-01-01",now),"OFFICIAL_NONTRADING_NOT_GAP")
