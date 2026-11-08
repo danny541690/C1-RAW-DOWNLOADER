@@ -21,7 +21,7 @@ def native_year(raw,year):
     title=str(obj.get("title",""))
     roc=year-1911
     # Never accept an undated or wrong-year web response as a historical calendar.
-    if not re.search(r"(?<!\\d)(?:"+str(roc)+"|"+str(year)+r")\\s*年",title):
+    if not re.search(r"(?<!\d)(?:"+str(roc)+"|"+str(year)+r")\s*年",title):
         raise ValueError("ANNUAL_TITLE_YEAR_UNVERIFIED:"+title[:60])
     rows=obj.get("data")
     if not isinstance(rows,list) or len(rows)<5:raise ValueError("NO_ANNUAL_HOLIDAY_ROWS")
@@ -29,9 +29,9 @@ def native_year(raw,year):
     for row in rows:
         if not isinstance(row,list) or len(row)<2:continue
         text=str(row[0]).strip()
-        match=re.fullmatch(r"(?:(?:\\d{2,4})[/-])?(\\d{1,2})月(\\d{1,2})日.*",text)
+        match=re.fullmatch(r"(?:(?:\d{2,4})[/-])?(\d{1,2})月(\d{1,2})日.*",text)
         if not match:
-            match=re.match(r"^(\\d{1,2})[/-](\\d{1,2})(?:\\s|$)",text)
+            match=re.match(r"^(\d{1,2})[/-](\d{1,2})(?:\s|$)",text)
         if not match:continue
         mm,dd=map(int,match.groups())
         try:day=dt.date(year,mm,dd).isoformat()
@@ -79,7 +79,7 @@ def run(start,end):
       "total_verified_single_date_events":len(collected),"annual_closure_complete":False,
       "archive_sha256":sha(zip_path.read_bytes()),"events_csv_sha256":sha(csv_path.read_bytes()),
       "years":summaries}
-    (ROOT/f"twse_{start}_{end}_annual_report.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\\n")
+    (ROOT/f"twse_{start}_{end}_annual_report.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n")
     return result
 if __name__=="__main__":
     p=argparse.ArgumentParser();p.add_argument("--start",required=True,type=int);p.add_argument("--end",required=True,type=int)
