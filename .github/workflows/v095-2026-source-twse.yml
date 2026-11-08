@@ -61,6 +61,11 @@ jobs:
         run: python -m scripts.v095_2026_price_incremental
       - name: Independently read back all three tiers and validate bidirectional SHA and row lineage
         run: python -m scripts.v095_2026_bsg_lineage_gate
+      - name: Save original run outcome to durable Google Drive evidence ledger
+        if: always()
+        env:
+          V095_RECEIPT_LANE: 'BRONZE'
+        run: python -u -m scripts.v095_2026_publish_run_receipt
       - name: Preserve full per-partition actual results, exceptions and provenance
         if: always()
         uses: actions/upload-artifact@v4
