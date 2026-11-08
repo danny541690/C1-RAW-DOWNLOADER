@@ -117,8 +117,12 @@ def validate_zip(b,source,month):
                                and complete_unit_provenance)
         if not (root_identity or old_mops_unit_identity):
             raise ValueError("MANIFEST_SOURCE_MONTH_MISMATCH")
-        if root_identity and source=="MOPS" and units_m and not complete_unit_provenance:
-            raise ValueError("MANIFEST_UNIT_SOURCE_MONTH_INCONSISTENT")
+        if root_identity and source=="MOPS" and isinstance(units_m,list):
+            for u in units_m:
+                if not isinstance(u,dict) or (
+                    u.get("source") is not None and u.get("source")!=source) or (
+                    u.get("month") is not None and u.get("month")!=month):
+                    raise ValueError("MANIFEST_UNIT_SOURCE_MONTH_INCONSISTENT")
         if isinstance(m.get("units"),list) and m["units"]:
             entries=m["units"];key="file";fmt="V093_UNIT_MANIFEST"
         elif isinstance(m.get("immutable_originals"),list) and m["immutable_originals"]:
