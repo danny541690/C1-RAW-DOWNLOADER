@@ -6,7 +6,9 @@ from scripts.v095_market_release_calendar_drive_archive import drive,OPS
 PATHS=("v095_2026_price_incremental/result.json","v095_2026_source_archives/result.json",
 "v095_2026_immediate_downstream/result.json","v095_2026_immediate_downstream/missing_indicators.json",
 "annual_2026/report.json","v095_2026_equity_downstream/result.json",
-"v095_2026_equity_downstream/lineage_receipt.json")
+"v095_2026_equity_downstream/lineage_receipt.json",
+"v095_2025_equity_downstream/result.json","v095_2025_equity_downstream/lineage_receipt.json",
+"v095_2025_four_source_inventory/result.json")
 def sha(x):return hashlib.sha256(x).hexdigest()
 def main():
   data={}
@@ -17,6 +19,8 @@ def main():
     if len(b)>2_000_000:raise ValueError("RECEIPT_OVER_2MB:"+p)
     obj=json.loads(b)
     data[p]={"sha256":sha(b),"data":obj}
+  year=int(os.getenv("V095_DATA_YEAR","2026"))
+  if year not in (2025,2026):raise ValueError("RECEIPT_YEAR_OUT_OF_SCOPE")
   run_id=os.getenv("GITHUB_RUN_ID","LOCAL")
   lane=os.getenv("V095_RECEIPT_LANE","UNKNOWN").upper()
   source=os.getenv("V095_PRICE_SOURCE") or os.getenv("V095_BRONZE_SOURCE") or lane
@@ -25,9 +29,9 @@ def main():
     "created_at_utc":dt.datetime.now(dt.timezone.utc).isoformat(),
     "source_results":data,"result_count":len(data),
     "result_absent":len(data)==0,"year_certified":False,"PIT_certified":False,
-    "scope":"2026","recovery":"REVIEW_MISSING_OR_FAILED_SOURCE_RESULTS"}
+    "scope":str(year),"recovery":"REVIEW_MISSING_OR_FAILED_SOURCE_RESULTS"}
   raw=(json.dumps(payload,ensure_ascii=False,sort_keys=True,separators=(",",":"))+"\n").encode()
-  h=sha(raw);name="JARVIS_V095_2026_RUN_RECEIPT_"+lane+"_"+source+"_"+run_id+"_"+h[:20]+".json"
+  h=sha(raw);name=f"JARVIS_V095_{year}_RUN_RECEIPT_"+lane+"_"+source+"_"+run_id+"_"+h[:20]+".json"
   d=drive()
   q="'"+OPS+"' in parents and name = '"+name+"' and trashed = false"
   old=d.files().list(q=q,fields="files(id,name),nextPageToken",pageSize=100).execute()
