@@ -1,0 +1,40 @@
+name: JARVIS TPEx historical OTC per-stock month evidence probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-tpex-historical-stock-calendar-probe.yml'
+permissions:
+  contents: read
+jobs:
+  otc-monthly-historical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify native historical TPEx month response 2000 2010 2026
+        run: |
+          python - <<'PY'
+          import urllib.request,urllib.parse,json
+          base='https://www.tpex.org.tw/www/zh-tw/afterTrading/tradingStock'
+          for code in ('5483','3105'):
+            for day in ('2000/01/01','2010/01/01','2026/01/01'):
+              url=base+'?'+urllib.parse.urlencode({'code':code,'date':day,'response':'json'})
+              try:
+                req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+                with urllib.request.urlopen(req,timeout=18) as r:
+                  raw=r.read(500000)
+                  x=json.loads(raw)
+                  tables=x.get('tables',[]) if isinstance(x,dict) else []
+                  print(json.dumps({'code':code,'month':day[:7],'api_date':x.get('date'),
+                    'status':x.get('stat'),'table_count':len(tables),
+                    'titles':[str(t.get('title'))[:60] for t in tables],
+                    'counts':[len(t.get('data',[])) for t in tables],
+                    'sample':[str(t.get('data',[])[:1])[:120] for t in tables]},ensure_ascii=False),flush=True)
+              except Exception as e:
+                print(json.dumps({'code':code,'month':day,'error':type(e).__name__+':'+str(e)[:100]}))
+          PY
