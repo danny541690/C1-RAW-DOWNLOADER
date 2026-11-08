@@ -26,7 +26,7 @@ MAX_INSPECT_PER_RUN=300
 def ls(d,folder,only_archives=False):
     rows=[];token=None
     while True:
-        result=d.files().list(q="'"+folder+"' in parents and trashed=false"+(" and name contains '.zip'" if only_archives else ""),
+        result=d.files().list(q="'"+folder+"' in parents and trashed=false"+(" and (name contains '.zip' or name contains 'HISTORY_')" if only_archives and SOURCE=="TAIFEX" else " and name contains '.zip'" if only_archives else ""),
           fields="nextPageToken,incompleteSearch,files(id,name,size,mimeType,md5Checksum,createdTime)",pageSize=500,pageToken=token).execute()
         if result.get("incompleteSearch"):raise RuntimeError("DRIVE_INCOMPLETE_SOURCE_LIST")
         rows.extend(result.get("files",[]))
@@ -271,7 +271,13 @@ def main():
         dest=folder(d,new,month+"_V093_REUSE_CANDIDATE")
         stored={x.get("md5Checksum") for x in ls(d,dest) if x.get("md5Checksum")}
         for item in sorted(items,key=lambda x:x["name"]):
-            if not item["name"].lower().endswith(".zip"):continue
+            is_zip=item["name"].lower().endswith(".zip")
+            is_csv=(SOURCE=="TAIFEX" and item["name"].startswith("HISTORY_")
+                    and item["name"].lower().endswith(".csv"))
+            if not (is_zip or is_csv):continue
+            if is_csv:
+                from scripts.v095_legacy_taifex_csv_adapter import eligible
+                if not eligible(item["name"],month):continue
             if len(completed)>=MAX_SOURCE_FILES or scanned>=MAX_INSPECT_PER_RUN:break
             if item.get("md5Checksum") and item["md5Checksum"] in stored:
                 reused+=1
@@ -285,6 +291,10 @@ def main():
                 if int(item.get("size",0))>MAX_BYTES:raise ValueError("ARCHIVE_OVER_BOUNDED_LIMIT")
                 b=d.files().get_media(fileId=item["id"]).execute()
                 if len(b)>MAX_BYTES:raise ValueError("ARCHIVE_OVER_BOUNDED_LIMIT")
+                native_csv_evidence=None
+                if is_csv:
+                    from scripts.v095_legacy_taifex_csv_adapter import package
+                    b,native_csv_evidence=package(b,item["name"],month,item["id"])
                 target_month=month
                 try:
                     members=validate_zip(b,SOURCE,month)
@@ -309,6 +319,7 @@ def main():
                 completed.append({"month":target_month,"legacy_folder_month":month,
                                   "source_month_reassigned_from_native_date":target_month!=month,
                                   "source":SOURCE,"legacy_source_folder":item.get("_legacy_origin"),"member_count":members,
+                                  "native_csv_adapter_evidence":native_csv_evidence,
                                   "sha256":digest(b),"file_id":fid,"action":action,
                                   "state":("STORAGE_SHA_CRC_MANIFEST_PASS_NATIVE_SCHEMA_PENDING" if had_native_manifest
                                    else "TAIFEX_SINGLE_CSV_NATIVE_SCHEMA_DATE_PASS_PIT_PENDING")})
