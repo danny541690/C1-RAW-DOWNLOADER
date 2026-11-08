@@ -152,3 +152,15 @@
 (1) `INSPECTED_CURSOR_RATE`＝已巡檢候選平日/截至當日候選平日，已核實 186/222＝83.8%；不是資料正確率。
 (2) `BRONZE/SILVER/GOLD_CANDIDATE_DATE_PRESENCE_RATE`＝日期擁有對應候選檔的天數／官方應有交易日 205 天，此數僅「候選檔日期覆蓋」且需逐檔原始 SHA/格式驗證，不是正式完工率。
 (3) `CERTIFIED_ALL_CONTRACTS_RATE` 只有確認每契約應有日期、原始檔 SHA、Silver 映射、Gold 必要輸入、PIT 時間戳及雙向血緣的分母與分子後才能計算；目前資料不足，保留 `N/A`，不可猜測百分比。
+
+## K. 六條快下載 + 獨立 QA / 補缺 / Silver / Gold（2026-11-08 設計決策）
+
+已針對 GitHub 2026-11-08 實際 Run 及 Microsoft Fabric / Azure Data Factory、GitHub/Drive 官方限制提出完整重構設計，詳見：
+`governance/v095/DOWNLOAD_QA_DECOUPLING_BLUEPRINT_20261108.md`。
+**此段為設計方案，尚未切換六條既有正式排程，也沒有聲稱新 18 條工作全部已上線。**
+
+目標為 D01–D06 六條來源專用 raw 快下載；Q01–Q04 四組獨立 QA；R01–R02 兩組來源錯誤／格式補正；S01–S02 兩組 Silver；G01–G02 兩組 Gold；L01 雙向血緣；C01 Manifest/Checkpoint 控制：**共 18 條邏輯作業**，建議初始最多同時執行 8 個 job，視 Drive API 429／GitHub runner 配額與吞吐量逐步提高 10–12，不能預設 18 條全同時跑。
+
+優先建立 shadow pipeline、不修改已驗證 Bronze；比對 2026-09～2026-11 來源 SHA/欄位/日期與血緣，確認 2026/01 至今的有效資料 throughput 改善後，逐條切換舊 cron。永久增量任務及三次失敗收據留於 Drive Manifest，不依賴 GitHub pending queue 作永久儲存。已確認資料不重抓；不明 source/PIT 分層隔離。
+
+測量：來源有效原始檔數/分、來源原始 MB/分、QA 通過率、Silver/Gold 已轉換日期、三次失敗後隔離數、Drive quota 429 次數、每個 Run 的總時間與雲端呼叫量。**排程真正加速幅度尚待 A/B 實測，不能用 GitHub Job 並行數推估。**
