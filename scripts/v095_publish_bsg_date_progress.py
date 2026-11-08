@@ -5,9 +5,10 @@ import csv,datetime as dt,hashlib,json,os,pathlib,re
 from scripts.v095_publish_date_progress_to_drive import (drive,archive,remote_files,
     latest_cursor,legacy_candidates,ndc_from_verified_archive,tdcc_reference,weekdays,TODAY,OUT)
 from scripts.v095_ultimate_r1_november_official import SOURCES as PRICE_SOURCES,GOLD
+from scripts.v095_2026_cash_market_calendar import load_calendar
 SOURCES=("TWSE","TPEx","MOPS","TDCC","TAIFEX","NDC")
 STAGES=("BRONZE","SILVER","GOLD")
-def priced_stages(d,source):
+def priced_stages(d,source,trade_days):
     cfg=PRICE_SOURCES[source]
     roots={"BRONZE":cfg["bronze"],"SILVER":cfg["silver"],"GOLD":GOLD}
     stages={}
@@ -29,9 +30,16 @@ def priced_stages(d,source):
                 m=re.fullmatch(pattern,filename)
                 if m and m[1][:7]==name[:7] and m[1]<=TODAY.isoformat():found.add(m[1])
         dates=sorted(found)
+        confirmed_dates=set(dates)&trade_days
         stages[stage]={"first":dates[0] if dates else None,
            "last":dates[-1] if dates else None,"candidate_date_count":len(dates),
-           "candidate_days":dates,"complete":False,"PIT":False,
+           "candidate_days":dates,
+           "official_sessions_through_today":len(trade_days),
+           "candidate_dates_on_official_sessions":len(confirmed_dates),
+           "candidate_file_date_coverage_pct":round(100*len(confirmed_dates)/len(trade_days),1) if trade_days else None,
+           "candidate_file_coverage_not_SHA_or_PIT_verified":True,
+           "candidate_dates_not_matching_official_sessions":sorted(set(dates)-trade_days),
+           "complete":False,"PIT":False,
            "label":("原始檔候選" if stage=="BRONZE" else
                     "格式轉換候選" if stage=="SILVER" else "描述性 Gold 候選（非 400+ 指標）")}
     return stages
@@ -55,10 +63,12 @@ def non_price_stages(d,source):
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
     d=drive(); days=weekdays()
+    calendar,_,_=load_calendar()
+    trade_days={day for day,row in calendar.items() if day<=TODAY.isoformat() and row["TWSE_CASH"]=="TRADING"}
     records=[]
     for source in SOURCES:
         cursor=latest_cursor(d,source,days) if source in ("TWSE","TPEx") else {}
-        stages=priced_stages(d,source) if source in ("TWSE","TPEx") else non_price_stages(d,source)
+        stages=priced_stages(d,source,trade_days) if source in ("TWSE","TPEx") else non_price_stages(d,source)
         for stage in STAGES:
             item=stages[stage]
             records.append({"來源":source,"階層":stage,"建庫起始":"2000-01-01",
@@ -69,6 +79,10 @@ def main():
              "階層最早候選日期":item["first"] or "未驗證",
              "階層最新候選日期":item["last"] or "未驗證",
              "有證據的日期／檔案數":item["candidate_date_count"] if item["candidate_date_count"] is not None else "",
+             "官方應有交易日數":item.get("official_sessions_through_today",""),
+             "候選檔日期覆蓋率%":item.get("candidate_file_date_coverage_pct",""),
+             "巡檢平日候選進度%":round(100*cursor.get("cursor_offset",0)/len(days),1) if source in ("TWSE","TPEx") else "",
+             "完整資料驗證進度%":"尚無可靠分母",
              "階層進度說明":item["label"],"歷史缺失日期":";".join(cursor.get("last_batch_failed_dates",[])),
              "全量完成":"否","PIT認證":"否"})
     day=TODAY.strftime("%Y%m%d")
@@ -80,6 +94,7 @@ def main():
        "history_start":"2000-01-01","history_target_end":TODAY.isoformat(),
        "yearly_start":"2026-01-01","yearly_end":TODAY.isoformat(),
        "rows":records,"all_sources_complete":False,"pit_verified":False,
+       "coverage_interpretation":"Candidate file presence is not verified full data, production Gold or PIT",
        "meaning":"Drive candidate filenames date inventory; distinct from fully certified market coverage"}
     js=OUT/("JARVIS_V095_BSG_DATE_PROGRESS_"+day+".json")
     js.write_text(json.dumps(obj,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
