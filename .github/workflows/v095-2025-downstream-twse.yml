@@ -1,0 +1,64 @@
+name: JARVIS v0.95 2025 TWSE isolated Silver descriptive Gold candidate
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2025-downstream-twse.yml'
+  schedule:
+    - cron: '21 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2025-downstream-twse-single-writer
+  cancel-in-progress: false
+jobs:
+  downstream-twse-2025:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V095_BRONZE_SOURCE: 'TWSE'
+      V095_PRICE_SOURCE: 'TWSE'
+      V095_DATA_YEAR: '2025'
+      V095_DOWNSTREAM_BATCH: '6'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install normalized source adapters
+        run: python -m pip install --disable-pip-version-check pyarrow openpyxl google-api-python-client google-auth google-auth-httplib2
+      - name: Validate 2025 candidate-only and frozen production release
+        run: |
+          python -m py_compile scripts/v095_2026_equity_downstream.py
+          python - <<'PY'
+          import json,os
+          assert os.environ['V095_DATA_YEAR']=='2025'
+          flags=json.load(open('governance/v095/PHASE1_FLAGS.json'))
+          assert not flags['RELEASE_APPROVED'] and not flags['BULK_COPY_APPROVED']
+          PY
+      - name: Convert validated 2025 Bronze incrementally and preserve PIT block
+        run: python -u -m scripts.v095_2026_equity_downstream
+      - name: Archive immutable year-scoped conversion receipt to Drive
+        if: always()
+        env:
+          V095_RECEIPT_LANE: 'SILVER_GOLD'
+        run: python -u -m scripts.v095_2026_publish_run_receipt
+      - name: Keep individual 2025 result and exception evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2025-twse-downstream-${{ github.run_id }}
+          path: |
+            v095_2025_equity_downstream/result.json
+            v095_2025_equity_downstream/lineage_receipt.json
+            v095_2025_equity_downstream/missing_indicators.json
+            v095_2026_run_receipt/drive_receipt.json
+          retention-days: 90
+          if-no-files-found: warn
