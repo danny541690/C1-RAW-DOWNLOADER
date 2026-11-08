@@ -18,7 +18,7 @@ def history_files(d,parent):
     while True:
         r=d.files().list(q=q,pageSize=500,fields="nextPageToken,incompleteSearch,files(id,name,size)",pageToken=token).execute()
         if r.get("incompleteSearch"):raise ValueError("TDCC_HISTORY_LIST_INCOMPLETE")
-        items += [x for x in r.get("files",[]) if re.fullmatch(r"HISTORY_\\d{8}\\.json",x["name"])]
+        items += [x for x in r.get("files",[]) if re.fullmatch(r"HISTORY_\d{8}\.json",x["name"])]
         if len(items)>2000:raise ValueError("TDCC_HISTORY_MANIFEST_OVER_BOUNDED_LIMIT")
         token=r.get("nextPageToken")
         if not token:break
