@@ -1,0 +1,65 @@
+name: JARVIS v0.95 TAIFEX 2000-2025 official annual futures session days
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-taifex-annual-session-days.yml'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-taifex-historical-annual-market-dates
+  cancel-in-progress: false
+jobs:
+  calendar-years:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - {first: 2000, last: 2004}
+          - {first: 2005, last: 2009}
+          - {first: 2010, last: 2014}
+          - {first: 2015, last: 2019}
+          - {first: 2020, last: 2025}
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify official annual futures ZIP parser can be compiled
+        run: python -m py_compile scripts/v095_taifex_annual_market_dates.py
+      - name: Obtain and validate 2000-2025 independent futures trade days from official yearly native ZIP
+        run: python -u -m scripts.v095_taifex_annual_market_dates --start ${{ matrix.first }} --end ${{ matrix.last }}
+      - name: Persist dated evidence and source-native ZIP to Drive if within operational limits
+        run: |
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+          python - <<'PY'
+          import json,pathlib
+          from scripts.v095_market_release_calendar_drive_archive import drive,archive
+          d=drive()
+          rows=[]
+          for p in pathlib.Path('v095_taifex_historical_sessions').glob('*'):
+            if p.stat().st_size>90_000_000:
+              rows.append({'file':p.name,'status':'NATIVE_TOO_LARGE_FOR_BOUNDED_OPERATIONS_ARCHIVE','sha_recorded_in_report':True})
+              continue
+            rows.append(archive(d,p))
+          print(json.dumps({'TAIFEX_shard_drive_receipts':rows,'full_year_PIT':False},ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v095-taifex-market-days-${{ matrix.first }}-${{ matrix.last }}-${{ github.run_id }}
+          path: |
+            v095_taifex_historical_sessions/*confirmed.csv
+            v095_taifex_historical_sessions/*result.json
+          retention-days: 90
+          if-no-files-found: warn
