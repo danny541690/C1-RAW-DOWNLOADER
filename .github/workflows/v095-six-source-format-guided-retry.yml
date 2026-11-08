@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-six-source-format-guided-retry.yml'
+      - 'scripts/v095_2026_four_source_archive_intake.py'
+      - 'tests/test_v095_legacy_native_manifest_versions.py'
 permissions:
   contents: read
 jobs:
@@ -49,6 +51,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_v095_2026_cash_market_calendar.py' -v
           python -m unittest discover -s tests -p 'test_v095_market_release_calendar_2000_2026.py' -v
           python -m unittest discover -s tests -p 'test_v095_g0_bronze_download_gate.py' -v
+          python -m unittest discover -s tests -p 'test_v095_legacy_native_manifest_versions.py' -v
           python - <<'PY'
           import json,os
           src=os.environ["V095_BRONZE_SOURCE"]
