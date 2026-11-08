@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-2025-downstream-taifex.yml'
+      - 'scripts/v095_2026_immediate_silver_gold.py'
       - 'scripts/v095_legacy_taifex_csv_adapter.py'
       - 'tests/test_v095_2025_2026_source_native_adapters.py'
   schedule:
