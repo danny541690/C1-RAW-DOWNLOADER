@@ -61,3 +61,12 @@
 - 2000–2025 源別假日原因與來源資料最早可得年份。
 
 以上問題不阻塞已證實日期的 Bronze 候選下載，但未通過時不得宣稱 Gold PIT 及完整歷史完成。
+
+## 2026-11-08 追加：官方原生資料／歷史封存實測結果（以實際 Run 為準）
+
+1. **MOPS 不是單純月份錯位：** 2026/03 歷史財報封存中發現 `manifest.json` 根節點只有 `numeric_verified,pit_verified,run,units`，沒有 `source/month`；但每個 `units[]` 內有明確 `source=MOPS,month=2026-03`，且分別為 BalanceSheet、IncomeStatement、CashflowStatement。這些是季財報（報表期 2026-03-31），不是月營收，也不能使用該期末代替公布日。修復方案只在全部 units 來源、月份一致且原始成員 SHA 完整時接受為 **候選 Bronze**。Run #42457823238 新增 3 份且本批未阻塞；後續有效性仍須逐批查證。不得把所有曾報錯的 107 份直接認定都合格。
+2. **TAIFEX 是報表版型差異：** 官方「期貨價差委託成交概況表」CSV 第一列為標題，第二列為 `交易日期,商品代號,價差委託成交量(B+S),市場總成交量(B+S),價差委託成交比率(%)`，日期 `YYYYMMDD`。原本使用一般期貨日行情第一列即 header 的驗證器，導致 `CSV_DATE_HEADER_MISSING`；新加獨立 title+header+日期+商品+量+百分比比例檢查，禁止放行數值完全認證或 PIT。如果舊檔案放錯月份資料夾，需依**原檔唯一真實交易日**重新驗證正確月份再放候選；不得用資料夾年月代替內容年月。官方清單：https://www.taifex.com.tw/cht/3/futPrevious30DaysSpreadOrdersReport
+3. **TDCC 最後一份無 Manifest 舊 ZIP：** 2026/10 封存部分檔案只有 CSV/JSON，沒有 `manifest.json` 或 `complement_manifest_R1.json`，其 JSON 並非可獨立核對原始 SHA、來源月份與路徑的 Manifest。前 3 份具有 `complement_manifest_R1.json` 可透過 per-member SHA 與 source/month 驗證搬運；最後一份繼續 **QUARANTINE**，不應補造 Manifest 或聲稱原始來源已核實。優先改用集保官方週資料重新取得能核對的原始資料；現行官方網站僅保存一年歷史查詢。官方說明：https://www.tdcc.com.tw/portal/zh/smWeb/qryStock
+4. **NDC 三筆假缺漏確定來源：** 使用了不適用的 v0.93 月資料夾完整率檢查。官方原始檔是可包含多個歷史觀察月份的 ZIP/XLSX；經 Google Drive 讀回官方 ZIP 與 SHA 對照，原有 321 個觀察月份可用於描述性資料，Run #42457823238 顯示 `blocked=0` 且 `official_observation_months_reused=321`。*初次發布日／歷史修訂版 PIT 仍未證實。*
+5. **TWSE、TPEx 延續推進：** Run #42456408655 各新增 10 個價格日 B/S/G 候選，血緣 10/10；不等於 2026 全年完成。所有新增來源應有原檔 SHA、日期回應核對與不使用未來資訊的證據；原始下載斷點正常前進即可，無須因四來源異常而停掉。
+6. **歷史錯誤範圍與新排程開關：** 先分清資料集合（MOPS 月營收與季報、TAIFEX 期貨日行情與價差委託日彙總）再呼叫該類型原生解析器。不能把這些不同來源子項目一律算成「來源資料下載失敗」。有來源原始檔但不符當前驗證器者保留原樣與錯誤碼，絕不安插假日期，亦不得放進可回測 Gold。
