@@ -1,0 +1,45 @@
+name: JARVIS v0.95 2026 GOLD_FUNDAMENTAL candidate evidence gate
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v095-2026-gold-fundamental.yml'
+  schedule:
+    - cron: '55 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-2026-gold-fundamental-single
+  cancel-in-progress: false
+jobs:
+  audit-gold-fundamental:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V095_AUDIT_MODE: 'GOLD_FUNDAMENTAL'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Check 2026 gate implementation
+        run: python -m py_compile scripts/v095_2026_gold_lineage_controller.py
+      - name: Audit actual 2026 Gold/lineage readiness without false PIT release
+        run: python -u -m scripts.v095_2026_gold_lineage_controller
+      - name: Keep evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-2026-gold-fundamental-${{ github.run_id }}
+          path: v095_2026_gold_lineage_gate/result.json
+          retention-days: 90
+          if-no-files-found: warn
