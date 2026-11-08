@@ -222,6 +222,9 @@ def main():
     old=[x for x in ls(d,LEGACY_YEAR_ROOT) if x["name"]==SOURCE and x["mimeType"]==FOLDER]
     if len(old)!=1:raise RuntimeError("UNIQUE_LEGACY_SOURCE_DIRECTORY_MISSING")
     new=BRONZE_ROOTS[SOURCE]
+    extra_tdcc_roots=[]
+    if SOURCE=="TDCC" and TDCC_ARCHIVE_SOURCE_FOLDER:
+        extra_tdcc_roots=[("TDCC_ARCHIVE",TDCC_ARCHIVE_SOURCE_FOLDER)]
     # Source ZIPs are immutable. Store a durable per-validator SHA exception
     # ledger in the source Bronze root so unchanged bad ZIPs are not reopened
     # every run. Any code change invalidates the cache automatically.
