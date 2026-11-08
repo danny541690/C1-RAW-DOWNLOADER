@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v095-native-archive-structure-diagnosis.yml'
+      - 'scripts/v095_native_legacy_zip_structure_probe.py'
 permissions:
   contents: read
 jobs:
