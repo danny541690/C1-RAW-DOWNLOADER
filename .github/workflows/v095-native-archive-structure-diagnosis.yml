@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/v095-native-archive-structure-diagnosis.yml'
       - 'scripts/v095_native_legacy_zip_structure_probe.py'
+      - 'scripts/v095_2026_four_source_archive_intake.py'
+      - 'tests/test_v095_legacy_native_manifest_versions.py'
 permissions:
   contents: read
 jobs:
