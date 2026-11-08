@@ -45,7 +45,7 @@ def list_cursors(d):
         out.extend(x.get("files",[]))
         token=x.get("nextPageToken")
         if not token:break
-    return [x for x in out if re.fullmatch(PREFIX+r"\\d{4}_\\d+_[0-9a-f]{16}\\.json",x["name"])]
+    return [x for x in out if re.fullmatch(PREFIX+r"\d{4}_\d+_[0-9a-f]{16}\.json",x["name"])]
 
 def cursor_state(d):
     files=list_cursors(d)
@@ -119,7 +119,7 @@ def single(d,source,day):
             "acquisition":acquisition,"pit_verified":False}
 
 def commit_cursor(d,record):
-    raw=(json.dumps(record,ensure_ascii=False,sort_keys=True,separators=(",",":"))+"\\n").encode()
+    raw=(json.dumps(record,ensure_ascii=False,sort_keys=True,separators=(",",":"))+"\n").encode()
     digest=hashlib.sha256(raw).hexdigest()
     name=PREFIX+f"{record['generation']:04d}_"+str(os.getenv("GITHUB_RUN_ID","0"))+"_"+digest[:16]+".json"
     conflicts=[x for x in list_cursors(d) if x["name"].startswith(PREFIX+f"{record['generation']:04d}_")]
@@ -166,13 +166,13 @@ def main():
             "selected_new_days":selected,"completed":done,"failed":failed,
             "retry_queue_length":len(queue),"created_by_stage":dict(new_files),
             "production_release":False,"year_complete":False,"pit_certified":False}
-    (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\\n")
+    (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     receipt={"generation":state["generation"]+1,"offset":start+len(selected),
              "retry_queue":queue,"prior_sha":state["prior_sha"],"run_id":os.getenv("GITHUB_RUN_ID"),
              "success_units":len(done),"failed_units":len(failed),"created_by_stage":dict(new_files)}
     receipt_sha=commit_cursor(d,receipt)
     report["durable_cursor_sha256"]=receipt_sha
-    (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\\n")
+    (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
     print(json.dumps({"run_id":report["run_id"],"new_days":len(selected),
         "next_offset":receipt["offset"],"total_candidate_weekdays":len(calendar),
         "completed_units":len(done),"failed_units":len(failed),
