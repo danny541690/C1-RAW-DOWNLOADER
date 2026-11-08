@@ -9,7 +9,9 @@ from scripts.v093_three_year_repair import validate
 from scripts.v095_2026_price_incremental import job_for,dates
 SOURCE=os.getenv("V095_PRICE_SOURCE","").strip()
 if SOURCE not in ("TWSE","TPEx"):raise ValueError("EQUITY_DOWNSTREAM_SOURCE_REQUIRED")
-OUT=pathlib.Path("v095_2026_equity_downstream")
+DATA_YEAR=int(os.getenv("V095_DATA_YEAR","2026"))
+if DATA_YEAR not in (2025,2026):raise ValueError("ONLY_2025_2026")
+OUT=pathlib.Path("v095_2026_equity_downstream" if DATA_YEAR==2026 else "v095_2025_equity_downstream")
 LIMIT=max(1,min(15,int(os.getenv("V095_DOWNSTREAM_BATCH","10"))))
 def sha(b):return hashlib.sha256(b).hexdigest()
 def folders(d,root):
@@ -53,7 +55,7 @@ def main():
  months=sorted(folders(d,cfg["bronze"]),key=lambda f:f["name"])
  for month in months:
   if len(completed)>=LIMIT:break
-  if not re.fullmatch(r"2026-\d\d",month["name"]):continue
+  if not re.fullmatch(fr"{DATA_YEAR}-\d\d",month["name"]):continue
   monthname=month["name"]
   native=[x for x in base.ls(d,month["id"]) if x["name"].endswith(".json") and
        x["name"].startswith("V095_"+monthname.replace("-","")+"_"+SOURCE+"_")]
@@ -65,7 +67,7 @@ def main():
   if len(sf)>1 or len(gf)>1:raise ValueError("DUPLICATE_STAGE_MONTH_FOLDERS")
   for native_file in sorted(native,key=lambda x:x["name"]):
    if len(completed)>=LIMIT:break
-   match=re.fullmatch(r"V095_\d{6}_"+SOURCE+r"_(2026-\d\d-\d\d)_[0-9a-f]{20}\.json",native_file["name"])
+   match=re.fullmatch(r"V095_\d{6}_"+SOURCE+fr"_({DATA_YEAR}-\d\d-\d\d)_[0-9a-f]{{20}}\.json",native_file["name"])
    if not match:continue
    day=match.group(1)
    key="V095_"+monthname.replace("-","")+"_"+SOURCE+"_"+day+"_"
@@ -81,7 +83,7 @@ def main():
  report={"schema":"V095_2026_EQUITY_DOWNSTREAM_R1","source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),
   "completed":completed,"converted_count":len(completed),"reused_valid_stage_days":len(skipped),
   "failed":failures,"attempted":attempted,"total_months_inspected":len(months),
-  "historical_PIT_certified":False,"443_gold_certified":False,"year_complete":False}
+  "historical_PIT_certified":False,"443_gold_certified":False,"year_complete":False,"data_year":DATA_YEAR}
  (OUT/"result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n")
  # Lineage gate checks fresh triplets, including remote SHA and forward/reverse per-row mapping.
  from scripts.v095_2026_bsg_lineage_gate import audit
