@@ -13,6 +13,9 @@ from scripts.v095_2026_annual_consolidated import service,BRONZE_ROOTS,FOLDER
 from scripts.v095_2026_prior_raw_reuse_audit import YEAR_PARENT
 from scripts.v095_ultimate_r1_november_official import folder,save
 SOURCE=os.environ.get("V095_BRONZE_SOURCE","")
+YEAR=int(os.environ.get("V095_DATA_YEAR","2026"))
+if YEAR not in (2025,2026):raise ValueError("ONLY_2025_2026_ARCHIVES")
+LEGACY_YEAR_ROOT=YEAR_PARENT if YEAR==2026 else "1VB9s43UHEQeZbPbLHOCcFAQewUDfjBOm"
 MAX_SOURCE_FILES=min(int(os.environ.get("V095_ARCHIVE_BATCH","3")),6)
 MAX_BYTES=20_000_000
 MAX_INSPECT_PER_RUN=300
@@ -27,7 +30,7 @@ def ls(d,folder):
         if len(rows)>15000:raise RuntimeError("DRIVE_SOURCE_LIST_TOO_LARGE_FOR_BOUNDED_BATCH")
         token=result.get("nextPageToken")
         if not token:return rows
-OUT=pathlib.Path("v095_2026_source_archives")
+OUT=pathlib.Path("v095_2026_source_archives" if YEAR==2026 else "v095_2025_source_archives")
 def digest(b):return hashlib.sha256(b).hexdigest()
 def load_quarantine_ledger(raw):
     """Read exact SHA-backed old JSON, allowing only the historic literal backslash-n suffix."""
@@ -172,7 +175,7 @@ def validate_zip(b,source,month):
 def main():
     if SOURCE not in ("MOPS","TDCC","TAIFEX","NDC"):raise ValueError("INVALID_SOURCE")
     OUT.mkdir(exist_ok=True)
-    if SOURCE=="NDC":
+    if SOURCE=="NDC" and YEAR==2026:
         # NDC official series is an observation-month XLSX bundle in one ZIP,
         # not a separate 2026-09/10/11 directory for each publication.
         # Reuse G0's verified native ZIP and receipt instead of inventing gaps.
@@ -205,9 +208,9 @@ def main():
             "silver":result["silver_conversion"],"gold":result["gold_conversion"]},ensure_ascii=False))
         return
     today=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date()
-    months=[f"2026-{n:02d}" for n in range(1,today.month+1)]
+    months=[f"{YEAR}-{n:02d}" for n in range(1,(today.month if YEAR==2026 else 12)+1)]
     d=service()
-    old=[x for x in ls(d,YEAR_PARENT) if x["name"]==SOURCE and x["mimeType"]==FOLDER]
+    old=[x for x in ls(d,LEGACY_YEAR_ROOT) if x["name"]==SOURCE and x["mimeType"]==FOLDER]
     if len(old)!=1:raise RuntimeError("UNIQUE_LEGACY_SOURCE_DIRECTORY_MISSING")
     new=BRONZE_ROOTS[SOURCE]
     # Source ZIPs are immutable. Store a durable per-validator SHA exception
@@ -217,7 +220,7 @@ def main():
          +inspect.getsource(taifex_spread_order_evidence)
          +str(MAX_BYTES))
     validator_version=digest(validator_fingerprint.encode("utf-8"))[:20]
-    ledger_prefix="V095_QUARANTINE_"+SOURCE+"_"+validator_version+"_"
+    ledger_prefix="V095_QUARANTINE_"+str(YEAR)+"_"+SOURCE+"_"+validator_version+"_"
     old_ledgers=[x for x in ls(d,new) if x["name"].startswith(ledger_prefix)
                  and x["name"].endswith(".json")]
     old_ledgers.sort(key=lambda x:x.get("createdTime",""),reverse=True)
@@ -291,7 +294,7 @@ def main():
                     known_failures[candidate_key]={"month":month,"reason":str(e)[:120]}
         if len(completed)>=MAX_SOURCE_FILES or scanned>=MAX_INSPECT_PER_RUN:break
     import collections
-    ledger={"source":SOURCE,"validator_version":validator_version,
+    ledger={"source":SOURCE,"year":YEAR,"validator_version":validator_version,
             "immutable_zip_failures":known_failures,
             "policy":"REUSE_ONLY_IF_SAME_DRIVE_ID_MD5_SIZE_AND_VALIDATOR_SHA",
             "PIT_certified":False}
@@ -303,7 +306,7 @@ def main():
     blocked_reasons=dict(collections.Counter(
         str(x.get("reason",x.get("state",""))).split(":",1)[-1].split(":",1)[0]
         for x in blocked))
-    out={"source":SOURCE,"run_id":os.getenv("GITHUB_RUN_ID"),"completed_archives":completed,
+    out={"source":SOURCE,"data_year":YEAR,"run_id":os.getenv("GITHUB_RUN_ID"),"completed_archives":completed,
          "blocked":blocked[:50],"blocked_reason_counts":blocked_reasons,"cached_quarantine_skips":cached_quarantine_skips,
          "known_immutable_format_exceptions":len(known_failures),"scanned":scanned,"previously_reused_archive_skips":reused,
          "new_bronze_candidate_archives":sum(x["action"]=="CREATED" for x in completed),
