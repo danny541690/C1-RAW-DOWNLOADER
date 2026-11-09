@@ -22,7 +22,8 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaInMemoryUpload
 
 SRC_INVENTORY_RUN = "42591232910"
-SCHEMA = "v097_bronze_byte_qa_1"
+SCHEMA = "v097_bronze_byte_qa_2"
+CHECKPOINT_SCHEMA = "v097_bronze_checkpoint_1"
 BATCH_PER_LANE = int(os.environ.get("QA_BATCH_PER_LANE","60"))
 MAX_FILE_SIZE = 10 * 1024 * 1024
 MAX_ZIP_UNCOMPRESSED = 60 * 1024 * 1024
@@ -206,18 +207,39 @@ def choose(rows,done,limit):
         keys=nextkeys
     return chosen
 
+def checkpoint_folder(api):
+    user=folder(api,"root","ChatGPT資料存取")
+    v097=folder(api,user,"JARVIS_C1_v097_LIFECYCLE")
+    ctl=folder(api,v097,"00_SYSTEM_CONTROL")
+    return folder(api,ctl,"04_CHECKPOINTS")
+
 def lane(api,idx,run_id):
     manifests,quality,_,_=destinations(api)
+    checkpoints=checkpoint_folder(api)
     orig_name="v097_inventory_%s_lane%d.json"%(SRC_INVENTORY_RUN,idx)
     origins=[x for x in children(api,manifests) if x["name"]==orig_name]
     if len(origins)!=1:raise RuntimeError("Expected one original inventory "+orig_name)
     inventory=load_json(api,origins[0]["id"])
-    done=set()
-    for item in children(api,quality):
-        if re.fullmatch(r"v097_bronze_qa_\d+_lane%d.json"%idx,item["name"]):
-            old=load_json(api,item["id"])
-            done.update(x["file_id"] for x in old.get("results",[]))
-    chosen=choose(inventory["files"],done,BATCH_PER_LANE)
+    candidates=[x for x in inventory["files"] if x.get("classification")!="TEST_OR_CONTROL"]
+    allowed={x["file_id"] for x in candidates}
+    ck_name="v097_bronze_qa_lane%d_checkpoint.json"%idx
+    existing=[x for x in children(api,checkpoints) if x["name"]==ck_name]
+    if len(existing)>1:raise RuntimeError("Duplicate checkpoint: "+ck_name)
+    ck_id=existing[0]["id"] if existing else None
+    if ck_id:
+        ck=load_json(api,ck_id)
+        if ck.get("schema")!=CHECKPOINT_SCHEMA or ck.get("inventory_run")!=SRC_INVENTORY_RUN:
+            raise RuntimeError("Checkpoint schema/inventory mismatch")
+        done=set(ck.get("processed_ids",[]))
+    else:
+        # One-time recovery of the first manually executed batch.
+        done=set()
+        for item in children(api,quality):
+            if re.fullmatch(r"v097_bronze_qa_\d+_lane%d.json"%idx,item["name"]):
+                old=load_json(api,item["id"])
+                done.update(x["file_id"] for x in old.get("results",[]))
+        done &= allowed
+    chosen=choose(candidates,done,BATCH_PER_LANE)
     outputs=[]
     for n,row in enumerate(chosen,1):
         size=int(row.get("size_bytes") or 0)
@@ -230,15 +252,31 @@ def lane(api,idx,run_id):
                 result=qa_bytes(row,blob)
             except Exception as exc:
                 result=dict(file_id=row["file_id"],path=row["path"],source=row["source"],
-                    status="READ_FAILED",error=type(exc).__name__,detail=str(exc)[:100],sha256="",kind="UNKNOWN")
+                    status="READ_FAILED",error=type(exc).__name__,detail=str(exc)[:160],sha256="",kind="UNKNOWN")
         outputs.append(result)
         if n%20==0:
             print("Lane %s inspected %s/%s; statuses=%s"%(idx,n,len(chosen),dict(Counter(x["status"] for x in outputs))))
     record=dict(schema=SCHEMA,run_id=run_id,lane=idx,source_inventory_run=SRC_INVENTORY_RUN,
         selected=len(chosen),prior_checked=len(done),total_candidates=len(inventory["files"]),
+        eligible_total=len(allowed),excluded_total=len(inventory["files"])-len(allowed),
         output_location="PRIVATE_V097_DATA_QUALITY",results=outputs)
+    # Persist evidence before marking any file as done. Interrupted workers retry.
     save(api,quality,"v097_bronze_qa_%s_lane%d.json"%(run_id,idx),record)
-    print("Lane %d: selected=%d prior=%d status=%s saved private result."%(idx,len(chosen),len(done),dict(Counter(x["status"] for x in outputs))))
+    done.update(x["file_id"] for x in outputs)
+    ck=dict(schema=CHECKPOINT_SCHEMA,inventory_run=SRC_INVENTORY_RUN,lane=idx,
+        processed_ids=sorted(done),eligible_total=len(allowed),
+        excluded_total=len(inventory["files"])-len(allowed),
+        remaining=max(0,len(allowed)-len(done)),
+        last_run=run_id,updated_at=datetime.now(timezone.utc).isoformat(),
+        note="Processed means evidence recorded, not fully Bronze certified. Deferred/errors remain on review queue.")
+    ck_bytes=json.dumps(ck,ensure_ascii=False,separators=(",",":")).encode("utf-8")
+    media=MediaInMemoryUpload(ck_bytes,mimetype="application/json",resumable=False)
+    if ck_id:
+        call(lambda:api.files().update(fileId=ck_id,media_body=media,fields="id"))
+    else:
+        save(api,checkpoints,ck_name,ck)
+    print("Lane %d: examined=%d processed_total=%d eligible=%d remaining=%d status=%s, checkpoint saved."%
+          (idx,len(chosen),len(done),len(allowed),ck["remaining"],dict(Counter(x["status"] for x in outputs))))
 
 def csvdata(rows,keys):
     s=io.StringIO()
@@ -262,12 +300,37 @@ def aggregate(api,run_id):
     sources=Counter(x.get("source","") for x in allrows)
     physical=sum(bool(x.get("sha256")) for x in allrows)
     warnings=[x for x in allrows if x["status"]!="STRUCTURAL_PASS_DATASET_PENDING"]
+    cp_dir=checkpoint_folder(api)
+    cp_files=children(api,cp_dir)
+    checkpoints=[]
+    for i in range(LANES):
+        name="v097_bronze_qa_lane%d_checkpoint.json"%i
+        hits=[x for x in cp_files if x["name"]==name]
+        if len(hits)!=1:
+            raise RuntimeError("Missing/duplicated checkpoint: "+name)
+        checkpoints.append(load_json(api,hits[0]["id"]))
+    total_eligible=sum(x["eligible_total"] for x in checkpoints)
+    total_processed=sum(len(x["processed_ids"]) for x in checkpoints)
+    total_excluded=sum(x["excluded_total"] for x in checkpoints)
+    remaining=sum(x["remaining"] for x in checkpoints)
+    if total_eligible+total_excluded!=83249:
+        raise RuntimeError("Inventory coverage mismatch: eligible=%d excluded=%d"%(total_eligible,total_excluded))
+    if total_processed+remaining!=total_eligible:
+        raise RuntimeError("Checkpoint mismatch")
+    phase="STRUCTURAL_QA_METADATA_COVERAGE_COMPLETE_WITH_REVIEW" if remaining==0 else "BATCH_COMPLETE_CONTINUE_SCHEDULE"
     summary=dict(run_id=run_id,qa_level="BYTE_STRUCTURE_ONLY",inventory_count=83249,
         files_selected=len(allrows),files_hashed=physical,structural_pass=statuses["STRUCTURAL_PASS_DATASET_PENDING"],
         bronze_certified=0,migrated=0,status_count=dict(statuses),sources=dict(sources),
         warnings=len(warnings),time_utc=datetime.now(timezone.utc).isoformat(),
-        limitations=["No full-population bytes audit","No source numeric/semantic certification",
-           "No PIT test","No Bronze migration","No restart unless another workflow run is triggered"])
+        total_eligible=total_eligible,total_excluded=total_excluded,
+        total_processed=total_processed,remaining=remaining,
+        completed_fraction=round(total_processed/total_eligible,6) if total_eligible else 1,
+        next_batch="AUTOMATIC_SCHEDULE" if remaining else "NO_FURTHER_METADATA_QA_READS",
+        status=phase,
+        limitations=["Fixed 2026-11-09 metadata snapshot; new files need a new inventory.",
+           "Processed includes deferred and review cases; not complete byte verification.",
+           "No source numeric/semantic certification","No PIT test","No Bronze migration",
+           "GitHub scheduled workflows are best-effort; monitor last_success"])
     save(api,coverage,"BRONZE_QA_%s_summary.json"%run_id,summary)
     cols=["file_id","path","source","status","kind","bytes","sha256","md5_consistent","zip_members","zip_uncompressed_bytes","member_extensions","table_tags","td_tags","tr_tags","top_keys","json_shape","decoded_as","observations","error","detail"]
     save(api,coverage,"BRONZE_QA_%s_checked.csv"%run_id,csvdata(allrows,cols),"text/csv")
