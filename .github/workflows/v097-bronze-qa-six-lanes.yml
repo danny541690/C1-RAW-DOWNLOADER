@@ -39,7 +39,7 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           QA_MODE: lane
           QA_LANE: ${{ matrix.lane }}
-          QA_BATCH_PER_LANE: '60'
+          QA_BATCH_PER_LANE: '120'
         run: python scripts/v097_bronze_content_qa.py
   aggregate-private-drive:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
