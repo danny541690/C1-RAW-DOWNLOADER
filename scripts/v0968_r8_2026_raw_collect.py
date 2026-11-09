@@ -95,7 +95,15 @@ def main():
   exact=[x for x in exists if x["name"]==target]
   if len(exact)>1:raise RuntimeError("AMBIGUOUS_COPIED_NAME")
   if exact:
-   item=exact[0];action="REUSED_EXISTING_COPY";reused+=1
+   # A prior batch already secured this source-month sample: do not consume
+   # this batch's quota and do not duplicate it.
+   previous=exact[0]
+   if str(previous.get("size",""))!=str(f.get("size","")) or (
+       f.get("md5Checksum") and previous.get("md5Checksum")!=f["md5Checksum"]):
+    blocked.append({"source":source,"month":month,"legacy_file_id":f["id"],
+     "target_file_id":previous.get("id"),"state":"EXISTING_RAW_METADATA_MISMATCH"})
+   else:reused+=1
+   continue
   else:
    try:
     item=d.files().copy(fileId=f["id"],body={"name":target,"parents":[dest]},
