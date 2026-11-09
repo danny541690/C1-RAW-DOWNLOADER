@@ -12,10 +12,12 @@ import os
 import re
 import time
 import zipfile
+import requests
+from urllib.parse import urlparse
 from collections import Counter
 from datetime import datetime,timezone
 from scripts.v097_bronze_content_qa import (
-  call,children,destinations,load_json,qa_bytes,save,service
+  call,children,destinations,load_json,qa_bytes,save,service,folder
 )
 from scripts.v097_bronze_diagnosis import drive_checkpoint,save_or_update
 
@@ -31,14 +33,15 @@ MAX_INPUT_BYTES=int(os.getenv("REPAIR_MAX_INPUT_BYTES",str(32*1024*1024)))
 MAX_MEMBER_UNCOMPRESSED=int(os.getenv("REPAIR_MAX_MEMBER_BYTES",str(256*1024*1024)))
 MAX_RETRIES=3
 SOURCE_DOMAINS={
-"TWSE":["twse.com.tw"],
-"TPEx":["tpex.org.tw","tpex.org.tw"],
-"MOPS":["mops.twse.com.tw"],
-"TAIFEX":["taifex.com.tw"],
-"TDCC":["tdcc.com.tw","tdcc.com.tw"],
-"NDC":["ndc.gov.tw"],
-"FinMind":["finmindtrade.com"],
+"TWSE":["twse.com.tw"],"TPEx":["tpex.org.tw"],
+"MOPS":["mops.twse.com.tw"],"TAIFEX":["taifex.com.tw"],
+"TDCC":["tdcc.com.tw"],"NDC":["ndc.gov.tw"],
+"FinMind":["api.finmindtrade.com"],
 }
+SOURCE_ORDER=["TWSE","TPEx","MOPS","NDC","TAIFEX","TDCC","FinMind"]
+REGISTRY_NAME="v097_bronze_source_url_registry.json"
+MAX_HTTP_BYTES=int(os.getenv("REPAIR_MAX_HTTP_BYTES",str(24*1024*1024)))
+
 def now():return datetime.now(timezone.utc).isoformat()
 
 def official_redownload_possible(record):
@@ -69,7 +72,147 @@ def validate_large_zip(blob):
         return {"state":"ZIP_CRC_ALL_MEMBERS_PASS","members":len(infos),
                 "members_checked":members_checked,"uncompressed_bytes":total}
 
-def attempt_repair(api,r):
+
+def trusted_url(url,provider):
+    if not isinstance(url,str) or len(url)>2048:
+        return False
+    try:
+        p=urlparse(url)
+        if p.scheme!="https" or not p.hostname or p.username or p.password or p.fragment:
+            return False
+        return any(p.hostname==h or p.hostname.endswith("."+h)
+                   for h in SOURCE_DOMAINS.get(provider,[]))
+    except ValueError:
+        return False
+
+def load_registry(api):
+    """Private Drive file-id to verified provider-specific source mapping.
+
+    Every entry must contain exact dataset identity; absence is never guessed.
+    """
+    folder_ids,_,_,_=destinations(api)
+    arr=[x for x in children(api,folder_ids) if x["name"]==REGISTRY_NAME]
+    if len(arr)>1:raise RuntimeError("Ambiguous private download registry")
+    if not arr:return {}
+    d=load_json(api,arr[0]["id"])
+    if d.get("schema")!="v097_source_registry_1":raise RuntimeError("Invalid source registry")
+    return d.get("files",{})
+
+def provenance(row,item,provider):
+    """Do not change dataset type, period or stock without an explicit mapping."""
+    if not isinstance(item,dict) or not item.get("dataset_key"):
+        return False
+    if item.get("source_file_id")!=row["file_id"]:
+        return False
+    if str(item.get("year"))!=str(row.get("year")):
+        return False
+    if item.get("source") not in (None,row.get("source")):
+        return False
+    # FinMind must be a verified equivalent, not a generic dataset substitution.
+    if provider=="FinMind":
+        return bool(item.get("finmind_dataset") and
+                    item.get("verified_equivalent_to") == item["dataset_key"] and
+                    item.get("stock_id") and item.get("start_date") and item.get("end_date"))
+    return bool(item.get("url") and trusted_url(item["url"],provider))
+
+def fetch_source(item,provider):
+    if provider=="FinMind":
+        url="https://api.finmindtrade.com/api/v4/data"
+        if not trusted_url(url,provider):raise RuntimeError("FinMind host rejected")
+        params={"dataset":item["finmind_dataset"],"data_id":item["stock_id"],
+                "start_date":item["start_date"],"end_date":item["end_date"]}
+        token=os.getenv("FINMIND_TOKEN","")
+        if token:params["token"]=token
+    else:
+        url=item["url"];params=None
+        if not trusted_url(url,provider):raise RuntimeError("Official host rejected")
+    last=None
+    for n in range(1,MAX_RETRIES+1):
+        try:
+            with requests.get(url,params=params,timeout=(8,35),
+                              allow_redirects=False,stream=True,
+                              headers={"User-Agent":"JARVIS-C1-v0.97-quality-recovery/1.0"}) as resp:
+                if resp.status_code!=200:
+                    raise RuntimeError("HTTP_STATUS_%s"%resp.status_code)
+                body=bytearray()
+                for chunk in resp.iter_content(chunk_size=131072):
+                    body.extend(chunk)
+                    if len(body)>MAX_HTTP_BYTES:raise RuntimeError("HTTP_RESPONSE_OVER_LIMIT")
+                result=bytes(body)
+                if not result:raise RuntimeError("EMPTY_PROVIDER_RESPONSE")
+                if result[:100].lstrip().lower().startswith(b"<!doctype html") and item.get("format") not in ("html",):
+                    raise RuntimeError("UNEXPECTED_HTML_PROVIDER_RESPONSE")
+                if provider=="FinMind":
+                    obj=json.loads(result.decode("utf-8"))
+                    if not isinstance(obj,dict) or obj.get("status")!=200 or not isinstance(obj.get("data"),list) or not obj["data"]:
+                        raise RuntimeError("FINMIND_EMPTY_OR_ERROR_RESPONSE")
+                return result,n
+        except (requests.RequestException,RuntimeError,ValueError,UnicodeError) as err:
+            last=type(err).__name__+":"+str(err)[:100]
+            if n<MAX_RETRIES:time.sleep(n*2)
+    raise RuntimeError("PROVIDER_RETRY_EXHAUSTED:"+str(last))
+
+def temp_folder(api):
+    user=folder(api,"root","ChatGPT資料存取")
+    base=folder(api,user,"JARVIS_C1_v097_LIFECYCLE")
+    lake=folder(api,base,"02_DATA_LAKE")
+    return folder(api,lake,"07_TEMP_CACHE")
+
+def provider_reacquire(api,row,evidence,registry,run,lane):
+    """Exact original source first, FinMind last. Store only isolated candidates."""
+    mapping=registry.get(row["file_id"],{})
+    evidence["source_priority"]=["v0.93"]+SOURCE_ORDER
+    origin=row.get("source")
+    # Only the exact named original official source is safe without a separately
+    # approved cross-source equivalence mapping.
+    providers=[origin] if origin in SOURCE_ORDER[:-1] else []
+    if "FinMind" not in providers:providers.append("FinMind")
+    attempts=[]
+    for provider in providers:
+        item=(mapping.get("providers") or {}).get(provider)
+        if not provenance(row,item,provider):
+            attempts.append({"provider":provider,"state":"NO_VERIFIED_EXACT_MAPPING"})
+            continue
+        try:
+            blob,n=fetch_source(item,provider)
+            filename=item.get("filename") or row["file_name"]
+            checkrow=dict(row,file_name=filename)
+            qa=qa_bytes(checkrow,blob)
+            if qa["status"]!="STRUCTURAL_PASS_DATASET_PENDING":
+                attempts.append({"provider":provider,"state":"DOWNLOADED_REJECTED_BY_QA",
+                     "attempts":n,"status":qa["status"],"sha256":qa["sha256"]})
+                continue
+            expected=item.get("expected_sha256")
+            if expected and expected.lower()!=qa["sha256"]:
+                attempts.append({"provider":provider,"state":"DOWNLOAD_HASH_MISMATCH",
+                                 "attempts":n,"sha256":qa["sha256"]})
+                continue
+            # Direct to private isolation, NOT canonical certified Bronze.
+            hashprefix=qa["sha256"][:16]
+            safe_name="recovery_%s_lane%d_%s_%s.bin"%(run,lane,provider,hashprefix)
+            uploaded=save(api,temp_folder(api),safe_name,blob,
+                          mime="application/octet-stream")
+            evidence.update(state="RECOVERED_TO_QUARANTINE",
+                provider=provider,new_sha256=qa["sha256"],new_file_id=uploaded["id"],
+                new_file_name=safe_name,new_status=qa["status"],
+                new_bytes=len(blob),attempts_source=n,
+                original_source_file_id=row["file_id"],
+                next_action="VERIFY_DATASET_IDENTITY_NUMERIC_VALUES_DATE_PIT_BEFORE_BRONZE")
+            attempts.append({"provider":provider,"state":"RECOVERED_QUARANTINED",
+                            "file_id":uploaded["id"]})
+            evidence["provider_attempts"]=attempts
+            evidence["official_redownload_performed"]=provider!="FinMind"
+            evidence["finmind_fallback_used"]=provider=="FinMind"
+            return evidence
+        except Exception as exc:
+            attempts.append({"provider":provider,"state":"DOWNLOAD_ERROR",
+                             "error_type":type(exc).__name__,"detail":str(exc)[:130]})
+    evidence.update(state="SOURCE_MAPPING_OR_PROVIDER_FAILURE",
+        provider_attempts=attempts,
+        next_action="VERIFY_SOURCE_URL_DATASET_KEY_PERIOD_OR_FINMIND_EQUIVALENCE")
+    return evidence
+
+def attempt_repair(api,r,registry,run,lane):
     prev=r.get("status")
     fid=r["file_id"]
     row={"file_id":fid,"path":r.get("path",""),
@@ -79,12 +222,12 @@ def attempt_repair(api,r):
          "classification":r.get("original_class","")}
     evidence={"file_id":fid,"path":row["path"],"source":row["source"],
       "prior_status":prev,"checked_at":now(),"attempts":0,"raw_modified":False,
-      "official_redownload_performed":False,"source_url_available":official_redownload_possible(r)}
+      "official_redownload_performed":False,"finmind_fallback_used":False,
+      "source_order":["v0.93","TWSE","TPEx","MOPS","NDC","TAIFEX","TDCC","FinMind"]}
     if prev not in REPAIRABLE:
         evidence.update(state="NOT_ELIGIBLE",reason="Not a targeted repairable status")
         return evidence
-    # v0.93 inventory is immutable. Unknown official source URLs MUST NOT be
-    # fabricated. This tests re-reading ORIGINAL bytes only.
+    # 1. Existing v0.93 file: retry safely without modifying source.
     for attempt in range(1,MAX_RETRIES+1):
         evidence["attempts"]=attempt
         try:
@@ -92,9 +235,8 @@ def attempt_repair(api,r):
             size=int(metadata.get("size") or 0)
             evidence["expected_bytes"]=size
             if size>MAX_INPUT_BYTES:
-                evidence.update(state="UNRESOLVED_LARGE_INPUT",
-                    next_action="STREAM_WITH_DEDICATED_BUDGET_OR_TRUSTED_SOURCE_REDOWNLOAD")
-                return evidence
+                evidence["v093_result"]="LARGE_INPUT_LIMIT"
+                break
             blob=call(lambda:api.files().get_media(fileId=fid))
             evidence["bytes"]=len(blob)
             evidence["sha256"]=hashlib.sha256(blob).hexdigest()
@@ -102,43 +244,33 @@ def attempt_repair(api,r):
             if original_md5 and hashlib.md5(blob).hexdigest()!=original_md5:
                 raise ValueError("Drive content differs from metadata MD5")
             if prev=="ZIP_UNCOMPRESSED_OVERSIZE_REVIEW":
-                try:
-                    result=validate_large_zip(blob)
-                    evidence.update(zip_validation=result)
-                    if result["state"]=="ZIP_CRC_ALL_MEMBERS_PASS":
-                        evidence.update(state="REVALIDATED_ORIGINAL",
-                          new_status="STRUCTURAL_PASS_DATASET_PENDING",
-                          next_action="SEMANTIC_AND_LINEAGE_VALIDATION")
-                    else:
-                        evidence.update(state="NEEDS_SOURCE_REDOWNLOAD_OR_MANUAL",
-                            next_action="FILE_SPECIFIC_REPAIR_REQUIRED")
+                z=validate_large_zip(blob)
+                evidence["zip_validation"]=z
+                if z["state"]=="ZIP_CRC_ALL_MEMBERS_PASS":
+                    evidence.update(state="REVALIDATED_V093",new_status="STRUCTURAL_PASS_DATASET_PENDING",
+                        next_action="SEMANTIC_LINEAGE_PIT_VALIDATION")
                     return evidence
-                except (zipfile.BadZipFile,RuntimeError,EOFError,ValueError) as err:
-                    evidence.update(state="NEEDS_SOURCE_REDOWNLOAD_OR_MANUAL",
-                        error_type=type(err).__name__,next_action="SOURCE_URL_MISSING_OR_INVALID")
-                    return evidence
-            result=qa_bytes(row,blob)
-            evidence["recheck_status"]=result["status"]
-            evidence["recheck_sha256"]=result["sha256"]
-            if result["status"]=="STRUCTURAL_PASS_DATASET_PENDING":
-                evidence.update(state="REVALIDATED_ORIGINAL",
-                    new_status=result["status"],
-                    next_action="SEMANTIC_AND_LINEAGE_VALIDATION")
-            elif result["status"]=="CONTROL_OR_DERIVED_REVIEW":
+                evidence["v093_result"]=z["state"]
+                break
+            checked=qa_bytes(row,blob)
+            evidence["recheck_status"]=checked["status"]
+            if checked["status"]=="STRUCTURAL_PASS_DATASET_PENDING":
+                evidence.update(state="REVALIDATED_V093",new_status=checked["status"],
+                                next_action="SEMANTIC_LINEAGE_PIT_VALIDATION")
+                return evidence
+            if checked["status"]=="CONTROL_OR_DERIVED_REVIEW":
                 evidence.update(state="NON_MARKET_CONTROL_CLASSIFIED",
-                    next_action="SEPARATE_FROM_MARKET_BRONZE")
-            else:
-                evidence.update(state="NEEDS_SOURCE_REDOWNLOAD_OR_MANUAL",
-                    next_action="VERIFIED_OFFICIAL_URL_NOT_PRESENT_DO_NOT_INVENT_DOWNLOAD",
-                    error_classification=result["status"])
-            return evidence
+                                next_action="RETAIN_AUDIT_ONLY")
+                return evidence
+            evidence["v093_result"]=checked["status"]
+            break
         except Exception as err:
-            evidence["error_type"]=type(err).__name__
-            evidence["error_message"]=str(err)[:100]
+            evidence["v093_error_class"]=type(err).__name__
+            evidence["v093_error_detail"]=str(err)[:90]
             if attempt<MAX_RETRIES:time.sleep(attempt*2)
-    evidence.update(state="RETRY_EXHAUSTED",
-        next_action="OFFICIAL_SOURCE_URL_AND_SOURCE_SCHEMA_REQUIRED")
-    return evidence
+    # 2. Six official providers with verified exact source mapping.
+    # 3. FinMind only when dataset equivalence is explicit.
+    return provider_reacquire(api,row,evidence,registry,run,lane)
 
 def main():
     api=service()
@@ -175,7 +307,8 @@ def main():
         "schema":"v097_repair_claim_v1","run":run,"lane":lane,
         "claimed_ids":[r["file_id"] for r in selected],
         "created":now(),"state":"CLAIMED"})
-    results=[attempt_repair(api,r) for r in selected]
+    registry=load_registry(api)
+    results=[attempt_repair(api,r,registry,run,lane) for r in selected]
     # Immutable per-file evidence first; checkpoint only after successful write.
     payload={"schema":"v097_repair_evidence_v1","run":run,"lane":lane,
         "created":now(),"results":results}
@@ -189,9 +322,9 @@ def main():
     save(api,repair_folder,"BRONZE_REPAIR_%s_lane%d.json"%(run,lane),{
         "lane":lane,"run":run,"results":results,
         "requires_source_reacquisition":[x for x in results
-           if x["state"] in ("NEEDS_SOURCE_REDOWNLOAD_OR_MANUAL","RETRY_EXHAUSTED","UNRESOLVED_LARGE_INPUT")],
-        "revalidated":[x["file_id"] for x in results if x["state"]=="REVALIDATED_ORIGINAL"],
-        "note":"File reread/revalidated only. No external official URL in QA receipt; source redownload not performed."})
+           if x["state"] in ("SOURCE_MAPPING_OR_PROVIDER_FAILURE","RETRY_EXHAUSTED","UNRESOLVED_LARGE_INPUT")],
+        "revalidated":[x["file_id"] for x in results if x["state"] in ("REVALIDATED_V093","RECOVERED_TO_QUARANTINE")],
+        "note":"Strict priority: v0.93 then verified exact official source then explicitly equivalent FinMind; successful downloads are quarantined, not certified Bronze."})
     print("REPAIR lane=%d candidates=%d cumulative=%d state=%s"%(
         lane,len(selected),len(done),json.dumps(dict(Counter(x["state"] for x in results)))))
 
