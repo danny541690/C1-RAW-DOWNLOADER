@@ -4,6 +4,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v097-bronze-qa-reconcile.yml'
+  workflow_run:
+    workflows:
+      - JARVIS v0.97 - Bronze bounded content QA - six lanes
+    types: [completed]
   workflow_dispatch:
     inputs:
       qa_run_id:
@@ -17,7 +21,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   repair-aggregate:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -32,5 +36,5 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          QA_SOURCE_RUN_ID: ${{ inputs.qa_run_id || '42632180328' }}
+          QA_SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.qa_run_id || '42632180328' }}
         run: PYTHONPATH=. python -c 'import os; from scripts.v097_bronze_content_qa import service,aggregate; aggregate(service(),os.environ["QA_SOURCE_RUN_ID"])'
