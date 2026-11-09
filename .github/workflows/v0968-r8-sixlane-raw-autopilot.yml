@@ -1,6 +1,11 @@
 name: JARVIS v0.968 R8 | six source RAW Drive autopilot
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v0968-r8-sixlane-raw-autopilot.yml'
+      - 'scripts/v0968_r8_2026_sixlane_raw_copy.py'
   schedule:
     - cron: '*/10 * * * *'
 permissions:
