@@ -1,0 +1,57 @@
+name: JARVIS v0.97 - v0.93 RAW full metadata inventory (6 read lanes)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-v093-inventory-six-lanes.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-v093-raw-inventory
+  cancel-in-progress: false
+jobs:
+  inventory-six-lanes:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    name: Inventory lane ${{ matrix.lane }} of 6
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive metadata client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Read-only inventory of assigned legacy years
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          INVENTORY_MODE: lane
+          INVENTORY_LANE: ${{ matrix.lane }}
+        run: python scripts/v097_inventory_v093_raw.py
+  private-drive-report:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    needs: inventory-six-lanes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install report publisher
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib openpyxl
+      - name: Consolidate six lanes to private Google Drive reports
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          INVENTORY_MODE: aggregate
+        run: python scripts/v097_inventory_v093_raw.py
