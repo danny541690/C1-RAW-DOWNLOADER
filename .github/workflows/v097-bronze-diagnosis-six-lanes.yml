@@ -7,7 +7,7 @@ on:
       - 'scripts/v097_bronze_diagnosis.py'
   workflow_dispatch:
   schedule:
-    - cron: '4/5 * * * *'
+    - cron: '1/5 * * * *'
   workflow_run:
     workflows:
       - JARVIS v0.97 - Bronze bounded content QA - six lanes
