@@ -351,6 +351,30 @@ def aggregate():
     sources=Counter(x.get("source","") for x in rows)
     needing=[x for x in rows if x["state"]=="SOURCE_MAPPING_OR_PROVIDER_FAILURE"]
     resolved=[x for x in rows if x["state"] in ("REVALIDATED_V093","RECOVERED_TO_QUARANTINE")]
+    # Independent repair backlog: QA receipt candidates not yet attempted in the
+    # durable repair checkpoints. Blocked mappings are never marked "repaired".
+    checkdir=drive_checkpoint(api)
+    checks=children(api,checkdir)
+    pending_repair=0
+    per_lane_pending={}
+    for idx in range(6):
+        exact=[x for x in checks if x["name"]=="v097_REPAIR_LANE%d_CHECKPOINT.json"%idx]
+        if len(exact)!=1:raise RuntimeError("Missing or duplicate repair checkpoint for lane %d"%idx)
+        ck=load_json(api,exact[0]["id"])
+        examined=set(ck["completed_file_ids"])
+        seen=set()
+        outstanding=0
+        for ref in listing:
+            match=QA_RE.fullmatch(ref["name"])
+            if not match or int(match.group(2))!=idx:continue
+            receipt=load_json(api,ref["id"])
+            for item in receipt.get("results",[]):
+                fid=item.get("file_id")
+                if fid and fid not in seen and fid not in examined and item.get("status") in REPAIRABLE:
+                    seen.add(fid)
+                    outstanding+=1
+        per_lane_pending[str(idx)]=outstanding
+        pending_repair+=outstanding
     summary={"schema":"v097_bronze_repair_summary_v1","run_id":run,
         "time_utc":now(),"repaired_candidates_processed":len(rows),
         "revalidated_v093":statuses["REVALIDATED_V093"],
@@ -360,6 +384,9 @@ def aggregate():
         "source_mapping_or_provider_failures":len(needing),
         "status_count":dict(statuses),"by_original_source":dict(sources),
         "remaining_issues_in_run":len(rows)-len(resolved),
+        "pending_unattempted_repair_candidates":pending_repair,
+        "pending_by_lane":per_lane_pending,
+        "blocked_mapping_items_in_run":len(needing),
         "bronze_certified":0,
         "data_rule":"v0.93 read-only -> 6 verified official URLs -> FinMind explicit equivalence; quarantine, then semantic/PIT certification",
         "limits":["No verified source mapping means no external download, not success",
@@ -368,6 +395,9 @@ def aggregate():
     save(api,report_folder,"BRONZE_REPAIR_%s_summary.json"%run,summary)
     save(api,repair_folder,"BRONZE_REPAIR_%s_mapping_gaps.json"%run,{
         "schema":"v097_recovery_mapping_gaps_v1","run":run,"rows":needing})
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
+            out.write("pending_repair=%d\n"%pending_repair)
     print("REPAIR aggregate: "+json.dumps(summary,ensure_ascii=False))
 
 if __name__=="__main__":
