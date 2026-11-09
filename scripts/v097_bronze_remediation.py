@@ -291,7 +291,16 @@ def main():
       "completed_file_ids":[],"results_by_state":{}}
     if ck["schema"]!="v097_repair_checkpoint_v1" or ck["lane"]!=lane:
         raise RuntimeError("Repair checkpoint mismatch")
+    # Failed/blocked source mapping is persisted, not silently treated as fixed.
+    # A verified registry change reopens only affected unresolved candidates.
+    registry=load_registry(api)
+    registry_hash=hashlib.sha256(json.dumps(registry,sort_keys=True,ensure_ascii=False).encode("utf-8")).hexdigest()
+    blocked=set(ck.get("blocked_file_ids",[]))
     done=set(ck["completed_file_ids"])
+    if ck.get("registry_hash") and ck["registry_hash"]!=registry_hash:
+        done.difference_update(blocked)
+        print("REPAIR_MAPPING_UPDATED lane=%d reopened=%d"%(lane,len(blocked)))
+        blocked.clear()
     records=[]
     for ref in children(api,qa_folder):
         mat=QA_RE.fullmatch(ref["name"])
@@ -312,16 +321,21 @@ def main():
         "schema":"v097_repair_claim_v1","run":run,"lane":lane,
         "claimed_ids":[r["file_id"] for r in selected],
         "created":now(),"state":"CLAIMED"})
-    registry=load_registry(api)
     results=[attempt_repair(api,r,registry,run,lane) for r in selected]
     # Immutable per-file evidence first; checkpoint only after successful write.
     payload={"schema":"v097_repair_evidence_v1","run":run,"lane":lane,
         "created":now(),"results":results}
     save(api,qa_folder,"v097_bronze_repair_%s_lane%d.json"%(run,lane),payload)
-    for row in results:done.add(row["file_id"])
+    for row in results:
+        done.add(row["file_id"])
+        if row["state"] in ("SOURCE_MAPPING_OR_PROVIDER_FAILURE","RETRY_EXHAUSTED","UNRESOLVED_LARGE_INPUT"):
+            blocked.add(row["file_id"])
+        else:
+            blocked.discard(row["file_id"])
     counts=Counter(ck["results_by_state"])
     counts.update(x["state"] for x in results)
-    ck.update(completed_file_ids=sorted(done),
+    ck.update(completed_file_ids=sorted(done),blocked_file_ids=sorted(blocked),
+        registry_hash=registry_hash,blocked_count=len(blocked),
         results_by_state=dict(counts),last_run=run,updated_at=now())
     save_or_update(api,ck_folder,ledger_name,ck,ckid)
     save(api,repair_folder,"BRONZE_REPAIR_%s_lane%d.json"%(run,lane),{
