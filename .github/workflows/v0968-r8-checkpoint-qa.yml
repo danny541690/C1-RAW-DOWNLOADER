@@ -1,0 +1,42 @@
+name: JARVIS v0.968 R8 | checkpoint and missing-source ledger
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v0968-r8-checkpoint-qa.yml'
+      - 'scripts/v0968_r8_checkpoint.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v0968-r8-checkpoint-single-writer
+  cancel-in-progress: false
+jobs:
+  report:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Compile Checkpoint and exception ledger
+        run: python -m py_compile scripts/v0968_r8_checkpoint.py
+      - name: Consolidate source-month checkpoints and closed false alarms
+        run: python -u -m scripts.v0968_r8_checkpoint
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v0968-r8-checkpoint-${{ github.run_id }}
+          path: v0968_checkpoint/
+          if-no-files-found: warn
+          retention-days: 30
