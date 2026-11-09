@@ -99,6 +99,7 @@ jobs:
           DIAG_MODE: aggregate
         run: PYTHONPATH=. python scripts/v097_bronze_diagnosis.py
       - name: Aggregate verified repair evidence and remaining mapping gaps
+        id: repair_merge
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -106,8 +107,8 @@ jobs:
           REPAIR_MODE: aggregate
         run: PYTHONPATH=. python scripts/v097_bronze_remediation.py
 
-      - name: Immediately continue B if diagnosis receipts remain
-        if: ${{ steps.diag_merge.outputs.pending_receipts != '0' && steps.diag_merge.outputs.pending_receipts != '' }}
+      - name: Immediately continue B while diagnosis or actionable repair backlog remains
+        if: ${{ (steps.diag_merge.outputs.pending_receipts != '0' && steps.diag_merge.outputs.pending_receipts != '') || (steps.repair_merge.outputs.pending_repair != '0' && steps.repair_merge.outputs.pending_repair != '') }}
         env:
           GH_TOKEN: ${{ github.token }}
           CONTINUE_GROUP: B
