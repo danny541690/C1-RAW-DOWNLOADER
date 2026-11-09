@@ -1,0 +1,34 @@
+name: JARVIS v0.97 - A Group QA Schedule Watchdog
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-qa-watchdog.yml'
+      - 'scripts/v097_qa_watchdog.py'
+  workflow_dispatch:
+  schedule:
+    - cron: '0,10,20,30,40,50 * * * *'
+permissions:
+  actions: write
+  contents: read
+concurrency:
+  group: v097-qa-watchdog
+  cancel-in-progress: false
+jobs:
+  check-and-recover:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate watchdog syntax
+        run: python -m py_compile scripts/v097_qa_watchdog.py
+      - name: Detect stalled schedule and dispatch QA safely
+        env:
+          GH_TOKEN: ${{ github.token }}
+          QA_STALE_TRIGGER_MINUTES: '12'
+          QA_STUCK_RUN_MINUTES: '90'
+        run: python scripts/v097_qa_watchdog.py
