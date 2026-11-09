@@ -1,4 +1,4 @@
-name: JARVIS v0.97 - A Group QA Schedule Watchdog
+name: JARVIS v0.97 - A and B Schedule Recovery Watchdog
 on:
   push:
     branches: [main]
@@ -7,7 +7,7 @@ on:
       - 'scripts/v097_qa_watchdog.py'
   workflow_dispatch:
   schedule:
-    - cron: '0,10,20,30,40,50 * * * *'
+    - cron: '0,15,30,45 * * * *'
 permissions:
   actions: write
   contents: read
@@ -26,9 +26,9 @@ jobs:
           python-version: '3.12'
       - name: Validate watchdog syntax
         run: python -m py_compile scripts/v097_qa_watchdog.py
-      - name: Detect stalled schedule and dispatch QA safely
+      - name: Check A and B every 15 minutes and safely dispatch stale groups
         env:
           GH_TOKEN: ${{ github.token }}
-          QA_STALE_TRIGGER_MINUTES: '12'
-          QA_STUCK_RUN_MINUTES: '90'
+          AB_STALE_MINUTES: '15'
+          AB_STUCK_MINUTES: '120'
         run: python scripts/v097_qa_watchdog.py
