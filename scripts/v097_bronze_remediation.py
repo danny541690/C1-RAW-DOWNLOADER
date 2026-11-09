@@ -99,19 +99,22 @@ def load_registry(api):
     return d.get("files",{})
 
 def provenance(row,item,provider):
-    """Do not change dataset type, period or stock without an explicit mapping."""
+    """Explicit file, period and dataset equivalence, including cross-source."""
     if not isinstance(item,dict) or not item.get("dataset_key"):
         return False
     if item.get("source_file_id")!=row["file_id"]:
         return False
     if str(item.get("year"))!=str(row.get("year")):
         return False
-    if item.get("source") not in (None,row.get("source")):
+    if item.get("source")!=provider:
         return False
-    # FinMind must be a verified equivalent, not a generic dataset substitution.
+    if row.get("month") and item.get("month")!=row["month"]:
+        return False
+    if provider!=row["source"] and item.get("verified_equivalent_to")!=item["dataset_key"]:
+        return False
     if provider=="FinMind":
         return bool(item.get("finmind_dataset") and
-                    item.get("verified_equivalent_to") == item["dataset_key"] and
+                    item.get("verified_equivalent_to")==item["dataset_key"] and
                     item.get("stock_id") and item.get("start_date") and item.get("end_date"))
     return bool(item.get("url") and trusted_url(item["url"],provider))
 
@@ -165,8 +168,7 @@ def provider_reacquire(api,row,evidence,registry,run,lane):
     origin=row.get("source")
     # Only the exact named original official source is safe without a separately
     # approved cross-source equivalence mapping.
-    providers=[origin] if origin in SOURCE_ORDER[:-1] else []
-    if "FinMind" not in providers:providers.append("FinMind")
+    providers=([origin] if origin in SOURCE_ORDER[:-1] else []) + [x for x in SOURCE_ORDER[:-1] if x!=origin] + ["FinMind"]
     attempts=[]
     for provider in providers:
         item=(mapping.get("providers") or {}).get(provider)
