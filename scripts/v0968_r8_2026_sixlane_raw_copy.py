@@ -84,7 +84,12 @@ def run(source,limit,seconds):
  ctl=child_folder(d,ROOT_ID,"00_SYSTEM_CONTROL")
  ckfolder=child_folder(d,ctl,"04_CHECKPOINTS")
  runfolder=child_folder(d,ctl,"03_RUN_MANIFESTS")
- receiptroot=folder(d,runfolder,"V0968_2026_RAW_SIX_LANES")
+ # Existing parallel pilot created three shared roots concurrently. Pin each lane
+ # to an existing immutable receipt root instead of racing on folder creation.
+ roots={"TWSE":"1fQF12GBOLF_Xa-9Q5y55RjT2DdUcUcc9",
+        "TPEx":"11zy35pdfm0dWvYCRF5-fL2mmf2u3DVBA",
+        "NDC":"1e5OgwWY-nFarFIpAH5L_GpjJXgK2SgvZ"}
+ receiptroot=roots.get(source,"1e5OgwWY-nFarFIpAH5L_GpjJXgK2SgvZ")
  receiptdir=folder(d,receiptroot,source)
  v093=ls(d,YEAR_ROOT,100)
  rootparts=([source,ARCHIVE] if source=="TDCC" else [source])
