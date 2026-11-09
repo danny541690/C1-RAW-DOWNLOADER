@@ -229,6 +229,9 @@ def attempt_repair(api,r,registry,run,lane):
     if prev not in REPAIRABLE:
         evidence.update(state="NOT_ELIGIBLE",reason="Not a targeted repairable status")
         return evidence
+    if row["file_name"].upper().startswith(("TICK_","TICK-")):
+        evidence.update(state="EXCLUDED_INTRADAY_TICK",next_action="USER_EXCLUDED_TICK_DATA")
+        return evidence
     # 1. Existing v0.93 file: retry safely without modifying source.
     for attempt in range(1,MAX_RETRIES+1):
         evidence["attempts"]=attempt
@@ -330,4 +333,46 @@ def main():
     print("REPAIR lane=%d candidates=%d cumulative=%d state=%s"%(
         lane,len(selected),len(done),json.dumps(dict(Counter(x["state"] for x in results)))))
 
-if __name__=="__main__":main()
+
+def aggregate():
+    api=service()
+    run=os.environ.get("GITHUB_RUN_ID","manual")
+    _,qa_folder,repair_folder,report_folder=destinations(api)
+    rows=[]
+    listing=children(api,qa_folder)
+    for idx in range(6):
+        name="v097_bronze_repair_%s_lane%d.json"%(run,idx)
+        receipts=[x for x in listing if x["name"]==name]
+        if len(receipts)!=1:raise RuntimeError("Missing/duplicate repair receipt lane "+str(idx))
+        rec=load_json(api,receipts[0]["id"])
+        if rec["lane"]!=idx:raise RuntimeError("Repair receipt wrong lane")
+        rows.extend(rec["results"])
+    statuses=Counter(x["state"] for x in rows)
+    sources=Counter(x.get("source","") for x in rows)
+    needing=[x for x in rows if x["state"]=="SOURCE_MAPPING_OR_PROVIDER_FAILURE"]
+    resolved=[x for x in rows if x["state"] in ("REVALIDATED_V093","RECOVERED_TO_QUARANTINE")]
+    summary={"schema":"v097_bronze_repair_summary_v1","run_id":run,
+        "time_utc":now(),"repaired_candidates_processed":len(rows),
+        "revalidated_v093":statuses["REVALIDATED_V093"],
+        "downloaded_to_quarantine":statuses["RECOVERED_TO_QUARANTINE"],
+        "official_downloads":sum(bool(x.get("official_redownload_performed")) for x in rows),
+        "finmind_downloads":sum(bool(x.get("finmind_fallback_used")) for x in rows),
+        "source_mapping_or_provider_failures":len(needing),
+        "status_count":dict(statuses),"by_original_source":dict(sources),
+        "remaining_issues_in_run":len(rows)-len(resolved),
+        "bronze_certified":0,
+        "data_rule":"v0.93 read-only -> 6 verified official URLs -> FinMind explicit equivalence; quarantine, then semantic/PIT certification",
+        "limits":["No verified source mapping means no external download, not success",
+           "Revalidated original means structural byte checks only",
+           "New payloads are isolated, not moved to certified Bronze"]}
+    save(api,report_folder,"BRONZE_REPAIR_%s_summary.json"%run,summary)
+    save(api,repair_folder,"BRONZE_REPAIR_%s_mapping_gaps.json"%run,{
+        "schema":"v097_recovery_mapping_gaps_v1","run":run,"rows":needing})
+    print("REPAIR aggregate: "+json.dumps(summary,ensure_ascii=False))
+
+if __name__=="__main__":
+    if os.environ.get("REPAIR_MODE")=="aggregate":
+        aggregate()
+    else:
+        main()
+
