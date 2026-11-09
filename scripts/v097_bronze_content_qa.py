@@ -325,9 +325,12 @@ def aggregate(api,run_id):
     listing=children(api,quality)
     lanes=[]
     for i in range(LANES):
-        target=[x for x in listing if x["name"]=="v097_bronze_qa_%s_lane%d.json"%(run_id,i)]
-        if len(target)!=1: raise RuntimeError("Missing/duplicated QA lane %s"%i)
-        lanes.append(load_json(api,target[0]["id"]))
+        pattern=re.compile(r"^v097_bronze_qa_%s(?:_batch[0-9]+)?_lane%d\\.json$"%(re.escape(str(run_id)),i))
+        target=[x for x in listing if pattern.fullmatch(x["name"])]
+        if not target: raise RuntimeError("Missing QA batch receipts for lane %s"%i)
+        target.sort(key=lambda x:x["name"])
+        for receipt in target:
+            lanes.append(load_json(api,receipt["id"]))
     allrows=[r for lane in lanes for r in lane["results"]]
     statuses=Counter(x["status"] for x in allrows)
     sources=Counter(x.get("source","") for x in allrows)
@@ -372,5 +375,14 @@ def aggregate(api,run_id):
 
 if __name__=="__main__":
     api=service(); run_id=os.environ.get("GITHUB_RUN_ID","manual")
-    if os.environ.get("QA_MODE")=="aggregate":aggregate(api,run_id)
-    else:lane(api,int(os.environ["QA_LANE"]),run_id)
+    if os.environ.get("QA_MODE")=="aggregate":
+        aggregate(api,run_id)
+    else:
+        idx=int(os.environ["QA_LANE"])
+        max_batches=max(1,min(int(os.getenv("QA_BATCH_CYCLES","1")),8))
+        for n in range(max_batches):
+            tagged_run=run_id if n==0 else run_id+"_batch"+str(n)
+            lane(api,idx,tagged_run)
+            # All available work was covered: no benefit in additional empty batches.
+            # Next scheduled invocation still performs its own checkpoint verification.
+            print("Lane %d cycle %d/%d completed and checkpointed"%(idx,n+1,max_batches))
