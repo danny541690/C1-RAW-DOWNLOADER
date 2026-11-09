@@ -97,7 +97,7 @@ def inventory(d,months):
        "v093_mutated":False,"PIT_certified":False}
     return rows,summary
 def find_exact(d,parent,name):
-    query="'"+parent+"' in parents and name='"+name.replace("'","\\'")+"' and trashed=false"
+    query="'"+(parent or "root")+"' in parents and name='"+name.replace("'","\\'")+"' and trashed=false"
     result=[];token=None
     while True:
         page=d.files().list(q=query,fields="nextPageToken,incompleteSearch,files(id,name,mimeType)",pageSize=100,pageToken=token).execute()
