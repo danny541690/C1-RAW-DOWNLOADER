@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/v097-bronze-qa-six-lanes.yml'
   workflow_dispatch:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -28,6 +30,8 @@ jobs:
           python-version: '3.12'
       - name: Install Drive client
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Verify QA script syntax before running
+        run: python -m py_compile scripts/v097_bronze_content_qa.py
       - name: Read actual file bytes and record private QA evidence
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -49,6 +53,8 @@ jobs:
           python-version: '3.12'
       - name: Install Drive client
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Verify QA script syntax before merging
+        run: python -m py_compile scripts/v097_bronze_content_qa.py
       - name: Merge six QA results privately in v0.97
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
