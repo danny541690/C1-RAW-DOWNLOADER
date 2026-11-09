@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/v097-bronze-diagnosis-six-lanes.yml'
       - 'scripts/v097_bronze_diagnosis.py'
+      - 'scripts/v097_bronze_remediation.py'
   workflow_dispatch:
   schedule:
     - cron: '1/5 * * * *'
@@ -46,9 +47,38 @@ jobs:
           DIAG_LANE: ${{ matrix.lane }}
           DIAG_MAX_RECEIPTS_PER_LANE: '8'
         run: PYTHONPATH=. python scripts/v097_bronze_diagnosis.py
-  aggregate-private-drive:
+  recover-six-lanes:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     needs: diagnose-six-lanes
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0, 1, 2, 3, 4, 5]
+    name: Bronze B repair lane ${{ matrix.lane }} of 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive and strict HTTP client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Check B repair program syntax
+        run: python -m py_compile scripts/v097_bronze_content_qa.py scripts/v097_bronze_diagnosis.py scripts/v097_bronze_remediation.py
+      - name: Incremental repair v0.93 then 6 official sources then FinMind (verified mappings only)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+          REPAIR_LANE: ${{ matrix.lane }}
+          REPAIR_MAX_FILES_PER_LANE: '12'
+        run: PYTHONPATH=. python scripts/v097_bronze_remediation.py
+  aggregate-private-drive:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    needs: [diagnose-six-lanes, recover-six-lanes]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -65,3 +95,10 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           DIAG_MODE: aggregate
         run: PYTHONPATH=. python scripts/v097_bronze_diagnosis.py
+      - name: Aggregate verified repair evidence and remaining mapping gaps
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          REPAIR_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_bronze_remediation.py
