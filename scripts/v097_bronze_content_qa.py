@@ -325,7 +325,7 @@ def aggregate(api,run_id):
     listing=children(api,quality)
     lanes=[]
     for i in range(LANES):
-        pattern=re.compile(r"^v097_bronze_qa_%s(?:_batch[0-9]+)?_lane%d\\.json$"%(re.escape(str(run_id)),i))
+        pattern=re.compile(r"^v097_bronze_qa_%s(?:_batch[0-9]+)?_lane%d[.]json$"%(re.escape(str(run_id)),i))
         target=[x for x in listing if pattern.fullmatch(x["name"])]
         if not target: raise RuntimeError("Missing QA batch receipts for lane %s"%i)
         target.sort(key=lambda x:x["name"])
