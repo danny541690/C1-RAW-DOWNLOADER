@@ -1,0 +1,36 @@
+name: JARVIS v0.97 - Repair historical QA aggregate from immutable Drive receipts
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-bronze-qa-reconcile.yml'
+  workflow_dispatch:
+    inputs:
+      qa_run_id:
+        description: Original QA Run ID whose six receipts must be reconciled
+        required: true
+        default: '42632180328'
+permissions:
+  contents: read
+concurrency:
+  group: v097-bronze-qa-reconcile
+  cancel-in-progress: false
+jobs:
+  repair-aggregate:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - run: python -m py_compile scripts/v097_bronze_content_qa.py
+      - name: Reconcile immutable receipts and checkpoint without re-reading source files
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          QA_SOURCE_RUN_ID: ${{ inputs.qa_run_id || '42632180328' }}
+        run: PYTHONPATH=. python -c 'import os; from scripts.v097_bronze_content_qa import service,aggregate; aggregate(service(),os.environ["QA_SOURCE_RUN_ID"])'
