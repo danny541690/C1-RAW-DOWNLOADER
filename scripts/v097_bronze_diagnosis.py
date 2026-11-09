@@ -215,6 +215,9 @@ def aggregate(api):
     save(api,report_folder,"BRONZE_DIAG_%s_results.csv"%RUN,csv_bytes(rows,keys),"text/csv")
     issues=[x for x in rows if x["stage"]!="CONTENT_UNVERIFIED" or x["diagnosis"]!="STRUCTURE_OK_SEMANTIC_PENDING"]
     save(api,repair_folder,"BRONZE_DIAG_%s_repair_queue.csv"%RUN,csv_bytes(issues,keys),"text/csv")
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
+            out.write("pending_receipts=%d\n"%pending)
     print("Diagnosis aggregate: "+json.dumps(summary,ensure_ascii=False))
 
 if __name__=="__main__":
