@@ -7,7 +7,7 @@ on:
       - 'scripts/v097_bronze_content_qa.py'
   workflow_dispatch:
   schedule:
-    - cron: '2/5 * * * *'
+    - cron: '3/5 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -41,6 +41,7 @@ jobs:
           QA_MODE: lane
           QA_LANE: ${{ matrix.lane }}
           QA_BATCH_PER_LANE: '120'
+          QA_BATCH_CYCLES: '3'
         run: python scripts/v097_bronze_content_qa.py
   aggregate-private-drive:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
