@@ -67,6 +67,11 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           QA_MODE: aggregate
         run: python scripts/v097_bronze_content_qa.py
+      - name: Wake B immediately after every completed A QA batch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONTINUE_GROUP: B
+        run: python scripts/v097_continue_workflow.py
       - name: Immediately continue A if Drive checkpoint still has pending files
         if: ${{ steps.merge.outputs.remaining != '0' && steps.merge.outputs.remaining != '' }}
         env:
