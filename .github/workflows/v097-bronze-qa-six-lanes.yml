@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v097-bronze-qa-six-lanes.yml'
+      - 'scripts/v097_bronze_content_qa.py'
   workflow_dispatch:
   schedule:
     - cron: '2/5 * * * *'
