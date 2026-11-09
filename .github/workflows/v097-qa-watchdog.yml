@@ -7,7 +7,7 @@ on:
       - 'scripts/v097_qa_watchdog.py'
   workflow_dispatch:
   schedule:
-    - cron: '0,15,30,45 * * * *'
+    - cron: '2,17,32,47 * * * *'
 permissions:
   actions: write
   contents: read
