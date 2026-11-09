@@ -371,6 +371,12 @@ def aggregate(api,run_id):
     cols=["file_id","path","source","status","kind","bytes","sha256","md5_consistent","zip_members","zip_uncompressed_bytes","member_extensions","table_tags","td_tags","tr_tags","top_keys","json_shape","decoded_as","observations","error","detail"]
     save(api,coverage,"BRONZE_QA_%s_checked.csv"%run_id,csvdata(allrows,cols),"text/csv")
     save(api,queue,"BRONZE_QA_%s_followup.csv"%run_id,csvdata(warnings,cols),"text/csv")
+    # Make continuation decision based solely on validated Drive checkpoints.
+    output=os.environ.get("GITHUB_OUTPUT")
+    if output:
+        with open(output,"a",encoding="utf-8") as handle:
+            handle.write("remaining=%d\n"%remaining)
+            handle.write("processed=%d\n"%total_processed)
     print("QA aggregate complete: "+json.dumps(summary,ensure_ascii=False))
 
 if __name__=="__main__":
