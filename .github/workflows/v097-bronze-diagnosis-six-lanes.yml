@@ -34,8 +34,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install Drive client
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Install Drive and repair dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
       - name: Verify diagnosis Python syntax
         run: python -m py_compile scripts/v097_bronze_content_qa.py scripts/v097_bronze_diagnosis.py
       - name: Diagnose prior completed QA receipts, retry read failures, preserve evidence
