@@ -16,8 +16,8 @@ SOURCES=("TWSE","TPEx","MOPS","TDCC","TDCC_ARCHIVE","TAIFEX","NDC")
 MONTHS=tuple("2026-%02d"%m for m in range(1,12))
 CUTOFF="2026-11-09"
 BRONZE_ID="1UmfgZLO-HJQKcIn4dFTG35-fH6WoqmZp"
-MAX_COPIES=min(int(os.environ.get("V0968_RAW_BATCH_LIMIT","18")),40)
-MAX_SOURCE_FILE_BYTES=20_000_000
+MAX_COPIES=min(int(os.environ.get("V0968_RAW_BATCH_LIMIT","100")),250)
+MAX_SOURCE_FILE_BYTES=500_000_000
 OUTPUT=pathlib.Path("v0968_2026_raw")
 def list_folder(d,parent,limit=15000):
  rows,partial=list_files(d,parent,limit)
@@ -46,7 +46,7 @@ def main():
  if p:raise ValueError("SOURCE_ROOT_LIST_INCOMPLETE")
  source_entries={x["name"]:x for x in srcs if x["mimeType"]==FOLDER}
  candidates=[];issues=[];units=[]
- # Complete source/month metadata discovery, but cap copies to preserve free Drive quota.
+ # Cover every eligible 2026 source-month; bounded batches protect job time and API quotas, NOT storage capacity (user has 400 GB).
  for source in SOURCES:
   folder=source_entries.get(source)
   if not folder:
@@ -74,25 +74,24 @@ def main():
                                int(f.get("size") or 0),f["name"]))
    for f in allowed:
     candidates.append({"source":source,"month":month,"file":f,"legacy_folder_id":fm["id"]})
- # round-robin one item per source-month before deeper source copies
+ # Sort source-month first; each batch resumes at exact next uncopied native source file.
  candidates.sort(key=lambda c:(c["month"], 0 if categories(c["file"]["name"])=="ZIP" else 1,
                            c["source"],c["file"]["name"]))
- done=[];blocked=[];created=0;reused=0;sampled_unit=set()
+ done=[];blocked=[];created=0;reused=0;destination_cache={}
  for candidate in candidates:
   source,month,f=candidate["source"],candidate["month"],candidate["file"]
-  key=(source,month)
-  if key in sampled_unit:continue
-  sampled_unit.add(key)
-  if len(done)>=MAX_COPIES:break
+  if created>=MAX_COPIES:break
   canonical="TDCC" if source=="TDCC_ARCHIVE" else source
   parent=ensure_folder(d,BRONZE_ID,canonical)
   yr=ensure_folder(d,parent,"2026")
   dest=ensure_folder(d,yr,month)
   tag=hashlib.sha256(f["id"].encode()).hexdigest()[:16]
   target="V093_ORIGINAL_"+tag+"_"+f["name"]
-  exists,partial=list_folder(d,dest,1000)
-  if partial:raise RuntimeError("DESTINATION_INDEX_NOT_COMPLETE")
-  exact=[x for x in exists if x["name"]==target]
+  if dest not in destination_cache:
+   exists,partial=list_folder(d,dest,50000)
+   if partial:raise RuntimeError("DESTINATION_INDEX_NOT_COMPLETE")
+   destination_cache[dest]={x["name"]:x for x in exists}
+  exact=([destination_cache[dest][target]] if target in destination_cache[dest] else [])
   if len(exact)>1:raise RuntimeError("AMBIGUOUS_COPIED_NAME")
   if exact:
    # A prior batch already secured this source-month sample: do not consume
@@ -109,6 +108,7 @@ def main():
     item=d.files().copy(fileId=f["id"],body={"name":target,"parents":[dest]},
        fields="id,name,size,md5Checksum,mimeType").execute()
     action="COPIED_NATIVE_BYTES_TO_R8_BRONZE";created+=1
+    destination_cache[dest][target]=item
    except Exception as exc:
     blocked.append({"source":source,"month":month,"legacy_file_id":f["id"],
        "state":"RAW_COPY_FAILED","reason":type(exc).__name__+":"+str(exc)[:160]})
@@ -127,6 +127,7 @@ def main():
    "requested_months":list(MONTHS),"sources":list(SOURCES),
    "source_month_units":units,"legacy_candidates_discovered":len(candidates),
    "r8_raw_copies_created":created,"r8_raw_copies_reused":reused,
+   "r8_copy_batch_limit":MAX_COPIES,"storage_policy":"400GB_CAPACITY_NOT_A_BATCH_LIMIT",
    "r8_raw_copies_metadata_accepted":len(done),"r8_raw_bytes":sum(x["bytes"] for x in done),
    "download_or_copy_errors":blocked,"legacy_gaps_and_empty_months":issues,
    "download_scope":"REUSE_NATIVE_V093_RAW_ONLY_OFFICIAL_BACKFILL_UNIMPLEMENTED",
