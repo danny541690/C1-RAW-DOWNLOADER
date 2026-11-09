@@ -1,0 +1,62 @@
+name: JARVIS v0.97 - Bronze diagnosis and repair triage - six lanes
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-bronze-diagnosis-six-lanes.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '4/5 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-bronze-diagnosis
+  cancel-in-progress: false
+jobs:
+  diagnose-six-lanes:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    name: Bronze diagnosis lane ${{ matrix.lane }} of 6
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Verify diagnosis Python syntax
+        run: python -m py_compile scripts/v097_bronze_content_qa.py scripts/v097_bronze_diagnosis.py
+      - name: Diagnose prior completed QA receipts, retry read failures, preserve evidence
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          DIAG_MODE: lane
+          DIAG_LANE: ${{ matrix.lane }}
+          DIAG_MAX_RECEIPTS_PER_LANE: '8'
+        run: PYTHONPATH=. python scripts/v097_bronze_diagnosis.py
+  aggregate-private-drive:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    needs: diagnose-six-lanes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Consolidate issue diagnosis, per-source queue and checkpoint
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          DIAG_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_bronze_diagnosis.py
