@@ -125,6 +125,14 @@ def lane(api,idx):
             allqa.append(f)
     allqa.sort(key=lambda f:(f["name"],f["id"]))
     todo=[f for f in allqa if f["id"] not in already][:BATCH_RECEIPTS]
+    # Persist exactly which immutable QA receipts were claimed before analysis.
+    # A missing completion checkpoint means these receipts are automatically replayed.
+    workorder={"schema":"v097_file_claim_1","pipeline":"DIAG",
+        "run_id":RUN,"lane":idx,"claimed_at":utc(),"state":"CLAIMED",
+        "receipt_ids":[x["id"] for x in todo],
+        "prior_receipts_done":len(already),"qa_receipts_available":len(allqa),
+        "pending_before":len(allqa)-len(already)}
+    save(api,ck_folder,"v097_DIAG_WORKORDER_%s_lane%d.json"%(RUN,idx),workorder)
     results=[]; per_receipt=[]
     for receipt in todo:
         record=load_json(api,receipt["id"])
@@ -146,6 +154,19 @@ def lane(api,idx):
         pending_receipts=max(0,len(allqa)-len(already)),
         status="CURRENTLY_CAUGHT_UP" if len(allqa)==len(already) else "BACKLOG")
     save_or_update(api,ck_folder,ckname,ck,ckid)
+    ledger_name="v097_DIAG_LANE%d_LEDGER.json"%idx
+    ledger={"schema":"v097_DIAG_lane_ledger_1","lane":idx,"updated_at":utc(),
+       "last_run":RUN,"qa_receipts_available":len(allqa),
+       "completed_receipts":len(already),"pending_receipts":ck["pending_receipts"],
+       "diagnosed_files_total":ck["diagnosed_files_total"],
+       "category_counts":dict(c),
+       "pending_receipt_ids":[x["id"] for x in allqa if x["id"] not in already][:30],
+       "state":"CAUGHT_UP_WAITING_FOR_QA" if ck["pending_receipts"]==0 else "BACKLOG_REMAINS",
+       "market_data_repaired":0,
+       "important":"Classification and bounded read retry only. Source-specific correction and market numeric certification are NOT performed."}
+    current=[x for x in children(api,ck_folder) if x["name"]==ledger_name]
+    if len(current)>1:raise RuntimeError("Duplicate diagnosis ledger")
+    save_or_update(api,ck_folder,ledger_name,ledger,current[0]["id"] if current else None)
     print("Diagnosis lane=%d receipts=%d diagnosed=%d cumulative=%d backlog=%d classes=%s"%(
         idx,len(todo),len(results),ck["diagnosed_files_total"],ck["pending_receipts"],
         json.dumps(dict(Counter(x["diagnosis"] for x in results)),ensure_ascii=False)))
