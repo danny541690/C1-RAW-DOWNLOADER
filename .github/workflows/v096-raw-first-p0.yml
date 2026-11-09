@@ -1,0 +1,101 @@
+name: JARVIS v0.96 RAW First P0 | inventory -> index Parquet -> audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v096-raw-first-p0.yml'
+      - 'scripts/v096_raw_first.py'
+      - 'scripts/v096_raw_first_audit.py'
+      - 'scripts/v096_manifest_parquet.py'
+      - 'tests/test_v096_raw_first.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v096-p0-single-coordinator
+  cancel-in-progress: true
+jobs:
+  inventory:
+    name: "1 | v0.93 legacy metadata inventory + isolated v0.96 Drive namespace"
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V096_PILOT_MONTHS: '2025-01,2026-10'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive metadata client only
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Validate v0.96 RAW-only contract
+        run: |
+          python -m unittest discover -s tests -p 'test_v096_raw_first.py' -v
+          python -m py_compile scripts/v096_raw_first.py scripts/v096_raw_first_audit.py scripts/v096_manifest_parquet.py
+      - name: Index v0.93 2025-01 and 2026-10 by metadata, do not download raw or mutate v0.95
+        run: python -u -m scripts.v096_raw_first --mode inventory
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v096-p0-inventory-${{ github.run_id }}
+          path: v096_run/
+          retention-days: 30
+          if-no-files-found: warn
+  normalize_index:
+    name: "2 | convert source metadata index (NOT market data) to ZSTD Parquet"
+    needs: inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: v096-p0-inventory-${{ github.run_id }}
+          path: v096_run
+      - name: Install Parquet and Drive clients
+        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
+      - name: Encode *metadata only* as immutable ZSTD Parquet, SHA readback
+        run: python -u -m scripts.v096_manifest_parquet
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v096-p0-metadata-parquet-${{ github.run_id }}
+          path: v096_run/
+          retention-days: 30
+          if-no-files-found: warn
+  audit:
+    name: "3 | source-index coverage, omissions, immutability and no-PIT gate"
+    needs: normalize_index
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: v096-p0-metadata-parquet-${{ github.run_id }}
+          path: v096_run
+      - name: Reject manifest duplicates, fabricated completeness and PIT
+        run: python -u -m scripts.v096_raw_first_audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v096-p0-audited-result-${{ github.run_id }}
+          path: v096_run/
+          retention-days: 30
+          if-no-files-found: warn
