@@ -1,0 +1,58 @@
+name: JARVIS v0.97 - Bronze bounded content QA - six lanes
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-bronze-qa-six-lanes.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-bronze-content-qa
+  cancel-in-progress: false
+jobs:
+  inspect-six-lanes:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    name: Bronze content QA lane ${{ matrix.lane }} of 6
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Read actual file bytes and record private QA evidence
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          QA_MODE: lane
+          QA_LANE: ${{ matrix.lane }}
+          QA_BATCH_PER_LANE: '60'
+        run: python scripts/v097_bronze_content_qa.py
+  aggregate-private-drive:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    needs: inspect-six-lanes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Merge six QA results privately in v0.97
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          QA_MODE: aggregate
+        run: python scripts/v097_bronze_content_qa.py
