@@ -82,7 +82,7 @@ jobs:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     needs: [diagnose-six-lanes, recover-six-lanes]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -98,6 +98,12 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           DIAG_MODE: aggregate
         run: PYTHONPATH=. python scripts/v097_bronze_diagnosis.py
+      - name: Continue B immediately when QA receipt backlog remains
+        if: ${{ steps.diag_merge.outputs.pending_receipts != '0' && steps.diag_merge.outputs.pending_receipts != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONTINUE_GROUP: B
+        run: python scripts/v097_continue_workflow.py
       - name: Aggregate verified repair evidence and remaining mapping gaps
         id: repair_merge
         env:
@@ -107,8 +113,8 @@ jobs:
           REPAIR_MODE: aggregate
         run: PYTHONPATH=. python scripts/v097_bronze_remediation.py
 
-      - name: Immediately continue B while diagnosis or actionable repair backlog remains
-        if: ${{ (steps.diag_merge.outputs.pending_receipts != '0' && steps.diag_merge.outputs.pending_receipts != '') || (steps.repair_merge.outputs.pending_repair != '0' && steps.repair_merge.outputs.pending_repair != '') }}
+      - name: Continue B for repair backlog if diagnosis queue was already drained
+        if: ${{ steps.diag_merge.outputs.pending_receipts == '0' && steps.repair_merge.outputs.pending_repair != '0' && steps.repair_merge.outputs.pending_repair != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
           CONTINUE_GROUP: B
