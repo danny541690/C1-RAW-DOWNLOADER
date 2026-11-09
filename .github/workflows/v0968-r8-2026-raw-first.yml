@@ -1,0 +1,43 @@
+name: JARVIS v0.968 R8 | 2026 RAW first native 0.93 reuse copy
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v0968-r8-2026-raw-first.yml'
+      - 'scripts/v0968_r8_2026_raw_collect.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v0968-r8-2026-raw-copy-single-writer
+  cancel-in-progress: false
+jobs:
+  collect-2026-native-raw:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      V0968_RAW_BATCH_LIMIT: '18'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Compile RAW acquisition only
+        run: python -m py_compile scripts/v0968_r8_2026_raw_collect.py
+      - name: Acquire 2026-01-01 to 2026-11-09 native legacy RAW, NO QC or transformation
+        run: python -u -m scripts.v0968_r8_2026_raw_collect
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v0968-r8-2026-raw-only-${{ github.run_id }}
+          path: v0968_2026_raw/
+          if-no-files-found: warn
+          retention-days: 30
