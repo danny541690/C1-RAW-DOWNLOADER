@@ -7,7 +7,7 @@ on:
       - 'scripts/v097_bronze_content_qa.py'
   workflow_dispatch:
   schedule:
-    - cron: '3/5 * * * *'
+    - cron: '4/5 * * * *'
 permissions:
   contents: read
 concurrency:
