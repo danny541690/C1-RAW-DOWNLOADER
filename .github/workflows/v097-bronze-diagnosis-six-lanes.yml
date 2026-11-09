@@ -6,15 +6,17 @@ on:
       - '.github/workflows/v097-bronze-diagnosis-six-lanes.yml'
       - 'scripts/v097_bronze_diagnosis.py'
       - 'scripts/v097_bronze_remediation.py'
+      - 'scripts/v097_continue_workflow.py'
   workflow_dispatch:
   schedule:
-    - cron: '1/5 * * * *'
+    - cron: '11,26,41,56 * * * *'
   workflow_run:
     workflows:
       - JARVIS v0.97 - Bronze bounded content QA - six lanes
     types: [completed]
 permissions:
   contents: read
+  actions: write
 concurrency:
   group: v097-bronze-diagnosis
   cancel-in-progress: false
@@ -89,6 +91,7 @@ jobs:
       - name: Install Drive client
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
       - name: Consolidate issue diagnosis, per-source queue and checkpoint
+        id: diag_merge
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -102,3 +105,10 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           REPAIR_MODE: aggregate
         run: PYTHONPATH=. python scripts/v097_bronze_remediation.py
+
+      - name: Immediately continue B if diagnosis receipts remain
+        if: ${{ steps.diag_merge.outputs.pending_receipts != '0' && steps.diag_merge.outputs.pending_receipts != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONTINUE_GROUP: B
+        run: python scripts/v097_continue_workflow.py
