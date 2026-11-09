@@ -240,6 +240,17 @@ def lane(api,idx,run_id):
                 done.update(x["file_id"] for x in old.get("results",[]))
         done &= allowed
     chosen=choose(candidates,done,BATCH_PER_LANE)
+    # Durable work order BEFORE reading a byte: planned work remains discoverable
+    # if the GitHub runner disappears. Checkpoint is the sole completion authority.
+    workorder_name="v097_QA_WORKORDER_%s_lane%d.json"%(run_id,idx)
+    workorder={"schema":"v097_file_claim_1","pipeline":"QA","run_id":run_id,
+        "lane":idx,"inventory_run":SRC_INVENTORY_RUN,
+        "claimed_at":datetime.now(timezone.utc).isoformat(),"state":"CLAIMED",
+        "planned_file_ids":[x["file_id"] for x in chosen],
+        "prior_completed":len(done),"eligible_total":len(allowed),
+        "remaining_before":max(0,len(allowed)-len(done)),
+        "rule":"Run-specific immutable receipt + checkpoint; uncommitted claims retry automatically."}
+    save(api,checkpoints,workorder_name,workorder)
     outputs=[]
     for n,row in enumerate(chosen,1):
         size=int(row.get("size_bytes") or 0)
@@ -275,6 +286,28 @@ def lane(api,idx,run_id):
         call(lambda:api.files().update(fileId=ck_id,media_body=media,fields="id"))
     else:
         save(api,checkpoints,ck_name,ck)
+    # Compact dashboard ledger: counts and next-work preview, never fabricated success.
+    next_rows=choose(candidates,done,min(25,BATCH_PER_LANE))
+    state={"schema":"v097_QA_lane_ledger_1","lane":idx,
+        "updated_at":datetime.now(timezone.utc).isoformat(),
+        "source_inventory_run":SRC_INVENTORY_RUN,"last_run":run_id,
+        "eligible":len(allowed),"done_with_receipt":len(done),
+        "waiting":ck["remaining"],"excluded":ck["excluded_total"],
+        "last_batch_count":len(outputs),
+        "last_batch_by_status":dict(Counter(x["status"] for x in outputs)),
+        "next_file_ids":[x["file_id"] for x in next_rows],
+        "state":"COMPLETE_INITIAL_BYTE_QA" if ck["remaining"]==0 else "WAITING_NEXT_BATCH",
+        "bronze_certified":0,"market_data_mutated":0,
+        "important":"Done means receipt recorded; deferred/error items require separate remediation."}
+    ledger_name="v097_QA_LANE%d_LEDGER.json"%idx
+    ledger_files=[x for x in children(api,checkpoints) if x["name"]==ledger_name]
+    if len(ledger_files)>1:raise RuntimeError("Duplicate QA ledger")
+    if ledger_files:
+        encoded=json.dumps(state,ensure_ascii=False,separators=(",",":")).encode("utf-8")
+        media2=MediaInMemoryUpload(encoded,mimetype="application/json",resumable=False)
+        call(lambda:api.files().update(fileId=ledger_files[0]["id"],media_body=media2,fields="id"))
+    else:
+        save(api,checkpoints,ledger_name,state)
     print("Lane %d: examined=%d processed_total=%d eligible=%d remaining=%d status=%s, checkpoint saved."%
           (idx,len(chosen),len(done),len(allowed),ck["remaining"],dict(Counter(x["status"] for x in outputs))))
 
