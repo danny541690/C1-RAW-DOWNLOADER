@@ -1,0 +1,42 @@
+name: JARVIS v0.968 R8 | resume October TDCC metadata only
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v0968-r8-tdcc-gap-delta.yml'
+      - 'scripts/v0968_r8_tdcc_delta.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v0968-r8-tdcc-delta-single-writer
+  cancel-in-progress: false
+jobs:
+  recover-truncated-month:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive metadata client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
+      - name: Validate isolated delta recovery syntax
+        run: python -m py_compile scripts/v0968_r8_tdcc_delta.py
+      - name: Resume 2026-10 TDCC metadata indexing only from existing manifest
+        run: python -u -m scripts.v0968_r8_tdcc_delta
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v0968-r8-tdcc-delta-${{ github.run_id }}
+          path: v0968_r8_delta/
+          if-no-files-found: warn
+          retention-days: 30
