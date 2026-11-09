@@ -20,7 +20,7 @@ jobs:
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-      V0968_RAW_BATCH_LIMIT: '18'
+      V0968_RAW_BATCH_LIMIT: '100'
     steps:
       - uses: actions/checkout@v4
         with:
