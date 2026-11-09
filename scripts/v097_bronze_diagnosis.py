@@ -21,7 +21,7 @@ from scripts.v097_bronze_content_qa import (
 LANE_COUNT = 6
 BATCH_RECEIPTS = int(os.getenv("DIAG_MAX_RECEIPTS_PER_LANE", "8"))
 RUN = os.environ.get("GITHUB_RUN_ID","manual")
-QA_RE = re.compile(r"^v097_bronze_qa_(\d+)_lane([0-5])\.json$")
+QA_RE = re.compile(r"^v097_bronze_qa_(\d+(?:_batch\d+)?)_lane([0-5])[.]json$")
 CHECKPOINT_SCHEMA = "v097_bronze_diagnosis_checkpoint_v1"
 
 def utc():
