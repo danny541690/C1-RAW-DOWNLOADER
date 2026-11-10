@@ -118,7 +118,7 @@ def audit_lane(api,lane):
          "full_certified":False,"note":"Copy-time actual bytes, metadata and independent destination re-read required"}
  put_once(api,m,outname,result)
  print("BF_AUDIT",lane,len(items),dict(count),flush=True)
-def partition(api,bronze,r):
+def partition(api,bronze,r,lane):
  # No transformations: separate source namespace and immutable content version filename.
  source=r.get("source")
  if not source or not re.fullmatch(r"[A-Za-z0-9_-]{2,32}",source):raise RuntimeError("BAD_SOURCE")
@@ -126,8 +126,18 @@ def partition(api,bronze,r):
  month=str(r.get("month") or "00")
  if not re.fullmatch(r"(?:19|20)\d{2}|UNCLASSIFIED",y):raise RuntimeError("BAD_YEAR")
  if not re.fullmatch(r"\d{1,2}",month):month="00"
- return makefolder(api,makefolder(api,makefolder(api,bronze,source),y),month.zfill(2))
-def raw_integrity(b,name):
+ root=match(api,bronze,source)
+ if not root:raise RuntimeError('SOURCE_ROOT_NOT_BOOTSTRAPPED:'+source)
+ shard=match(api,root['id'],'BF_LANE_%02d'%lane)
+ if not shard:raise RuntimeError('LANE_ROOT_NOT_BOOTSTRAPPED')
+ return makefolder(api,makefolder(api,shard['id'],y),month.zfill(2))
+def bootstrap(api):
+ m,c,q,bronze=common(api)
+ for source in sorted(SOURCES):
+  root=makefolder(api,bronze,source)
+  for lane in range(COPY_LANES):makefolder(api,root,"BF_LANE_%02d"%lane)
+ print("BF_BOOTSTRAP_READY",len(SOURCES),COPY_LANES,flush=True)
+\ndef raw_integrity(b,name):
  if not b:return "RAW_EMPTY"
  if len(b)>MAX_BYTES:return "RAW_TOO_LARGE"
  if name.lower().endswith((".zip",".xlsx")) or b.startswith(b"PK\x03\x04"):
@@ -174,7 +184,7 @@ def copy_lane(api,lane):
    if sha!=r["expected_sha256"]:raise RuntimeError("SOURCE_SHA_CHANGED")
    if raw_integrity(b,meta["name"])!="RAW_STRUCTURE_PASS":
     raise RuntimeError("SOURCE_RAW_STRUCTURE_FAILURE")
-   targetfolder=partition(api,bronze,r)
+   targetfolder=partition(api,bronze,r,lane)
    # Preserve original bytes and basename in immutable, version-addressed target name.
    basename=os.path.basename(meta["name"]).replace("/","_")
    filename="%s__%s__%s"%(fid,sha[:16],basename)
@@ -278,7 +288,8 @@ if __name__=="__main__":
  if mode=="selftest":selftest()
  else:
   api=service()
-  if mode=="audit":audit_lane(api,int(os.environ["BF_LANE"]))
+  if mode=="bootstrap":bootstrap(api)
+  elif mode=="audit":audit_lane(api,int(os.environ["BF_LANE"]))
   elif mode=="copy":copy_lane(api,int(os.environ["BF_LANE"]))
   elif mode=="qa":verify_lane(api,int(os.environ["BF_LANE"]))
   elif mode=="aggregate":aggregate(api)
