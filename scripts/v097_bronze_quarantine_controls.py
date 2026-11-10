@@ -44,6 +44,20 @@ def quarantine(api):
      # Ensure no accidental move from outside the intended Bronze origin subtree.
      source_root=match(api,bronze,path.split("/")[0])
      if not source_root:raise RuntimeError("SOURCE_NAMESPACE_NOT_IN_BRONZE")
+     # Prove the destination is actually under Bronze/source/lane/year/mm before moving.
+     parent=current[0]
+     chain=[]
+     for depth in range(4):
+      obj=call(lambda:api.files().get(fileId=parent,fields="id,name,parents,mimeType"))
+      chain.append(obj["name"])
+      parents=obj.get("parents") or []
+      if len(parents)!=1:break
+      parent=parents[0]
+     if not (len(chain)>=4 and chain[3]==path.split("/")[0] and
+             chain[2]==path.split("/")[1] and
+             chain[1]==path.split("/")[2] and
+             chain[0]==path.split("/")[3]):
+      raise RuntimeError("ACTUAL_BRONZE_PARENT_CHAIN_NOT_MATCH_RECEIPT")
      if detail.get("state") not in ("COPY_MATCHED_PENDING_INDEPENDENT_QA","COPY_QUARANTINED_NONMARKET"):
       raise RuntimeError("COPY_STATUS_NOT_ELIGIBLE_FOR_QUARANTINE")
      call(lambda:api.files().update(fileId=did,addParents=target,removeParents=current[0],
