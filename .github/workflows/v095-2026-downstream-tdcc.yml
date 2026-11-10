@@ -1,15 +1,6 @@
 name: JARVIS v0.95 2026 TDCC independent Silver Gold candidate worker
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-2026-downstream-tdcc.yml'
-      - 'scripts/v095_2026_immediate_silver_gold.py'
-      - 'scripts/v095_legacy_tdcc_mirror_adapter.py'
-      - 'tests/test_v095_2025_2026_source_native_adapters.py'
-  schedule:
-    - cron: '28 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -17,7 +8,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   downstream-tdcc:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
