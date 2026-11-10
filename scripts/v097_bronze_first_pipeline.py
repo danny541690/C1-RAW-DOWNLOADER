@@ -158,6 +158,12 @@ def raw_integrity(b,name):
     if z.testzip() is not None:return "RAW_ZIP_CRC_FAIL"
   except Exception:return "RAW_ZIP_FAIL"
  elif name.lower().endswith(".pdf") and not b.startswith(b"%PDF-"):return "RAW_PDF_INVALID"
+ elif name.lower().endswith((".html",".htm")):
+  html=b[:250000].decode("utf-8-sig",errors="replace").lower()
+  if any(x in html for x in ("access denied","403 forbidden","429 too many requests","502 bad gateway","service unavailable","404 not found")):
+   return "RAW_UPSTREAM_HTML_ERROR"
+  if "<table" not in html and "<tbody" not in html:
+   return "RAW_HTML_DATA_STRUCTURE_NOT_CONFIRMED"
  elif name.lower().endswith(".json"):
   try:json.loads(b.decode("utf-8-sig"))
   except Exception:return "RAW_JSON_INVALID"
