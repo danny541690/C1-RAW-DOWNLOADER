@@ -3,7 +3,8 @@
 Fixed 12 shards, immutable per-batch receipts, independent lane checkpoints.
 Parsed/structural success is NOT PIT or financial numeric certification.
 """
-import csv,hashlib,io,json,os,re,zipfile,math
+import csv,hashlib,io,json,os,re,zipfile,math,time,random
+from googleapiclient.errors import HttpError
 from collections import Counter
 from html.parser import HTMLParser
 from datetime import datetime,timezone
@@ -23,6 +24,33 @@ def one(api,parent,name):
     a=[x for x in children(api,parent) if x["name"]==name]
     if len(a)>1:raise RuntimeError("Duplicate file "+name)
     return a[0] if a else None
+def durable_checkpoint(api,parent,name,state,existing_id):
+    """Retry transient Drive checkpoint write failures; verify durable state.
+    Receipts already exist before checkpoint advance, so a retry is safe.
+    """
+    for attempt in range(1,9):
+        try:
+            save_or_update(api,parent,name,state,existing_id)
+            return
+        except HttpError as exc:
+            if exc.resp.status not in (403,429,500,502,503,504):
+                raise
+            # A timed-out upload may have committed: verify before retrying.
+            try:
+                found=one(api,parent,name)
+                if found and load_json(api,found["id"]).get("done")==state["done"]:
+                    print("R2_CHECKPOINT_CONFIRMED_AFTER_TRANSIENT_ERROR",name,flush=True)
+                    return
+            except Exception:
+                pass
+            if attempt==8:raise
+            delay=min(90,4*(2**(attempt-1)))+random.random()*2
+            print("R2_CHECKPOINT_RETRY",name,"http",exc.resp.status,"attempt",attempt,"delay",round(delay,1),flush=True)
+            time.sleep(delay)
+        except (TimeoutError,ConnectionError):
+            if attempt==8:raise
+            time.sleep(min(90,4*(2**(attempt-1))))
+
 def lane_id(row):
     options=SPLITS.get(row.get("source"))
     if not options:raise RuntimeError("Unexpected source: "+str(row.get("source")))
@@ -166,7 +194,7 @@ def worker(api,k):
         for r in result:
             if r["file_id"] not in done:done.add(r["file_id"]);counts[r["status"]]+=1
         state={"schema":"r2_ck_1","lane":k,"done":sorted(done),"counts":dict(counts),"remaining":len(rows)-len(done),"eligible":len(rows),"updated":utc(),"last_run":RUN}
-        save_or_update(api,c,cname,state,fck["id"] if fck else None)
+        durable_checkpoint(api,c,cname,state,fck["id"] if fck else None)
         if not fck:fck=one(api,c,cname)
         print("R2_LANE_PROGRESS",k,len(done),len(rows),flush=True)
 def aggregate(api):
