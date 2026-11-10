@@ -1,0 +1,133 @@
+name: JARVIS v0.97 - BRONZE FIRST 12+6+6 verified-copy autopilot
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-bronze-first-autopilot.yml'
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: 'canary first, then auto-dispatch full incremental runs'
+        type: choice
+        required: false
+        default: 'full'
+        options: [canary, full]
+  schedule:
+    - cron: '13 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-bronze-first-autopilot-single-writer
+  cancel-in-progress: false
+jobs:
+  preflight:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install minimal Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Syntax and deterministic gate regression
+        run: |
+          python -m py_compile scripts/v097_bronze_first_pipeline.py scripts/v097_bronze_first_continue.py
+          PYTHONPATH=. BF_MODE=selftest python scripts/v097_bronze_first_pipeline.py
+  raw-receipt-audit:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        lane: [0,1,2,3,4,5,6,7,8,9,10,11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Immutable R2 receipt join, RAW-only evidence pass candidates
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BF_MODE: audit
+          BF_LANE: ${{ matrix.lane }}
+        run: PYTHONPATH=. python scripts/v097_bronze_first_pipeline.py
+  verified-copy:
+    needs: raw-receipt-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Safe native original bytes copy from v0.93 to v0.97 Bronze with SHA readback
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BF_MODE: copy
+          BF_LANE: ${{ matrix.lane }}
+          BRONZE_COPY_BATCH: ${{ github.event_name == 'push' && '2' || inputs.batch == 'canary' && '2' || '24' }}
+        run: PYTHONPATH=. python scripts/v097_bronze_first_pipeline.py
+  independent-bronze-qa:
+    needs: verified-copy
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Independently re-read original and Bronze destinations; SHA and native integrity
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BF_MODE: qa
+          BF_LANE: ${{ matrix.lane }}
+          BRONZE_COPY_BATCH: ${{ github.event_name == 'push' && '2' || inputs.batch == 'canary' && '2' || '24' }}
+        run: PYTHONPATH=. python scripts/v097_bronze_first_pipeline.py
+  receipt-gate-and-continue:
+    needs: [preflight,raw-receipt-audit,verified-copy,independent-bronze-qa]
+    if: ${{ always() && needs.preflight.result == 'success' && needs.raw-receipt-audit.result == 'success' && needs.verified-copy.result == 'success' && needs.independent-bronze-qa.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - id: gate
+        name: Durable aggregate, strict completeness and exception accounting
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BF_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_bronze_first_pipeline.py
+      - name: Automatically dispatch next full incremental cycle if pending
+        if: ${{ steps.gate.outputs.pending != '' && steps.gate.outputs.pending != '0' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_bronze_first_continue.py
