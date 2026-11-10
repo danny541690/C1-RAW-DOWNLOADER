@@ -1,13 +1,6 @@
 name: JARVIS v0.97 - R3 issue-ledger targeted repair and semantic revalidation 12 lanes
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-issue-repair-12-lanes.yml'
-      - 'scripts/v097_issue_repair.py'
-  schedule:
-    - cron: '43 * * * *'
 permissions:
   contents: read
   actions: write
@@ -16,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   freeze-r2-issue-ledger:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
@@ -40,6 +33,7 @@ jobs:
           R3_MODE: prepare
         run: PYTHONPATH=. python scripts/v097_issue_repair.py
   repair-and-revalidate:
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     needs: freeze-r2-issue-ledger
     runs-on: ubuntu-latest
     timeout-minutes: 330
@@ -68,6 +62,7 @@ jobs:
           V097_RAW_ONLY: '1'
         run: PYTHONPATH=. python scripts/v097_issue_repair.py
   aggregate-and-continue:
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     needs: [freeze-r2-issue-ledger, repair-and-revalidate]
     if: ${{ always() && needs.freeze-r2-issue-ledger.result == 'success' && (needs.repair-and-revalidate.result == 'success' || needs.repair-and-revalidate.result == 'failure') }}
     runs-on: ubuntu-latest
