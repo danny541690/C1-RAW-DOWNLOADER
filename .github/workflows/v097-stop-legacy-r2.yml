@@ -1,0 +1,24 @@
+name: JARVIS v0.97 - Stop legacy R2 12-line scan
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-stop-legacy-r2.yml'
+permissions:
+  contents: read
+  actions: write
+jobs:
+  cancel-legacy:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Cancel all still-active or queued old full-inventory R2 runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_stop_old_r2.py
