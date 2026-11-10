@@ -10,7 +10,7 @@ from datetime import datetime,timezone
 from scripts.v097_bronze_content_qa import service,call,children,folder,load_json,save
 from scripts.v097_bronze_diagnosis import save_or_update
 SOURCE_RUN="42591232910"
-SPLITS={"TWSE":(0,1),"TPEx":(2,3),"TDCC":(4,5,6,7),"TAIFEX":(8,9),"MOPS":(10,),"NDC":(11,),"FinMind":(11,)}
+SPLITS={"TWSE":(0,1),"TPEx":(2,3),"TDCC":(4,5,6,7),"TDCC_ARCHIVE":(4,5,6,7),"TAIFEX":(8,9),"MOPS":(10,),"NDC":(11,),"FinMind":(11,)}
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 BATCH=min(120,max(1,int(os.getenv("R2_BATCH","80"))))
 CYCLES=min(40,max(1,int(os.getenv("R2_CYCLES","12"))))
