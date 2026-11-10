@@ -310,6 +310,8 @@ def lane(api,idx,run_id):
         save(api,checkpoints,ledger_name,state)
     print("Lane %d: examined=%d processed_total=%d eligible=%d remaining=%d status=%s, checkpoint saved."%
           (idx,len(chosen),len(done),len(allowed),ck["remaining"],dict(Counter(x["status"] for x in outputs))))
+    return len(chosen)
+
 
 def csvdata(rows,keys):
     s=io.StringIO()
@@ -385,10 +387,13 @@ if __name__=="__main__":
         aggregate(api,run_id)
     else:
         idx=int(os.environ["QA_LANE"])
-        max_batches=max(1,min(int(os.getenv("QA_BATCH_CYCLES","1")),8))
+        max_batches=max(1,min(int(os.getenv("QA_BATCH_CYCLES","1")),120))
         for n in range(max_batches):
             tagged_run=run_id if n==0 else run_id+"_batch"+str(n)
-            lane(api,idx,tagged_run)
+            processed=lane(api,idx,tagged_run)
+            if processed==0:
+                print("Lane %d exhausted eligible work; stop immediately"%idx)
+                break
             # All available work was covered: no benefit in additional empty batches.
             # Next scheduled invocation still performs its own checkpoint verification.
             print("Lane %d cycle %d/%d completed and checkpointed"%(idx,n+1,max_batches))
