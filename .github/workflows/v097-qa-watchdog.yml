@@ -7,7 +7,7 @@ on:
       - 'scripts/v097_qa_watchdog.py'
   workflow_dispatch:
   schedule:
-    - cron: '2,17,32,47 * * * *'
+    - cron: '19 * * * *'
 permissions:
   actions: write
   contents: read
@@ -26,9 +26,9 @@ jobs:
           python-version: '3.12'
       - name: Validate watchdog syntax
         run: python -m py_compile scripts/v097_qa_watchdog.py
-      - name: Check A and B every 15 minutes and safely dispatch stale groups
+      - name: Hourly failure-only fallback; long-running A/B self-dispatch without waiting
         env:
           GH_TOKEN: ${{ github.token }}
-          AB_STALE_MINUTES: '15'
+          AB_STALE_MINUTES: '30'
           AB_STUCK_MINUTES: '120'
         run: python scripts/v097_qa_watchdog.py
