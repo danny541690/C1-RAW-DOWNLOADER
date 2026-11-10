@@ -1,12 +1,6 @@
 name: JARVIS v0.97 - Round2 2000-2026 12 lane original content audit
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-round2-content-verify.yml'
-  schedule:
-    - cron: '29 * * * *'
 permissions:
   contents: read
   actions: write
@@ -15,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   freeze-inventory:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 110
     steps:
@@ -35,6 +29,7 @@ jobs:
           R2_MODE: prepare
         run: PYTHONPATH=. python scripts/v097_round2_verify.py
   audit-twelve-lanes:
+    if: ${{ false }}
     needs: freeze-inventory
     runs-on: ubuntu-latest
     timeout-minutes: 330
@@ -62,7 +57,7 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_round2_verify.py
   aggregate-and-continue:
     needs: [freeze-inventory, audit-twelve-lanes]
-    if: ${{ always() && needs.freeze-inventory.result == 'success' && (needs.audit-twelve-lanes.result == 'success' || needs.audit-twelve-lanes.result == 'failure') }}
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
