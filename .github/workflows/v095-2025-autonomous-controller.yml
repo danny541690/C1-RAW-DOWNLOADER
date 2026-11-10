@@ -1,12 +1,6 @@
 name: JARVIS v0.95 2025 autonomous six-source resume controller
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-2025-autonomous-controller.yml'
-  schedule:
-    - cron: '7,37 * * * *'
 permissions:
   contents: read
   actions: write
@@ -15,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   supervise-2025:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
