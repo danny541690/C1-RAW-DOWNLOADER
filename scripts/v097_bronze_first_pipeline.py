@@ -137,7 +137,8 @@ def bootstrap(api):
   root=makefolder(api,bronze,source)
   for lane in range(COPY_LANES):makefolder(api,root,"BF_LANE_%02d"%lane)
  print("BF_BOOTSTRAP_READY",len(SOURCES),COPY_LANES,flush=True)
-\ndef raw_integrity(b,name):
+
+def raw_integrity(b,name):
  if not b:return "RAW_EMPTY"
  if len(b)>MAX_BYTES:return "RAW_TOO_LARGE"
  if name.lower().endswith((".zip",".xlsx")) or b.startswith(b"PK\x03\x04"):
