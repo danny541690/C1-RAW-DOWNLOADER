@@ -1,0 +1,37 @@
+name: JARVIS v0.97 - cancel only known superseded slow-QA canary
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-cancel-stale-canary.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  cancel-specific-superseded-run:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Cancel only old canary run with known SHA; keep durable receipts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request
+          repo="danny541690/C1-RAW-DOWNLOADER";run="42838086435"
+          u="https://api.github.com/repos/"+repo+"/actions/runs/"+run
+          h={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json","User-Agent":"jarvis-bf-old-canary-guard"}
+          with urllib.request.urlopen(urllib.request.Request(u,headers=h),timeout=30) as r:x=json.load(r)
+          if x.get("head_sha")!="9dcd54027b552c3c89fbc50edf25338a77de421d":
+           raise RuntimeError("Refuse to cancel run with different version")
+          if x.get("status")!="in_progress":
+           print("OLD_CANARY_ALREADY_TERMINAL",x.get("status"),x.get("conclusion"));exit(0)
+          if x.get("path")!=".github/workflows/v097-bronze-first-autopilot.yml":
+           raise RuntimeError("Wrong workflow")
+          req=urllib.request.Request(u+"/cancel",headers=h,data=b"{}",method="POST")
+          with urllib.request.urlopen(req,timeout=30) as r:
+           if r.status!=202:raise RuntimeError("Cancel rejected "+str(r.status))
+          print("OLD_CANARY_CANCEL_REQUESTED_SAFELY",run)
+          PY
