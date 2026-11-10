@@ -1,12 +1,6 @@
 name: JARVIS v0.97 - 12 lane receipt reconciliation (no redownload)
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-reconcile-existing-12-lanes.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '23 1 * * *'
 permissions:
   contents: read
 concurrency:
@@ -14,7 +8,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   reconcile-existing:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     runs-on: ubuntu-latest
     timeout-minutes: 75
     strategy:
@@ -39,7 +33,7 @@ jobs:
           RECON_LANE: ${{ matrix.lane }}
         run: PYTHONPATH=. python scripts/v097_receipt_reconciliation_12.py
   publish-reconciliation:
-    if: ${{ always() && needs.reconcile-existing.result == 'success' }}
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     needs: [reconcile-existing]
     runs-on: ubuntu-latest
     timeout-minutes: 30
