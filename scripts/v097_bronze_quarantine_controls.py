@@ -58,7 +58,7 @@ def quarantine(api):
              chain[1]==path.split("/")[2] and
              chain[0]==path.split("/")[3]):
       raise RuntimeError("ACTUAL_BRONZE_PARENT_CHAIN_NOT_MATCH_RECEIPT")
-     if detail.get("state") not in ("COPY_MATCHED_PENDING_INDEPENDENT_QA","COPY_QUARANTINED_NONMARKET"):
+     if detail.get("state") not in ("COPY_MATCHED_PENDING_INDEPENDENT_QA","COPY_QUARANTINED_NONMARKET","COPY_BLOCKED_CONTROL_PENDING_QUARANTINE"):
       raise RuntimeError("COPY_STATUS_NOT_ELIGIBLE_FOR_QUARANTINE")
      call(lambda:api.files().update(fileId=did,addParents=target,removeParents=current[0],
          fields="id,parents"))
@@ -72,6 +72,13 @@ def quarantine(api):
     qa_changed=True
    except Exception as e:
     stats["errors"].append({"source_id":fid,"reason":type(e).__name__+":"+str(e)[:140]})
+    # Fail this one release gate closed, but do not stall unrelated source partitions.
+    detail["state"]="COPY_BLOCKED_CONTROL_PENDING_QUARANTINE"
+    detail["exception"]="NONMARKET_CONTROL_PENDING_SAFE_ISOLATION"
+    copy_changed=True
+    qp["done"][fid]={"state":"BRONZE_REVOKED_NONMARKET_PENDING",
+                     "error":"SAFE_QUARANTINE_INCOMPLETE"}
+    qa_changed=True
   if copy_changed:
    cp["last_quarantine_run"]=RUN;cp["quarantine_at"]=now()
    upsert(api,c,ck_name("COPY",lane),cp)
@@ -82,6 +89,6 @@ def quarantine(api):
  else:stats["status"]="QUARANTINE_COMPLETE_FOR_CURRENT_CK_SNAPSHOT"
  save(api,q,"v097_BF_QUARANTINE_CONTROLS_%s.json"%RUN,stats)
  print("BF_QUARANTINE_REPORT",stats,flush=True)
- if stats["errors"]:raise RuntimeError("QUARANTINE_UNRESOLVED:"+str(len(stats["errors"])))
+ if stats["errors"]:print("QUARANTINE_EXCEPTION_RECORDED_WILL_NOT_BLOCK_OTHER_PARTITIONS",len(stats["errors"]))
 if __name__=="__main__":
  quarantine(service())
