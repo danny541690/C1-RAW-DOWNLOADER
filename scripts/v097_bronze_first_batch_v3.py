@@ -30,6 +30,10 @@ def work_for_lane(api,manifest,lane,done):
     rows.append(row)
  return rows
 def verify_identity(r):
+ name=str(r.get("file_name") or "")
+ # v0.93 inventory can contain correction/checkpoint sidecars; metadata is not market RAW.
+ if name.lower().endswith((".receipt.json",".manifest.json",".checkpoint.json")):
+  raise RuntimeError("CONTROL_SIDECAR_NOT_MARKET_RAW")
  path=str(r.get("path") or "")
  source=str(r.get("source") or "")
  year=str(r.get("year") or "")
