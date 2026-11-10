@@ -19,15 +19,28 @@ def ck_name(stage,lane):
 def receipt_name(stage,lane,ids):
  sig=hashlib.sha256(("\n".join(ids)).encode()).hexdigest()[:20]
  return "%s_%s_L%02d_%s.json"%(VERSION,stage,lane,sig)
+def _rescue_checkpoint_parent(api):
+ return common(api)[1]
 def work_for_lane(api,manifest,lane,done):
  rows=[]
  for i in range(lane,AUDIT_LANES,COPY_LANES):
   f=match(api,manifest,"v097_BF_AUDIT_LANE_%02d.json"%i)
   if not f:raise RuntimeError("AUDIT_INCOMPLETE_LANE:"+str(i))
   v=load_json(api,f["id"])
+  rescue_ck=match(api,_rescue_checkpoint_parent(api),"v097_BF_RAW_RESCUE_V1_CK_%02d.json"%i)
+  rescued=load_json(api,rescue_ck["id"])["done"] if rescue_ck else {}
   for row in v["items"]:
-   if row["raw_status"]=="A_PASS_CANDIDATE_R2_BYTES" and row["file_id"] not in done:
+   fid=row["file_id"]
+   if fid in done:continue
+   if row["raw_status"]=="A_PASS_CANDIDATE_R2_BYTES":
     rows.append(row)
+   elif row["raw_status"]=="RAW_UNKNOWN_NO_R2_RECEIPT" and rescued.get(fid,{}).get("state")=="RAW_RESCUED_BASIC_CANDIDATE":
+    proof=rescued[fid]
+    if not proof.get("sha256") or not proof.get("bytes"):continue
+    newrow=dict(row)
+    newrow.update(expected_sha256=proof["sha256"],size_bytes=proof["bytes"],
+                  raw_status="A_PASS_CANDIDATE_RESCUE_BYTES",prior_status="RAW_RESCUED_BASIC_CANDIDATE")
+    rows.append(newrow)
  return rows
 def verify_identity(r):
  name=str(r.get("file_name") or "")
@@ -159,19 +172,30 @@ def aggregate(api):
     d=load_json(api,f["id"])
     if d.get("lane")!=lane:raise RuntimeError("CHECKPOINT_LANE_MISMATCH")
     counter.update(x["state"] for x in d["done"].values())
- eligible=audit.get("A_PASS_CANDIDATE_R2_BYTES",0)
+ rescued=Counter()
+ rescue_pending=0
+ for lane in range(12):
+  f=match(api,c,"v097_BF_RAW_RESCUE_V1_CK_%02d.json"%lane)
+  if f:
+   ck=load_json(api,f["id"])
+   if ck.get("lane")!=lane:raise RuntimeError("RAW_RESCUE_CHECKPOINT_LANE_MISMATCH")
+   rescued.update(x["state"] for x in ck["done"].values())
+ rescue_pending=max(0,audit.get("RAW_UNKNOWN_NO_R2_RECEIPT",0)-sum(rescued.values()))
+ eligible=audit.get("A_PASS_CANDIDATE_R2_BYTES",0)+rescued.get("RAW_RESCUED_BASIC_CANDIDATE",0)
  handled=sum(copies.values())
  pending=max(0,eligible-handled)
  qa_pending=max(0,copies.get("COPY_MATCHED_PENDING_INDEPENDENT_QA",0)-sum(qa.values()))
+ if sum(qa.values())>copies.get("COPY_MATCHED_PENDING_INDEPENDENT_QA",0):
+  raise RuntimeError("BRONZE_QA_COUNT_EXCEEDS_COPY_MATCHED")
  report={"schema":"v097_bronze_first_v3_dashboard_1","run":RUN,"utc":now(),
-  "inventory":82273,"r3_queue_processed":73146,"audit":dict(audit),"raw_candidate_count":eligible,
+  "inventory":82273,"r3_queue_processed":73146,"audit":dict(audit),"raw_candidate_count":eligible,"raw_rescue":dict(rescued),"raw_rescue_pending":rescue_pending,
   "copy":dict(copies),"qa":dict(qa),"copy_pending":pending,"qa_pending":qa_pending,
-  "bronze_final_certified":False,"full_historical_coverage_certified":False,
+  "bronze_final_certified":False,"legacy_control_sidecars_need_isolation":True,"full_historical_coverage_certified":False,
   "xq":"WAIT_FOR_USER_IMPORT","finmind_699":"WAIT_FOR_SUBSCRIPTION_AND_DATASET_ENTITLEMENTS",
   "silver_gold":"NOT_STARTED","note":"Native byte SHA/path check only; excludes unresolved raw and source-calendar gaps. v1/v2 copies remain historical superseded evidence."}
  save(api,q,"v097_BF_V3_SUMMARY_%s.json"%RUN,report)
  if os.getenv("GITHUB_OUTPUT"):
-  with open(os.environ["GITHUB_OUTPUT"],"a") as g:g.write("pending=%d\n"%(pending+qa_pending))
+  with open(os.environ["GITHUB_OUTPUT"],"a") as g:g.write("pending=%d\n"%(pending+qa_pending+rescue_pending))
  print("BF_V3_SUMMARY",json.dumps(report),flush=True)
 def tests():
  from scripts.v097_bronze_first_pipeline import raw_integrity
