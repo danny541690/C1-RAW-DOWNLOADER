@@ -1,0 +1,37 @@
+name: JARVIS v0.97 - Reconciliation automatic continuation watchdog
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-reconciliation-watchdog.yml'
+  workflow_run:
+    workflows:
+      - JARVIS v0.97 - 12 lane receipt reconciliation (no redownload)
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+permissions:
+  actions: write
+  contents: read
+concurrency:
+  group: v097-reconciliation-watchdog-single
+  cancel-in-progress: false
+jobs:
+  resume-until-complete-or-blocked:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate watchdog program
+        run: python -m py_compile scripts/v097_reconciliation_watchdog.py
+      - name: Check latest committed revision and dispatch only incomplete reconciliation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_reconciliation_watchdog.py
