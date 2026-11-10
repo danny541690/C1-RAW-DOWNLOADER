@@ -90,7 +90,7 @@ def audit_lane(api,lane):
  rows=original["files"]
  receipts={}
  conflicts=set()
- rx=re.compile(r"v097_R2_\\d+_%02d_\\d\\d[.]json$"%lane)
+ rx=re.compile(r"v097_R2_\d+_%02d_\d\d[.]json$"%lane)
  for file in children(api,q):
   if not rx.fullmatch(file["name"]):continue
   try:
@@ -124,13 +124,13 @@ def partition(api,bronze,r):
  if not source or not re.fullmatch(r"[A-Za-z0-9_-]{2,32}",source):raise RuntimeError("BAD_SOURCE")
  y=str(r.get("year") or "UNCLASSIFIED")
  month=str(r.get("month") or "00")
- if not re.fullmatch(r"(?:19|20)\\d{2}|UNCLASSIFIED",y):raise RuntimeError("BAD_YEAR")
- if not re.fullmatch(r"\\d{1,2}",month):month="00"
+ if not re.fullmatch(r"(?:19|20)\d{2}|UNCLASSIFIED",y):raise RuntimeError("BAD_YEAR")
+ if not re.fullmatch(r"\d{1,2}",month):month="00"
  return makefolder(api,makefolder(api,makefolder(api,bronze,source),y),month.zfill(2))
 def raw_integrity(b,name):
  if not b:return "RAW_EMPTY"
  if len(b)>MAX_BYTES:return "RAW_TOO_LARGE"
- if name.lower().endswith((".zip",".xlsx")) or b.startswith(b"PK\\x03\\x04"):
+ if name.lower().endswith((".zip",".xlsx")) or b.startswith(b"PK\x03\x04"):
   try:
    with zipfile.ZipFile(io.BytesIO(b)) as z:
     files=z.infolist()
@@ -259,7 +259,7 @@ def aggregate(api):
          "note":"Per-file SHA copy and QA only; all unresolved legacy/source coverage issues retained. Never declare full Bronze certified."}
  save(api,q,"v097_BF_SUMMARY_%s.json"%RUN,result)
  with open(os.environ.get("GITHUB_OUTPUT","/tmp/v097_bf_output"),"a") as f:
-  f.write("pending=%d\\n"%(pending+qa_pending))
+  f.write("pending=%d\n"%(pending+qa_pending))
  print("BF_SUMMARY",json.dumps(result,ensure_ascii=False),flush=True)
 def selftest():
  assert classify({"file_id":"id","source":"TWSE","path":"a","size_bytes":4},
