@@ -1,4 +1,4 @@
-name: JARVIS v0.97 - cancel only known superseded wrong-month canary
+name: JARVIS v0.97 - cancel only known superseded pre-sidecar-guard cycle
 on:
   push:
     branches: [main]
@@ -20,11 +20,11 @@ jobs:
         run: |
           python - <<'PY'
           import json,os,urllib.request
-          repo="danny541690/C1-RAW-DOWNLOADER";run="42839842125"
+          repo="danny541690/C1-RAW-DOWNLOADER";run="42843529574"
           u="https://api.github.com/repos/"+repo+"/actions/runs/"+run
           h={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json","User-Agent":"jarvis-bf-old-canary-guard"}
           with urllib.request.urlopen(urllib.request.Request(u,headers=h),timeout=30) as r:x=json.load(r)
-          if x.get("head_sha")!="5bef2c5d18f86b9e1099ff041aea175e4b71d8e5":
+          if x.get("head_sha")!="448cd70fe1862f9a4da5074d8b7a0b4259703d4f":
            raise RuntimeError("Refuse to cancel run with different version")
           if x.get("status")!="in_progress":
            print("OLD_CANARY_ALREADY_TERMINAL",x.get("status"),x.get("conclusion"));exit(0)
