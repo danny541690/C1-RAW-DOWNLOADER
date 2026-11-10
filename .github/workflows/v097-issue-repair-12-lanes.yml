@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v097-issue-repair-12-lanes.yml'
+      - 'scripts/v097_issue_repair.py'
   schedule:
     - cron: '43 * * * *'
 permissions:
@@ -54,7 +55,7 @@ jobs:
           python-version: '3.12'
       - name: Install Drive and HTTP libraries
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Diagnose, repair where safe, revalidate, then save evidence and checkpoint
+      - name: RAW-only original-byte verification, existing-receipt reuse, durable checkpoint
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -64,6 +65,7 @@ jobs:
           R3_LANE: ${{ matrix.lane }}
           R3_BATCH: '24'
           R3_CYCLES: '8'
+          V097_RAW_ONLY: '1'
         run: PYTHONPATH=. python scripts/v097_issue_repair.py
   aggregate-and-continue:
     needs: [freeze-r2-issue-ledger, repair-and-revalidate]
@@ -77,13 +79,14 @@ jobs:
           python-version: '3.12'
       - name: Install Drive libraries
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
-      - name: Aggregate only durable checkpoints; failed lines remain pending
+      - name: Aggregate durable RAW-only classification without rewriting historical receipts
         id: merge
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           R3_MODE: aggregate
+          V097_RAW_ONLY: '1'
         run: PYTHONPATH=. python scripts/v097_issue_repair.py
       - name: Immediately resume R3 if issue backlog exists
         if: ${{ steps.merge.outputs.remaining != '0' && steps.merge.outputs.remaining != '' }}
