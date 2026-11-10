@@ -61,8 +61,8 @@ jobs:
           R2_CYCLES: '12'
         run: PYTHONPATH=. python scripts/v097_round2_verify.py
   aggregate-and-continue:
-    needs: audit-twelve-lanes
-    if: ${{ always() && needs.audit-twelve-lanes.result == 'success' }}
+    needs: [freeze-inventory, audit-twelve-lanes]
+    if: ${{ always() && needs.freeze-inventory.result == 'success' && (needs.audit-twelve-lanes.result == 'success' || needs.audit-twelve-lanes.result == 'failure') }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -72,7 +72,7 @@ jobs:
           python-version: '3.12'
       - name: Install Google Drive client
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
-      - name: Verify checkpoint coverage and write private summary
+      - name: Verify checkpoint coverage and write private summary even if individual lane failed
         id: summary
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
