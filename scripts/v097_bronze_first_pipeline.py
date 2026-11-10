@@ -123,9 +123,16 @@ def partition(api,bronze,r,lane):
  source=r.get("source")
  if not source or not re.fullmatch(r"[A-Za-z0-9_-]{2,32}",source):raise RuntimeError("BAD_SOURCE")
  y=str(r.get("year") or "UNCLASSIFIED")
- month=str(r.get("month") or "00")
+ month=str(r.get("month") or "")
  if not re.fullmatch(r"(?:19|20)\d{2}|UNCLASSIFIED",y):raise RuntimeError("BAD_YEAR")
- if not re.fullmatch(r"\d{1,2}",month):month="00"
+ if re.fullmatch(r"(?:19|20)\d{2}-(?:0[1-9]|1[0-2])",month):
+  part_year,part_month=month.split("-")
+  if part_year!=y:raise RuntimeError("YEAR_MONTH_MISMATCH")
+  month=part_month
+ elif re.fullmatch(r"0?[1-9]|1[0-2]",month):
+  month=str(int(month)).zfill(2)
+ else:
+  raise RuntimeError("MONTH_NOT_VERIFIABLE:"+month)
  root=match(api,bronze,source)
  if not root:raise RuntimeError('SOURCE_ROOT_NOT_BOOTSTRAPPED:'+source)
  shard=match(api,root['id'],'BF_LANE_%02d'%lane)
@@ -157,9 +164,9 @@ def raw_integrity(b,name):
  return "RAW_STRUCTURE_PASS"
 def copy_lane(api,lane):
  m,c,q,bronze=common(api)
- ckname="v097_BF_COPY_CK_%02d.json"%lane
+ ckname="v097_BF_COPY_V2_CK_%02d.json"%lane
  ckf=match(api,c,ckname)
- ck=load_json(api,ckf["id"]) if ckf else {"schema":"v097_bronze_copy_ck_1","done":{}}
+ ck=load_json(api,ckf["id"]) if ckf else {"schema":"v097_bronze_copy_ck_2","done":{}}
  done=ck["done"];work=[]
  for k in range(lane,12,6):
   f=match(api,m,"v097_BF_AUDIT_LANE_%02d.json"%k)
@@ -183,6 +190,18 @@ def copy_lane(api,lane):
     raise RuntimeError("SOURCE_MD5_CHANGED")
    sha=digest(b)
    if sha!=r["expected_sha256"]:raise RuntimeError("SOURCE_SHA_CHANGED")
+   # Mandatory native source and date identity validation at time of copy.
+   if r.get("year") and r.get("month"):
+    prefix=str(r["year"])+"/"+str(r["source"])+"/"+str(r["month"])+"/"
+    if not str(r.get("path") or "").startswith(prefix):
+     raise RuntimeError("SOURCE_PATH_SOURCE_PERIOD_MISMATCH")
+   if r["source"]=="TDCC" and r.get("prior_status")=="TDCC_TABLE_NUMERIC_PENDING":
+    n=r.get("file_name") or ""
+    match_id=re.search(r"(?:distribution|tdcc)[_-](\d{8})[_-](\d{4,6})",n,re.I)
+    if not match_id:raise RuntimeError("TDCC_DATE_STOCK_ID_NOT_EVIDENCED_IN_FILENAME")
+    if match_id.group(1)[:6]!=str(r.get("month") or "").replace("-","")[:6]:
+     raise RuntimeError("TDCC_FILENAME_PERIOD_MISMATCH")
+
    if raw_integrity(b,meta["name"])!="RAW_STRUCTURE_PASS":
     raise RuntimeError("SOURCE_RAW_STRUCTURE_FAILURE")
    targetfolder=partition(api,bronze,r,lane)
@@ -203,26 +222,26 @@ def copy_lane(api,lane):
   except Exception as e:
    outcome.update(state="COPY_BLOCKED_REVIEW",error=type(e).__name__+":"+str(e)[:180])
   # Receipt first, then checkpoint. A retry cannot overwrite a changed receipt.
-  receiptname="v097_BF_COPY_%s.json"%fid
+  receiptname="v097_BF_COPY_V2_%s.json"%fid
   put_once(api,q,receiptname,outcome)
   done[fid]=outcome["state"]
-  upsert(api,c,ckname,{"schema":"v097_bronze_copy_ck_1","lane":lane,"done":done,"last_run":RUN,"utc":now()})
+  upsert(api,c,ckname,{"schema":"v097_bronze_copy_ck_2","lane":lane,"done":done,"last_run":RUN,"utc":now()})
   print("BF_COPY",lane,fid,outcome["state"],flush=True)
  print("BF_COPY_BATCH",lane,len(batch),"pending",len(work)-len(batch),flush=True)
 def verify_lane(api,lane):
  m,c,q,bronze=common(api)
- ckname="v097_BF_QA_CK_%02d.json"%lane
+ ckname="v097_BF_QA_V2_CK_%02d.json"%lane
  ckf=match(api,c,ckname)
- ck=load_json(api,ckf["id"]) if ckf else {"schema":"v097_bronze_qa_ck_1","done":{}}
+ ck=load_json(api,ckf["id"]) if ckf else {"schema":"v097_bronze_qa_ck_2","done":{}}
  done=ck["done"]
- copy_ck=match(api,c,"v097_BF_COPY_CK_%02d.json"%lane)
+ copy_ck=match(api,c,"v097_BF_COPY_V2_CK_%02d.json"%lane)
  if not copy_ck:
   print("BF_VERIFY_NO_COPIES",lane,flush=True);return
  copied=load_json(api,copy_ck["id"])["done"]
  pending=[fid for fid,state in copied.items()
           if state=="COPY_BYTES_MATCHED_QA_PENDING" and fid not in done]
  for fid in pending[:MAX_COPY]:
-  crf=match(api,q,"v097_BF_COPY_%s.json"%fid)
+  crf=match(api,q,"v097_BF_COPY_V2_%s.json"%fid)
   if not crf:raise RuntimeError("COPY_CHECKPOINT_WITHOUT_RECEIPT:"+fid)
   cr=load_json(api,crf["id"])
   expected=cr["source_sha256"]
@@ -240,9 +259,9 @@ def verify_lane(api,lane):
    result.update(state="BRONZE_BYTE_PROVENANCE_PASS",sha256=digest(dst),bytes=len(dst))
   except Exception as e:
    result.update(state="BRONZE_QA_BLOCKED",error=type(e).__name__+":"+str(e)[:180])
-  put_once(api,q,"v097_BF_QA_%s.json"%fid,result)
+  put_once(api,q,"v097_BF_QA_V2_%s.json"%fid,result)
   done[fid]=result["state"]
-  upsert(api,c,ckname,{"schema":"v097_bronze_qa_ck_1","lane":lane,"done":done,"last_run":RUN,"utc":now()})
+  upsert(api,c,ckname,{"schema":"v097_bronze_qa_ck_2","lane":lane,"done":done,"last_run":RUN,"utc":now()})
   print("BF_VERIFY",lane,fid,result["state"],flush=True)
  print("BF_VERIFY_BATCH",lane,len(pending[:MAX_COPY]),"queue",len(pending),flush=True)
 
@@ -256,18 +275,18 @@ def aggregate(api):
   eligible+=d["counts"].get("A_PASS_CANDIDATE_R2_BYTES",0)
  if sum(audit.values())!=82273:raise RuntimeError("FROZEN_INVENTORY_CONSERVATION_FAILED")
  for k in range(6):
-  cf=match(api,c,"v097_BF_COPY_CK_%02d.json"%k)
-  vf=match(api,c,"v097_BF_QA_CK_%02d.json"%k)
+  cf=match(api,c,"v097_BF_COPY_V2_CK_%02d.json"%k)
+  vf=match(api,c,"v097_BF_QA_V2_CK_%02d.json"%k)
   if cf:copied.update(load_json(api,cf["id"])["done"].values())
   if vf:qa.update(load_json(api,vf["id"])["done"].values())
  handled=sum(copied.values())
  pending=max(0,eligible-handled)
  qa_pending=max(0,copied.get("COPY_BYTES_MATCHED_QA_PENDING",0)-sum(qa.values()))
- result={"schema":"v097_bronze_first_dashboard_v1","run_id":RUN,"at":now(),
+ result={"schema":"v097_bronze_first_dashboard_v2","run_id":RUN,"at":now(),
          "inventory":82273,"r3_processed_issues":73146,"audit":dict(audit),"copy_eligible":eligible,
          "copy":dict(copied),"qa":dict(qa),"copy_pending":pending,"qa_pending":qa_pending,
          "state":"COPY_AND_QA_IN_PROGRESS" if pending or qa_pending else "BRONZE_BYTE_QA_ONLY_COMPLETED_WITH_EXCEPTIONS",
-         "bronze_full_source_coverage_certified":False,"full_bronze_release_approved":False,
+         "bronze_full_source_coverage_certified":False,"full_bronze_release_approved":False,"destination_partition_revision":"v2_YEAR_MM",
          "xq_status":"WAIT_FOR_USER_MANUAL_CSV","finmind_699_status":"WAIT_FOR_PAID_ACCESS_AND_DATASET_CONFIRMATION",
          "silver_gold":"STRICTLY_NOT_STARTED_BY_THIS_PIPELINE",
          "note":"Per-file SHA copy and QA only; all unresolved legacy/source coverage issues retained. Never declare full Bronze certified."}
