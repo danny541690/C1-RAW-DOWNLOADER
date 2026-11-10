@@ -8,8 +8,6 @@ on:
       - 'scripts/v097_bronze_remediation.py'
       - 'scripts/v097_continue_workflow.py'
   workflow_dispatch:
-  schedule:
-    - cron: '11,26,41,56 * * * *'
   workflow_run:
     workflows:
       - JARVIS v0.97 - Bronze bounded content QA - six lanes
@@ -25,7 +23,7 @@ jobs:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     name: Bronze diagnosis lane ${{ matrix.lane }} of 6
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 310
     strategy:
       fail-fast: false
       max-parallel: 6
@@ -47,13 +45,13 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           DIAG_MODE: lane
           DIAG_LANE: ${{ matrix.lane }}
-          DIAG_MAX_RECEIPTS_PER_LANE: '8'
+          DIAG_MAX_RECEIPTS_PER_LANE: '48'
         run: PYTHONPATH=. python scripts/v097_bronze_diagnosis.py
   recover-six-lanes:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     needs: diagnose-six-lanes
     runs-on: ubuntu-latest
-    timeout-minutes: 85
+    timeout-minutes: 310
     strategy:
       fail-fast: false
       max-parallel: 6
@@ -82,7 +80,7 @@ jobs:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     needs: [diagnose-six-lanes, recover-six-lanes]
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
