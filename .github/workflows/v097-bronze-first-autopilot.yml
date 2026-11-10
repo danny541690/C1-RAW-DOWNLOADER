@@ -7,6 +7,7 @@ on:
       - 'scripts/v097_bronze_first_batch_v3.py'
       - 'scripts/v097_bronze_first_pipeline.py'
       - 'scripts/v097_bronze_first_continue.py'
+      - 'scripts/v097_bronze_first_merged_acceptance.py'
   workflow_dispatch:
     inputs:
       batch:
@@ -108,6 +109,7 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_bronze_first_batch_v3.py
   independent-bronze-qa:
     needs: verified-copy
+    if: ${{ always() && needs.verified-copy.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
     strategy:
