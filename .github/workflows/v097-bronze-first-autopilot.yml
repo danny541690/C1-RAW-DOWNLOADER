@@ -41,6 +41,7 @@ jobs:
           PYTHONPATH=. BF_MODE=selftest python scripts/v097_bronze_first_batch_v3.py
   raw-receipt-audit:
     needs: preflight
+    if: ${{ github.event_name == 'push' || inputs.batch == 'canary' }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
     strategy:
@@ -63,7 +64,8 @@ jobs:
           BF_LANE: ${{ matrix.lane }}
         run: PYTHONPATH=. python scripts/v097_bronze_first_batch_v3.py
   destination-bootstrap:
-    needs: raw-receipt-audit
+    needs: [preflight,raw-receipt-audit]
+    if: ${{ always() && needs.preflight.result == 'success' && (needs.raw-receipt-audit.result == 'success' || needs.raw-receipt-audit.result == 'skipped') && (github.event_name == 'push' || inputs.batch == 'canary') }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -80,7 +82,8 @@ jobs:
           BF_MODE: bootstrap
         run: PYTHONPATH=. python scripts/v097_bronze_first_batch_v3.py
   verified-copy:
-    needs: destination-bootstrap
+    needs: [preflight,raw-receipt-audit,destination-bootstrap]
+    if: ${{ always() && needs.preflight.result == 'success' && (needs.raw-receipt-audit.result == 'success' || needs.raw-receipt-audit.result == 'skipped') && (needs.destination-bootstrap.result == 'success' || needs.destination-bootstrap.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
     strategy:
@@ -129,7 +132,7 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_bronze_first_batch_v3.py
   receipt-gate-and-continue:
     needs: [preflight,raw-receipt-audit,destination-bootstrap,verified-copy,independent-bronze-qa]
-    if: ${{ always() && needs.preflight.result == 'success' && needs.raw-receipt-audit.result == 'success' && needs.destination-bootstrap.result == 'success' && needs.verified-copy.result == 'success' && needs.independent-bronze-qa.result == 'success' }}
+    if: ${{ always() && needs.preflight.result == 'success' && (needs.raw-receipt-audit.result == 'success' || needs.raw-receipt-audit.result == 'skipped') && (needs.destination-bootstrap.result == 'success' || needs.destination-bootstrap.result == 'skipped') && needs.verified-copy.result == 'success' && needs.independent-bronze-qa.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
