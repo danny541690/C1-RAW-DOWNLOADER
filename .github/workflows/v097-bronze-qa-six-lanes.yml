@@ -7,8 +7,6 @@ on:
       - 'scripts/v097_bronze_content_qa.py'
       - 'scripts/v097_continue_workflow.py'
   workflow_dispatch:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
 permissions:
   contents: read
   actions: write
@@ -20,7 +18,7 @@ jobs:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     name: Bronze content QA lane ${{ matrix.lane }} of 6
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 310
     strategy:
       fail-fast: false
       max-parallel: 6
@@ -43,13 +41,13 @@ jobs:
           QA_MODE: lane
           QA_LANE: ${{ matrix.lane }}
           QA_BATCH_PER_LANE: '120'
-          QA_BATCH_CYCLES: '3'
+          QA_BATCH_CYCLES: '24'
         run: python scripts/v097_bronze_content_qa.py
   aggregate-private-drive:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     needs: inspect-six-lanes
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
