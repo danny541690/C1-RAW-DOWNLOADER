@@ -158,7 +158,7 @@ def qa_lane(api,lane):
  upsert(api,c,name,{"schema":"v097_bf_v3_qa_ck_1","lane":lane,"done":done,
   "last_run":RUN,"utc":now(),"last_receipt":receipt})
  print("BF_V3_QA",lane,"batch",len(todo),"total_done",len(done),flush=True)
-def aggregate(api):
+def aggregate(api,persist=True):
  m,c,q,_=common(api);audit=Counter();copies=Counter();qa=Counter()
  for lane in range(AUDIT_LANES):
   f=match(api,m,"v097_BF_AUDIT_LANE_%02d.json"%lane)
@@ -193,7 +193,7 @@ def aggregate(api):
   "bronze_final_certified":False,"legacy_control_sidecars_need_isolation":True,"full_historical_coverage_certified":False,
   "xq":"WAIT_FOR_USER_IMPORT","finmind_699":"WAIT_FOR_SUBSCRIPTION_AND_DATASET_ENTITLEMENTS",
   "silver_gold":"NOT_STARTED","note":"Native byte SHA/path check only; excludes unresolved raw and source-calendar gaps. v1/v2 copies remain historical superseded evidence."}
- save(api,q,"v097_BF_V3_SUMMARY_%s.json"%RUN,report)
+ if persist:save(api,q,"v097_BF_V3_SUMMARY_%s.json"%RUN,report)
  if os.getenv("GITHUB_OUTPUT"):
   with open(os.environ["GITHUB_OUTPUT"],"a") as g:g.write("pending=%d\n"%(pending+qa_pending+rescue_pending))
  print("BF_V3_SUMMARY",json.dumps(report),flush=True)
@@ -218,4 +218,5 @@ if __name__=="__main__":
   elif mode=="copy":copy_lane(api,int(os.environ["BF_LANE"]))
   elif mode=="qa":qa_lane(api,int(os.environ["BF_LANE"]))
   elif mode=="aggregate":aggregate(api)
+  elif mode=="status":aggregate(api,persist=False)
   else:raise RuntimeError("BAD_MODE")
