@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v097-bronze-first-autopilot.yml'
+      - 'scripts/v097_bronze_first_pipeline.py'
+      - 'scripts/v097_bronze_first_continue.py'
   workflow_dispatch:
     inputs:
       batch:
