@@ -211,38 +211,41 @@ def copy_lane(api,lane):
  print("BF_COPY_BATCH",lane,len(batch),"pending",len(work)-len(batch),flush=True)
 def verify_lane(api,lane):
  m,c,q,bronze=common(api)
- ckname="v097_BF_QA_CK_%02d.json"%lane;ckf=match(api,c,ckname)
+ ckname="v097_BF_QA_CK_%02d.json"%lane
+ ckf=match(api,c,ckname)
  ck=load_json(api,ckf["id"]) if ckf else {"schema":"v097_bronze_qa_ck_1","done":{}}
- done=ck["done"];work=[]
- for k in range(lane,12,6):
-  f=match(api,m,"v097_BF_AUDIT_LANE_%02d.json"%k)
-  if not f:raise RuntimeError("AUDIT_LANE_INCOMPLETE")
-  for r in load_json(api,f["id"])["items"]:
-   fid=r["file_id"]
-   if fid not in done and r["raw_status"]=="A_PASS_CANDIDATE_R2_BYTES":
-    file=match(api,q,"v097_BF_COPY_%s.json"%fid)
-    if file:
-     cr=load_json(api,file["id"])
-     if cr.get("state")=="COPY_BYTES_MATCHED_QA_PENDING":work.append((r,cr))
- for r,cr in work[:MAX_COPY]:
-  fid=r["file_id"]
-  result={"source_id":fid,"dest_id":cr["destination_id"],"run_id":RUN,"at":now(),
-          "source_expected_sha256":r["expected_sha256"]}
+ done=ck["done"]
+ copy_ck=match(api,c,"v097_BF_COPY_CK_%02d.json"%lane)
+ if not copy_ck:
+  print("BF_VERIFY_NO_COPIES",lane,flush=True);return
+ copied=load_json(api,copy_ck["id"])["done"]
+ pending=[fid for fid,state in copied.items()
+          if state=="COPY_BYTES_MATCHED_QA_PENDING" and fid not in done]
+ for fid in pending[:MAX_COPY]:
+  crf=match(api,q,"v097_BF_COPY_%s.json"%fid)
+  if not crf:raise RuntimeError("COPY_CHECKPOINT_WITHOUT_RECEIPT:"+fid)
+  cr=load_json(api,crf["id"])
+  expected=cr["source_sha256"]
+  result={"source_id":fid,"dest_id":cr.get("destination_id"),"run_id":RUN,"at":now(),
+          "source_expected_sha256":expected}
   try:
-   # Independent fresh read of both copies; validate no raw mutation since migration.
+   if cr.get("state")!="COPY_BYTES_MATCHED_QA_PENDING":
+    raise RuntimeError("COPY_RECEIPT_NOT_APPROVED")
    src=call(lambda:api.files().get_media(fileId=fid))
    dst=call(lambda:api.files().get_media(fileId=cr["destination_id"]))
-   if digest(src)!=r["expected_sha256"] or digest(dst)!=r["expected_sha256"] or len(src)!=len(dst):
+   if digest(src)!=expected or digest(dst)!=expected or len(src)!=len(dst):
     raise RuntimeError("INDEPENDENT_SHA_OR_SIZE_MISMATCH")
    if raw_integrity(dst,cr["destination_name"])!="RAW_STRUCTURE_PASS":
     raise RuntimeError("DESTINATION_CONTENT_INVALID")
    result.update(state="BRONZE_BYTE_PROVENANCE_PASS",sha256=digest(dst),bytes=len(dst))
-  except Exception as e:result.update(state="BRONZE_QA_BLOCKED",error=type(e).__name__+":"+str(e)[:180])
+  except Exception as e:
+   result.update(state="BRONZE_QA_BLOCKED",error=type(e).__name__+":"+str(e)[:180])
   put_once(api,q,"v097_BF_QA_%s.json"%fid,result)
   done[fid]=result["state"]
   upsert(api,c,ckname,{"schema":"v097_bronze_qa_ck_1","lane":lane,"done":done,"last_run":RUN,"utc":now()})
   print("BF_VERIFY",lane,fid,result["state"],flush=True)
- print("BF_VERIFY_BATCH",lane,len(work[:MAX_COPY]),flush=True)
+ print("BF_VERIFY_BATCH",lane,len(pending[:MAX_COPY]),"queue",len(pending),flush=True)
+
 def aggregate(api):
  m,c,q,_=common(api)
  audit=Counter(); eligible=0; copied=Counter();qa=Counter()
