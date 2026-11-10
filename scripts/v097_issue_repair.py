@@ -192,7 +192,119 @@ def validate_zip(blob):
            "member_types":dict(states),"members":len(info)}
  except (zipfile.BadZipFile,RuntimeError,EOFError,ValueError) as e:
   return {"state":"ZIP_INTEGRITY_FAILURE","reason":type(e).__name__}
+
+# v0.97 RAW-ONLY correction: v0.93 original-file verification is NOT Silver/PIT QA.
+# This handler operates only on historical original bytes and prior immutable R2 evidence.
+RAW_ONLY=os.environ.get("V097_RAW_ONLY","1")=="1"
+RAW_REUSABLE_PRIOR={
+ "ZIP_CRC_PASS_CONTENT_PENDING","ZIP_MIXED_ARCHIVE_CONTENT_PENDING",
+ "JSON_ROWS_PARSED_PIT_PENDING","PDF_CONTENT_PENDING",
+ "JSON_SCHEMA_CONTENT_PENDING","CSV_SCHEMA_CONTENT_PENDING",
+ "HTML_TABLE_CONTENT_PENDING","HTML_SCHEMA_PENDING","CSV_SCHEMA_PENDING",
+ "TDCC_TABLE_NUMERIC_PENDING",
+}
+def raw_outcome_group(code):
+ if code in ("RAW_BYTES_AND_STRUCTURE_PASS_R2_REUSED","RAW_BYTES_AND_STRUCTURE_PASS_R3",
+             "RAW_BYTES_AND_STRUCTURE_PASS_ARCHIVE","RAW_BYTES_AND_STRUCTURE_PASS_TEXT",
+             "RAW_BYTES_AND_STRUCTURE_PASS_JSON","RAW_BYTES_AND_STRUCTURE_PASS_PDF",
+             "RAW_BYTES_AND_STRUCTURE_PASS_SPREADSHEET"):return "RAW_BASIC_PASS_CANDIDATE"
+ if code in ("SOURCE_MD5_MISMATCH","SOURCE_BYTES_CHANGED_SINCE_R2","ZIP_INTEGRITY_FAILURE",
+             "RAW_EMPTY","RAW_ZIP_INTEGRITY_FAILURE","RAW_MD5_MISMATCH","RAW_PDF_SIGNATURE_INVALID",
+             "RAW_JSON_INVALID","RAW_SOURCE_HTML_INSTEAD_OF_JSON",
+             "RAW_FILE_SIZE_MISMATCH","RAW_ZIP_UNSAFE_PATH"):return "RAW_FAILED_REQUIRES_REPAIR"
+ if code in ("LARGE_FILE_NEEDS_BOUNDED_STREAMING","RAW_NEEDS_BOUNDED_STREAMING","RAW_ACCESS_ERROR",
+             "EXCEPTION_ACCESS_OR_PARSER","RAW_FORMAT_UNSUPPORTED","RAW_PARSER_EXCEPTION"):return "RAW_BLOCKED"
+ # Existing earlier R3 receipts are preserved; do not interpret PIT/schema/numeric as RAW NG.
+ if code in ("PIT_OR_DOCUMENT_RULE_PENDING","ZIP_MEMBERS_PARSED_SOURCE_SCHEMA_PENDING",
+             "ZIP_MIXED_ARCHIVE_CONTENT_PENDING","JSON_SCHEMA_MAPPING_REQUIRED",
+             "JSON_PARSING_FAILURE_NO_SAFE_REPAIR","CSV_ROW_WIDTH_MISMATCH_REVIEW",
+             "CSV_ROWS_PARSED_SOURCE_SCHEMA_PENDING","TDCC_IDENTITY_MISSING_NEEDS_SOURCE_REACQUIRE",
+             "TDCC_NUMERIC_CELLS_PARSED_NEEDS_GRADE_TOTAL_VALIDATION",
+             "TDCC_NUMERIC_PARSE_FAILED","UPSTREAM_HTML_ERROR_NOT_JSON",
+             "PIT_OR_DOCUMENT_RULE_PENDING","FORMAT_NEEDS_DATASET_PARSER",
+             "REPAIRED_ENCODING_CANDIDATE_PENDING_SEMANTIC_PIT",
+             "SOURCE_REACQUIRED_CANDIDATE_PENDING_SEMANTIC_PIT",
+             "JSON_PARSED_REQUIRES_SOURCE_SCHEMA_PIT",
+             "TDCC_GRADES_VALIDATED_PIT_PENDING"):return "LEGACY_OUTCOME_REQUIRES_RAW_EVIDENCE_RECONCILIATION"
+ return "RAW_OUTCOME_UNCLASSIFIED_NO_AUTO_NG"
+
+def verify_raw_only(api,item,registry,lane):
+ fid=item["file_id"];prior=item["prior_status"]
+ out={"file_id":fid,"source":item.get("source"),"prior_status":prior,
+      "r3_at":now(),"original_modified":False,"numeric_certified":False,
+      "pit_certified":False,"repair_attempted":False,"qa_scope":"V093_ORIGINAL_RAW_ONLY"}
+ if prior in RAW_REUSABLE_PRIOR:
+  out["outcome"]="RAW_BYTES_AND_STRUCTURE_PASS_R2_REUSED"
+  out["raw_basic_candidate"]=True
+  out["raw_fully_certified"]=False
+  out["evidence_run"]=item.get("prior_run")
+  out["sha256"]=item.get("prior_sha256")
+  return out
+ try:
+  meta=call(lambda:api.files().get(fileId=fid,fields="id,size,md5Checksum,name,mimeType"))
+  size=int(meta.get("size") or 0)
+  if size>40*1024*1024:
+   out["outcome"]="RAW_NEEDS_BOUNDED_STREAMING"
+   return out
+  blob=call(lambda:api.files().get_media(fileId=fid))
+  out["bytes"]=len(blob)
+  if not blob:out["outcome"]="RAW_EMPTY";return out
+  if size and len(blob)!=size:out["outcome"]="RAW_FILE_SIZE_MISMATCH";return out
+  if meta.get("md5Checksum") and hashlib.md5(blob).hexdigest()!=meta["md5Checksum"]:
+   out["outcome"]="RAW_MD5_MISMATCH";return out
+  sha=hashlib.sha256(blob).hexdigest();out["sha256"]=sha
+  if item.get("prior_sha256") and item["prior_sha256"]!=sha:
+   out["outcome"]="SOURCE_BYTES_CHANGED_SINCE_R2";return out
+  name=meta.get("name") or item.get("path") or ""
+  ext=name.lower().rsplit(".",1)[-1] if "." in name else ""
+  if ext in ("zip","xlsx") or blob[:4]==b"PK\\x03\\x04":
+   try:
+    with zipfile.ZipFile(io.BytesIO(blob)) as z:
+     info=z.infolist()
+     if not info:out["outcome"]="RAW_EMPTY";return out
+     total=sum(e.file_size for e in info)
+     if total>256*1024*1024:
+      out["outcome"]="RAW_NEEDS_BOUNDED_STREAMING";return out
+     if any(e.filename.startswith("/") or ".." in e.filename.split("/") for e in info):
+      out["outcome"]="RAW_ZIP_UNSAFE_PATH";return out
+     if z.testzip() is not None:
+      out["outcome"]="RAW_ZIP_INTEGRITY_FAILURE";return out
+     out["archive_members"]=len(info)
+    out["outcome"]="RAW_BYTES_AND_STRUCTURE_PASS_ARCHIVE"
+   except (zipfile.BadZipFile,RuntimeError,EOFError,ValueError,OSError) as e:
+    out.update(outcome="RAW_ZIP_INTEGRITY_FAILURE",error=type(e).__name__);return out
+  elif ext in ("json","raw") or blob[:1024].lstrip().startswith((b"{",b"[")):
+   try:
+    obj=None
+    for enc in ("utf-8-sig","cp950","big5"):
+     try:
+      obj=json.loads(blob.decode(enc));out["encoding"]=enc;break
+     except (UnicodeError,ValueError):pass
+    if obj is None:
+     out["outcome"]="RAW_SOURCE_HTML_INSTEAD_OF_JSON" if blob.lstrip().lower().startswith((b"<html",b"<!doctype")) else "RAW_JSON_INVALID"
+     return out
+    out["outcome"]="RAW_BYTES_AND_STRUCTURE_PASS_JSON"
+   except Exception as e:
+    out.update(outcome="RAW_PARSER_EXCEPTION",error=type(e).__name__);return out
+  elif ext in ("csv","tsv","txt","html","htm","xml"):
+   decoded,encoding=decode(blob)
+   if not decoded.strip():out["outcome"]="RAW_EMPTY";return out
+   out["encoding"]=encoding
+   out["outcome"]="RAW_BYTES_AND_STRUCTURE_PASS_TEXT"
+  elif ext=="pdf":
+   out["outcome"]="RAW_BYTES_AND_STRUCTURE_PASS_PDF" if blob.startswith(b"%PDF-") else "RAW_PDF_SIGNATURE_INVALID"
+  elif ext=="xls":
+   out["outcome"]="RAW_BYTES_AND_STRUCTURE_PASS_SPREADSHEET" if blob.startswith(bytes.fromhex("D0CF11E0A1B11AE1")) else "RAW_FORMAT_UNSUPPORTED"
+  else:out["outcome"]="RAW_FORMAT_UNSUPPORTED"
+  out["raw_basic_candidate"]=out["outcome"].startswith("RAW_BYTES_AND_STRUCTURE_PASS_")
+  out["raw_fully_certified"]=False
+  return out
+ except Exception as e:
+  out.update(outcome="RAW_ACCESS_ERROR",reason=type(e).__name__,message=str(e)[:120])
+  return out
+
 def verify_one(api,item,registry,lane):
+ if RAW_ONLY:return verify_raw_only(api,item,registry,lane)
  fid=item["file_id"];status=item["prior_status"];out={"file_id":fid,"source":item["source"],"prior_status":status,
   "r3_at":now(),"original_modified":False,"numeric_certified":False,"pit_certified":False,
   "repair_attempted":False,"outcome":"EXCEPTION_REQUIRES_REVIEW"}
@@ -298,7 +410,11 @@ def aggregate(api):
  outcome={"schema":"r3_summary_1","run":RUN,"utc":now(),"issues_total":frozen["total"],
    "processed":total,"remaining":remaining,"outcomes":dict(counter),"lanes":lanes,
    "numeric_certified":0,"pit_certified":0,"bronze_certified":0,
-   "note":"Issue-specific repair candidates and semantic review are not automatically certified."}
+   "raw_scope":"V093_ORIGINAL_FILES_ONLY",
+   "raw_basic_status_counts":dict(Counter({raw_outcome_group(k):sum(v for key,v in counter.items() if raw_outcome_group(key)==raw_outcome_group(k)) for k in counter})),
+   "raw_semantic_pit_schema_NOT_REQUIRED":True,
+   "raw_fully_certified":False,
+   "note":"R3 cumulative evidence only. Historic PIT/schema/TDCC numeric labels are not RAW damage. No certification from status alone."}
  save(api,q,"v097_R3_%s_SUMMARY.json"%RUN,outcome)
  if os.getenv("GITHUB_OUTPUT"):
   with open(os.environ["GITHUB_OUTPUT"],"a") as f:f.write("remaining=%d\n"%remaining)
