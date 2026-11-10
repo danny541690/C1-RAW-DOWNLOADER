@@ -1,0 +1,33 @@
+name: JARVIS v0.97 - Legacy Source Coverage Baseline
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-legacy-source-coverage.yml'
+      - 'scripts/v097_legacy_source_coverage.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-legacy-source-coverage
+  cancel-in-progress: false
+jobs:
+  inventory-matrix:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Validate inventory baseline Python syntax
+        run: python -m py_compile scripts/v097_legacy_source_coverage.py
+      - name: Audit every legacy source/year/month without false completeness claims
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_legacy_source_coverage.py
