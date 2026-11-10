@@ -9,12 +9,20 @@ HEADERS={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/
 def req(url,method="GET",data=None):
  r=urllib.request.Request(url,method=method,data=data,headers=HEADERS)
  with urllib.request.urlopen(r,timeout=30) as res:
-  if method=="POST" and res.status!=204:raise RuntimeError("Dispatch status "+str(res.status))
+  if method in ("POST","PUT") and res.status!=204:raise RuntimeError("GitHub action status "+str(res.status))
   return json.load(res) if method=="GET" else True
 pending=int(os.environ.get("BF_PENDING","-1"))
 if pending<0:raise RuntimeError("NO_DURABLE_PENDING_COUNT_NO_RESUME")
 if pending==0:
- print("BF_WATCH_FINISHED_NO_PENDING_COPIES_RESCUE_OR_QA");exit(0)
+ print("BF_WATCH_AUTOMATABLE_BACKLOG_EXHAUSTED", "external XQ/FinMind and unresolved exceptions remain separately")
+ # Disarm recurring watchdog on exact durable zero, keeping code and manual restart intact.
+ try:
+  req("https://api.github.com/repos/"+REPO+"/actions/workflows/v097-bronze-first-recovery.yml/disable",
+      method="PUT",data=b"")
+  print("BF_WATCH_SCHEDULE_DISABLED_AFTER_ZERO_PENDING")
+ except Exception as e:
+  print("BF_WATCH_DISABLE_FAILED_NEEDS_REVIEW",type(e).__name__,str(e)[:200])
+ exit(0)
 root="https://api.github.com/repos/"+REPO+"/actions/workflows/"+WF
 runs=req(root+"/runs?branch=main&per_page=60").get("workflow_runs",[])
 active=[r for r in runs if r.get("status") in ("queued","in_progress","waiting","pending","requested")]
