@@ -19,13 +19,13 @@ jobs:
   downstream-tdcc:
     if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 55
     env:
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
       V095_BRONZE_SOURCE: 'TDCC'
-      V095_DOWNSTREAM_BATCH: '6'
+      V095_DOWNSTREAM_BATCH: '1'
     steps:
       - uses: actions/checkout@v4
         with:
