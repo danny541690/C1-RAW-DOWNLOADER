@@ -1,0 +1,31 @@
+name: JARVIS v0.97 - Bronze first automatic failure recovery
+on:
+  workflow_run:
+    workflows:
+      - JARVIS v0.97 - BRONZE FIRST 12+6+6 verified-copy autopilot
+    types: [completed]
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-bronze-first-recovery-guard
+  cancel-in-progress: false
+jobs:
+  recover-failed-cycle-only:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Syntax check
+        run: python -m py_compile scripts/v097_bronze_first_watchdog.py
+      - name: Re-dispatch only stopped failures, max three retries, never duplicate active runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_bronze_first_watchdog.py
