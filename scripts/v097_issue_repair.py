@@ -257,7 +257,7 @@ def verify_raw_only(api,item,registry,lane):
    out["outcome"]="SOURCE_BYTES_CHANGED_SINCE_R2";return out
   name=meta.get("name") or item.get("path") or ""
   ext=name.lower().rsplit(".",1)[-1] if "." in name else ""
-  if ext in ("zip","xlsx") or blob[:4]==b"PK\\x03\\x04":
+  if ext in ("zip","xlsx") or blob[:4]==b"PK\x03\x04":
    try:
     with zipfile.ZipFile(io.BytesIO(blob)) as z:
      info=z.infolist()
