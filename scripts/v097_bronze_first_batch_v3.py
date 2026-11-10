@@ -184,12 +184,16 @@ def aggregate(api,persist=True):
  eligible=audit.get("A_PASS_CANDIDATE_R2_BYTES",0)+rescued.get("RAW_RESCUED_BASIC_CANDIDATE",0)
  handled=sum(copies.values())
  pending=max(0,eligible-handled)
- qa_pending=max(0,copies.get("COPY_MATCHED_PENDING_INDEPENDENT_QA",0)-sum(qa.values()))
- if sum(qa.values())>copies.get("COPY_MATCHED_PENDING_INDEPENDENT_QA",0):
-  raise RuntimeError("BRONZE_QA_COUNT_EXCEEDS_COPY_MATCHED")
+ qa_valid=qa.get("BRONZE_BYTE_PROVENANCE_AND_PATH_PASS",0)+qa.get("BRONZE_QA_EXCEPTION",0)
+ qa_pending=max(0,copies.get("COPY_MATCHED_PENDING_INDEPENDENT_QA",0)-qa_valid)
+ if qa_valid>copies.get("COPY_MATCHED_PENDING_INDEPENDENT_QA",0):
+  raise RuntimeError("BRONZE_VALID_QA_COUNT_EXCEEDS_UNQUARANTINED_COPIES")
+ if qa.get("BRONZE_REVOKED_NONMARKET",0)>copies.get("COPY_QUARANTINED_NONMARKET",0):
+  raise RuntimeError("REVOKED_QA_EXCEEDS_QUARANTINED_COPIES")
  report={"schema":"v097_bronze_first_v3_dashboard_1","run":RUN,"utc":now(),
   "inventory":82273,"r3_queue_processed":73146,"audit":dict(audit),"raw_candidate_count":eligible,"raw_rescue":dict(rescued),"raw_rescue_pending":rescue_pending,
   "copy":dict(copies),"qa":dict(qa),"copy_pending":pending,"qa_pending":qa_pending,
+  "sidecar_quarantine_count":copies.get("COPY_QUARANTINED_NONMARKET",0),
   "bronze_final_certified":False,"legacy_control_sidecars_need_isolation":True,"full_historical_coverage_certified":False,
   "xq":"WAIT_FOR_USER_IMPORT","finmind_699":"WAIT_FOR_SUBSCRIPTION_AND_DATASET_ENTITLEMENTS",
   "silver_gold":"NOT_STARTED","note":"Native byte SHA/path check only; excludes unresolved raw and source-calendar gaps. v1/v2 copies remain historical superseded evidence."}
