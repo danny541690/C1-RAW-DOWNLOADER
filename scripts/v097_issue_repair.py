@@ -112,18 +112,36 @@ def numeric(s):
  return float(s.replace(",","").replace("%","")) if re.fullmatch(r"[-+]?\d+(?:,\d{3})*(?:\.\d+)?%?",s.strip()) else None
 def validate_tdcc(text):
  p=TableParser();p.feed(text)
- grades=[];percentages=[]
+ identity=[row for row in p.rows if row and ("證券代號" in row[0] or "證券名稱" in row[0])]
+ stock_id=None
+ for row in identity:
+  if "證券代號" in row[0]:
+   stock_id=next((x for x in row[1:] if re.fullmatch(r"\d{4,6}",x.strip())),None)
+ levels={};header=None
  for row in p.rows:
-  joined="".join(row)
-  if "持股" in joined and ("比例" in joined or "分級" in joined):continue
-  cells=[numeric(x.strip()) for x in row]
-  if len(cells)>=4 and any(x is not None for x in cells):
-   grades.append(cells)
-   percentages.extend(float(x.rstrip("%")) for x in row if re.fullmatch(r"\d+(?:\.\d+)?%",x.strip()))
- if not grades:return {"state":"TDCC_SCHEMA_UNRECOGNIZED","rows":len(p.rows)}
- # Without source-specific header mapping, cannot assert column sums or stock universe correctness.
- return {"state":"TDCC_NUMERIC_CELLS_PARSED_NEEDS_GRADE_TOTAL_VALIDATION",
-         "rows":len(p.rows),"numeric_rows":len(grades),"percentage_cells":len(percentages)}
+  if row and row[0].strip()=="序":header=row
+  if len(row)>=5 and row[0].strip().isdigit():
+   idx=int(row[0].strip())
+   if 1<=idx<=16:
+    holders=numeric(row[2].strip());shares=numeric(row[3].strip());pct=numeric(row[4].strip())
+    if None in (holders,shares,pct) or idx in levels:
+     return {"state":"TDCC_NUMERIC_PARSE_FAILED","level":idx,"rows":len(p.rows)}
+    levels[idx]=(holders,shares,pct)
+ if len(levels)!=16:
+  return {"state":"TDCC_LEVELS_MISSING_OR_DUPLICATE","levels_found":sorted(levels),"rows":len(p.rows)}
+ h=sum(levels[i][0] for i in range(1,16))
+ shares=sum(levels[i][1] for i in range(1,16))
+ pct=sum(levels[i][2] for i in range(1,16))
+ htotal,stotal,ptotal=levels[16]
+ checks={"holder_total_matches":h==htotal,"share_total_matches":shares==stotal,
+         "percent_total_matches":abs(pct-ptotal)<=0.15,
+         "percent_expected_matches":abs(ptotal-(100 if stotal>0 else 0))<=0.15}
+ v={"state":"TDCC_NUMERIC_INCONSISTENT" if not all(checks.values()) else
+            "TDCC_IDENTITY_MISSING_NEEDS_SOURCE_REACQUIRE" if not stock_id else
+            "TDCC_GRADES_VALIDATED_PIT_PENDING",
+    "levels":16,"stock_id":stock_id,"checks":checks,
+    "total_holders":htotal,"total_shares":stotal,"total_percent":ptotal}
+ return v
 def validate_json(blob):
  fixes=[]
  for enc in ("utf-8-sig","cp950","big5"):
@@ -211,6 +229,7 @@ def verify_one(api,item,registry,lane):
   normalized=analysis.pop("object",None)
   out["analysis"]=analysis
   out["outcome"]=analysis["state"]
+  if analysis["state"]=="TDCC_GRADES_VALIDATED_PIT_PENDING":out["numeric_grade_validated"]=True
   if normalized is not None and analysis["state"]=="JSON_PARSED_REQUIRES_SOURCE_SCHEMA_PIT":
    # Data-safe transformation ONLY: a new independent recovery candidate. Source remains untouched.
    q=ledger_folders(api)[2]
