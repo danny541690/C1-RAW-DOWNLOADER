@@ -26,7 +26,11 @@ jobs:
       - name: Install Drive libraries
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
       - name: Verify R3 source syntax
-        run: python -m py_compile scripts/v097_issue_repair.py scripts/v097_issue_continue.py
+        run: python -m py_compile scripts/v097_issue_repair.py scripts/v097_issue_continue.py scripts/v097_stop_old_r2.py
+      - name: Stop active or queued legacy R2 12-lane runs before freezing immutable receipts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_stop_old_r2.py
       - name: Freeze outstanding issue cases directly from R2 receipts - no inventory rescanning
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
