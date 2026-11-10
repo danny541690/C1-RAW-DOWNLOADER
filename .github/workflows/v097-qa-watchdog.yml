@@ -1,13 +1,6 @@
 name: JARVIS v0.97 - A and B Schedule Recovery Watchdog
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-qa-watchdog.yml'
-      - 'scripts/v097_qa_watchdog.py'
   workflow_dispatch:
-  schedule:
-    - cron: '19 * * * *'
 permissions:
   actions: write
   contents: read
@@ -16,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   check-and-recover:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
