@@ -1,12 +1,6 @@
 name: JARVIS v0.95 2026 AUTO incremental inventory and 3-tier evidence
-# Safe interim yearly controller. NO bulk-release, no claim of full-year coverage.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-2026-auto-recovery.yml'
-  # Schedule is owned by the 15-minute recovery watchdog; this workflow is dispatched hourly when idle.
 permissions:
   contents: read
 concurrency:
@@ -14,7 +8,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   year-2026-reconcile:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
