@@ -1,0 +1,93 @@
+# Archived legacy workflow: intentionally not executable under .github/workflows
+# Superseded by Bronze-first controllers; original history preserved below.
+
+name: JARVIS v0.97 - R3 issue-ledger targeted repair and semantic revalidation 12 lanes
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-r3-issue-queue
+  cancel-in-progress: false
+jobs:
+  freeze-r2-issue-ledger:
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive libraries
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Verify R3 source syntax
+        run: python -m py_compile scripts/v097_issue_repair.py scripts/v097_issue_continue.py scripts/v097_stop_old_r2.py
+      - name: Stop active or queued legacy R2 12-lane runs before freezing immutable receipts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_stop_old_r2.py
+      - name: Freeze outstanding issue cases directly from R2 receipts - no inventory rescanning
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          R3_MODE: prepare
+        run: PYTHONPATH=. python scripts/v097_issue_repair.py
+  repair-and-revalidate:
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
+    needs: freeze-r2-issue-ledger
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        lane: [0,1,2,3,4,5,6,7,8,9,10,11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive and HTTP libraries
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: RAW-only original-byte verification, existing-receipt reuse, durable checkpoint
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+          R3_MODE: worker
+          R3_LANE: ${{ matrix.lane }}
+          R3_BATCH: '24'
+          R3_CYCLES: '8'
+          V097_RAW_ONLY: '1'
+        run: PYTHONPATH=. python scripts/v097_issue_repair.py
+  aggregate-and-continue:
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
+    needs: [freeze-r2-issue-ledger, repair-and-revalidate]
+    if: ${{ always() && needs.freeze-r2-issue-ledger.result == 'success' && (needs.repair-and-revalidate.result == 'success' || needs.repair-and-revalidate.result == 'failure') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive libraries
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Aggregate durable RAW-only classification without rewriting historical receipts
+        id: merge
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          R3_MODE: aggregate
+          V097_RAW_ONLY: '1'
+        run: PYTHONPATH=. python scripts/v097_issue_repair.py
+      - name: Immediately resume R3 if issue backlog exists
+        if: ${{ steps.merge.outputs.remaining != '0' && steps.merge.outputs.remaining != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_issue_continue.py
