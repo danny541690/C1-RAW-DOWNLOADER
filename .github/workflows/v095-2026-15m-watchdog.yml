@@ -1,14 +1,6 @@
 name: JARVIS v0.95 2026 fifteen-minute recovery watchdog
-# This watchdog DOES NOT download market data. Production release stays locked.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-2026-15m-watchdog.yml'
-      - 'scripts/v095_2026_15m_supervisor.py'
-  schedule:
-    - cron: '*/15 * * * *'
 permissions:
   contents: read
   actions: write
@@ -17,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   wakeup:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
