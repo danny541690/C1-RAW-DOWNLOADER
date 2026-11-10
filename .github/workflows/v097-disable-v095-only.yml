@@ -1,0 +1,38 @@
+name: JARVIS v0.97 SAFETY - disable all v0.95 workflows only
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-disable-v095-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-v095-safe-disable-single
+  cancel-in-progress: false
+jobs:
+  selective-v095-stop:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify code syntax
+        run: python -m py_compile scripts/v097_disable_legacy_v095_workflows.py
+      - name: Stop only v095 workflows; preserve Bronze-first v097 workflow and all files/data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_disable_legacy_v095_workflows.py
+      - name: Upload stop audit and V097 preflight snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-safe-stop-audit
+          path: |
+            v095_disable_preflight.json
+            v095_disable_result.json
+          if-no-files-found: warn
