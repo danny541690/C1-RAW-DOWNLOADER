@@ -8,6 +8,7 @@ on:
       - 'scripts/v097_bronze_first_pipeline.py'
       - 'scripts/v097_bronze_first_continue.py'
       - 'scripts/v097_bronze_first_merged_acceptance.py'
+      - 'scripts/v097_bronze_raw_rescue.py'
   workflow_dispatch:
     inputs:
       batch:
@@ -38,8 +39,9 @@ jobs:
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
       - name: Syntax and deterministic gate regression
         run: |
-          python -m py_compile scripts/v097_bronze_first_batch_v3.py scripts/v097_bronze_first_pipeline.py scripts/v097_bronze_first_continue.py
+          python -m py_compile scripts/v097_bronze_first_batch_v3.py scripts/v097_bronze_first_pipeline.py scripts/v097_bronze_raw_rescue.py scripts/v097_bronze_first_continue.py
           PYTHONPATH=. BF_MODE=selftest python scripts/v097_bronze_first_batch_v3.py
+          PYTHONPATH=. python scripts/v097_bronze_raw_rescue.py
   raw-receipt-audit:
     needs: preflight
     if: ${{ github.event_name == 'push' || inputs.batch == 'canary' }}
@@ -82,9 +84,34 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           BF_MODE: bootstrap
         run: PYTHONPATH=. python scripts/v097_bronze_first_batch_v3.py
+  raw-rescue:
+    needs: [preflight,raw-receipt-audit]
+    if: ${{ always() && needs.preflight.result == 'success' && (needs.raw-receipt-audit.result == 'success' || needs.raw-receipt-audit.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        lane: [0,1,2,3,4,5,6,7,8,9,10,11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Incremental RAW-only missing-R2-receipt verification, quarantine unsafe originals
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BF_MODE: rescue
+          BF_LANE: ${{ matrix.lane }}
+          BF_RESCUE_BATCH: '30'
+        run: PYTHONPATH=. python scripts/v097_bronze_raw_rescue.py
   verified-copy:
-    needs: [preflight,raw-receipt-audit,destination-bootstrap]
-    if: ${{ always() && needs.preflight.result == 'success' && (needs.raw-receipt-audit.result == 'success' || needs.raw-receipt-audit.result == 'skipped') && (needs.destination-bootstrap.result == 'success' || needs.destination-bootstrap.result == 'skipped') }}
+    needs: [preflight,raw-receipt-audit,destination-bootstrap,raw-rescue]
+    if: ${{ always() && needs.preflight.result == 'success' && (needs.raw-receipt-audit.result == 'success' || needs.raw-receipt-audit.result == 'skipped') && (needs.destination-bootstrap.result == 'success' || needs.destination-bootstrap.result == 'skipped') && needs.raw-rescue.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
     strategy:
@@ -133,8 +160,8 @@ jobs:
           BRONZE_COPY_BATCH: ${{ github.event_name == 'push' && '2' || inputs.batch == 'canary' && '2' || '120' }}
         run: PYTHONPATH=. python scripts/v097_bronze_first_batch_v3.py
   receipt-gate-and-continue:
-    needs: [preflight,raw-receipt-audit,destination-bootstrap,verified-copy,independent-bronze-qa]
-    if: ${{ always() && needs.preflight.result == 'success' && (needs.raw-receipt-audit.result == 'success' || needs.raw-receipt-audit.result == 'skipped') && (needs.destination-bootstrap.result == 'success' || needs.destination-bootstrap.result == 'skipped') && needs.verified-copy.result == 'success' && needs.independent-bronze-qa.result == 'success' }}
+    needs: [preflight,raw-receipt-audit,destination-bootstrap,raw-rescue,verified-copy,independent-bronze-qa]
+    if: ${{ always() && needs.preflight.result == 'success' && (needs.raw-receipt-audit.result == 'success' || needs.raw-receipt-audit.result == 'skipped') && (needs.destination-bootstrap.result == 'success' || needs.destination-bootstrap.result == 'skipped') && needs.raw-rescue.result == 'success' && needs.verified-copy.result == 'success' && needs.independent-bronze-qa.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
