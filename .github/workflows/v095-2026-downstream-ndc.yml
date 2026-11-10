@@ -1,12 +1,6 @@
 name: JARVIS v0.95 2026 NDC independent Silver Gold candidate worker
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-2026-downstream-ndc.yml'
-  schedule:
-    - cron: '38 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -14,7 +8,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   downstream-ndc:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
