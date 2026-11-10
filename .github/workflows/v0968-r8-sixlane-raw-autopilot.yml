@@ -44,7 +44,13 @@ jobs:
       - name: Strict syntax check of RAW-only worker
         run: python -m py_compile scripts/v0968_r8_2026_sixlane_raw_copy.py
       - name: Server-side copy legacy RAW -> separate v0.968 R8 Bronze
-        run: python -u -m scripts.v0968_r8_2026_sixlane_raw_copy --source "$V0968_SOURCE" --limit 600 --seconds 1050
+        run: |
+          # TDCC is the only large backlog; keep other source limits unchanged.
+          if [ "$V0968_SOURCE" = "TDCC" ]; then
+            python -u -m scripts.v0968_r8_2026_sixlane_raw_copy --source "$V0968_SOURCE" --limit 1200 --seconds 1500
+          else
+            python -u -m scripts.v0968_r8_2026_sixlane_raw_copy --source "$V0968_SOURCE" --limit 600 --seconds 1050
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
