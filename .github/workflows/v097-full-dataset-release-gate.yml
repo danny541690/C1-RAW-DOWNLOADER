@@ -1,0 +1,35 @@
+name: JARVIS v0.97 - Full Dataset Release Gate Audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-full-dataset-release-gate.yml'
+      - 'scripts/v097_integrity_release_gate.py'
+  workflow_dispatch:
+  schedule:
+    - cron: '13 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-final-acceptance-audit
+  cancel-in-progress: false
+jobs:
+  audit-and-publish-management-ledgers:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Validate audit code syntax
+        run: python -m py_compile scripts/v097_integrity_release_gate.py
+      - name: Write three real Drive management ledgers and fail-closed release decision
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_integrity_release_gate.py
