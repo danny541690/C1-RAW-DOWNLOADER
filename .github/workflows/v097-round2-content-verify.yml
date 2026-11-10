@@ -1,0 +1,87 @@
+name: JARVIS v0.97 - Round2 2000-2026 12 lane original content audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-round2-content-verify.yml'
+  schedule:
+    - cron: '29 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-round2-content-verification
+  cancel-in-progress: false
+jobs:
+  freeze-inventory:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Python syntax verification
+        run: python -m py_compile scripts/v097_round2_verify.py scripts/v097_round2_continue.py
+      - name: Freeze prior v0.93 inventory into 12 exclusive immutable manifests
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          R2_MODE: prepare
+        run: PYTHONPATH=. python scripts/v097_round2_verify.py
+  audit-twelve-lanes:
+    needs: freeze-inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        lane: [0,1,2,3,4,5,6,7,8,9,10,11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Recheck original content; never mutate v0.93
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          R2_MODE: worker
+          R2_LANE: ${{ matrix.lane }}
+          R2_BATCH: '80'
+          R2_CYCLES: '12'
+        run: PYTHONPATH=. python scripts/v097_round2_verify.py
+  aggregate-and-continue:
+    needs: audit-twelve-lanes
+    if: ${{ always() && needs.audit-twelve-lanes.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive client
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Verify checkpoint coverage and write private summary
+        id: summary
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          R2_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_round2_verify.py
+      - name: Launch next Run without waiting for hourly safety net
+        if: ${{ steps.summary.outputs.remaining != '0' && steps.summary.outputs.remaining != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_round2_continue.py
