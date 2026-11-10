@@ -70,7 +70,7 @@ def copy_one(api,bronze,r,lane):
   if len(content)!=len(b) or digest(content)!=sha:
    raise RuntimeError("DESTINATION_SHA_OR_SIZE_MISMATCH")
   out.update(state="COPY_MATCHED_PENDING_INDEPENDENT_QA",destination_id=d["id"],
-   destination_path="/".join([r["source"],"BF_LANE_%02d"%lane,str(r["year"]),str(r["month"]),name]),
+   destination_path="/".join([r["source"],"BF_LANE_%02d"%lane,str(r["year"]),str(r["month"]).split("-")[-1].zfill(2),name]),
    destination_sha=sha,size=len(b))
  except Exception as e:
   out.update(state="COPY_EXCEPTION",error=type(e).__name__+":"+str(e)[:130])
