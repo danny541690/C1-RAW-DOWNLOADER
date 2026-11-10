@@ -66,6 +66,7 @@ def copy_one(api,bronze,r,lane):
  try:
   verify_identity(r)
   meta=call(lambda:api.files().get(fileId=fid,fields="id,name,size,md5Checksum,modifiedTime"))
+  if meta.get("name")!=r.get("file_name"):raise RuntimeError("ORIGINAL_FILENAME_CHANGED")
   size=int(meta.get("size") or 0)
   if size<1 or size>MAX_BYTES:raise RuntimeError("SOURCE_EMPTY_OR_TOO_LARGE")
   b=call(lambda:api.files().get_media(fileId=fid))
@@ -88,7 +89,7 @@ def copy_one(api,bronze,r,lane):
    raise RuntimeError("DESTINATION_SHA_OR_SIZE_MISMATCH")
   out.update(state="COPY_MATCHED_PENDING_INDEPENDENT_QA",destination_id=d["id"],
    destination_path="/".join([r["source"],"BF_LANE_%02d"%lane,str(r["year"]),str(r["month"]).split("-")[-1].zfill(2),name]),
-   destination_sha=sha,size=len(b))
+   destination_sha=sha,destination_folder_id=folder,size=len(b))
  except Exception as e:
   out.update(state="COPY_EXCEPTION",error=type(e).__name__+":"+str(e)[:130])
  return out
@@ -111,7 +112,7 @@ def copy_lane(api,lane):
     "lane":lane,"ids":ids,"utc":now(),"items":rows})
  for row in rows:
   done[row["id"]]={"state":row["state"],"sha":row.get("sha"),
-       "dest_id":row.get("destination_id"),"dest_path":row.get("destination_path"),
+       "dest_id":row.get("destination_id"),"dest_folder_id":row.get("destination_folder_id"),"dest_path":row.get("destination_path"),
        "source_path":row.get("path"),"size":row.get("size"),"error":row.get("error")}
  upsert(api,c,name,{"schema":"v097_bf_v3_copy_ck_1","lane":lane,
    "done":done,"last_run":RUN,"utc":now(),"last_receipt":receipt})
@@ -121,6 +122,26 @@ def qa_one(api,fid,detail,lane):
  try:
   if detail.get("state")!="COPY_MATCHED_PENDING_INDEPENDENT_QA":
    raise RuntimeError("NOT_COPIED")
+  meta=call(lambda:api.files().get(fileId=detail["dest_id"],fields="id,name,parents,size"))
+  parts=str(detail["dest_path"]).split("/")
+  if len(parts)!=5 or meta.get("name")!=parts[-1]:
+   raise RuntimeError("DESTINATION_FILENAME_OR_PATH_METADATA_MISMATCH")
+  parents=meta.get("parents") or []
+  if len(parents)!=1:raise RuntimeError("DESTINATION_AMBIGUOUS_PARENT")
+  expected_parent=detail.get("dest_folder_id")
+  if expected_parent and parents[0]!=expected_parent:
+   raise RuntimeError("DESTINATION_ACTUAL_FOLDER_ID_MISMATCH")
+  if not expected_parent:
+   # Legacy checkpoint without destination-folder ID: prove real hierarchy.
+   parent=parents[0]; chain=[]
+   for _ in range(4):
+    folder_meta=call(lambda:api.files().get(fileId=parent,fields="name,parents"))
+    chain.append(folder_meta["name"])
+    ancestry=folder_meta.get("parents") or []
+    if not ancestry:break
+    parent=ancestry[0]
+   if len(chain)!=4 or chain!=[parts[3],parts[2],parts[1],parts[0]]:
+    raise RuntimeError("DESTINATION_ACTUAL_PARENT_CHAIN_MISMATCH")
   src=call(lambda:api.files().get_media(fileId=fid))
   dest=call(lambda:api.files().get_media(fileId=detail["dest_id"]))
   if digest(src)!=detail["sha"] or digest(dest)!=detail["sha"] or len(src)!=len(dest):
