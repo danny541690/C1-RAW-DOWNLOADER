@@ -1,0 +1,1179 @@
+{
+  "groups": [
+    {
+      "id": "R01",
+      "name": "母體與全量原件",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+          "records": 337281
+        },
+        {
+          "kind": "SCOPED_REMOTE_METADATA_ONLY",
+          "folders": 4,
+          "global_enumeration_complete": false
+        },
+        {
+          "kind": "COMPLETE_FILTERED_RAW_METADATA_ENUMERATION",
+          "files": 70650,
+          "folders": 2490,
+          "year_folders": 27,
+          "source_folders": 190
+        },
+        {
+          "kind": "DOWNLOADED_REGISTER_PACKAGE_PRESENCE",
+          "registered_records": 99958,
+          "unique_packages_present": 51518,
+          "unique_packages_not_observed": 0
+        }
+      ],
+      "remaining": "遠端檔案metadata盤點完成；仍缺核准觀察值母體、最新收據與19132額外檔案分類、原件SHA及內容全量驗證",
+      "rules": [
+        "G01",
+        "G02",
+        "G08",
+        "M01",
+        "A02",
+        "D01"
+      ]
+    },
+    {
+      "id": "R02",
+      "name": "歷史證券日期主鍵",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+          "artifact_records": 258
+        }
+      ],
+      "remaining": "全範圍歷史證券有效期間及日曆證據未齊",
+      "rules": [
+        "G06",
+        "G07",
+        "T03",
+        "A01"
+      ]
+    },
+    {
+      "id": "R03",
+      "name": "欄位單位契約",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+          "rows": 120
+        }
+      ],
+      "remaining": "全資料集欄位單位契約與適用性未齊",
+      "rules": [
+        "G09",
+        "G10",
+        "G22",
+        "F01",
+        "F02"
+      ]
+    },
+    {
+      "id": "R04",
+      "name": "完整數值覆蓋",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "remaining": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "rules": [
+        "G04",
+        "G05",
+        "G11",
+        "G12",
+        "T01",
+        "T02",
+        "M02",
+        "A03",
+        "D02",
+        "N01"
+      ]
+    },
+    {
+      "id": "R05",
+      "name": "獨立跨來源比對",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "HISTORICAL_DIAGNOSTIC_INPUTS_STILL_MATCH",
+          "references": 298,
+          "reported_field_pairs": 19000
+        }
+      ],
+      "remaining": "跨來源結果僅診斷，完整範圍及上游獨立性未驗",
+      "rules": [
+        "G14",
+        "G15"
+      ]
+    },
+    {
+      "id": "R06",
+      "name": "公告PIT與版本",
+      "result": "UNKNOWN",
+      "complete": false,
+      "observations": [],
+      "remaining": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+      "rules": [
+        "G13",
+        "M03",
+        "N02"
+      ]
+    },
+    {
+      "id": "R07",
+      "name": "真實發布與下游",
+      "result": "BLOCKED",
+      "complete": false,
+      "observations": [],
+      "remaining": "前置實際證據不足；正式發布、下游及回復未執行",
+      "rules": [
+        "G16",
+        "G18",
+        "G19"
+      ]
+    },
+    {
+      "id": "R08",
+      "name": "全量復原與時效",
+      "result": "PARTIAL",
+      "complete": false,
+      "observations": [
+        {
+          "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+          "packages": 22,
+          "units": 562
+        }
+      ],
+      "remaining": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+      "rules": [
+        "G03",
+        "G17",
+        "G20",
+        "G21"
+      ]
+    }
+  ],
+  "group_counts": {
+    "PARTIAL": 6,
+    "UNKNOWN": 1,
+    "BLOCKED": 1
+  },
+  "completed_groups": 0,
+  "rules": [
+    {
+      "rule_id": "G01",
+      "name": "應有母體",
+      "group": "R01",
+      "full_scope_result": "UNKNOWN",
+      "reason": "核准母體與最新全量遠端收據對帳尚缺",
+      "observations": [
+        {
+          "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+          "records": 337281
+        },
+        {
+          "kind": "SCOPED_REMOTE_METADATA_ONLY",
+          "folders": 4,
+          "global_enumeration_complete": false
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G02",
+      "name": "口徑與覆蓋",
+      "group": "R01",
+      "full_scope_result": "UNKNOWN",
+      "reason": "核准母體與最新全量遠端收據對帳尚缺",
+      "observations": [
+        {
+          "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+          "records": 337281
+        },
+        {
+          "kind": "SCOPED_REMOTE_METADATA_ONLY",
+          "folders": 4,
+          "global_enumeration_complete": false
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G03",
+      "name": "原件存取",
+      "group": "R08",
+      "full_scope_result": "UNKNOWN",
+      "reason": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+      "observations": [
+        {
+          "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+          "packages": 22,
+          "units": 562
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G04",
+      "name": "回應內容",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G05",
+      "name": "壓縮與文件",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G06",
+      "name": "日期語意",
+      "group": "R02",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全範圍歷史證券有效期間及日曆證據未齊",
+      "observations": [
+        {
+          "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+          "artifact_records": 258
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G07",
+      "name": "證券與主鍵",
+      "group": "R02",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全範圍歷史證券有效期間及日曆證據未齊",
+      "observations": [
+        {
+          "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+          "artifact_records": 258
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G08",
+      "name": "完整性",
+      "group": "R01",
+      "full_scope_result": "UNKNOWN",
+      "reason": "核准母體與最新全量遠端收據對帳尚缺",
+      "observations": [
+        {
+          "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+          "records": 337281
+        },
+        {
+          "kind": "SCOPED_REMOTE_METADATA_ONLY",
+          "folders": 4,
+          "global_enumeration_complete": false
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G09",
+      "name": "空值與不適用",
+      "group": "R03",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全資料集欄位單位契約與適用性未齊",
+      "observations": [
+        {
+          "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+          "rows": 120
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G10",
+      "name": "數值與單位",
+      "group": "R03",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全資料集欄位單位契約與適用性未齊",
+      "observations": [
+        {
+          "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+          "rows": 120
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G11",
+      "name": "欄位關係",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G12",
+      "name": "檢查覆蓋",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G13",
+      "name": "PIT與版本",
+      "group": "R06",
+      "full_scope_result": "UNKNOWN",
+      "reason": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+      "observations": [],
+      "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G14",
+      "name": "跨來源一致",
+      "group": "R05",
+      "full_scope_result": "UNKNOWN",
+      "reason": "跨來源結果僅診斷，完整範圍及上游獨立性未驗",
+      "observations": [
+        {
+          "kind": "HISTORICAL_DIAGNOSTIC_INPUTS_STILL_MATCH",
+          "references": 298,
+          "reported_field_pairs": 19000
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G15",
+      "name": "重複與修訂",
+      "group": "R05",
+      "full_scope_result": "UNKNOWN",
+      "reason": "跨來源結果僅診斷，完整範圍及上游獨立性未驗",
+      "observations": [
+        {
+          "kind": "HISTORICAL_DIAGNOSTIC_INPUTS_STILL_MATCH",
+          "references": 298,
+          "reported_field_pairs": 19000
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G16",
+      "name": "排程與競態",
+      "group": "R07",
+      "full_scope_result": "UNKNOWN",
+      "reason": "前置實際證據不足；正式發布、下游及回復未執行",
+      "observations": [],
+      "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G17",
+      "name": "重試與路由",
+      "group": "R08",
+      "full_scope_result": "UNKNOWN",
+      "reason": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+      "observations": [
+        {
+          "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+          "packages": 22,
+          "units": 562
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G18",
+      "name": "驗收與關閉",
+      "group": "R07",
+      "full_scope_result": "UNKNOWN",
+      "reason": "前置實際證據不足；正式發布、下游及回復未執行",
+      "observations": [],
+      "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G19",
+      "name": "歷程與重開",
+      "group": "R07",
+      "full_scope_result": "UNKNOWN",
+      "reason": "前置實際證據不足；正式發布、下游及回復未執行",
+      "observations": [],
+      "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G20",
+      "name": "多處保存",
+      "group": "R08",
+      "full_scope_result": "UNKNOWN",
+      "reason": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+      "observations": [
+        {
+          "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+          "packages": 22,
+          "units": 562
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G21",
+      "name": "期限與鮮度",
+      "group": "R08",
+      "full_scope_result": "UNKNOWN",
+      "reason": "已讀回原件的本機復原不等於全庫遠端復原與鮮度驗收",
+      "observations": [
+        {
+          "kind": "LOCAL_READBACK_SCOPE_RECOVERY",
+          "packages": 22,
+          "units": 562
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "G22",
+      "name": "需求外資料",
+      "group": "R03",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全資料集欄位單位契約與適用性未齊",
+      "observations": [
+        {
+          "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+          "rows": 120
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "T01",
+      "name": "日行情",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "T02",
+      "name": "籌碼與事件",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "T03",
+      "name": "證券歷史",
+      "group": "R02",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全範圍歷史證券有效期間及日曆證據未齊",
+      "observations": [
+        {
+          "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+          "artifact_records": 258
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "M01",
+      "name": "財報母體",
+      "group": "R01",
+      "full_scope_result": "UNKNOWN",
+      "reason": "核准母體與最新全量遠端收據對帳尚缺",
+      "observations": [
+        {
+          "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+          "records": 337281
+        },
+        {
+          "kind": "SCOPED_REMOTE_METADATA_ONLY",
+          "folders": 4,
+          "global_enumeration_complete": false
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "M02",
+      "name": "財報數值",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "M03",
+      "name": "營收與發布",
+      "group": "R06",
+      "full_scope_result": "UNKNOWN",
+      "reason": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+      "observations": [],
+      "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+      "requires_action": true
+    },
+    {
+      "rule_id": "F01",
+      "name": "資料集權限",
+      "group": "R03",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全資料集欄位單位契約與適用性未齊",
+      "observations": [
+        {
+          "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+          "rows": 120
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "F02",
+      "name": "補件與語意",
+      "group": "R03",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全資料集欄位單位契約與適用性未齊",
+      "observations": [
+        {
+          "kind": "DATED_ESB_FIELDS_COMPARED_RAW_ONLY",
+          "rows": 120
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "A01",
+      "name": "期貨主鍵",
+      "group": "R02",
+      "full_scope_result": "UNKNOWN",
+      "reason": "全範圍歷史證券有效期間及日曆證據未齊",
+      "observations": [
+        {
+          "kind": "FINITE_PRICE_DATES_CODES_KEYS_CHECKED_WITHIN_RETAINED_INPUTS",
+          "artifact_records": 258
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "A02",
+      "name": "期貨包完整",
+      "group": "R01",
+      "full_scope_result": "UNKNOWN",
+      "reason": "核准母體與最新全量遠端收據對帳尚缺",
+      "observations": [
+        {
+          "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+          "records": 337281
+        },
+        {
+          "kind": "SCOPED_REMOTE_METADATA_ONLY",
+          "folders": 4,
+          "global_enumeration_complete": false
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "A03",
+      "name": "期貨數值",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "D01",
+      "name": "集保日期母體",
+      "group": "R01",
+      "full_scope_result": "UNKNOWN",
+      "reason": "核准母體與最新全量遠端收據對帳尚缺",
+      "observations": [
+        {
+          "kind": "REGISTER_SCAN_NOT_APPROVED_UNIVERSE",
+          "records": 337281
+        },
+        {
+          "kind": "SCOPED_REMOTE_METADATA_ONLY",
+          "folders": 4,
+          "global_enumeration_complete": false
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "D02",
+      "name": "集保級距",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "N01",
+      "name": "景氣序列",
+      "group": "R04",
+      "full_scope_result": "UNKNOWN",
+      "reason": "未讀回原件、未覆蓋資料集與內容錯誤仍待處理",
+      "observations": [
+        {
+          "kind": "PARTIAL_RAW_CONTENT",
+          "artifact_records": 562,
+          "blocked_artifacts": 6
+        }
+      ],
+      "execution_coverage": "PARTIAL_ADAPTERS",
+      "requires_action": true
+    },
+    {
+      "rule_id": "N02",
+      "name": "景氣版本發布",
+      "group": "R06",
+      "full_scope_result": "UNKNOWN",
+      "reason": "歷史當時可得時間與原版／更正版證據及全量檢查器未齊",
+      "observations": [],
+      "execution_coverage": "NO_FULL_SCOPE_EXECUTOR_OR_EVIDENCE",
+      "requires_action": true
+    }
+  ],
+  "rule_counts": {
+    "UNKNOWN": 37
+  },
+  "approved_universe": null,
+  "approved_scopes": [],
+  "formal_release": "BLOCKED",
+  "production_published": false,
+  "version": "JARVIS_INTEGRATED_READONLY_V1",
+  "run_id": "integrated_20261028T075721176727Z",
+  "checked_at_taipei": "2026-10-28T16:28:23.442791+08:00",
+  "stages": [
+    {
+      "stage": "content",
+      "result": "COMPLETED_WITH_OPEN_ITEMS",
+      "counts": {
+        "units": 337281,
+        "RECONCILE_FROZEN_MISSING": 237323,
+        "registered_retained_units": 99958,
+        "resumed_content_units": 562,
+        "REMAINING_RULES_OPEN": 556,
+        "RAW_NOT_IN_LOCAL_CACHE": 99390,
+        "CONTENT_BLOCKED": 6,
+        "ESB_RAW_ONLY_RULES_OPEN": 6
+      }
+    },
+    {
+      "stage": "cross_source",
+      "result": "INPUTS_REVALIDATED_HISTORICAL_DIAGNOSTIC"
+    },
+    {
+      "stage": "recovery",
+      "result": "PASS_LOCAL_READBACK_SCOPE_RECOVERY"
+    }
+  ],
+  "input_plan": {
+    "file": "execution_plan.json",
+    "sha256": "1baf13c04a035fd3c83e11a86fd9dc16e315b39758e64947cadfde32e7fb92da"
+  },
+  "remote_snapshot": {
+    "file": "remote_snapshot.json",
+    "sha256": "b886cfc9589ec54b41e4058fd30c2e810fe798b4c1e323ed0a1fb09c16f2cd78"
+  },
+  "diagnostic": {
+    "artifact": {
+      "file": "round3_actual_cross_results.json",
+      "sha256": "377a29d1ffa57992d5c66aaa2b25107087267a0226b2ed5fea2057fa83dd861b"
+    },
+    "input_references_checked": 298,
+    "input_errors": [],
+    "result": "INPUTS_REVALIDATED_HISTORICAL_DIAGNOSTIC",
+    "recomputed_numeric_pairs": false,
+    "reported_field_pairs": 19000,
+    "reported_mismatches": 0,
+    "independence_verified": false,
+    "full_scope_verified": false
+  },
+  "recovery": {
+    "result": "PASS_LOCAL_READBACK_SCOPE_RECOVERY",
+    "files_restored": [
+      {
+        "file_id": "1bsfDq70BZSPabpbbEMb5Yzu8ZSTYpdvl",
+        "sha256": "260dc5af3a33d7e904527b8747797b45116651e67c0467309583e19c31255e7c",
+        "bytes": 1478,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1B_oz3u_oqdaE7x9y7k66rYRLf_4fF7fQ",
+        "sha256": "2a0b129bceacc0efbf97edd729c8a54384204015f137a07bc8f4828319b4e9a3",
+        "bytes": 1420,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc",
+        "sha256": "0533e5f0c8d084af4ceb61a95fe461c63ff785825a787c958876dbdc67be790e",
+        "bytes": 8087,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1UTfRLDpUv4s3cQrDoOZOM2SY31s9vWj4",
+        "sha256": "e277e2947982ee2e46d8cafe76ebad504d1f9c83d27017d56483dfdfe92d46ee",
+        "bytes": 10021,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1hvINMv4Z0nROGY9NEJAzmKMJ390wR8jf",
+        "sha256": "0503b78ae69bcdab92667e8a556a23777b305072762a6e17b87bb62cf05a3307",
+        "bytes": 50371,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1wswYgRWFFBnnrOeLqcQklMYqkEictOlC",
+        "sha256": "c584a89a9e6d2329b9ba7031227baf5d4371a730278ca31c6db656a1ecf02f37",
+        "bytes": 57028,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1Ty74zKGSivXNHmA3WDG4VjeOKmWpA3n4",
+        "sha256": "8f822fd462a92d81fc5f55df8873c0915c5940d91246fdb07bdff26f5253dc8e",
+        "bytes": 5385,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1MqpGGgB7t1EYSHDDpBw-k3Z1e8zmLUSz",
+        "sha256": "a18c0c5901296a51d5f7a011ded97b140422da898e0d3b11109147ef53c952ff",
+        "bytes": 6173,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1dJPNzvPghsetZQvRA_7OX1VtifXKb61K",
+        "sha256": "e4c84114e7e8f6ee302fcc045dbc4e4a0657835055497830b17271eaf2b99f7e",
+        "bytes": 80028,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1DltFqhwfADrmYpH3N823Usq7G48nW6G4",
+        "sha256": "ad37930e535bc49fa39e8329eab306101f659882914aa57b1e2768b7eaaa8d64",
+        "bytes": 9669941,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1ZwFktwC8rdZ7OL-Vs-OjYSuvuasYBgvl",
+        "sha256": "2e3cfe37aa0aa5414f2389bcf47fc45ac2c669bfe280b381300ab9c532b4eaf8",
+        "bytes": 76896,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1CGixPTiu-u3g-nfwaQyzpHRrKaNIdU8W",
+        "sha256": "a26f68b586f5dcccde87a8c18eebf5438c16ed6bcea38c2ab14e32f92927654e",
+        "bytes": 77760,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1YxyAYn1_FnxFFr0CMBHk581fzHPA0ThF",
+        "sha256": "442cb4342204cb22e1ed2fca14adcb99456b25ff1a8546e17694d784efc5ef21",
+        "bytes": 44367,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1uqHfQLV--3wLROFhTtt8dl-Gb5aDDEef",
+        "sha256": "213aefb1fc9418a640fbae56f7922c6a5d70fe78925e3d855414217a823665a4",
+        "bytes": 10934588,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1MHMveRwByWuc5v5pjS1n_i3Dr8-SZ7fl",
+        "sha256": "6cff0e34cb9471c90c20f323081a8936f48a9411ea185672d264caf6d1560294",
+        "bytes": 1324176,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1-LacMHLRFczb9I-LA3MddWRLwskMyy72",
+        "sha256": "0fe202b3435ff5a3d689c1634fb8b5bcca76058c0fff21f6605e9ad41db7cef2",
+        "bytes": 463385,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1yGCCksAm8XnGQF37mbdBvj0if9IegHKC",
+        "sha256": "37c79af6ca85e5d2e9c1821bec9f3ca3d5d7d2278412b7075006f75379e713c2",
+        "bytes": 385527,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1MoutNCiCtnBa9oWhyt15U9BR3XxAcbNe",
+        "sha256": "8261a27816aba3fdb88ea4b30485a23d71b1a31f7b59223e87498578cea36e83",
+        "bytes": 20749,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1GU6S_QqJsIdljQviXIpZE2e2Nm-Zquq6",
+        "sha256": "e7051fa70ef61f76831718a727d8ee0f486b04b95c0aac3d86c3eaa3ce4826ab",
+        "bytes": 5854414,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1Vf_woRGApwCYIr8_tMkkX-U5W6wvKNCm",
+        "sha256": "100772277af8be6f872f52cb711b81e1187ba5b386a04e8cc5d35af8c1cc1585",
+        "bytes": 38091,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1VIZmRgbZSzWQKey-jDfNuy5rcXxn6dkb",
+        "sha256": "dcab4ef476d427a37271632825ab82944f6ab3b0f286aba2cabee39ccc4fd937",
+        "bytes": 111001,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      },
+      {
+        "file_id": "1dBD17dBFCfOr69UTTeTSAg_FBsEGXR3i",
+        "sha256": "6ee851dbf6256c7a85068335ed0539925f3034610c0e1faa4cdba7db3e5150bf",
+        "bytes": 105143,
+        "result": "PASS_LOCAL_RESTORE_SHA"
+      }
+    ],
+    "units_verified": 562,
+    "errors": [],
+    "scope": "ONLY_RAW_PACKAGES_READ_IN_THIS_CONTENT_BATCH",
+    "full_database_restore_verified": false,
+    "remote_backup_rechecked": false,
+    "account_loss_recovery_verified": false
+  },
+  "content_triage": [
+    {
+      "task_key": "MOPS|065fc77ea82347c33e7502e8",
+      "source": "MOPS",
+      "dataset": "BalanceSheet",
+      "period": "2001-03-31",
+      "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/065fc77ea82347c33e7502e8.raw",
+      "raw_sha256": "a8a5eccf12c8ab10d118dbf535f006754ad814d22c3a612f4e73023b10066309",
+      "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+      "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+      "proposed_queue": "SOURCE_ROUTE_REVIEW",
+      "raw_changed": false,
+      "body_tables": 1,
+      "account_rows": 0,
+      "response_period": [
+        "2001Q1"
+      ],
+      "company_headers": 15,
+      "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+    },
+    {
+      "task_key": "MOPS|37b069dfb35140feb52cbef8",
+      "source": "MOPS",
+      "dataset": "BalanceSheet",
+      "period": "2001-03-31",
+      "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/37b069dfb35140feb52cbef8.raw",
+      "raw_sha256": "f64079b5e17a49ccddef95833a34b7d9c00317cca90713bac64d41e41b4ec213",
+      "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+      "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+      "proposed_queue": "SOURCE_ROUTE_REVIEW",
+      "raw_changed": false,
+      "body_tables": 1,
+      "account_rows": 0,
+      "response_period": [
+        "2001Q1"
+      ],
+      "company_headers": 17,
+      "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+    },
+    {
+      "task_key": "MOPS|3cb6b232ad5503ff05a16aa5",
+      "source": "MOPS",
+      "dataset": "BalanceSheet",
+      "period": "2001-03-31",
+      "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/3cb6b232ad5503ff05a16aa5.raw",
+      "raw_sha256": "45479f32dd67394ec53abe5cfa2fcdd40b286edd7802b05899680081f6f95555",
+      "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+      "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+      "proposed_queue": "SOURCE_ROUTE_REVIEW",
+      "raw_changed": false,
+      "body_tables": 1,
+      "account_rows": 0,
+      "response_period": [
+        "2001Q1"
+      ],
+      "company_headers": 15,
+      "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+    },
+    {
+      "task_key": "MOPS|61cb88e8f62bfbe8c0417cfb",
+      "source": "MOPS",
+      "dataset": "BalanceSheet",
+      "period": "2001-03-31",
+      "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/61cb88e8f62bfbe8c0417cfb.raw",
+      "raw_sha256": "a2d27bb74f781bca422b208ba1b5ee14acfa0fe76193a57011f243276bf0eda4",
+      "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+      "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+      "proposed_queue": "SOURCE_ROUTE_REVIEW",
+      "raw_changed": false,
+      "body_tables": 1,
+      "account_rows": 0,
+      "response_period": [
+        "2001Q1"
+      ],
+      "company_headers": 14,
+      "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+    },
+    {
+      "task_key": "MOPS|ad641ae239561edc42b4430f",
+      "source": "MOPS",
+      "dataset": "BalanceSheet",
+      "period": "2001-03-31",
+      "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/ad641ae239561edc42b4430f.raw",
+      "raw_sha256": "fc0e742194183aa57b9ed6b9ee9442cd2ed64acf29e33bb8f2e6051c4f3e8fe1",
+      "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+      "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+      "proposed_queue": "SOURCE_ROUTE_REVIEW",
+      "raw_changed": false,
+      "body_tables": 1,
+      "account_rows": 0,
+      "response_period": [
+        "2001Q1"
+      ],
+      "company_headers": 20,
+      "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+    },
+    {
+      "task_key": "MOPS|dfe91f5b73ad7fa049e92177",
+      "source": "MOPS",
+      "dataset": "BalanceSheet",
+      "period": "2001-03-31",
+      "raw_reference": "1CM9JxvGKzNT7cPNKzRwsEgMshpXZr7nc/dfe91f5b73ad7fa049e92177.raw",
+      "raw_sha256": "2d86d194f8879b255390a8778056368b55ff7684cb2ad12c5d04a3bb21f96542",
+      "original_error": "ValueError:ACCOUNT_MATRIX_ROW_MISMATCH",
+      "diagnosis": "RETAINED_MOPS_RESPONSE_HAS_NO_ACCOUNT_ROWS",
+      "proposed_queue": "SOURCE_ROUTE_REVIEW",
+      "raw_changed": false,
+      "body_tables": 1,
+      "account_rows": 0,
+      "response_period": [
+        "2001Q1"
+      ],
+      "company_headers": 17,
+      "next_action": "保留原件；查證前2013歷史財報路由或其他可追溯原始報表，不能靠解析修復空數值表，也不能據此斷言歷史資料不存在"
+    }
+  ],
+  "queues": {
+    "RECONCILE_LATEST": 237323,
+    "COMPLETE_EVIDENCE": 556,
+    "READBACK_EXISTING": 99390,
+    "SOURCE_ROUTE_REVIEW": 6,
+    "REVIEW_ESB_RAW_ONLY": 6
+  },
+  "content_counts": {
+    "units": 337281,
+    "RECONCILE_FROZEN_MISSING": 237323,
+    "registered_retained_units": 99958,
+    "resumed_content_units": 562,
+    "REMAINING_RULES_OPEN": 556,
+    "RAW_NOT_IN_LOCAL_CACHE": 99390,
+    "CONTENT_BLOCKED": 6,
+    "ESB_RAW_ONLY_RULES_OPEN": 6
+  },
+  "elapsed_seconds": 27.244,
+  "cache_metrics": {
+    "packages": 22,
+    "unique_member_extractions": 562
+  },
+  "source_downloads": 0,
+  "production_writes": 0,
+  "limitations": [
+    "Full remote inventory, approved universe, full PIT and production validators are not implemented by this entry point",
+    "37 UNKNOWN full-scope rule results are explicit gaps, not passes",
+    "Historical diagnostic numbers are reused only after input SHA readback; numeric comparisons not rerun"
+  ],
+  "remote_inventory_actual": {
+    "schema": "JARVIS_REMOTE_METADATA_V1",
+    "root": "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn",
+    "started_at": "2026-10-28T08:00:40.724796+00:00",
+    "updated_at": "2026-10-28T08:04:07.866930+00:00",
+    "enumeration_complete": true,
+    "atomic_point_in_time_snapshot": false,
+    "requests_this_run": 220,
+    "requests_total": 220,
+    "year_folders": 27,
+    "source_folders": 190,
+    "folder_records": 2490,
+    "file_metadata_records": 70650,
+    "remaining_folders": 0,
+    "error": null,
+    "phase": "DONE",
+    "raw_sha_readback_verified": false,
+    "observation_universe_approved": false,
+    "production_writes": 0
+  },
+  "remote_register_reconciliation": {
+    "kind": "METADATA_TO_RETAINED_REGISTER_RECONCILIATION",
+    "metadata_started_at": "2026-10-28T08:00:40.724796+00:00",
+    "metadata_updated_at": "2026-10-28T08:04:07.866930+00:00",
+    "metadata_snapshot_sha256": "28e717296c21d201d1c406c74b923415f2902a805e0e5e627c3b9d6cabce3acf",
+    "register_sha256": {
+      "FinMind_units.csv.gz": "bdad6d53c2af28ee8bcde9956233cce29a75204a03e274cd2c3769db0cd2b132",
+      "MOPS_units.csv.gz": "8f58b83cfd65a42cc7e72ccf7bb889ea11cb89a6ed64183869da0d92949afccd",
+      "NDC_units.csv.gz": "163bfa20d3730338d67d4b593a9278152f095f8d283407d76a6ccfd4454e47f5",
+      "TAIFEX_units.csv.gz": "abcdd88c92aa6ce955e0537c8aa1e15b8c82493fe69ca9e3c8bedb97f0862016",
+      "TDCC_units.csv.gz": "3df032876c0e04a278858e570e17e227241ffcb14a4713a8608f57a4c6b5403f",
+      "TPEx_units.csv.gz": "f153d3cc383cd61e287ac73cd6fc4e7afbedea830218b2f14c43a51b12dd557a",
+      "TWSE_units.csv.gz": "3c5a597b79b03f23e6f08f206e2f5d29759d51f34ea9a5cdb7067f5e69b61d86",
+      "supplemental_artifacts_units.csv.gz": "1078b7c2aa12cc7b37ed07f786a68acdfa969fffdcbc34ac7084a94c0b876cb5"
+    },
+    "enumeration_complete_for_filtered_raw_scope": true,
+    "atomic_point_in_time_snapshot": false,
+    "metadata_file_records": 70650,
+    "metadata_folder_records": 2490,
+    "registered_record_counts": {
+      "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 237323,
+      "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 99958
+    },
+    "sources": {
+      "FinMind": {
+        "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 262,
+        "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 801
+      },
+      "MOPS": {
+        "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 10248,
+        "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 8050
+      },
+      "NDC": {
+        "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 320,
+        "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 2
+      },
+      "TAIFEX": {
+        "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 2921,
+        "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 1841
+      },
+      "TDCC": {
+        "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 24067,
+        "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 181603
+      },
+      "TPEx": {
+        "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 28750,
+        "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 32085
+      },
+      "TWSE": {
+        "FROZEN_MISSING_NEEDS_CURRENT_RECEIPTS": 14617,
+        "PACKAGE_METADATA_PRESENT_NOT_CONTENT_VERIFIED": 31714
+      }
+    },
+    "unique_referenced_packages": 51518,
+    "referenced_packages_metadata_present": 51518,
+    "referenced_packages_not_observed": 0,
+    "unreferenced_metadata_files": 19132,
+    "unreferenced_metadata_files_are_missing_data": false,
+    "global_drive_absence_verified": false,
+    "raw_sha_readback_verified": false,
+    "approved_universe": null,
+    "formal_release": "BLOCKED",
+    "note": "Register includes historical task units and supplemental artifact versions; metadata file counts and task counts are different units. Snapshot listing covers exact year/source roots, not all Drive."
+  }
+}

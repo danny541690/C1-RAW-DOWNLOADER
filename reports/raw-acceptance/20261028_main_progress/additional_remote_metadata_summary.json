@@ -1,0 +1,13 @@
+{
+  "files": 19132,
+  "by_source": {
+    "TPEx": 1786,
+    "TDCC": 13197,
+    "FinMind": 2824,
+    "TWSE": 559,
+    "MOPS": 622,
+    "TAIFEX": 136,
+    "TDCC_ARCHIVE": 8
+  },
+  "counts_are_file_metadata_not_observations": true
+}

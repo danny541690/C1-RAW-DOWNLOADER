@@ -1,0 +1,10 @@
+{
+  "run_id": 40653746577,
+  "artifact_id": 12800464390,
+  "workflow_commit": "421c8563ddc6ba72ec5158242946c9a14bf4646b",
+  "artifact_sha256": "9ece52c1e02957030c30d79eb810673757af4b555747acdcf7f336bfa17dae33",
+  "snapshot_sha256": "28e717296c21d201d1c406c74b923415f2902a805e0e5e627c3b9d6cabce3acf",
+  "artifact_crc_verified": true,
+  "sha_verified": true,
+  "enumeration_complete": true
+}
