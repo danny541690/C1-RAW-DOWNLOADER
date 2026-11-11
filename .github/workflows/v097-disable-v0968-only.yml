@@ -1,0 +1,38 @@
+name: JARVIS v0.97 SAFETY - disable v0.968 only
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-disable-v0968-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-v0968-safe-stop
+  cancel-in-progress: false
+jobs:
+  selective-v0968-stop:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Syntax verification
+        run: python -m py_compile scripts/v097_disable_legacy_v0968_workflows.py
+      - name: Disable only v0968 workflow registrations, cancel their active runs, verify v097 safety
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/v097_disable_legacy_v0968_workflows.py
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v0968-safe-stop-audit
+          path: |
+            v0968_disable_preflight.json
+            v0968_disable_result.json
+          if-no-files-found: warn
