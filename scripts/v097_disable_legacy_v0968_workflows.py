@@ -20,7 +20,7 @@ def request(path,method="GET",data=None):
   try:
    with urllib.request.urlopen(req,timeout=50) as response:
     body=response.read()
-    if method!="GET" and response.status!=204:
+    if method!="GET" and response.status not in (202,204):
      raise RuntimeError("Unexpected API mutation status "+str(response.status))
     return json.loads(body) if body else {}
   except urllib.error.HTTPError as err:
