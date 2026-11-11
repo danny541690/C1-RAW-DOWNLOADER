@@ -8,7 +8,7 @@ Never touches v097- workflows. Audit JSON emitted as uploadable artifact.
 import json,os,re,time,urllib.request,urllib.error
 from datetime import datetime,timezone
 REPO="danny541690/C1-RAW-DOWNLOADER"
-PREFIX=.github/workflows/v0968-
+PREFIX=".github/workflows/v0968-"
 API="https://api.github.com/repos/"+REPO
 TOKEN=os.environ["GH_TOKEN"]
 HEADERS={"Authorization":"Bearer "+TOKEN,"Accept":"application/vnd.github+json",
