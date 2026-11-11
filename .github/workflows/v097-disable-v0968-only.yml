@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v097-disable-v0968-only.yml'
+      - 'scripts/v097_disable_legacy_v0968_workflows.py'
   workflow_dispatch:
 permissions:
   contents: read
