@@ -1,0 +1,44 @@
+name: JARVIS v0.95 Isolated Parquet QA
+on:
+  push:
+    branches:
+      - test/jarvis-v095-parquet-isolated-20261104
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v095-isolated-qa
+  cancel-in-progress: false
+  queue: max
+jobs:
+  parquet-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only test dependencies
+        run: python -m pip install duckdb pyarrow pandas
+      - name: Validate isolated synthetic Parquet and DuckDB pipeline
+        run: |
+          python tests/v095_isolated_parquet_integration.py
+          python tests/v095_immutable_release_isolated.py
+          python tests/v095_concurrent_release_isolated.py
+          python tests/v095_full_combined_gate.py
+          python tests/v095_release_gate_evidence.py
+          python tests/v095_real_twse_sample_parquet.py
+          python tests/v095_historical_error_regression.py
+          python tests/v095_source_config_release_audit.py
+          python tests/v095_r21_tdcc_semantic_rules.py
+      - name: Save candidate-release gate report (does not approve production)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v095-oneshot-gate-report
+          path: v095_go_live_gate_report.json
+          if-no-files-found: warn
