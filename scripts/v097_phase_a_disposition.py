@@ -22,6 +22,8 @@ def evaluate(v4):
         return "REPAIRED_SHA_VERIFIED_SEMANTIC_PENDING","CONTENT_QA_AND_DATASET_COVERAGE_GATE"
     if cat=="CONTROL_METADATA":
         return "EXCLUDED_FROM_MARKET_RAW","KEEP_CONTROL_SIDECAR_AS_IMMUTABLE_EVIDENCE"
+    if "SOURCE_ROOT_NOT_BOOTSTRAPPED:TDCC_ARCHIVE" in str(v4.get("prior_error") or ""):
+        return "ARCHIVE_EVIDENCE_ONLY","INSPECT_ARCHIVE_MEMBERS_AND_SOURCE_PROVENANCE_BEFORE_MARKET_DATA_PROMOTION"
     if cat=="TDCC_IDENTITY":
         m=TDCC_FILE.search(str(v4.get("source_path") or ""))
         if not m or not TDCC_CODE.fullmatch(m.group(1).upper()):
@@ -67,8 +69,8 @@ def build(api):
         raise RuntimeError("CONTROL_COUNT_MISMATCH")
     if (orig_counter["HOLD_HISTORICAL_MARKET_IDENTITY"] + orig_counter["QUARANTINE_TDCC_CODE_FORMAT"])!=5035:
         raise RuntimeError("TDCC_COUNT_MISMATCH")
-    if orig_counter["BLOCKED_EXCEPTION"]!=2:
-        raise RuntimeError("BLOCKED_COUNT_MISMATCH")
+    if orig_counter["ARCHIVE_EVIDENCE_ONLY"]!=2 or orig_counter["BLOCKED_EXCEPTION"]:
+        raise RuntimeError("TDCC_ARCHIVE_COUNT_MISMATCH")
     # Immutable evidence: no modification of legacy snapshots or v0.97 original V3 checkpoints.
     totals={"schema":"v097_phase_a_disposition_1","run":RUN,"at":now(),
       "source_runs":{"v3":"43152577099","v4":V4_RUN,"v5":V5_RUN},
@@ -78,7 +80,9 @@ def build(api):
       "control_metadata_not_market_raw":1314,
       "tdcc_pending_historical_instrument_master":orig_counter["HOLD_HISTORICAL_MARKET_IDENTITY"],
       "tdcc_code_format_quarantined":orig_counter["QUARANTINE_TDCC_CODE_FORMAT"],
-      "other_remaining_review":2,
+      "tdcc_archive_pending_member_and_source_review":orig_counter["ARCHIVE_EVIDENCE_ONLY"],
+      "unknown_error_categories":orig_counter["BLOCKED_EXCEPTION"],
+      "phase_a_exception_classification_complete":True,
       "phase_a_complete":False,
       "all_093_original_unchanged":True,"v3_checkpoints_unchanged":True,
       "official_downloads":0,
@@ -93,6 +97,7 @@ def selftest():
     assert evaluate({"category":"CONTROL_METADATA","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW"})[0]=="EXCLUDED_FROM_MARKET_RAW"
     assert evaluate({"category":"TDCC_IDENTITY","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW","source_path":"2025/TDCC/2025-11/distribution_20251107_YJR4_hash.html"})[0]=="QUARANTINE_TDCC_CODE_FORMAT"
     assert evaluate({"category":"TDCC_IDENTITY","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW","source_path":"2025/TDCC/2025-11/distribution_20251107_2330A_hash.html"})[0]=="HOLD_HISTORICAL_MARKET_IDENTITY"
+    assert evaluate({"category":"UNCLASSIFIED_REVIEW","prior_error":"RuntimeError:SOURCE_ROOT_NOT_BOOTSTRAPPED:TDCC_ARCHIVE","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW"})[0]=="ARCHIVE_EVIDENCE_ONLY"
     assert evaluate({"category":"TRANSIENT_RETRY","status":"REPAIR_QA_PASS"})[0]=="REPAIRED_SHA_VERIFIED_SEMANTIC_PENDING"
     print("PHASE_A_SELFTEST_PASS")
 if __name__=="__main__":
