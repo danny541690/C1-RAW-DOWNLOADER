@@ -147,6 +147,67 @@ def a3(api):
         evidence.update(fetch_status="OFFICIAL_CURRENT_SNAPSHOT_UNAVAILABLE",reason=type(e).__name__+":"+str(e)[:150])
     put_once(api,q,"v097_TDCC_A3_CURRENT_%s.json"%RUN,evidence)
     print("A3="+json.dumps(evidence,ensure_ascii=False),flush=True)
+    official_market_roster_snapshots(api,q)
+
+def official_market_roster_snapshots(api,q):
+    """Collect current official TWSE/TPEx evidence; NEVER assert historical validity.
+    MOPS CSV fallback is only a supported alternate publication endpoint.
+    """
+    sources=[
+        ("TWSE","https://openapi.twse.com.tw/v1/opendata/t187ap03_L"),
+        ("TPEx","https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O"),
+        ("TPEx_CSV_FALLBACK","https://mopsfin.twse.com.tw/opendata/t187ap03_O.csv"),
+    ]
+    results=[]
+    for source,url in sources:
+        rec={"source":source,"url":url,"asof_historical_certified":False,
+             "current_snapshot_only":True}
+        try:
+            with requests.get(url,timeout=(10,50),stream=True,
+                              headers={"User-Agent":"JARVIS-C1-data-verification/0.97"}) as response:
+                response.raise_for_status()
+                cap=16*1024*1024
+                chunks=[];size=0
+                for chunk in response.iter_content(chunk_size=512*1024):
+                    if not chunk:continue
+                    size+=len(chunk)
+                    if size>cap:raise ValueError("ROSTER_EXCEEDS_16MB")
+                    chunks.append(chunk)
+                payload=b"".join(chunks)
+                head=payload[:200].lstrip().lower()
+                if head.startswith((b"<!doctype html",b"<html")):
+                    raise ValueError("ROSTER_UNEXPECTED_HTML_REDIRECT")
+                if url.endswith(".csv"):
+                    import csv,io
+                    text=payload.decode("utf-8-sig",errors="replace")
+                    if not any(x in text[:3000] for x in ("公司代號","公司名稱","公司簡稱")):
+                        raise ValueError("ROSTER_CSV_HEADER_MISSING")
+                    reader=csv.DictReader(io.StringIO(text))
+                    rows=list(reader)
+                else:
+                    rows=json.loads(payload)
+                    if not isinstance(rows,list):raise ValueError("ROSTER_JSON_NOT_LIST")
+                codes=set()
+                bad=0
+                for row in rows:
+                    if not isinstance(row,dict):bad+=1;continue
+                    code=str(row.get("公司代號",row.get("SecuritiesCompanyCode",""))).strip()
+                    if re.fullmatch(r"\d{4}",code):codes.add(code)
+                    else:bad+=1
+                rec.update(status="READABLE_CURRENT_ROSTER",bytes=size,
+                           sha256=sha(payload),records=len(rows),
+                           four_digit_company_codes=len(codes),
+                           unsupported_code_rows=bad,
+                           published_at=now())
+        except Exception as e:
+            rec.update(status="ROSTER_UNAVAILABLE",reason=type(e).__name__+":"+str(e)[:150])
+        results.append(rec)
+    put_once(api,q,"v097_TWSE_TPEX_CURRENT_ROSTER_%s.json"%RUN,
+             {"schema":"v097_market_roster_snapshot_1","run":RUN,"at":now(),
+              "historical_master_certified":False,"results":results})
+    print("A3_MARKET_ROSTER="+json.dumps(results,ensure_ascii=False),flush=True)
+    return results
+
 def a4(api,lane):
     _,c,q,_=common(api)
     rows=source_rows(api,q,lane)
