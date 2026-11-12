@@ -218,11 +218,15 @@ def a4(api,lane):
         raise RuntimeError("A4_CHECKPOINT_SCHEMA_CONFLICT")
     done=ck["done"]
     todo=[x for x in rows if x["file_id"] not in done][:LANE_CAP]
-    receipt="%s_%s_L%02d.json"%(PREFIX,RUN,lane)
+    # Same run can process multiple sequential batches; replay is keyed by the starting offset.
+    batch_offset=len(done)
+    receipt="%s_%s_L%02d_O%05d.json"%(PREFIX,RUN,lane,batch_offset)
     prior_receipt=match(api,q,receipt)
     if prior_receipt:
         prior=load_json(api,prior_receipt["id"])
         outcomes=prior["items"]
+        if len(outcomes)>LANE_CAP or any(item["file_id"] not in {x["file_id"] for x in rows} for item in outcomes):
+            raise RuntimeError("A4_REPLAY_RECEIPT_ORPHAN_OR_OVERFLOW")
         for item in outcomes:
             done[item["file_id"]]={"status":item["status"],"run":RUN}
         upsert(api,c,ck_name,{"schema":"v097_tdcc_a4_checkpoint_3","lane":lane,"done":done,"updated_at":now()})
