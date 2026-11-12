@@ -3,10 +3,11 @@
 Merge the original V3, V4 repair and V5 identity evidence into ONE per-file
 immutable disposition ledger. Zero unsupported 'PASS' promotions. No raw edits.
 """
-import os, json, re
+import os, json, re, hashlib
 from collections import Counter
 from datetime import datetime, timezone
-from scripts.v097_bronze_first_pipeline import service, common, match, load_json, put_once
+from scripts.v097_bronze_first_pipeline import service, common, match, load_json, put_once, call
+from scripts.v097_bronze_content_qa import qa_bytes
 from scripts.v097_bronze_first_batch_v3 import ck_name
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 V4_RUN="43156776265"
@@ -30,6 +31,57 @@ def evaluate(v4):
             return "QUARANTINE_TDCC_CODE_FORMAT","NOT_ELIGIBLE_FOR_MARKET_RAW_UNTIL_OFFICIAL_SOURCE_PROOF"
         return "HOLD_HISTORICAL_MARKET_IDENTITY","VERIFY_SOURCE_HTML_AND_HISTORICAL_TSE_OTC_INSTRUMENT_MASTER"
     return "BLOCKED_EXCEPTION","SOURCE_ORIGINAL_CONTENT_OR_ADAPTER_REVIEW"
+def verify_targeted_bytes(api, rows):
+    """Bounded original/destination byte QA. Never promote or mutate market raw."""
+    max_bytes=40*1024*1024
+    reports=[]
+    for row in rows:
+        if row["phase_a_state"] not in ("REPAIRED_SHA_VERIFIED_SEMANTIC_PENDING","ARCHIVE_EVIDENCE_ONLY"):
+            continue
+        rec={"asset_id":row["asset_id"],"prior_state":row["phase_a_state"],
+             "checked_at":now(),"certified_market_raw":False,"status":"REVIEW_PENDING"}
+        try:
+            fid=row["asset_id"]
+            meta=call(lambda:api.files().get(fileId=fid,fields="id,name,size,md5Checksum"))
+            if int(meta.get("size") or 0)>max_bytes:raise ValueError("SOURCE_EXCEEDS_40MB_BOUND")
+            blob=call(lambda:api.files().get_media(fileId=fid))
+            if not blob or len(blob)>max_bytes:raise ValueError("SOURCE_BYTES_EMPTY_OR_OVERSIZE")
+            sha=hashlib.sha256(blob).hexdigest()
+            rec.update(source_sha256=sha,source_size=len(blob))
+            expected=row.get("source_sha")
+            if expected and re.fullmatch(r"[0-9a-fA-F]{64}",str(expected)) and sha.lower()!=expected.lower():
+                raise ValueError("SOURCE_SHA_CHANGED")
+            if meta.get("md5Checksum") and hashlib.md5(blob).hexdigest()!=meta["md5Checksum"]:
+                raise ValueError("SOURCE_MD5_CHANGED")
+            filename=str(meta.get("name") or "").lower()
+            qa_row={"file_id":fid,"file_name":meta.get("name") or "unknown",
+                "path":row.get("source_path") or "","source":"TDCC" if "TDCC" in str(row.get("source_path") or "").upper() else "UNKNOWN",
+                "year":"","month":""}
+            structural=qa_bytes(qa_row,blob)
+            rec.update(source_structural_status=structural["status"],source_kind=structural.get("kind"))
+            if row["phase_a_state"]=="ARCHIVE_EVIDENCE_ONLY":
+                rec["status"]="ARCHIVE_STRUCTURE_REVIEW" if structural.get("kind")=="ZIP" else "ARCHIVE_FORMAT_REVIEW"
+                rec["archive_members"]=structural.get("zip_members")
+                rec["archive_member_extensions"]=structural.get("member_extensions")
+            else:
+                dest=row.get("repaired_destination_id")
+                if not dest:raise ValueError("MISSING_REPAIR_DESTINATION")
+                dmeta=call(lambda:api.files().get(fileId=dest,fields="id,name,size,md5Checksum"))
+                if int(dmeta.get("size") or 0)>max_bytes:raise ValueError("DESTINATION_EXCEEDS_40MB_BOUND")
+                dest_blob=call(lambda:api.files().get_media(fileId=dest))
+                dest_sha=hashlib.sha256(dest_blob).hexdigest()
+                rec["destination_sha256"]=dest_sha
+                rec["destination_size"]=len(dest_blob)
+                rec["source_destination_sha_match"]=sha==dest_sha and len(blob)==len(dest_blob)
+                if not rec["source_destination_sha_match"]:raise ValueError("DESTINATION_CONTENT_MISMATCH")
+                rec["status"]="BYTE_MATCH_SEMANTIC_PENDING"
+        except Exception as ex:
+            rec["status"]="QA_BLOCKED"
+            rec["reason"]=type(ex).__name__+":"+str(ex)[:160]
+        reports.append(rec)
+    if len(reports)!=9:raise RuntimeError("TARGETED_QA_EXPECTED_9")
+    return reports
+
 def build(api):
     _,c,q,_=common(api)
     allrows=[]
@@ -108,6 +160,12 @@ def build(api):
       "source_calendar_certified":False,"bronze_semantics_certified":False,
       "next":"Resolve TDCC historical market universe using provider-backed security master; run per-file content QA and promoted-version independent SHA; resolve two non-TDCC exceptions.",
       "note":"Complete A exception accounting, not proof of full phase A repair. A cannot pass until historical TSE/OTC identity is verified."}
+    targeted=verify_targeted_bytes(api,allrows)
+    totals["targeted_nine_byte_qa"] = dict(Counter(r["status"] for r in targeted))
+    totals["targeted_nine_all_checked"] = True
+    put_once(api,q,"v097_PHASE_A_TARGETED_QA_%s.json"%RUN,
+             {"schema":"v097_phase_a_targeted_qa_1","run":RUN,"rows":targeted,
+              "promoted_market_raw":0,"semantic_certified":False})
     put_once(api,q,"v097_PHASE_A_DISPOSITION_ROWS_%s.json"%RUN,
              {"schema":"v097_phase_a_disposition_rows_1","run":RUN,"rows":allrows})
     put_once(api,q,"v097_PHASE_A_DISPOSITION_SUMMARY_%s.json"%RUN,totals)
