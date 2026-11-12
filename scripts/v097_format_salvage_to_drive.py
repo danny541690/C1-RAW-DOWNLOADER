@@ -15,7 +15,7 @@ from scripts.v097_bf_residual_1131 import format_candidates,classify_payload
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 LANE=int(os.getenv("STAGE_LANE","0"))
 CAP=max(1,min(80,int(os.getenv("STAGE_BATCH","25"))))
-NAMESPACE="v097_FORMAT_SALVAGE_HOLD_V2"
+NAMESPACE="v097_FORMAT_SALVAGE_HOLD_V3"
 VALID={
  "TPEx":"TPEX_HTML_TABLE_ADAPTER_AND_DATASET_ORIGIN_PENDING",
  "MOPS":"MOPS_HTML_TABLE_ADAPTER_AND_FINANCIAL_UNITS_PENDING",
@@ -40,7 +40,7 @@ def root(api,create=False):
     info=call(lambda:api.files().get(fileId=bronze,fields="parents"))
     parents=info.get("parents") or []
     if len(parents)!=1:raise RuntimeError("BRONZE_PARENT_AMBIGUOUS")
-    name="00_QUARANTINE_FORMAT_REPAIR_V2"
+    name="00_QUARANTINE_FORMAT_REPAIR_V3"
     f=makefolder(api,parents[0],name) if create else match(api,parents[0],name)
     if not f:raise RuntimeError("FORMAT_HOLD_NOT_BOOTSTRAPPED")
     return f["id"] if isinstance(f,dict) else f
@@ -108,7 +108,7 @@ def copy_item(api,hold,row,verified,audit_lane,lane):
                     source_sha256=digest,dest_sha256=sha(copied),
                     bytes=size,destination_file_id=dest_id,
                     destination_parent_id=month,
-                    destination_path=f"02_DATA_LAKE/00_QUARANTINE_FORMAT_REPAIR_V2/BF_LANE_{lane:02d}/{row['source']}/{row['year']}/{row['month'][-2:]}/{filename}",
+                    destination_path=f"02_DATA_LAKE/00_QUARANTINE_FORMAT_REPAIR_V3/BF_LANE_{lane:02d}/{row['source']}/{row['year']}/{row['month'][-2:]}/{filename}",
                     format_proof=proof)
     except Exception as ex:
         item.update(state="STAGE_BLOCKED",error=type(ex).__name__+":"+str(ex)[:180])
@@ -167,7 +167,7 @@ def summary(api):
         "staged_sha_verified":states["STAGED_SHA_VERIFIED_IN_097_FORMAT_QUARANTINE"],
         "stage_blocked":states["STAGE_BLOCKED"],
         "by_status":dict(states),
-        "target":"JARVIS_C1_v097_LIFECYCLE/02_DATA_LAKE/00_QUARANTINE_FORMAT_REPAIR_V2",
+        "target":"JARVIS_C1_v097_LIFECYCLE/02_DATA_LAKE/00_QUARANTINE_FORMAT_REPAIR_V3",
         "bronze_market_admitted":0,"silver_admitted":0,
         "original_v093_modified":False,
         "note":"Raw source bytes staged in v0.97 quarantine only; financial/market semantics and publication time remain outstanding."}
