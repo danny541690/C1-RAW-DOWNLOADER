@@ -26,10 +26,23 @@ def evaluate(v4):
     if "SOURCE_ROOT_NOT_BOOTSTRAPPED:TDCC_ARCHIVE" in str(v4.get("prior_error") or ""):
         return "ARCHIVE_EVIDENCE_ONLY","INSPECT_ARCHIVE_MEMBERS_AND_SOURCE_PROVENANCE_BEFORE_MARKET_DATA_PROMOTION"
     if cat=="TDCC_IDENTITY":
-        m=TDCC_FILE.search(str(v4.get("source_path") or ""))
-        if not m or not TDCC_CODE.fullmatch(m.group(1).upper()):
-            return "QUARANTINE_TDCC_CODE_FORMAT","NOT_ELIGIBLE_FOR_MARKET_RAW_UNTIL_OFFICIAL_SOURCE_PROOF"
-        return "HOLD_HISTORICAL_MARKET_IDENTITY","VERIFY_SOURCE_HTML_AND_HISTORICAL_TSE_OTC_INSTRUMENT_MASTER"
+        # Filename tokens are not proof of a security ID or market eligibility.
+        path=str(v4.get("source_path") or "")
+        m=re.search(r"(?:distribution|tdcc)[_-](\d{8})[_-]([A-Za-z0-9]{4,6})_",path,re.I)
+        if not m:
+            return "HOLD_TDCC_FILENAME_IDENTITY","VERIFY_ACTUAL_HTML_SECURITY_ID_AND_OFFICIAL_SOURCE"
+        day,token=m.groups()
+        try:
+            parsed=datetime.strptime(day,"%Y%m%d")
+            if parsed.strftime("%Y%m%d")!=day:raise ValueError("bad calendar date")
+        except ValueError:
+            return "HOLD_TDCC_DATE_CONFLICT","VERIFY_CONTENT_DATE_AND_SOURCE_CALENDAR"
+        period=re.search(r"/((?:19|20)\d{2})-(0[1-9]|1[0-2])/",path)
+        if period and day[:6] != period.group(1)+period.group(2):
+            return "HOLD_TDCC_DATE_CONFLICT","VERIFY_CONTENT_DATE_AND_SOURCE_CALENDAR"
+        if day < "20080701":
+            return "HOLD_TDCC_PRE_HISTORY","REVIEW_OFFICIAL_START_MONTH_AND_SOURCE_ORIGIN"
+        return "HOLD_TDCC_SOURCE_AND_HISTORICAL_MASTER","EXTRACT_ACTUAL_HTML_SECURITY_ID_VERIFY_TDCC_PROVENANCE_AND_ASOF_TSE_OTC_MASTER"
     return "BLOCKED_EXCEPTION","SOURCE_ORIGINAL_CONTENT_OR_ADAPTER_REVIEW"
 def verify_targeted_bytes(api, rows):
     """Bounded original/destination byte QA. Never promote or mutate market raw."""
@@ -119,7 +132,7 @@ def build(api):
         raise RuntimeError("KNOWN_REPAIRS_COUNT_MISMATCH")
     if orig_counter["EXCLUDED_FROM_MARKET_RAW"]!=1314:
         raise RuntimeError("CONTROL_COUNT_MISMATCH")
-    if (orig_counter["HOLD_HISTORICAL_MARKET_IDENTITY"] + orig_counter["QUARANTINE_TDCC_CODE_FORMAT"])!=5035:
+    if sum(v for k,v in orig_counter.items() if k.startswith("HOLD_TDCC_"))!=5035:
         raise RuntimeError("TDCC_COUNT_MISMATCH")
     if orig_counter["ARCHIVE_EVIDENCE_ONLY"]!=2 or orig_counter["BLOCKED_EXCEPTION"]:
         raise RuntimeError("TDCC_ARCHIVE_COUNT_MISMATCH")
@@ -149,8 +162,13 @@ def build(api):
       "tdcc_filename_shape_examples":tdcc_samples,
       "validated_repaired_sha_only":7,
       "control_metadata_not_market_raw":1314,
-      "tdcc_pending_historical_instrument_master":orig_counter["HOLD_HISTORICAL_MARKET_IDENTITY"],
-      "tdcc_code_format_quarantined":orig_counter["QUARANTINE_TDCC_CODE_FORMAT"],
+      "tdcc_pending_historical_instrument_master":sum(v for k,v in orig_counter.items() if k.startswith("HOLD_TDCC_")),
+      "tdcc_code_format_quarantined":0,
+      "tdcc_filename_vs_security_id_separated":True,
+      "tdcc_official_historical_master_loaded":False,
+      "tdcc_history_start_month":"2008-07",
+      "tdcc_source_policy":"TDCC history begins July 2008; website retention one year; historical source gaps not presumed retryable",
+      "tdcc_official_references":["https://www.tdcc.com.tw/portal/zh/smWeb/qryStock","https://openapi.tdcc.com.tw/","https://twse-regulation.twse.com.tw/TW/law/DOC01.aspx?FLCODE=FL033103&FLNO=1"],
       "tdcc_archive_pending_member_and_source_review":orig_counter["ARCHIVE_EVIDENCE_ONLY"],
       "unknown_error_categories":orig_counter["BLOCKED_EXCEPTION"],
       "phase_a_exception_classification_complete":True,
@@ -158,7 +176,7 @@ def build(api):
       "all_093_original_unchanged":True,"v3_checkpoints_unchanged":True,
       "official_downloads":0,
       "source_calendar_certified":False,"bronze_semantics_certified":False,
-      "next":"Resolve TDCC historical market universe using provider-backed security master; run per-file content QA and promoted-version independent SHA; resolve two non-TDCC exceptions.",
+      "next":"Verify TDCC source provenance, extract content security ID, as-of TWSE/TPEx common-stock master, then complete nine targeted QA.",
       "note":"Complete A exception accounting, not proof of full phase A repair. A cannot pass until historical TSE/OTC identity is verified."}
     targeted=verify_targeted_bytes(api,allrows)
     totals["targeted_nine_byte_qa"] = dict(Counter(r["status"] for r in targeted))
@@ -172,8 +190,10 @@ def build(api):
     print("PHASE_A="+json.dumps(totals,ensure_ascii=False),flush=True)
 def selftest():
     assert evaluate({"category":"CONTROL_METADATA","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW"})[0]=="EXCLUDED_FROM_MARKET_RAW"
-    assert evaluate({"category":"TDCC_IDENTITY","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW","source_path":"2025/TDCC/2025-11/distribution_20251107_YJR4_hash.html"})[0]=="QUARANTINE_TDCC_CODE_FORMAT"
-    assert evaluate({"category":"TDCC_IDENTITY","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW","source_path":"2025/TDCC/2025-11/distribution_20251107_2330A_hash.html"})[0]=="HOLD_HISTORICAL_MARKET_IDENTITY"
+    assert evaluate({"category":"TDCC_IDENTITY","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW","source_path":"2025/TDCC/2025-11/distribution_20251107_YJR4_hash.html"})[0]=="HOLD_TDCC_SOURCE_AND_HISTORICAL_MASTER"
+    assert evaluate({"category":"TDCC_IDENTITY","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW","source_path":"2025/TDCC/2025-11/distribution_20251107_2330A_hash.html"})[0]=="HOLD_TDCC_SOURCE_AND_HISTORICAL_MASTER"
+    assert evaluate({"category":"TDCC_IDENTITY","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW","source_path":"2025/TDCC/2025-11/distribution_20251007_YJR4_hash.html"})[0]=="HOLD_TDCC_DATE_CONFLICT"
+    assert evaluate({"category":"TDCC_IDENTITY","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW","source_path":"2006/TDCC/2006-11/distribution_20061107_YJR4_hash.html"})[0]=="HOLD_TDCC_PRE_HISTORY"
     assert evaluate({"category":"UNCLASSIFIED_REVIEW","prior_error":"RuntimeError:SOURCE_ROOT_NOT_BOOTSTRAPPED:TDCC_ARCHIVE","status":"NEEDS_SOURCE_OR_ADAPTER_REVIEW"})[0]=="ARCHIVE_EVIDENCE_ONLY"
     assert evaluate({"category":"TRANSIENT_RETRY","status":"REPAIR_QA_PASS"})[0]=="REPAIRED_SHA_VERIFIED_SEMANTIC_PENDING"
     print("PHASE_A_SELFTEST_PASS")
