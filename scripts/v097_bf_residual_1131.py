@@ -111,13 +111,15 @@ def lane_run(api,lane):
         "remaining":len(candidate)-len(ck["done"]),"states":dict(Counter(r["state"] for r in out))},ensure_ascii=False),flush=True)
 def summary(api):
     m,c,q,_=common(api)
-    all_ids=set();total=done_count=0;categories=Counter();states=Counter()
+    all_ids=set();total=done_count=0;categories=Counter();states=Counter();original_qa=Counter();sources=Counter()
     for lane in range(6):
         candidates=relevant(api,m,c,lane)
         ids={r["file_id"] for r,_,_ in candidates}
         if len(ids)!=len(candidates) or ids&all_ids:raise RuntimeError("RESIDUAL_DUPLICATE_OR_CROSS_LANE")
         all_ids.update(ids);total+=len(candidates)
         categories.update(k for _,k,_ in candidates)
+        original_qa.update(str(r.get("prior_status") or "UNKNOWN") for r,_,_ in candidates)
+        sources.update(str(r.get("source") or "UNKNOWN") for r,_,_ in candidates)
         f=match(api,c,NAME+"_CK_%02d.json"%lane)
         ck=load_json(api,f["id"]) if f else {"done":{}}
         if not set(ck["done"]).issubset(ids):raise RuntimeError("RESIDUAL_SUMMARY_ORPHAN")
@@ -129,6 +131,7 @@ def summary(api):
         "frozen_v3_copy_exceptions":6358,
         "residual_expected":TARGET,"residual_checked":done_count,"residual_remaining":remaining,
         "by_category":dict(categories),"by_state":dict(states),
+        "by_original_qa_status":dict(original_qa),"by_original_source":dict(sources),
         "no_r2_receipt_source_rescue_blocked":categories["RESCUE_BLOCKED"],
         "market_raw_promoted":0,"historical_master_certified":False,
         "bronze_full_approved":False,"next":"Resolve source evidence / dataset adapters for held rows without touching verified 74750."}
@@ -141,6 +144,7 @@ def selftest():
     assert group_status({"raw_status":"RAW_REJECT_PATH_CONFLICT","file_id":"x"}, {})=="EVIDENCE_PATH_CONFLICT"
     assert group_status({"raw_status":"A_PASS_CANDIDATE_R2_BYTES","file_id":"x"}, {}) is None
     assert group_status({"raw_status":"RAW_RESCUED_BASIC_CANDIDATE","file_id":"x"}, {}) is None
+    assert sum((1104,19,6,1,1))==TARGET
     print("RESIDUAL_SELFTEST_PASS",flush=True)
 if __name__=="__main__":
     mode=os.getenv("RESIDUAL_MODE","selftest")
