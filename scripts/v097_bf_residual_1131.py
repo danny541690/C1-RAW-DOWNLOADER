@@ -137,6 +137,61 @@ def summary(api):
         "bronze_full_approved":False,"next":"Resolve source evidence / dataset adapters for held rows without touching verified 74750."}
     put_once(api,q,NAME+"_SUMMARY_%s.json"%RUN,result)
     print("RESIDUAL_SUMMARY="+json.dumps(result,ensure_ascii=False),flush=True)
+
+def diagnose(api):
+    """Small, provenance-safe format fingerprints for JSON errors & oversized files."""
+    import gzip,zipfile,io
+    m,c,q,_=common(api)
+    chosen={}
+    for lane in range(6):
+        for row,category,audit_lane in relevant(api,m,c,lane):
+            key=(str(row.get("source") or "UNKNOWN"),str(row.get("prior_status") or "UNKNOWN"))
+            if len(chosen.get(key,[])) < 3:
+                chosen.setdefault(key,[]).append((row,category))
+    items=[]
+    for (source,prior),rows in chosen.items():
+        for row,category in rows:
+            fid=row["file_id"]
+            info={"source":source,"prior_status":prior,"category":category,
+                  "file_id":fid,"file_name":row.get("file_name"),"path":row.get("path")}
+            try:
+                meta=call(lambda:api.files().get(fileId=fid,fields="id,name,size,mimeType,md5Checksum"))
+                length=int(meta.get("size") or 0)
+                info.update(byte_size=length,mimeType=meta.get("mimeType"))
+                if 0<length<=2*1024*1024:
+                    raw=call(lambda:api.files().get_media(fileId=fid))
+                    stripped=raw.lstrip()
+                    info.update(sha256=sha(raw),raw_magic_hex=raw[:16].hex(),
+                                likely_json=stripped.startswith((b"{",b"[")),
+                                likely_html=stripped.lower().startswith((b"<!doctype",b"<html")),
+                                likely_zip=raw.startswith(b"PK\x03\x04"),
+                                likely_gzip=raw.startswith(b"\x1f\x8b"))
+                    if raw.startswith((b"{",b"[")) or stripped.startswith((b"{",b"[")):
+                        try:
+                            parsed=json.loads(raw.decode("utf-8-sig"))
+                            info.update(json_valid=True,json_top_type=type(parsed).__name__,
+                                        json_rows=len(parsed) if isinstance(parsed,list) else None)
+                        except Exception as err:
+                            info.update(json_valid=False,json_error=type(err).__name__+":"+str(err)[:140])
+                    if raw.startswith(b"PK\x03\x04"):
+                        try:
+                            with zipfile.ZipFile(io.BytesIO(raw)) as z:
+                                info.update(zip_test_result=z.testzip(),zip_members=len(z.namelist()))
+                        except Exception as err:
+                            info.update(zip_error=type(err).__name__+":"+str(err)[:140])
+                else:info["bytes_not_downloaded"]="ZERO_OR_GT_2_MB"
+            except Exception as err:
+                info["diagnostic_error"]=type(err).__name__+":"+str(err)[:180]
+            items.append(info)
+    report={"schema":"v097_bf_residual_format_diagnosis_1","run":RUN,
+            "at":now(),"sample_count":len(items),"samples":items,
+            "source_unchanged":True,"market_raw_promoted":0,
+            "note":"These are tiny diagnostic samples, never full dataset certification."}
+    put_once(api,q,"v097_BF_RESIDUAL_FORMAT_DIAG_%s.json"%RUN,report)
+    counts=Counter((i["source"],i["prior_status"],i.get("likely_json"),i.get("json_valid"),
+                    i.get("likely_html"),i.get("likely_zip")) for i in items)
+    print("FORMAT_DIAG="+json.dumps({"run":RUN,"samples":items,"counts":{str(k):v for k,v in counts.items()}},ensure_ascii=False),flush=True)
+
 def selftest():
     assert group_status({"raw_status":"RAW_REVIEW_QUARANTINED","file_id":"x"}, {})=="LEGACY_QUARANTINE_REVIEW"
     assert group_status({"raw_status":"RAW_UNKNOWN_NO_R2_RECEIPT","file_id":"x"},{"x":{"state":"RAW_RESCUE_BLOCKED"}})=="RESCUE_BLOCKED"
@@ -153,4 +208,5 @@ if __name__=="__main__":
         api=service()
         if mode=="lane":lane_run(api,int(os.environ["RESIDUAL_LANE"]))
         elif mode=="aggregate":summary(api)
+        elif mode=="diagnose":diagnose(api)
         else:raise SystemExit("BAD_MODE")
