@@ -1,0 +1,110 @@
+name: JARVIS v0.97 - A1-A5 automatic TDCC recovery
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_a3_a5_auto.py'
+      - '.github/workflows/v097-a1-a5-auto.yml'
+  schedule:
+    - cron: '*/15 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-a1-a5-auto-single-writer
+  cancel-in-progress: false
+jobs:
+  a1-rule-tests:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and verify A1-A5 rules before any Drive access
+        run: |
+          python -m py_compile scripts/v097_phase_a_disposition.py scripts/v097_tdcc_a3_a5_auto.py
+          PYTHONPATH=. python scripts/v097_phase_a_disposition.py
+          PYTHONPATH=. python scripts/v097_tdcc_a3_a5_auto.py
+
+  a2-reconcile:
+    needs: a1-rule-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: A2 frozen-exception reconciliation and nine-file QA
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          PHASE_A_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_phase_a_disposition.py
+
+  a3-official-source-snapshot:
+    needs: a2-reconcile
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: A3 official TDCC current snapshot, historical identity remains gated
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_A_MODE: a3
+        run: PYTHONPATH=. python scripts/v097_tdcc_a3_a5_auto.py
+
+  a4-six-lane-tdcc-inspection:
+    needs: a3-official-source-snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: A4 inspect unprocessed TDCC originals; receipt before checkpoint
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_A_MODE: a4
+          TDCC_A_LANE: ${{ matrix.lane }}
+          TDCC_A4_BATCH: '100'
+        run: PYTHONPATH=. python scripts/v097_tdcc_a3_a5_auto.py
+
+  a5-accounting-and-gate:
+    needs: a4-six-lane-tdcc-inspection
+    if: always() && needs.a4-six-lane-tdcc-inspection.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: A5 publish count reconciliation, remaining exceptions and blockers
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_A_MODE: a5
+        run: PYTHONPATH=. python scripts/v097_tdcc_a3_a5_auto.py
