@@ -10,7 +10,7 @@ from datetime import datetime,timezone
 from scripts.v097_bronze_first_pipeline import service,common,match,load_json,put_once,upsert,call,raw_integrity
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 BATCH=max(1,min(100,int(os.getenv("RESIDUAL_BATCH","60"))))
-NAME="v097_BF_RESIDUAL_V1"
+NAME="v097_BF_RESIDUAL_V2"
 MAX_BYTES=40*1024*1024
 TARGET=1131
 def now():return datetime.now(timezone.utc).isoformat()
@@ -27,7 +27,8 @@ def group_status(row,rescue):
     if state=="RAW_REJECT_PATH_CONFLICT":return "EVIDENCE_PATH_CONFLICT"
     if state=="RAW_UNKNOWN_SOURCE":return "SOURCE_NAMESPACE_REVIEW"
     if state=="RAW_BLOCKED_PARSER_OR_SIZE":return "STRUCTURE_OR_SIZE_REVIEW"
-    return "OTHER_RAW_AUDIT_REVIEW"
+    # All approved / rescued raw records already passed the migration path. Never rescan them.
+    return None
 def relevant(api,m,c,lane):
     rows=[]
     for audit_lane in (lane,lane+6):
@@ -84,8 +85,8 @@ def lane_run(api,lane):
     candidate=relevant(api,m,c,lane)
     name=NAME+"_CK_%02d.json"%lane
     f=match(api,c,name)
-    ck=load_json(api,f["id"]) if f else {"schema":"v097_bf_residual_ck_1","lane":lane,"done":{}}
-    if ck.get("schema")!="v097_bf_residual_ck_1" or ck.get("lane")!=lane:
+    ck=load_json(api,f["id"]) if f else {"schema":"v097_bf_residual_ck_2","lane":lane,"done":{}}
+    if ck.get("schema")!="v097_bf_residual_ck_2" or ck.get("lane")!=lane:
         raise RuntimeError("RESIDUAL_CHECKPOINT_CONFLICT")
     known={r["file_id"] for r,_,_ in candidate}
     if not set(ck["done"]).issubset(known):raise RuntimeError("RESIDUAL_CHECKPOINT_ORPHAN")
@@ -99,7 +100,7 @@ def lane_run(api,lane):
             raise RuntimeError("RESIDUAL_RECEIPT_ORPHAN")
     else:
         out=[inspect(api,r,k,a) for r,k,a in todo]
-        put_once(api,q,receipt,{"schema":"v097_bf_residual_receipt_1","run":RUN,
+        put_once(api,q,receipt,{"schema":"v097_bf_residual_receipt_2","run":RUN,
             "lane":lane,"offset":offset,"utc":now(),"rows":out,"promoted":0})
     for r in out:
         ck["done"][r["file_id"]]={"state":r["state"],"run":RUN,
@@ -123,7 +124,7 @@ def summary(api):
         done_count+=len(ck["done"]);states.update(v["state"] for v in ck["done"].values())
     if total!=TARGET:raise RuntimeError("RESIDUAL_EXPECTED_%d_GOT_%d"%(TARGET,total))
     remaining=total-done_count
-    result={"schema":"v097_bf_residual_overview_1","run":RUN,"at":now(),
+    result={"schema":"v097_bf_residual_overview_2","run":RUN,"at":now(),
         "source_inventory":82273,"v3_copy_qa_pass":74750,
         "frozen_v3_copy_exceptions":6358,
         "residual_expected":TARGET,"residual_checked":done_count,"residual_remaining":remaining,
@@ -138,6 +139,8 @@ def selftest():
     assert group_status({"raw_status":"RAW_UNKNOWN_NO_R2_RECEIPT","file_id":"x"},{"x":{"state":"RAW_RESCUE_BLOCKED"}})=="RESCUE_BLOCKED"
     assert group_status({"raw_status":"RAW_UNKNOWN_NO_R2_RECEIPT","file_id":"x"},{"x":{"state":"RAW_RESCUED_BASIC_CANDIDATE"}}) is None
     assert group_status({"raw_status":"RAW_REJECT_PATH_CONFLICT","file_id":"x"}, {})=="EVIDENCE_PATH_CONFLICT"
+    assert group_status({"raw_status":"A_PASS_CANDIDATE_R2_BYTES","file_id":"x"}, {}) is None
+    assert group_status({"raw_status":"RAW_RESCUED_BASIC_CANDIDATE","file_id":"x"}, {}) is None
     print("RESIDUAL_SELFTEST_PASS",flush=True)
 if __name__=="__main__":
     mode=os.getenv("RESIDUAL_MODE","selftest")
