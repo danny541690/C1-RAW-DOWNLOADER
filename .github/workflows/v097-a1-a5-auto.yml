@@ -88,8 +88,12 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           TDCC_A_MODE: a4
           TDCC_A_LANE: ${{ matrix.lane }}
-          TDCC_A4_BATCH: '100'
-        run: PYTHONPATH=. python scripts/v097_tdcc_a3_a5_auto.py
+          TDCC_A4_BATCH: '250'
+        run: |
+          for batch in 1 2 3 4 5 6; do
+            echo "TDCC_A4_INCREMENTAL_BATCH=$batch"
+            PYTHONPATH=. python scripts/v097_tdcc_a3_a5_auto.py
+          done
 
   a5-accounting-and-gate:
     needs: a4-six-lane-tdcc-inspection
