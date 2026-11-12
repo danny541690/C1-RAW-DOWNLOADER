@@ -71,11 +71,30 @@ def build(api):
         raise RuntimeError("TDCC_COUNT_MISMATCH")
     if orig_counter["ARCHIVE_EVIDENCE_ONLY"]!=2 or orig_counter["BLOCKED_EXCEPTION"]:
         raise RuntimeError("TDCC_ARCHIVE_COUNT_MISMATCH")
+    # Bounded diagnostic: describe TDCC filename code shapes without making any identity claim.
+    tdcc_shapes=Counter()
+    tdcc_samples={}
+    for r in allrows:
+        if r["category"]!="TDCC_IDENTITY":continue
+        p=str(r.get("source_path") or "")
+        m=TDCC_FILE.search(p)
+        if not m: shape="NO_RECOGNIZED_FILENAME_CODE"
+        else:
+            code=m.group(1).upper()
+            if code.isdigit(): shape="DIGITS_ONLY"
+            elif code[:4].isdigit() and any(c.isalpha() for c in code[4:]): shape="NUMERIC_PREFIX_ALPHA_SUFFIX"
+            elif any(c.isalpha() for c in code): shape="MIXED_OR_ALPHA_CODE"
+            else: shape="OTHER_CODE_SHAPE"
+        tdcc_shapes[shape]+=1
+        if shape not in tdcc_samples:tdcc_samples[shape]=p.rsplit("/",1)[-1][:120]
+    if sum(tdcc_shapes.values())!=5035:raise RuntimeError("TDCC_DIAGNOSTIC_COUNT_MISMATCH")
     # Immutable evidence: no modification of legacy snapshots or v0.97 original V3 checkpoints.
     totals={"schema":"v097_phase_a_disposition_1","run":RUN,"at":now(),
       "source_runs":{"v3":"43152577099","v4":V4_RUN,"v5":V5_RUN},
       "original_exception_count":EXPECTED,"unique_file_ids":len({r["asset_id"] for r in allrows}),
       "by_disposition":dict(orig_counter),
+      "tdcc_filename_shape_counts":dict(tdcc_shapes),
+      "tdcc_filename_shape_examples":tdcc_samples,
       "validated_repaired_sha_only":7,
       "control_metadata_not_market_raw":1314,
       "tdcc_pending_historical_instrument_master":orig_counter["HOLD_HISTORICAL_MARKET_IDENTITY"],
