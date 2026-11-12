@@ -1,0 +1,69 @@
+name: JARVIS v0.97 - V4 unified exception triage and safe repair
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v097-v4-unified-repair.yml'
+      - 'scripts/v097_bronze_v4_exception_repair.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-v4-exception-repair-single
+  cancel-in-progress: false
+jobs:
+  preflight:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Compile and run repair classification tests
+        run: |
+          python -m py_compile scripts/v097_bronze_v4_exception_repair.py
+          PYTHONPATH=. python scripts/v097_bronze_v4_exception_repair.py
+  six-lane-exception-repair:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Classify all frozen V3 copy exceptions and safely retry only transient failures
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BF_REPAIR_MODE: lane
+          BF_REPAIR_LANE: ${{ matrix.lane }}
+          BF_REPAIR_RETRY_CAP: '15'
+        run: PYTHONPATH=. python scripts/v097_bronze_v4_exception_repair.py
+  aggregate:
+    needs: six-lane-exception-repair
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Publish one consolidated immutable error and recovery receipt in Drive
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BF_REPAIR_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_bronze_v4_exception_repair.py
