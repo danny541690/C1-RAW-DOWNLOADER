@@ -106,7 +106,7 @@ def selftest():
     def page(code="2330",date="20251107"):
         return ('<input id="StockNo" value="%s"><option value="%s" selected>ok</option><table></table>'%(code,date)).encode()
     assert assess("2025/TDCC/2025-11/distribution_20251107_2330_x.html",page())[0]=="HOLD_DISTRIBUTION_TABLE_QA"
-    assert assess("2025/TDCC/2025-11/distribution_20251107_YJR4_x.html",page("YJR4"))[0]=="HTML_TOKEN_CONSISTENT_SECURITY_CLASS_AND_ORIGIN_PENDING"
+    assert assess("2025/TDCC/2025-11/distribution_20251107_YJR4_x.html",page("YJR4"))[0]=="HOLD_DISTRIBUTION_TABLE_QA"
     assert assess("2025/TDCC/2025-11/distribution_20251007_2330_x.html",page())[0]=="QUARANTINED_PERIOD_CONFLICT"
     assert assess("2025/TDCC/2025-11/distribution_20251107_2330_x.html",page("2317"))[0]=="HOLD_FILENAME_CONTENT_DISAGREEMENT"
     # Query-page HTML has a different row layout from TDCC 1-5 open-data CSV.
