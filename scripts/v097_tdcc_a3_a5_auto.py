@@ -67,6 +67,10 @@ def selftest():
     print("A3_A5_SELFTEST_PASS",flush=True)
 def a3(api):
     _,_,q,_=common(api)
+    existing=match(api,q,"v097_TDCC_A3_CURRENT_%s.json"%RUN)
+    if existing:
+        print("A3_REUSED="+json.dumps(load_json(api,existing["id"]),ensure_ascii=False),flush=True)
+        return
     evidence={"schema":"v097_tdcc_a3_official_snapshot_1","run":RUN,"utc":now(),
         "url":MASTER_URL,"historical_asof_master_verified":False,
         "historical_market_membership_authorized":False,
@@ -93,6 +97,16 @@ def a4(api,lane):
         raise RuntimeError("A4_CHECKPOINT_SCHEMA_CONFLICT")
     done=ck["done"]
     todo=[x for x in rows if x["file_id"] not in done][:LANE_CAP]
+    receipt="%s_%s_L%02d.json"%(PREFIX,RUN,lane)
+    prior_receipt=match(api,q,receipt)
+    if prior_receipt:
+        prior=load_json(api,prior_receipt["id"])
+        outcomes=prior["items"]
+        for item in outcomes:
+            done[item["file_id"]]={"status":item["status"],"run":RUN}
+        upsert(api,c,ck_name,{"schema":"v097_tdcc_a4_checkpoint_1","lane":lane,"done":done,"updated_at":now()})
+        print("A4_REPLAY_RECOVERED="+json.dumps({"lane":lane,"recovered":len(outcomes),"processed":len(done)},ensure_ascii=False),flush=True)
+        return
     outcomes=[]
     for r in todo:
         fid=r["file_id"]
@@ -114,7 +128,6 @@ def a4(api,lane):
                 if isinstance(e,ValueError):break
                 if attempt<2:time.sleep(1+attempt)
         outcomes.append(rec)
-    receipt="%s_%s_L%02d.json"%(PREFIX,RUN,lane)
     put_once(api,q,receipt,{"schema":"v097_tdcc_a4_lane_1","run":RUN,"lane":lane,
         "items":outcomes,"batch":len(outcomes),"utc":now(),"market_promotions":0})
     # Receipt first, then checkpoint; replay-safe after interruption.
@@ -125,6 +138,10 @@ def a4(api,lane):
        "total":len(rows),"remaining":max(0,len(rows)-len(done)),"statuses":dict(counts)},ensure_ascii=False),flush=True)
 def a5(api):
     _,c,q,_=common(api)
+    existing=match(api,q,"v097_TDCC_A5_SUMMARY_%s.json"%RUN)
+    if existing:
+        print("A5_REUSED="+json.dumps(load_json(api,existing["id"]),ensure_ascii=False),flush=True)
+        return
     counts=Counter();remaining=0;processed=0;total=0;seen=set()
     for lane in range(6):
         rows=source_rows(api,q,lane)
