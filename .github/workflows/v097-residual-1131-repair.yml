@@ -1,0 +1,76 @@
+name: JARVIS v0.97 - residual 1131 source exception repair audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_bf_residual_1131.py'
+      - '.github/workflows/v097-residual-1131-repair.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-residual-1131-single-writer
+  cancel-in-progress: false
+jobs:
+  preflight:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Verify safe classifier before Drive access
+        run: |
+          python -m py_compile scripts/v097_bf_residual_1131.py
+          PYTHONPATH=. python scripts/v097_bf_residual_1131.py
+  six-lane-residual-raw-audit:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    strategy:
+      max-parallel: 6
+      fail-fast: false
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Inspect only residual raw originals; never mutate v0.93 or Bronze
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          RESIDUAL_MODE: lane
+          RESIDUAL_LANE: ${{ matrix.lane }}
+          RESIDUAL_BATCH: '60'
+        run: |
+          for batch in 1 2 3 4 5; do
+            echo "RESIDUAL_BATCH_NUMBER=$batch"
+            PYTHONPATH=. python scripts/v097_bf_residual_1131.py
+          done
+  aggregate:
+    needs: six-lane-residual-raw-audit
+    if: always() && needs.six-lane-residual-raw-audit.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Publish six-lane reconciliation and exception ledger to Drive
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          RESIDUAL_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_bf_residual_1131.py
