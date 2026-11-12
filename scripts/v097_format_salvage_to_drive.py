@@ -15,7 +15,7 @@ from scripts.v097_bf_residual_1131 import format_candidates,classify_payload
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 LANE=int(os.getenv("STAGE_LANE","0"))
 CAP=max(1,min(80,int(os.getenv("STAGE_BATCH","25"))))
-NAMESPACE="v097_FORMAT_SALVAGE_HOLD_V1"
+NAMESPACE="v097_FORMAT_SALVAGE_HOLD_V2"
 VALID={
  "TPEx":"TPEX_HTML_TABLE_ADAPTER_AND_DATASET_ORIGIN_PENDING",
  "MOPS":"MOPS_HTML_TABLE_ADAPTER_AND_FINANCIAL_UNITS_PENDING",
@@ -34,14 +34,21 @@ def safe_path(row):
     if not re.fullmatch(year+r"-(0[1-9]|1[0-2])",month):return False
     if not path.startswith(year+"/"+source+"/"+month+"/"):return False
     return True
-def root(api):
+def root(api,create=False):
     _,_,_,bronze=common(api)
-    # Parent of 01_BRONZE_ORIGINAL is 02_DATA_LAKE, and this target
-    # is a sibling quarantine, NOT a child of Bronze.
+    # Parent of 01_BRONZE_ORIGINAL is 02_DATA_LAKE; quarantine is its sibling.
     info=call(lambda:api.files().get(fileId=bronze,fields="parents"))
     parents=info.get("parents") or []
     if len(parents)!=1:raise RuntimeError("BRONZE_PARENT_AMBIGUOUS")
-    return makefolder(api,parents[0],"00_QUARANTINE_FORMAT_REPAIR")
+    name="00_QUARANTINE_FORMAT_REPAIR_V2"
+    f=makefolder(api,parents[0],name) if create else match(api,parents[0],name)
+    if not f:raise RuntimeError("FORMAT_HOLD_NOT_BOOTSTRAPPED")
+    return f["id"] if isinstance(f,dict) else f
+def bootstrap(api):
+    hold=root(api,create=True)
+    for lane in range(6):
+        makefolder(api,hold,"BF_LANE_%02d"%lane)
+    print("SALVAGE_V2_BOOTSTRAP_READY",flush=True)
 def candidate_inputs(api,m,c,lane):
     qa=match(api,c,"v097_BF_RESIDUAL_FORMAT_V1_CK_%02d.json"%lane)
     if not qa:raise RuntimeError("MISSING_FORMAT_QA_CK_%02d"%lane)
@@ -101,14 +108,17 @@ def copy_item(api,hold,row,verified,audit_lane,lane):
                     source_sha256=digest,dest_sha256=sha(copied),
                     bytes=size,destination_file_id=dest_id,
                     destination_parent_id=month,
-                    destination_path=f"02_DATA_LAKE/00_QUARANTINE_FORMAT_REPAIR/{row['source']}/{row['year']}/{row['month'][-2:]}/{filename}",
+                    destination_path=f"02_DATA_LAKE/00_QUARANTINE_FORMAT_REPAIR_V2/BF_LANE_{lane:02d}/{row['source']}/{row['year']}/{row['month'][-2:]}/{filename}",
                     format_proof=proof)
     except Exception as ex:
         item.update(state="STAGE_BLOCKED",error=type(ex).__name__+":"+str(ex)[:180])
     return item
 def lane_run(api,lane):
     m,c,q,_=common(api)
-    target=root(api)
+    hold=root(api)
+    target=match(api,hold,"BF_LANE_%02d"%lane)
+    if not target:raise RuntimeError("LANE_HOLD_NOT_BOOTSTRAPPED")
+    target=target["id"]
     rows=candidate_inputs(api,m,c,lane)
     name=f"{NAMESPACE}_CK_{lane:02d}.json"
     f=match(api,c,name)
@@ -157,7 +167,7 @@ def summary(api):
         "staged_sha_verified":states["STAGED_SHA_VERIFIED_IN_097_FORMAT_QUARANTINE"],
         "stage_blocked":states["STAGE_BLOCKED"],
         "by_status":dict(states),
-        "target":"JARVIS_C1_v097_LIFECYCLE/02_DATA_LAKE/00_QUARANTINE_FORMAT_REPAIR",
+        "target":"JARVIS_C1_v097_LIFECYCLE/02_DATA_LAKE/00_QUARANTINE_FORMAT_REPAIR_V2",
         "bronze_market_admitted":0,"silver_admitted":0,
         "original_v093_modified":False,
         "note":"Raw source bytes staged in v0.97 quarantine only; financial/market semantics and publication time remain outstanding."}
@@ -174,6 +184,7 @@ if __name__=="__main__":
     if mode=="selftest":selftest()
     else:
         api=service()
-        if mode=="lane":lane_run(api,LANE)
+        if mode=="bootstrap":bootstrap(api)
+        elif mode=="lane":lane_run(api,LANE)
         elif mode=="summary":summary(api)
         else:raise SystemExit("BAD_SALVAGE_MODE")
