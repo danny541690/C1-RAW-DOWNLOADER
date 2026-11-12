@@ -13,7 +13,7 @@ V4_RUN="43156776265"
 V5_RUN="43157865636"
 EXPECTED=6358
 def now():return datetime.now(timezone.utc).isoformat()
-TDCC_FILE=re.compile(r"(?:distribution|tdcc)[_-]\\d{8}[_-]([A-Za-z0-9]{4,6})_",re.I)
+TDCC_FILE=re.compile(r"(?:distribution|tdcc)[_-]\d{8}[_-]([A-Za-z0-9]{4,6})_",re.I)
 TDCC_CODE=re.compile(r"^[0-9]{4}[A-Z0-9]{0,2}$")
 def evaluate(v4):
     cat=v4["category"]
