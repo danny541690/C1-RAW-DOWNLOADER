@@ -15,7 +15,7 @@ LANE_CAP=max(1,min(250,int(os.getenv("TDCC_A4_BATCH","100"))))
 MAX_BYTES=4*1024*1024
 MASTER_URL="https://openapi.tdcc.com.tw/v1/opendata/1-1"
 PREFIX="v097_TDCC_A4_V3"
-CODE=re.compile(r"^[0-9]{4}[A-Z0-9]{0,2}$")
+CODE=re.compile(r"^[0-9]{4}$")  # JARVIS listed/OTC ordinary-share target, not all TDCC securities
 TOKEN=re.compile(r"^[A-Z0-9]{4,6}$")
 FILE=re.compile(r"(?:distribution|tdcc)[_-](\d{8})[_-]([A-Za-z0-9]{4,6})_",re.I)
 def now():return datetime.now(timezone.utc).isoformat()
@@ -159,6 +159,7 @@ def official_market_roster_snapshots(api,q):
         ("TPEx_CSV_FALLBACK","https://mopsfin.twse.com.tw/opendata/t187ap03_O.csv"),
     ]
     results=[]
+    code_sets={}
     for source,url in sources:
         rec={"source":source,"url":url,"asof_historical_certified":False,
              "current_snapshot_only":True}
@@ -194,6 +195,7 @@ def official_market_roster_snapshots(api,q):
                     code=str(row.get("公司代號",row.get("SecuritiesCompanyCode",""))).strip()
                     if re.fullmatch(r"\d{4}",code):codes.add(code)
                     else:bad+=1
+                code_sets[source]=codes
                 rec.update(status="READABLE_CURRENT_ROSTER",bytes=size,
                            sha256=sha(payload),records=len(rows),
                            four_digit_company_codes=len(codes),
@@ -202,10 +204,16 @@ def official_market_roster_snapshots(api,q):
         except Exception as e:
             rec.update(status="ROSTER_UNAVAILABLE",reason=type(e).__name__+":"+str(e)[:150])
         results.append(rec)
+    compare={"status":"NOT_BOTH_AVAILABLE"}
+    if "TPEx" in code_sets and "TPEx_CSV_FALLBACK" in code_sets:
+        lhs=code_sets["TPEx"];rhs=code_sets["TPEx_CSV_FALLBACK"]
+        compare={"status":"SAME_CODES" if lhs==rhs else "CODE_SET_CONFLICT",
+                 "only_tpex_api":len(lhs-rhs),"only_official_csv":len(rhs-lhs),
+                 "tpex_shared":len(lhs & rhs)}
     put_once(api,q,"v097_TWSE_TPEX_CURRENT_ROSTER_%s.json"%RUN,
              {"schema":"v097_market_roster_snapshot_1","run":RUN,"at":now(),
-              "historical_master_certified":False,"results":results})
-    print("A3_MARKET_ROSTER="+json.dumps(results,ensure_ascii=False),flush=True)
+              "historical_master_certified":False,"results":results,"tpex_api_csv_crosscheck":compare})
+    print("A3_MARKET_ROSTER="+json.dumps({"results":results,"tpex_api_csv_crosscheck":compare},ensure_ascii=False),flush=True)
     return results
 
 def a4(api,lane):
@@ -281,15 +289,20 @@ def a5(api):
         processed+=len(done);remaining+=len(rows)-len(done)
         counts.update(v["status"] for v in done.values())
     if total!=5035 or processed+remaining!=total:raise RuntimeError("A5_ACCOUNTING_FAIL")
+    rule_excluded=counts.get("HTML_TOKEN_CONSISTENT_SECURITY_CLASS_AND_ORIGIN_PENDING",0)
+    # Exclusion is scope-only: no source authentication or as-of historical certification.
     report={"schema":"v097_tdcc_a5_overview_3","run":RUN,"at":now(),
         "tdcc_exception_total":total,"checked":processed,"remaining":remaining,
+        "listed_otc_ordinary_stock_excluded_by_official_code_rule":rule_excluded,
+        "rule_exclusion_without_origin_certification":True,
+        "official_market_symbol_rule":"TWSE ordinary-share code: 4 digits; nonnumeric TDCC identifiers excluded only from target stock universe",
         "by_status":dict(counts),"market_identity_certified":0,
         "official_provenance_certified":0,"market_raw_promoted":0,
         "all_exceptions_triaged":remaining==0,
         "phase_a_certified":False,
         "blockers":["Historical as-of TWSE/TPEx common-stock master not yet certified",
                     "Per-file official TDCC origin evidence not yet certified"],
-        "note":"Processed means inspected with receipts, not historical market eligibility."}
+        "note":"Processed means inspected with receipts, not historical market eligibility. Non-four-digit ID may be valid TDCC nonlisted security; scope-exclusion only, never delete original."}
     put_once(api,q,"v097_TDCC_A5_V3_SUMMARY_%s.json"%RUN,report)
     print("A5="+json.dumps(report,ensure_ascii=False),flush=True)
     if os.getenv("GITHUB_OUTPUT"):
