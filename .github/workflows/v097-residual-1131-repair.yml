@@ -92,3 +92,49 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           RESIDUAL_MODE: diagnose
         run: PYTHONPATH=. python scripts/v097_bf_residual_1131.py
+
+  six-lane-html-adapter-qa:
+    needs: diagnose-format-causes
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Reparse only prior JSON failures using actual HTML structure; no Bronze writes
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          RESIDUAL_MODE: format_lane
+          FORMAT_LANE: ${{ matrix.lane }}
+          FORMAT_BATCH: '100'
+        run: |
+          for batch in 1 2 3 4 5; do
+            PYTHONPATH=. python scripts/v097_bf_residual_1131.py
+          done
+  html-adapter-qa-summary:
+    needs: six-lane-html-adapter-qa
+    if: always() && needs.six-lane-html-adapter-qa.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Publish 1104-case adapter QA dispositions and source-specific blockers to Google Drive
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          RESIDUAL_MODE: format_summary
+        run: PYTHONPATH=. python scripts/v097_bf_residual_1131.py
