@@ -27,8 +27,25 @@ jobs:
       - run: |
           python -m py_compile scripts/v097_format_salvage_to_drive.py
           PYTHONPATH=. python scripts/v097_format_salvage_to_drive.py
-  copy-into-097-format-quarantine:
+  bootstrap-single-writer:
     needs: selftest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Create exactly one 097 quarantine root and six lane roots before parallel upload
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SALVAGE_MODE: bootstrap
+        run: PYTHONPATH=. python scripts/v097_format_salvage_to_drive.py
+  copy-into-097-format-quarantine:
+    needs: bootstrap-single-writer
     runs-on: ubuntu-latest
     timeout-minutes: 110
     strategy:
