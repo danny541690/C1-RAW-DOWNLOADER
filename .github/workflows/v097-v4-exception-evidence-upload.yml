@@ -7,7 +7,7 @@ on:
       - '.github/workflows/v097-v4-exception-evidence-upload.yml'
   workflow_dispatch:
   schedule:
-    - cron: '37 * * * *'
+    - cron: '7,22,37,52 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -70,7 +70,11 @@ jobs:
           V4_HOLD_BATCH: '80'
         run: |
           for round in 1 2 3 4 5 6 7 8 9 10 11 12; do
-            PYTHONPATH=. python scripts/v097_v4_exception_evidence_upload.py
+            status=$(PYTHONPATH=. python scripts/v097_v4_exception_evidence_upload.py)
+            echo "$status"
+            if echo "$status" | grep -q '"remaining": 0'; then
+              break
+            fi
           done
   consolidated-receipt:
     needs: six-lane-evidence
