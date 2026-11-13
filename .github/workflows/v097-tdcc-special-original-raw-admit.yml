@@ -1,0 +1,93 @@
+name: JARVIS v0.97 - Admit 2377 independently checked TDCC special originals
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_special_raw_3way_admit.py'
+      - '.github/workflows/v097-tdcc-special-original-raw-admit.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '24,54 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-nonstock-special-raw-admit
+  cancel-in-progress: false
+jobs:
+  selftest:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - run: |
+          python -m py_compile scripts/v097_tdcc_special_raw_3way_admit.py
+          PYTHONPATH=. python scripts/v097_tdcc_special_raw_3way_admit.py
+  bootstrap:
+    needs: selftest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Set up isolated special-security raw 0.97 location
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SPECIAL_RAW_MODE: bootstrap
+        run: PYTHONPATH=. python scripts/v097_tdcc_special_raw_3way_admit.py
+  copy-proof-six-lanes:
+    needs: bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 115
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Original SHA+quarantine SHA+independent holding total proof+destination SHA before nonstock RAW admission
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SPECIAL_RAW_MODE: lane
+          SPECIAL_RAW_LANE: ${{ matrix.lane }}
+          SPECIAL_RAW_BATCH: '28'
+        run: |
+          for step in $(seq 1 18); do
+            result=$(PYTHONPATH=. python scripts/v097_tdcc_special_raw_3way_admit.py)
+            echo "$result"
+            if echo "$result" | grep -q '"remaining": 0'; then break; fi
+          done
+  summary:
+    needs: copy-proof-six-lanes
+    if: always() && needs.copy-proof-six-lanes.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Publish exact nonstock raw pass count; ordinary-stock Bronze unchanged
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SPECIAL_RAW_MODE: summary
+        run: PYTHONPATH=. python scripts/v097_tdcc_special_raw_3way_admit.py
