@@ -1,0 +1,28 @@
+name: JARVIS v0.97 - TDCC official same-date totals proof
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_official_same_day_compare.py'
+      - '.github/workflows/v097-tdcc-official-same-date-compare.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Same date same code official 2026/09/18 10/02 10/16 holdings and stock control
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m py_compile scripts/v097_tdcc_official_same_day_compare.py
+          PYTHONPATH=. python scripts/v097_tdcc_official_same_day_compare.py
