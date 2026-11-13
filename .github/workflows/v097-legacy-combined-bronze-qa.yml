@@ -1,0 +1,77 @@
+name: JARVIS v0.97 - Merged original Bronze QA and conditional admission
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_legacy_combined_bronze_raw_admit.py'
+      - '.github/workflows/v097-legacy-combined-bronze-qa.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '21,51 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-legacy-combined-original-bronze-qa-single
+  cancel-in-progress: false
+jobs:
+  selftest:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Compile and test original Bronze fail-closed numeric and time gates
+        run: |
+          python -m py_compile scripts/v097_legacy_combined_bronze_raw_admit.py
+          PYTHONPATH=. python scripts/v097_legacy_combined_bronze_raw_admit.py
+  six-lane-copy-and-independent-qa:
+    needs: selftest
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Revalidate parsed TPEx/MOPS -> source -> destination by SHA/period/numerics; add passing native original RAW to Bronze
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          COMBINED_QA_MODE: lane
+          LEGACY_BRONZE_LANE: ${{ matrix.lane }}
+          LEGACY_BRONZE_BATCH: '90'
+        run: |
+          for n in $(seq 1 10); do
+            output=$(PYTHONPATH=. python scripts/v097_legacy_combined_bronze_raw_admit.py)
+            echo "$output"
+            if echo "$output" | grep -q '"remaining": 0'; then break; fi
+          done
+  summary:
+    needs: six-lane-copy-and-independent-qa
+    if: always() && needs.six-lane-copy-and-independent-qa.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Publish native Bronze raw QA pass vs held with separate full-release flag
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          COMBINED_QA_MODE: summary
+        run: PYTHONPATH=. python scripts/v097_legacy_combined_bronze_raw_admit.py
