@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recover exactly 3 MOPS IFRS cashflow matrix column-group mismatch cases.
+"""Recover 2 source-identified MOPS IFRS cashflow matrix column-group mismatch cases.
 Preserve source file, account list, company columns and numeric cells. Company
 group tags are AMBIGUOUS if top band width differs; never align by guessing.
 """
@@ -80,7 +80,7 @@ def run(api):
             if done.get(fid,{}).get("status")!="MOPS_ADAPTER_HOLD":continue
             if "CashflowStatement_" in str(row.get("file_name") or ""):
                 original.append((row,fmt))
-    if len(original)!=3:raise RuntimeError("EXPECTED_EXACTLY_3_CASHFLOW_HOLDS_GOT_"+str(len(original)))
+    if len(original)!=2:raise RuntimeError("EXPECTED_2_IDENTIFIED_CASHFLOW_HOLDS_GOT_"+str(len(original)))
     parent=call(lambda:api.files().get(fileId=bronze,fields="parents")).get("parents",[])
     if len(parent)!=1:raise RuntimeError("AMBIGUOUS_LAKE_PARENT")
     dest=makefolder(api,parent[0],"00_QUARANTINE_MOPS_CASHFLOW_3_FIXED_V2")
