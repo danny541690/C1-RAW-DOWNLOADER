@@ -43,40 +43,19 @@ def detect(raw,name):
 def main():
  api=service();m,c,q,_=common(api)
  candidates={}
- for lane in range(6):
-    stage=match(api,c,"v097_V4_EXCEPTIONS_STAGED_V1_CK_%02d.json"%lane)
-    done=load_json(api,stage["id"])["done"]
-    for row in frozen_rows(api,q,lane):
-        if row["category"]!="UNCLASSIFIED_REVIEW":continue
-        fid=row["file_id"]
-        candidates[fid]={"fid":fid,"source":"TDCC_ARCHIVE","path":row.get("source_path"),
-           "expected_sha":done.get(fid,{}).get("source_sha256"),"kind":"V4_UNCLASSIFIED"}
-    fmt=match(api,c,"v097_BF_RESIDUAL_FORMAT_V1_CK_%02d.json"%lane)
-    fm=load_json(api,fmt["id"])["done"] if fmt else {}
-    for row,kind,_ in relevant(api,m,c,lane):
-        fid=row["file_id"]
-        if row.get("source") in ("TDCC","TPEx","MOPS"): 
-            # Five financial IFRS/revenue cases, one TPEx archive, 17 TDCC structure
-            if row["source"]=="MOPS" and fm.get(fid,{}).get("state")!="MOPS_HTML_TABLE_ADAPTER_AND_FINANCIAL_UNITS_PENDING":
-                continue
-            if row["source"]=="TPEx" and fm.get(fid,{}).get("state")!="TPEX_HTML_TABLE_ADAPTER_AND_DATASET_ORIGIN_PENDING":
-                pass
-        elif row.get("source") not in ("TDCC_ARCHIVE","TAIFEX"):continue
-        # Exclude 383 MOPS and 711 TPEx already parsed at stage; select by latest CK
-        if row["source"] in ("TPEx","MOPS"):
-            n="v097_TPEX_LEGACY_RSTA3104_V1_CK_%02d.json"%lane if row["source"]=="TPEx" else "v097_MOPS_HTML_MATRIX_QA_V1_CK_%02d.json"%lane
-            v=match(api,c,n)
-            old=load_json(api,v["id"])["done"] if v else {}
-            ispass=(old.get(fid,{}).get("status") or "").endswith("PASS_PIT_PENDING")
-            if row["source"]=="TPEx":
-                b=match(api,c,"v097_LEGACY_TPEX_MOPS_V2_TPEx_CK_%02d.json"%lane)
-            else:
-                b=match(api,c,"v097_LEGACY_TPEX_MOPS_V2_MOPS_CK_%02d.json"%lane)
-            v2=load_json(api,b["id"])["done"] if b else {}
-            if ispass or v2.get(fid,{}).get("state")=="LEGACY_PARSED_STAGED_PIT_PENDING":continue
-        if fid in candidates:raise RuntimeError("SAME_ID_MULTIPLE_CATEGORIES")
-        candidates[fid]={"fid":fid,"source":row.get("source"),"path":row.get("path"),
-            "expected_sha":fm.get(fid,{}).get("sha256"),"kind":kind}
+ ledger=match(api,q,"v097_FINAL_OPEN_ISSUES_20261113_V1_RECORDS_43404850198.json")
+ if not ledger:raise RuntimeError("FROZEN_FULL_LEDGER_NOT_FOUND")
+ full=load_json(api,ledger["id"])
+ allowed={"V4_UNCLASSIFIED_PROVENANCE_REVIEW","TDCC_FIVE_RESIDUAL_SEMANTICS_PENDING",
+          "OTHER_27_SOURCE_OR_STRUCTURE_PENDING","TPEX_NOT_PARSED",
+          "MOPS_NOT_PARSED","MOPS_IFRS_STAGED_SEPARATE_GROUP_MAPPING_PENDING"}
+ for row in full["records"]:
+    if row["current_bucket"] not in allowed:continue
+    fid=row["file_id"]
+    if fid in candidates:raise RuntimeError("DUPLICATE_FROZEN_EXCEPTION")
+    candidates[fid]={"fid":fid,"source":row.get("source") or ("TDCC_ARCHIVE" if row["current_bucket"]=="V4_UNCLASSIFIED_PROVENANCE_REVIEW" else "UNKNOWN"),
+       "path":row.get("source_path"),"expected_sha":row.get("source_sha256") or row.get("format_source_sha256"),
+       "kind":row["current_bucket"]}
  if len(candidates)!=39:raise RuntimeError("EXPECTED_39_UNRESOLVED_GOT_"+str(len(candidates)))
  records=[];state=Counter();sources=Counter()
  for fid,item in candidates.items():
