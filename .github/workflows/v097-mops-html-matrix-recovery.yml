@@ -7,7 +7,7 @@ on:
       - '.github/workflows/v097-mops-html-matrix-recovery.yml'
   workflow_dispatch:
   schedule:
-    - cron: '32 * * * *'
+    - cron: '12,42 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -68,7 +68,7 @@ jobs:
           MOPS_REPAIR_LANE: ${{ matrix.lane }}
           MOPS_REPAIR_BATCH: '20'
         run: |
-          for round in 1 2 3 4 5 6 7 8 9 10; do
+          for round in $(seq 1 30); do
             log=$(PYTHONPATH=. python scripts/v097_mops_html_matrix_recovery.py)
             echo "$log"
             if echo "$log" | grep -q '"remaining": 0'; then break; fi
