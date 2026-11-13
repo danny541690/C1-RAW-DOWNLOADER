@@ -63,7 +63,15 @@ def main():
     try:
         meta=call(lambda:api.files().get(fileId=fid,fields="name,size,md5Checksum"))
         size=int(meta.get("size") or 0)
-        if not 0<size<=32*1024*1024:raise ValueError("EXCEPTION_READ_SIZE_INVALID")
+        if item["source"]=="TAIFEX" and "TimeAndSales" in str(meta.get("name") or ""):
+            r.update(state="OUT_OF_SCOPE_TICK_DATA_USER_EXCLUDED",bytes=size,
+              next="DO_NOT_DOWNLOAD_TICK_LEVEL_DATA_USER_EXCLUDED");state[r["state"]]+=1;sources[r["source"]]+=1;records.append(r);continue
+        maxsize=(160 if item["source"]=="TDCC" else 64)*1024*1024
+        if not 0<size<=maxsize:
+            r.update(state="SOURCE_EXCEEDS_INLINE_QA_LIMIT_NOT_CORRUPTION",
+              bytes=size,limit_bytes=maxsize,
+              next="CHUNKED_HASH_OR_OFFICIAL_DATASET_RETRIEVAL")
+            state[r["state"]]+=1;sources[r["source"]]+=1;records.append(r);continue
         raw=call(lambda:api.files().get_media(fileId=fid))
         if len(raw)!=size:raise ValueError("SOURCE_BYTES_CHANGED")
         if meta.get("md5Checksum") and hashlib.md5(raw).hexdigest()!=meta["md5Checksum"]:raise ValueError("DRIVE_MD5_CONFLICT")
