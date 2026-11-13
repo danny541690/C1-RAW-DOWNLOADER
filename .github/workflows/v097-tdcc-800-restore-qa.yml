@@ -1,0 +1,76 @@
+name: JARVIS v0.97 - Recover 800 TDCC missing numeric receipts and 2026 external checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_800_restore_numeric_evidence.py'
+      - '.github/workflows/v097-tdcc-800-restore-qa.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '18,48 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-tdcc-800-incremental-qa
+  cancel-in-progress: false
+jobs:
+  selftest:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - run: |
+          python -m py_compile scripts/v097_tdcc_800_restore_numeric_evidence.py
+          PYTHONPATH=. python scripts/v097_tdcc_800_restore_numeric_evidence.py
+  six-lane-incremental:
+    needs: selftest
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Reread each 0.93 original and 0.97 quarantine SHA, table totals and exact-code/date third party
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_800_MODE: lane
+          TDCC_800_LANE: ${{ matrix.lane }}
+          TDCC_800_BATCH: '30'
+        run: |
+          for batch in $(seq 1 7); do
+            output=$(PYTHONPATH=. python scripts/v097_tdcc_800_restore_numeric_evidence.py)
+            echo "$output"
+            if echo "$output" | grep -q '"remaining": 0'; then break; fi
+          done
+  summary:
+    needs: six-lane-incremental
+    if: always() && needs.six-lane-incremental.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Publish verified versus externally missing TDCC evidence; no false market Bronze admission
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_800_MODE: summary
+        run: PYTHONPATH=. python scripts/v097_tdcc_800_restore_numeric_evidence.py
