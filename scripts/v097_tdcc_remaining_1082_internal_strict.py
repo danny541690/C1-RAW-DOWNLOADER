@@ -31,9 +31,16 @@ def population(api,c,q):
   for fid,rec in get(api,c,"v097_TDCC_800_REVERIFY_V1_CK_%02d.json"%n).get("done",{}).items():
    if fid in mapping:raise RuntimeError("RECOVERY_DUPLICATE")
    mapping[fid]=rec
+ official={}
+ for n in range(6):
+  d=get(api,c,"v097_TDCC_2025_OFFICIAL_HISTORY_PROOFS_CK_%02d.json"%n).get("done",{})
+  for fid,rec in d.items():
+   if fid in official:raise RuntimeError("OFFICIAL_CHECKPOINT_DUPLICATE")
+   official[fid]=rec
  rows=[]
  for r in frozen["records"]:
-  condition=(r["result"]=="THIRDPARTY_DATE_NOT_AVAILABLE" or
+  condition=((r["result"]=="THIRDPARTY_DATE_NOT_AVAILABLE" and
+               official.get(r["file_id"],{}).get("state")=="DATE_NOT_AVAILABLE_IN_OFFICIAL_HISTORY_WINDOW") or
              (r["result"]=="A4_NUMERIC_RECEIPT_NOT_FOUND" and
                mapping.get(r["file_id"],{}).get("state")=="ORIGINAL_INTERNAL_QA_PASS_EXTERNAL_DATE_NOT_AVAILABLE"))
   if not condition:continue
