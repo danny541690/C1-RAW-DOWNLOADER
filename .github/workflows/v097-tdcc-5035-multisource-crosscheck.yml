@@ -1,0 +1,35 @@
+name: JARVIS v0.97 - TDCC 5035 real same-date official comparison
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_5035_multisource_crosscheck.py'
+      - '.github/workflows/v097-tdcc-5035-multisource-crosscheck.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official-six-lane-spotcheck:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Independently verify official same-day TDCC holdings on sampled dates
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_SAMPLER_LANE: ${{ matrix.lane }}
+        run: |
+          python -m py_compile scripts/v097_tdcc_5035_multisource_crosscheck.py
+          PYTHONPATH=. python scripts/v097_tdcc_5035_multisource_crosscheck.py
