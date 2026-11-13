@@ -1,0 +1,33 @@
+name: JARVIS v0.97 - Full 7489 anomaly reconciliation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_all_open_issues_reconcile.py'
+      - '.github/workflows/v097-all-open-issues-reconcile.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '16 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-open-issues-reconcile-single
+  cancel-in-progress: false
+jobs:
+  full-ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Reconcile V4 6358 + residual 1131 and publish all per-file remaining blockers
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m py_compile scripts/v097_all_open_issues_reconcile.py
+          PYTHONPATH=. python scripts/v097_all_open_issues_reconcile.py
