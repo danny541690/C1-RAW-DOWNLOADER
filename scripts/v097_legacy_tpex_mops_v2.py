@@ -60,16 +60,17 @@ def parse_tpex(raw,expected_month):
         layout="TPEX_2005_EXPANDED_HTML"
         for tr in soup.find_all("tr"):
             tds=tr.find_all(["td","th"],recursive=False)
-            if len(tds)!=19:continue
+            if len(tds) not in (18,19):continue
             a=[t.get_text(" ",strip=True) for t in tds]
             code=a[0]
             if not re.fullmatch(r"\d{4}[A-Z]?",code):continue
             if not re.fullmatch(r"\d{4}",code):skipped["SPECIAL_CODE"]+=1;continue
             # Empty close + text marker means auction section price placement.
             try:
-                vals=[n(a[i]) for i in [3,5,6,7,8,9,10,11,12,13,14]]
-                if a[4] in ("▽","▼","-"):vals[1]=-abs(vals[1] or Decimal(0))
-                if a[4] in ("△","▲","+"):vals[1]=abs(vals[1] or Decimal(0))
+                shift=-1 if len(a)==18 else 0
+                vals=[n(a[i+shift]) for i in [3,5,6,7,8,9,10,11,12,13,14]]
+                if a[4+shift] in ("▽","▼","-"):vals[1]=-abs(vals[1] or Decimal(0))
+                if a[4+shift] in ("△","▲","+"):vals[1]=abs(vals[1] or Decimal(0))
                 if not numeric_qa(vals):skipped["NUMERIC_QA_FAIL"]+=1;continue
                 if vals[0] is None:skipped["NO_CLOSE"]+=1;continue
                 rec={"code":code,"company_name":a[1],
@@ -98,7 +99,10 @@ def parse_tpex(raw,expected_month):
         "records_count":len(records),"skipped":dict(skipped),
         "official_publication_time":"UNKNOWN","formal_bronze_pass":False}
 def parse_revenue(raw,expected_period):
-    text=raw.decode("cp950",errors="strict")
+    try:text=raw.decode("cp950",errors="strict")
+    except UnicodeDecodeError:
+        try:text=raw.decode("big5hkscs",errors="strict")
+        except UnicodeDecodeError:text=raw.decode("cp950",errors="replace")
     soup=BeautifulSoup(text,"html.parser")
     plain=soup.get_text(" ",strip=True)
     if "營業收入統計表" not in plain[:300] or "單位：千元" not in plain:
@@ -119,6 +123,7 @@ def parse_revenue(raw,expected_period):
         if c[0].replace(" ","") in ("合計","總計"):subtotals+=1;continue
         if len(c)!=10 or not re.fullmatch(r"\d{4}",c[0]):continue
         code,name=c[:2]
+        if "\ufffd" in name:invalid["COMPANY_NAME_ENCODING_UNVERIFIED"]+=1;continue
         try:nums=[n(t) for t in c[2:]]
         except InvalidOperation:invalid["NON_NUMERIC_CELL"]+=1;continue
         if nums[0] is None:invalid["MISSING_MONTHLY_REVENUE"]+=1;continue
@@ -139,7 +144,7 @@ def parse_revenue(raw,expected_period):
         if code in companies and companies[code]!=rec:
             invalid["DUPLICATE_COMPANY_WITH_CONFLICT"]+=1;continue
         companies[code]=rec
-    if len(companies)<5:raise ValueError("MOPS_REVENUE_TOO_FEW_ROWS_"+str(len(companies)))
+    if len(companies)<1:raise ValueError("MOPS_REVENUE_TOO_FEW_ROWS_"+str(len(companies)))
     return {"report_type":"MOPS_BIG5_MONTHLY_REVENUE",
        "revenue_month":dt,"html_report_print_date":print_date,
        "unit":"TWD_THOUSAND","amount_multiplier_to_100m":"0.00001",
@@ -223,9 +228,14 @@ def lane_run(api,lane,source):
         "source":source,"done":{}}
     ids={r["file_id"] for r,a,v in eligible}
     if not set(ck["done"]).issubset(ids):raise RuntimeError("CHECKPOINT_ORPHAN")
-    todo=[(r,a,v) for r,a,v in eligible if r["file_id"] not in ck["done"]][:CAP]
+    todo=[(r,a,v) for r,a,v in eligible
+          if r["file_id"] not in ck["done"] or
+          (ck["done"][r["file_id"]].get("state")=="LEGACY_REPAIR_HOLD"
+           and ck["done"][r["file_id"]].get("retry_version")!="V3"
+           and not (source=="MOPS" and "THREE_YEAR_OFFICIAL_GAPS" in str(r.get("file_name") or "")))][:CAP]
     offset=len(ck["done"])
-    receipt=NAME+"_"+source+"_"+RUN+"_L%02d_O%04d.json"%(lane,offset)
+    sig=hashlib.sha256("\n".join(r["file_id"] for r,a,v in todo).encode()).hexdigest()[:12]
+    receipt=NAME+"_"+source+"_"+RUN+"_L%02d_O%04d_%s.json"%(lane,offset,sig)
     old=match(api,q,receipt)
     if old:results=load_json(api,old["id"])["rows"]
     else:
@@ -234,7 +244,7 @@ def lane_run(api,lane,source):
         put_once(api,q,receipt,{"schema":"v097_legacy_v2_receipt_1","source":source,
             "run":RUN,"lane":lane,"rows":results,"formal_bronze_promotions":0})
     for row in results:ck["done"][row["file_id"]]={"state":row["state"],
-        "dest_id":row.get("dest_id"),"records":row.get("records"),"error":row.get("error")}
+        "dest_id":row.get("dest_id"),"records":row.get("records"),"error":row.get("error"),"retry_version":"V3"}
     upsert(api,c,ckname,dict(ck,last_receipt=receipt,updated_at=datetime.now(timezone.utc).isoformat()))
     by=Counter(x["state"] for x in ck["done"].values())
     print("LEGACY_V2_LANE="+json.dumps({"source":source,"lane":lane,
