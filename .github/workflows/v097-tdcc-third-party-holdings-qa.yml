@@ -1,0 +1,28 @@
+name: JARVIS v0.97 - Independent TDCC third-party holding check
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_thirdparty_independent_qa.py'
+      - '.github/workflows/v097-tdcc-third-party-holdings-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Verify three original TDCC dates versus independent CSV snapshots with hash and level 17
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m py_compile scripts/v097_tdcc_thirdparty_independent_qa.py
+          PYTHONPATH=. python scripts/v097_tdcc_thirdparty_independent_qa.py
