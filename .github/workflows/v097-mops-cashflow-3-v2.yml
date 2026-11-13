@@ -1,0 +1,28 @@
+name: JARVIS v0.97 - Repair 3 cashflow group mismatch cases
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_mops_cashflow_3_v2.py'
+      - '.github/workflows/v097-mops-cashflow-3-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Verify exactly three original broken MOPS cashflow matrices, stage repaired values if good
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m py_compile scripts/v097_mops_cashflow_3_v2.py
+          PYTHONPATH=. python scripts/v097_mops_cashflow_3_v2.py
