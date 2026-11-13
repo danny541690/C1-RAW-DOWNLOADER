@@ -1,0 +1,32 @@
+name: JARVIS v0.97 - Seven verified transient originals into Bronze
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_v4_seven_bronze_restore.py'
+      - '.github/workflows/v097-v4-seven-bronze-restore.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-seven-bronze-single
+  cancel-in-progress: false
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Selftest, then real seven source+quarantine SHA verify, restore original files and independent Bronze raw QA
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m py_compile scripts/v097_v4_seven_bronze_restore.py
+          PYTHONPATH=. python scripts/v097_v4_seven_bronze_restore.py
+          V4_SEVEN_MODE=run PYTHONPATH=. python scripts/v097_v4_seven_bronze_restore.py
