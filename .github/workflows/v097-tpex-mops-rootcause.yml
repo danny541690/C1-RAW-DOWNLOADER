@@ -1,0 +1,28 @@
+name: JARVIS v0.97 - TPEx and MOPS failure root cause census
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_exception_failure_rootcause.py'
+      - '.github/workflows/v097-tpex-mops-rootcause.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Read 656 TPEx and 120 MOPS actual failure receipts and representative original data
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m py_compile scripts/v097_exception_failure_rootcause.py
+          PYTHONPATH=. python scripts/v097_exception_failure_rootcause.py
