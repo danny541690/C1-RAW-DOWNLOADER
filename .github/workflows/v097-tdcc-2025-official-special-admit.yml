@@ -1,5 +1,10 @@
 name: JARVIS v0.97 - Admit 2025 officially checked TDCC special originals
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_2025_official_special_admit.py'
+      - '.github/workflows/v097-tdcc-2025-official-special-admit.yml'
   workflow_run:
     workflows:
       - "JARVIS v0.97 - 2025 TDCC official historic same-day totals comparison"
