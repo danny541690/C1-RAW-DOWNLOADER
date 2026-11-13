@@ -1,0 +1,92 @@
+name: JARVIS v0.97 - V4 6358 exception evidence into 097
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_v4_exception_evidence_upload.py'
+      - '.github/workflows/v097-v4-exception-evidence-upload.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '37 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-v4-evidence-upload-single-writer
+  cancel-in-progress: false
+jobs:
+  preflight:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Compile and verify immutable-evidence classification
+        run: |
+          python -m py_compile scripts/v097_v4_exception_evidence_upload.py
+          PYTHONPATH=. python scripts/v097_v4_exception_evidence_upload.py
+  bootstrap:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Single-writer create six immutable evidence lane roots
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          V4_HOLD_MODE: bootstrap
+        run: PYTHONPATH=. python scripts/v097_v4_exception_evidence_upload.py
+  six-lane-evidence:
+    needs: bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Copy only unhandled frozen V4 originals to isolated quarantine; source+dest SHA verification
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          V4_HOLD_MODE: lane
+          V4_HOLD_LANE: ${{ matrix.lane }}
+          V4_HOLD_BATCH: '80'
+        run: |
+          for round in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            PYTHONPATH=. python scripts/v097_v4_exception_evidence_upload.py
+          done
+  consolidated-receipt:
+    needs: six-lane-evidence
+    if: always() && needs.six-lane-evidence.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Publish 6358 record conservation and destination verification receipts
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          V4_HOLD_MODE: summary
+        run: PYTHONPATH=. python scripts/v097_v4_exception_evidence_upload.py
