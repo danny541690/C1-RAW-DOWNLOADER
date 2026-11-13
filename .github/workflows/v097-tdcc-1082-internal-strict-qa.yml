@@ -1,0 +1,93 @@
+name: JARVIS v0.97 - 1082 special raw strict internal QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_remaining_1082_internal_strict.py'
+      - '.github/workflows/v097-tdcc-1082-internal-strict-qa.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '13,43 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-special-1082-strict-raw-single
+  cancel-in-progress: false
+jobs:
+  test:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - run: |
+          python -m py_compile scripts/v097_tdcc_remaining_1082_internal_strict.py
+          PYTHONPATH=. python scripts/v097_tdcc_remaining_1082_internal_strict.py
+  bootstrap:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Prepare isolated original raw folder with EXTERNAL_WITNESS_PENDING metadata
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_STRICT_MODE: bootstrap
+        run: PYTHONPATH=. python scripts/v097_tdcc_remaining_1082_internal_strict.py
+  six-lane-verify:
+    needs: bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 118
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Original source and 0.97 quarantine SHA + TDCC 17-level holders/shares/percent and original raw staging SHA
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_STRICT_MODE: lane
+          TDCC_1084_LANE: ${{ matrix.lane }}
+          TDCC_1084_BATCH: '25'
+        run: |
+          for n in $(seq 1 12); do
+            result=$(PYTHONPATH=. python scripts/v097_tdcc_remaining_1082_internal_strict.py)
+            echo "$result"
+            if echo "$result" | grep -q '"remaining": 0'; then break; fi
+          done
+  summary:
+    needs: six-lane-verify
+    if: always() && needs.six-lane-verify.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Preserve exact pass/hold counts without inventing external witness or stock-release status
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_STRICT_MODE: summary
+        run: PYTHONPATH=. python scripts/v097_tdcc_remaining_1082_internal_strict.py
