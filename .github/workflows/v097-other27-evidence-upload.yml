@@ -1,0 +1,85 @@
+name: JARVIS v0.97 - Other 27 exceptional originals archive
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_other27_evidence_upload.py'
+      - '.github/workflows/v097-other27-evidence-upload.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-other27-single-writer
+  cancel-in-progress: false
+jobs:
+  check:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - run: |
+          python -m py_compile scripts/v097_other27_evidence_upload.py
+          PYTHONPATH=. python scripts/v097_other27_evidence_upload.py
+  bootstrap:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Prepare 0.97 other 27 exception quarantine folders
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          OTHER27_MODE: bootstrap
+        run: PYTHONPATH=. python scripts/v097_other27_evidence_upload.py
+  copy-six-lanes:
+    needs: bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Preserve 0.93 remaining non-HTML exception bytes and compare SHA with 0.97
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          OTHER27_MODE: lane
+          NONHTML_LANE: ${{ matrix.lane }}
+        run: PYTHONPATH=. python scripts/v097_other27_evidence_upload.py
+  summary:
+    needs: copy-six-lanes
+    if: always() && needs.copy-six-lanes.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Publish verifiable outcomes for 27 remaining exceptional originals
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          OTHER27_MODE: summary
+        run: PYTHONPATH=. python scripts/v097_other27_evidence_upload.py
