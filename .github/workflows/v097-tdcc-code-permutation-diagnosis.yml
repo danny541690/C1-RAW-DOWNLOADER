@@ -1,0 +1,41 @@
+name: JARVIS v0.97 - TDCC 5035 code patterns vs official
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_code_permutation_diagnosis.py'
+      - '.github/workflows/v097-tdcc-code-permutation-diagnosis.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - run: |
+          python -m py_compile scripts/v097_tdcc_code_permutation_diagnosis.py
+          PYTHONPATH=. python scripts/v097_tdcc_code_permutation_diagnosis.py
+  sample-compare:
+    needs: selftest
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Inspect actual original code, date, 17-level distribution and current official dataset sample
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_CODE_DIAG_MODE: diagnose
+          TDCC_DIAG_SAMPLE_PER_LANE: '12'
+        run: PYTHONPATH=. python scripts/v097_tdcc_code_permutation_diagnosis.py
