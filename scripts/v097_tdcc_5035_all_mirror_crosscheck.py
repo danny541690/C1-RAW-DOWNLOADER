@@ -67,7 +67,7 @@ def main():
    prior.update(holders=numeric["total_holders"],shares=numeric["total_shares"],
      source_sha256=rec["source_sha256"])
    found+=1
- if found!=5035:raise RuntimeError("A4_MISSING_PROVENANCE_"+str(found))
+ missing_numeric_receipts=5035-found
  source_snapshots={}
  bydate=defaultdict(Counter)
  for day in sorted(dates):
@@ -75,7 +75,9 @@ def main():
   source_snapshots[day]=snap
   for rec in rows.values():
    if rec["day"]!=day:continue
-   if snap["state"]!="ARCHIVE_READABLE":
+   if "holders" not in rec or "shares" not in rec:
+    rec["result"]="A4_NUMERIC_RECEIPT_NOT_FOUND"
+   elif snap["state"]!="ARCHIVE_READABLE":
     rec["result"]="THIRDPARTY_DATE_NOT_AVAILABLE"
    elif rec["code"] not in lookup:
     rec["result"]="THIRDPARTY_CODE_NOT_PRESENT"
@@ -89,6 +91,7 @@ def main():
  report={"schema":"v097_tdcc_5035_all_crosssource_1","run":RUN,
   "at":datetime.now(timezone.utc).isoformat(),
   "population":5035,"original_sha_and_holder_total_receipts":found,
+  "missing_original_numeric_receipts":missing_numeric_receipts,
   "by_result":dict(counts),"per_date":{k:dict(v) for k,v in bydate.items()},
   "third_party_archives":source_snapshots,
   "market_bronze_admitted":0,"source_v093_unchanged":True,
