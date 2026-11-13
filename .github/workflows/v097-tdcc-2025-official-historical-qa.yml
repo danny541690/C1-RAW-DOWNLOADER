@@ -1,0 +1,76 @@
+name: JARVIS v0.97 - 2025 TDCC official historic same-day totals comparison
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_2025_official_history_compare.py'
+      - '.github/workflows/v097-tdcc-2025-official-historical-qa.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '19,49 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-2025-tdcc-official-historical-incremental
+  cancel-in-progress: false
+jobs:
+  test:
+    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - run: |
+          python -m py_compile scripts/v097_tdcc_2025_official_history_compare.py
+          PYTHONPATH=. python scripts/v097_tdcc_2025_official_history_compare.py
+  six-lane-official:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        lane: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Exact official TDCC historical query for 2025 date code holders shares, only if date currently available
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_2025_OFFICIAL_MODE: lane
+          TDCC_2025_OFFICIAL_LANE: ${{ matrix.lane }}
+          TDCC_2025_OFFICIAL_BATCH: '12'
+        run: |
+          for n in $(seq 1 30); do
+            result=$(PYTHONPATH=. python scripts/v097_tdcc_2025_official_history_compare.py)
+            echo "$result"
+            if echo "$result" | grep -q '"remaining": 0'; then break; fi
+          done
+  summary:
+    needs: six-lane-official
+    if: always() && needs.six-lane-official.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Publish 2025 fully authenticated official same-day matches vs expired dates
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_2025_OFFICIAL_MODE: summary
+        run: PYTHONPATH=. python scripts/v097_tdcc_2025_official_history_compare.py
