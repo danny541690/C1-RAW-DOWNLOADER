@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recover 2 source-identified MOPS IFRS cashflow matrix column-group mismatch cases.
+"""Recover all 3 identified MOPS IFRS statement matrix column-group mismatch cases.
 Preserve source file, account list, company columns and numeric cells. Company
 group tags are AMBIGUOUS if top band width differs; never align by guessing.
 """
@@ -36,9 +36,9 @@ def parse(raw,row):
     alltext=soup.get_text(" ",strip=True)
     if "金額單位：新台幣仟元" not in alltext:
         raise ValueError("FINANCIAL_UNIT_UNVERIFIED")
-    mm=re.search(r"CashflowStatement_(20\d{2})([1-4])",str(row.get("file_name") or ""))
+    mm=re.search(r"([A-Za-z]+)_(20\d{2})([1-4])",str(row.get("file_name") or ""))
     if not mm:raise ValueError("QUARTER_NOT_GROUNDED_IN_SOURCE_FILENAME")
-    year=int(mm.group(1));quarter=int(mm.group(2))
+    report_type=mm.group(1);year=int(mm.group(2));quarter=int(mm.group(3))
     period="%04d-%02d"%(year,quarter*3)
     if period!=row["month"]:raise ValueError("FILENAME_PERIOD_CONFLICT")
     accounts=[];present=0;missing=0
@@ -59,7 +59,7 @@ def parse(raw,row):
         accounts.append({"account":label,"values_thousand_twd":values})
     if present<10:raise ValueError("MOST_VALUES_EMPTY")
     return {"schema":"v097_mops_cashflow_3_column_groups_staged_v2",
-        "dataset":"MOPS_CASHFLOW_IFRS","year":year,"quarter":quarter,
+        "dataset":"MOPS_"+report_type.upper()+"_IFRS","year":year,"quarter":quarter,
         "period_month":period,"financial_unit":"TWD_THOUSAND",
         "conversion_to_100m":"0.00001",
         "companies":stock,"accounts":accounts,"n_accounts":len(accounts),
@@ -78,9 +78,9 @@ def run(api):
         for row,a,fmt in candidates(api,m,c,lane):
             fid=row["file_id"]
             if done.get(fid,{}).get("status")!="MOPS_ADAPTER_HOLD":continue
-            if "CashflowStatement_" in str(row.get("file_name") or ""):
+            if "THREE_YEAR_OFFICIAL_GAPS_" in str(row.get("file_name") or ""):
                 original.append((row,fmt))
-    if len(original)!=2:raise RuntimeError("EXPECTED_2_IDENTIFIED_CASHFLOW_HOLDS_GOT_"+str(len(original)))
+    if len(original)!=3:raise RuntimeError("EXPECTED_ALL_3_IFRS_COLUMN_GROUP_HOLDS_GOT_"+str(len(original)))
     parent=call(lambda:api.files().get(fileId=bronze,fields="parents")).get("parents",[])
     if len(parent)!=1:raise RuntimeError("AMBIGUOUS_LAKE_PARENT")
     dest=makefolder(api,parent[0],"00_QUARANTINE_MOPS_CASHFLOW_3_FIXED_V2")
