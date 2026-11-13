@@ -1,0 +1,28 @@
+name: JARVIS v0.97 - Two TDCC official transient historical errors retry
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_two_official_retry.py'
+      - '.github/workflows/v097-tdcc-two-official-errors-retry.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official-transient-retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Retry 2 TDCC historical official response errors at original code/date/holders/shares, with evidence
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          python -m py_compile scripts/v097_tdcc_two_official_retry.py
+          PYTHONPATH=. python scripts/v097_tdcc_two_official_retry.py
