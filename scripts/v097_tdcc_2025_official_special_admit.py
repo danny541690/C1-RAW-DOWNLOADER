@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Admit only 2026 TDCC 2025 restored originals with external same-date,
+"""Admit only 2025 TDCC originals with OFFICIAL same-date,
 same-code, same-holder and same-share proof into isolated SPECIAL RAW.
 Never mix Y securities into ordinary listed/OTC stock Bronze.
 """
@@ -9,7 +9,7 @@ from datetime import datetime,timezone
 from scripts.v097_bronze_first_pipeline import service,common,match,load_json,put_once,upsert,makefolder
 from scripts.v097_tdcc_special_raw_3way_admit import archive_root,sha_lane,one
 RUN=os.getenv("GITHUB_RUN_ID","manual")
-LANE=int(os.getenv("TDCC_RECOVER_LANE","0"));BATCH=int(os.getenv("TDCC_RECOVER_BATCH","25"))
+LANE=int(os.getenv("TDCC_2025_ADMIT_LANE","0"));BATCH=int(os.getenv("TDCC_2025_ADMIT_BATCH","25"))
 NAME="v097_TDCC_2025_OFFICIAL_EXACT_SPECIAL_RAW"
 def selection(api,c,q,lane):
  f=match(api,q,"v097_TDCC_5035_THIRDPARTY_ALL_43428270828.json")
@@ -20,16 +20,16 @@ def selection(api,c,q,lane):
   f=match(api,c,"v097_TDCC_2025_OFFICIAL_HISTORY_PROOFS_CK_%02d.json"%src_lane)
   if not f:continue
   for fid,entry in load_json(api,f["id"])["done"].items():
-   if entry.get("state")!="INTERNAL_AND_THIRDPARTY_TOTALS_EXACT_NONSTOCK":continue
+   if entry.get("state")!="EXACT_SAME_DATE_CONTENT_MATCH":continue
    if fid not in origin:raise RuntimeError("RECOVERY_OUTSIDE_2025")
-   if origin[fid]["day"]<"20260101":raise RuntimeError("UNEXPECTED_2025_THIRD_PARTY_PROOF")
+   if origin[fid]["day"][:4]!="2025":raise RuntimeError("OFFICIAL_PROOF_SOURCE_YEAR_NOT_2025")
    record=dict(origin[fid])
    if fid in proven:raise RuntimeError("DUPLICATE_RECOVERY_ID")
    proven[fid]=record
  return [proven[fid] for fid in sorted(proven) if sha_lane(fid)==lane]
 def root(api,bronze):
  p=archive_root(api,bronze)
- return makefolder(api,p,"02_RECOVERED_2025_OFFICIAL_EXACT")
+ return makefolder(api,p,"03_RECOVERED_2025_OFFICIAL_EXACT")
 def bootstrap(api):
  _,_,_,b=common(api);folder=root(api,b)
  for i in range(6):makefolder(api,folder,"SPECIAL_LANE_%02d"%i)
