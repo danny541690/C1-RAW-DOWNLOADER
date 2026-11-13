@@ -36,7 +36,7 @@ def parse(raw,row):
     alltext=soup.get_text(" ",strip=True)
     if "金額單位：新台幣仟元" not in alltext:
         raise ValueError("FINANCIAL_UNIT_UNVERIFIED")
-    mm=re.search(r"([A-Za-z]+)_(20\d{2})([1-4])",str(row.get("file_name") or ""))
+    mm=re.search(r"([A-Za-z]+)_(20\d{2})([1-4])(?=_|\.)",str(row.get("file_name") or ""))
     if not mm:raise ValueError("QUARTER_NOT_GROUNDED_IN_SOURCE_FILENAME")
     report_type=mm.group(1);year=int(mm.group(2));quarter=int(mm.group(3))
     period="%04d-%02d"%(year,quarter*3)
