@@ -142,7 +142,7 @@ def lane(api,n):
  ck=get(api,c,name) or {"schema":"v097_tdcc_internal_strict_ck_1","lane":n,"done":{}}
  if ck["lane"]!=n or ck["schema"]!="v097_tdcc_internal_strict_ck_1":raise RuntimeError("CHECKPOINT_BAD")
  if not set(ck["done"]).issubset({r["file_id"] for r in rows}):raise RuntimeError("CHECKPOINT_ORPHAN")
- todo=[r for r in rows if r["file_id"] not in ck["done"] or (ck["done"][r["file_id"]].get("state")=="ORIGINAL_DATA_QA_HOLD" and ck["done"][r["file_id"]].get("retry_version")!="HTML_SUM_V3")][:LIMIT]
+ todo=[r for r in rows if r["file_id"] not in ck["done"] or (ck["done"][r["file_id"]].get("state")=="ORIGINAL_DATA_QA_HOLD" and ck["done"][r["file_id"]].get("retry_version")!="HTML_SUM_UNICODE_V4")][:LIMIT]
  stages=stage_map(api,c)
  receipt=NAME+"_"+RUN+"_L%02d_O%04d_%s.json"%(n,len(ck["done"]),sha("\n".join(r["file_id"] for r in todo).encode())[:12])
  old=match(api,q,receipt)
@@ -151,11 +151,12 @@ def lane(api,n):
   results=[process(api,r,stages,dest["id"]) for r in todo]
   put_once(api,q,receipt,{"schema":"v097_tdcc_internal_strict_receipt_1","run":RUN,
      "lane":n,"rows":results,"external_witness_certified":False})
- for x in results:ck["done"][x["file_id"]]={"state":x["state"],"dest_id":x.get("dest_id"),"error":x.get("error"),"retry_version":"HTML_SUM_V3"}
+ for x in results:ck["done"][x["file_id"]]={"state":x["state"],"dest_id":x.get("dest_id"),"error":x.get("error"),"retry_version":"HTML_SUM_UNICODE_V4"}
  upsert(api,c,name,dict(ck,updated_at=now(),last_receipt=receipt))
  st=Counter(x["state"] for x in ck["done"].values())
+ err=Counter(x.get("error","") for x in ck["done"].values() if x.get("state")=="ORIGINAL_DATA_QA_HOLD")
  print("TDCC_INTERNAL_STRICT_LANE="+json.dumps({"lane":n,"total":len(rows),"checked":len(ck["done"]),
-    "remaining":len(rows)-len(ck["done"]),"by_state":dict(st)},ensure_ascii=False),flush=True)
+    "remaining":len(rows)-len(ck["done"]),"by_state":dict(st),"hold_reasons":dict(err.most_common(6))},ensure_ascii=False),flush=True)
 def summary(api):
  m,c,q,_=common(api);s=Counter();checked=0;eligible=0
  for n in range(6):
