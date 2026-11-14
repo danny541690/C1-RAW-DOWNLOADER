@@ -85,7 +85,7 @@ def validate_levels(raw):
   rows.append((level,h,shares,pct,vals[1]))
  if len(rows) not in (16,17):raise ValueError("LEVEL_COUNT_NOT_16_17")
  if len({r[0] for r in rows})!=len(rows):raise ValueError("DUPLICATE_HOLDING_LEVEL")
- total=next((r for r in rows if "合計" in re.sub(r"\\s+","",r[4])),None)
+ total=next((r for r in rows if "合計" in "".join(r[4].split())),None)
  if total is None or total[0] not in (16,17):raise ValueError("HTML_SUM_TOTAL_NOT_FOUND")
  levels=[x for x in rows if x[0]!=total[0]]
  if sum(x[1] for x in levels)!=total[1] or sum(x[2] for x in levels)!=total[2]:
