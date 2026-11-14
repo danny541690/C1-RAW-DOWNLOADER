@@ -134,8 +134,29 @@ def validate_file(r,blob):
    if not valid:return dict(result,state="HOLD_NO_VERIFIABLE_CONTENT_DATE")
    if kind not in ("JSON_OFFICIAL_TABLES","JSON_FIELD_DATA","JSON_RECORD_ARRAY"):
     return dict(result,state="HOLD_DATASET_SCHEMA_NOT_CONFIRMED")
-   # No proof of official publication timestamp from file body alone.
-   return dict(result,state="BRONZE_CONTENT_DATE_SCHEMA_PASS_PIT_HOLD")
+   # Only official market-source table shapes are eligible. All other sources
+   # need named dataset adapters and source-specific release evidence.
+   shape_verified=False
+   if source in ("TWSE","TPEx") and kind in ("JSON_OFFICIAL_TABLES","JSON_FIELD_DATA"):
+    tables=data.get("tables",[]) if kind=="JSON_OFFICIAL_TABLES" else [data]
+    for table in tables:
+     fields=table.get("fields",[])
+     rows=table.get("data",[])
+     if (len(fields)>=3 and rows and isinstance(rows[0],list) and
+         sum(x in "".join(map(str,fields)) for x in ("代號","指數","收盤","成交","交易","證券"))>=1 and
+         all(isinstance(x,list) for x in rows[:10])):
+      shape_verified=True
+      break
+   elif source in ("TWSE","TPEx") and kind=="JSON_RECORD_ARRAY":
+    first=data[0]
+    names=set(first)
+    shape_verified=bool(names.intersection({"Code","SecuritiesCompanyCode","代號","證券代號"})) and bool(names.intersection({"Close","ClosingPrice","收盤","TradeVolume","TradingShares","成交股數"}))
+   if not shape_verified:
+    return dict(result,state="HOLD_DATASET_SCHEMA_NOT_CONFIRMED")
+   # Bronze readiness only approves immutable original input; Silver MUST
+   # enforce point-in-time publication availability before any historical use.
+   return dict(result,state="BRONZE_READY_FOR_SILVER",publication_timestamp_verified=False,
+      silver_pit_gate_required=True)
   if name.endswith(".csv"):
    sample=blob[:500000].decode("utf-8-sig",errors="strict")
    dialect=csv.Sniffer().sniff(sample[:4000],delimiters=",;\t")
@@ -206,9 +227,9 @@ def aggregate(api):
  if total!=EXPECTED_BASIC:raise RuntimeError("BASELINE_COHORT_NOT_74750:"+str(total))
  result={"schema":"v097_bronze_74750_semantic_release_gate_1","run":RUN,"at":now(),
    "baseline_byte_verified":total,"semantic_checked":checked,"semantic_remaining":total-checked,
-   "states":dict(counts),"silver_ready_certified":0,
-   "ready_rule":"requires dataset-specific numeric, source publication and PIT proof; these are not inferred from SHA",
-   "decision":"HOLD_PENDING_SEMANTIC_AND_PUBLICATION_PROOF",
+   "states":dict(counts),"silver_ready_certified":counts["BRONZE_READY_FOR_SILVER"],
+   "ready_rule":"official-format TWSE/TPEx dated source-table input only; PIT publication constraints remain mandatory before backtests",
+   "decision":"PARTIAL_BRONZE_INPUT_READY__REMAINDER_HELD",
    "no_recheck_6358":True,"silver_gold_executed":False}
  put_once(api,q,"v097_BRONZE_74750_SEMANTIC_SUMMARY_%s.json"%RUN,result)
  print("BRONZE_74750_GATE="+json.dumps(result,ensure_ascii=False),flush=True)
@@ -219,6 +240,10 @@ def selftest():
  r={"source_id":"1","dest_id":"2","source":"TPEx","source_path":"2024/TPEx/2024-09/a.json","year":"2024","month":"09"}
  b=b'{"date":"20261016","tables":[{"fields":["a"],"data":[["x"]]}]}'
  assert validate_file(r,b)["state"]=="HOLD_CONTENT_DATE_PATH_CONFLICT"
+ r["source_path"]="2026/TPEx/2026-10/a.json";r["year"]="2026";r["month"]="10"
+ assert validate_file(r,b)["state"]=="HOLD_DATASET_SCHEMA_NOT_CONFIRMED"
+ good=b'{"date":"20261016","tables":[{"fields":["代號","名稱","收盤"],"data":[["2330","測試","12"]]}]}'
+ assert validate_file(r,good)["state"]=="BRONZE_READY_FOR_SILVER"
  print("BRONZE_74750_SELFTEST_PASS")
 if __name__=="__main__":
  mode=os.getenv("BRONZE_74750_MODE","selftest")
