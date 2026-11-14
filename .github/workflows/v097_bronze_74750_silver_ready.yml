@@ -1,12 +1,8 @@
 name: JARVIS v097 Bronze 74750 SILVER READY QA (no Silver execution)
+# Superseded by v097_bronze_autopilot.yml to avoid two 15-min loops
+# with incompatible rules and competing reports.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v097_bronze_74750_silver_ready_gate.py'
-      - '.github/workflows/v097_bronze_74750_silver_ready.yml'
-  schedule:
-    - cron: '*/15 * * * *'
 permissions:
   contents: read
 concurrency:
