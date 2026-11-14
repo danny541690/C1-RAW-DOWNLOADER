@@ -39,6 +39,8 @@ def main():
  n800_admit,a800=buckets(api,c,"v097_TDCC_800_EXTERNAL_MATCH_SPECIAL_RAW")
  n2025,v2025=buckets(api,c,"v097_TDCC_2025_OFFICIAL_HISTORY_PROOFS")
  n2025_admit,a2025=buckets(api,c,"v097_TDCC_2025_OFFICIAL_EXACT_SPECIAL_RAW")
+ n_internal,s_internal=buckets(api,c,"v097_TDCC_1084_INTERNAL_PROOF_RAW")
+ internal_raw_pass=s_internal.get("SPECIAL_RAW_INTERNAL_STRICT_QA_PASS_EXTERNAL_PENDING",0)
  add800=a800.get("NONSTOCK_RAW_SHA_AND_3WAY_HOLDINGS_QA_PASS",0)
  add2025=a2025.get("NONSTOCK_RAW_SHA_AND_3WAY_HOLDINGS_QA_PASS",0)
  if add800>v800.get("INTERNAL_AND_THIRDPARTY_TOTALS_EXACT_NONSTOCK",0):raise RuntimeError("800_ADMISSIONS_WITHOUT_EXTERNAL_PROOF")
@@ -48,15 +50,18 @@ def main():
  control=1314
  outscope_tick=content["by_state"].get("OUT_OF_SCOPE_TICK_DATA_USER_EXCLUDED",0)
  if outscope_tick!=8:raise RuntimeError("NONMARKET_TICK_COUNT_CHANGED")
- unresolved_tdcc=5035-special_total
+ unresolved_tdcc=5035-special_total-internal_raw_pass
+ if unresolved_tdcc<0:raise RuntimeError("TDCC_RAW_SOURCE_POPULATION_DOUBLE_COUNT")
  unresolved_other=39-outscope_tick
- total=raw_bronze+special_total+control+outscope_tick+unresolved_tdcc+unresolved_other
+ total=raw_bronze+special_total+internal_raw_pass+control+outscope_tick+unresolved_tdcc+unresolved_other
  if total!=7489:raise RuntimeError("SUM_7489_ACCOUNTING_ERROR_"+str(total))
  report={"schema":"v097_dynamic_7489_exception_status_1","run":RUN,
    "at":datetime.now(timezone.utc).isoformat(),
    "initial_exception_file_ids":7489,
    "raw_market_bronze_bytes_qa_admitted":raw_bronze,
    "separate_nonstock_special_raw_qa_admitted":special_total,
+   "special_raw_internal_qa_pass_external_witness_pending":internal_raw_pass,
+   "special_security_awaiting_original_raw_qa":unresolved_tdcc,
    "control_records_excluded":control,
    "user_disallowed_tick_data_excluded":outscope_tick,
    "remaining_unadmitted_special_security_originals":unresolved_tdcc,
@@ -65,10 +70,11 @@ def main():
    "subset_counters":{"tdcc_800_rechecked":n800,"tdcc_800_recheck_by_state":v800,
       "tdcc_800_special_raw_checked":n800_admit,"tdcc_800_special_raw_by_state":a800,
       "tdcc_2025_official_checked":n2025,"tdcc_2025_official_by_state":v2025,
-      "tdcc_2025_special_raw_checked":n2025_admit,"tdcc_2025_special_raw_by_state":a2025},
-   "remaining_in_scope_or_provenance_pending":unresolved_tdcc+unresolved_other,
+      "tdcc_2025_special_raw_checked":n2025_admit,"tdcc_2025_special_raw_by_state":a2025,
+      "tdcc_1082_internal_checked":n_internal,"tdcc_1082_internal_by_state":s_internal},
+   "remaining_in_scope_or_provenance_pending":unresolved_tdcc+internal_raw_pass+unresolved_other,
    "accounting_total":total,
-   "notes":"Source file counts, not missing trading dates; special-security archival does not qualify ordinary-stock Gold; no Silver/Gold/PIT release asserted"}
+   "notes":"Internal-only raw pass remains EXTERNAL_WITNESS_PENDING. Source file counts, not missing trading dates; special-security archival does not qualify ordinary-stock Gold; no Silver/Gold/PIT release asserted"}
  put_once(api,q,"v097_DYNAMIC_EXCEPTION_ACCOUNTING_"+RUN+".json",report)
  print("DYNAMIC_EXCEPTION_ACCOUNTING="+json.dumps(report,ensure_ascii=False),flush=True)
 if __name__=="__main__":main()
