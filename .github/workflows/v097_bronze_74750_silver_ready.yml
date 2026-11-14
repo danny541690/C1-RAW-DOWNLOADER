@@ -53,7 +53,7 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           BRONZE_74750_MODE: lane
           BRONZE_LANE: ${{ matrix.lane }}
-          BRONZE_SEMANTIC_CAP: '1200'
+          BRONZE_SEMANTIC_CAP: '2000'
         run: PYTHONPATH=. python scripts/v097_bronze_74750_silver_ready_gate.py
   readiness-summary:
     needs: six-lane-content-qa
