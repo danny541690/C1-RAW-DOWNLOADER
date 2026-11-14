@@ -70,3 +70,11 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: PYTHONPATH=. python scripts/v097_bronze_autopilot.py finalize
+      - name: Test acceptance publisher
+        run: PYTHONPATH=. python scripts/v097_ap_publish_artifacts.py selftest
+      - name: Save Bronze adapter rulebook, sharded file ledger, exception register, and READY manifest
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_ap_publish_artifacts.py
