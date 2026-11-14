@@ -70,9 +70,9 @@ def main():
  upsert(api,c,"v097_BRONZE_6358_SCOPE_LATEST.json",summary)
  print("BRONZE_6358_AUDIT="+json.dumps(summary,ensure_ascii=False),flush=True)
 def selftest():
- code=lambda x:len(x) in (4,5,6) and x[:4].isdigit() and x[4:].isalnum()
+ code=lambda x:len(x) in (4,5,6) and x[:4].isdigit() and (len(x)==4 or x[4:].isalnum())
  assert code("2330") and code("2330A") and code("2330A1")
- assert not code("YJR4")
+ assert not code("YJR4") and not code("2330-") and not code("233")
  print("BRONZE_6358_SELFTEST_PASS",flush=True)
 if __name__=="__main__":
  if os.getenv("BRONZE_6358_MODE")=="selftest":selftest()
