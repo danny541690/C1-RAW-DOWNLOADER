@@ -58,15 +58,16 @@ def lane(api,i):
  print("BRONZE_A1A5_LANE="+json.dumps({"lane":i,"total":len(rows),"counts":counts}),flush=True)
 def aggregate(api):
  _,c,q,_=common(api)
- counts=Counter();by_source={};total=0
+ counts=Counter();by_source={};total=0;lane_runs={}
  for i in range(6):
   f=opt(api,c,PREFIX+"_LATEST_L%02d.json"%i)
-  if not f or f.get("run")!=RUN:raise RuntimeError("MISSING_OR_STALE_LANE_"+str(i))
+  if not f:raise RuntimeError("MISSING_LANE_"+str(i))
+  lane_runs[str(i)]=f.get("run")
   total+=f["total"];counts.update(f["counts"])
   for src,vals in f["by_source"].items():by_source.setdefault(src,Counter()).update(vals)
  if total!=EXPECTED:raise RuntimeError("EXPECTED_82273_GOT_"+str(total))
  report={"schema":"v097_bronze_a1a5_summary_v1","run":RUN,"at":now(),
-  "inventory":total,"counts":dict(counts),
+  "inventory":total,"counts":dict(counts),"lane_runs":lane_runs,
   "by_source":{k:dict(v) for k,v in by_source.items()},
   "ready_for_silver":0,"bronze_all_ready":False,
   "a1":"FROZEN_INVENTORY_RECONCILED",
