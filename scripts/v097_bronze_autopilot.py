@@ -19,9 +19,10 @@ MAX_EXPANDED = 250 * 1024 * 1024
 MAX_MEMBERS = 5000
 READY = 'BRONZE_READY_FOR_SILVER'
 NDC_VERSION = 'autopilot-0.1.2-ndc-native-excel-cells'
+FINMIND_VERSION = 'autopilot-0.1.2-finmind-raw-unit-manifest'
 
 def adapter_version(source):
-    return NDC_VERSION if source == 'NDC' else VERSION
+    return NDC_VERSION if source == 'NDC' else (FINMIND_VERSION if source == 'FinMind' else VERSION)
 
 
 def source_api():
@@ -218,7 +219,73 @@ def parse_html(source, name, blob, month, original_path=''):
     return {'status':'HOLD_HTML_SOURCE_ADAPTER', 'dataset':classify_dataset(source,name)}
 
 
+def parse_finmind_unit_archive(blob, expected_month):
+    """FinMind unit .raw + manifest.json, exact hash/row/dataset evidence.
+    It is a supplement and does NOT certify original provider or publication PIT.
+    """
+    try:
+        with zipfile.ZipFile(io.BytesIO(blob)) as z:
+            if z.testzip() is not None:return {'status':'HOLD_FINMIND_ZIP_CRC'}
+            names={i.filename for i in z.infolist() if not i.is_dir()}
+            if 'manifest.json' not in names:return None
+            manifest=json.loads(z.read('manifest.json'))
+            units=manifest.get('units')
+            if not isinstance(units,list) or not units:return None
+            declared={'manifest.json'}
+            total_rows=0;datasets=set();missing_proof=0
+            for unit in units:
+                if not isinstance(unit,dict) or unit.get('source')!='FinMind':
+                    return {'status':'HOLD_FINMIND_MANIFEST_IDENTITY'}
+                filename=unit.get('file')
+                if not isinstance(filename,str) or not re.fullmatch(r'[a-zA-Z0-9_.-]+\\.raw',filename):
+                    return {'status':'HOLD_FINMIND_MEMBER_NAME'}
+                if filename not in names:return {'status':'HOLD_FINMIND_MISSING_MEMBER'}
+                if filename in declared:return {'status':'HOLD_FINMIND_DUPLICATE_MEMBER'}
+                declared.add(filename)
+                data=z.read(filename)
+                if len(data)>MAX_MEMBER_BYTES:return {'status':'HOLD_FINMIND_MEMBER_TOO_LARGE'}
+                if digest(data)!=unit.get('sha256') or len(data)!=unit.get('bytes'):
+                    return {'status':'HOLD_FINMIND_MEMBER_SHA_SIZE'}
+                if unit.get('month')!=expected_month:
+                    return {'status':'HOLD_FINMIND_MEMBER_MONTH_CONFLICT',
+                            'observed':unit.get('month')}
+                try:content=json.loads(data)
+                except (ValueError,UnicodeError):return {'status':'HOLD_FINMIND_RAW_JSON_INVALID'}
+                if not isinstance(content,dict) or not isinstance(content.get('data'),list):
+                    return {'status':'HOLD_FINMIND_RAW_DATASET_SHAPE'}
+                rows=content['data']
+                if len(rows)!=unit.get('rows') or not rows:
+                    return {'status':'HOLD_FINMIND_ROW_COUNT_CONFLICT'}
+                sid=str(unit.get('stock_id',''))
+                for row in rows:
+                    if not isinstance(row,dict) or str(row.get('stock_id',''))!=sid:
+                        return {'status':'HOLD_FINMIND_STOCK_ID_CONFLICT'}
+                    d=date_token(row.get('date'))
+                    if d is None or d[:7]!=expected_month:
+                        return {'status':'HOLD_FINMIND_ROW_PERIOD_CONFLICT'}
+                    if 'value' in row and isinstance(row['value'],(int,float)):
+                        from math import isfinite
+                        if not isfinite(row['value']):
+                            return {'status':'HOLD_FINMIND_NONFINITE_NUMERIC'}
+                total_rows+=len(rows)
+                if not unit.get('remote_readback_hash_verified') or not unit.get('numeric_verified') or not unit.get('pit_verified'):
+                    missing_proof+=1
+                datasets.add(str(unit.get('dataset') or 'UNDECLARED'))
+            if names != declared:return {'status':'HOLD_FINMIND_UNDECLARED_ARCHIVE_MEMBERS'}
+            return {'status':'FINMIND_UNIT_MEMBER_SHA_ROWS_PASS_SOURCE_PIT_HOLD',
+                    'dataset_ids':sorted(datasets),'unit_count':len(units),
+                    'rows_checked':total_rows,'members_verified':len(declared),
+                    'units_missing_source_numeric_or_pit_proof':missing_proof,
+                    'manifest_numeric_verified':bool(manifest.get('numeric_verified')),
+                    'manifest_pit_verified':bool(manifest.get('pit_verified'))}
+    except (ValueError,zipfile.BadZipFile,KeyError,RuntimeError) as exc:
+        return {'status':'HOLD_FINMIND_ARCHIVE_EXCEPTION','error':type(exc).__name__}
+
+
 def parse_zip(source, name, blob, month, original_path):
+    if source=='FinMind':
+        special=parse_finmind_unit_archive(blob,month)
+        if special is not None:return special
     results=[];expanded=0
     try:
         with zipfile.ZipFile(io.BytesIO(blob)) as z:
@@ -434,7 +501,17 @@ def selftest():
     assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='NDC_NATIVE_CELL_SCHEMA_PASS_NUMERIC_ORIGIN_PIT_HOLD'
     ndc['month']='2021-05'
     assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='HOLD_NDC_MONTH_CONFLICT'
+    fin_raw=b'{"msg":"success","status":200,"data":[{"date":"2009-03-31","stock_id":"1236","value":2.0}]}'
+    fin_unit={'source':'FinMind','dataset':'TaiwanStockFinancialStatements',
+        'file':'unit.raw','sha256':digest(fin_raw),'bytes':len(fin_raw),
+        'month':'2009-03','stock_id':'1236','rows':1,
+        'numeric_verified':False,'pit_verified':False,'remote_readback_hash_verified':False}
     import zipfile
+    bf=io.BytesIO()
+    with zipfile.ZipFile(bf,'w') as zz:
+        zz.writestr('unit.raw',fin_raw)
+        zz.writestr('manifest.json',json.dumps({'units':[fin_unit]}))
+    assert parse_zip('FinMind','financial.zip',bf.getvalue(),'2009-03','x')['status']=='FINMIND_UNIT_MEMBER_SHA_ROWS_PASS_SOURCE_PIT_HOLD'
     zbuf=io.BytesIO()
     with zipfile.ZipFile(zbuf,'w') as z:z.writestr('TPEx_BULK_2024-09-10.json',good)
     assert parse_zip('TPEx','q.zip',zbuf.getvalue(),'2024-09',p)['member_count']==1
