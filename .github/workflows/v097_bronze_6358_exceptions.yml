@@ -1,0 +1,32 @@
+name: JARVIS v097 Bronze 6358 Exceptions Only
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v097_bronze_6358_exception_gate.py'
+      - '.github/workflows/v097_bronze_6358_exceptions.yml'
+permissions:
+  contents: read
+concurrency:
+  group: v097-bronze-6358-exception-audit
+  cancel-in-progress: false
+jobs:
+  targeted-bronze-reconciliation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Validate 6358 Bronze exception ledger rules
+        env:
+          BRONZE_6358_MODE: selftest
+        run: PYTHONPATH=. python scripts/v097_bronze_6358_exception_gate.py
+      - name: Reconcile only frozen 6358 exception evidence and publish Drive ledger
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_bronze_6358_exception_gate.py
