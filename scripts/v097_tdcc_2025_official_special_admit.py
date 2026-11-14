@@ -26,6 +26,19 @@ def selection(api,c,q,lane):
    record=dict(origin[fid])
    if fid in proven:raise RuntimeError("DUPLICATE_RECOVERY_ID")
    proven[fid]=record
+ retry=match(api,q,"v097_TDCC_TWO_OFFICIAL_RETRY_43521418693.json")
+ if retry:
+  verified=load_json(api,retry["id"])
+  if verified.get("official_proved")!=2:raise RuntimeError("RETRY_PROOF_NOT_2")
+  for x in verified["items"]:
+   if x.get("state")!="EXACT_SAME_DATE_CONTENT_MATCH":continue
+   fid=x["file_id"]
+   if fid not in origin:raise RuntimeError("RETRY_ID_OUTSIDE_FROZEN_2025")
+   o=origin[fid]
+   if o.get("source_sha256")!=x.get("source_sha256") or o.get("code")!=x.get("code") or o.get("day")!=x.get("day") or o.get("holders")!=x.get("original_holders") or o.get("shares")!=x.get("original_shares"):
+    raise RuntimeError("RETRY_OFFICIAL_ORIGINAL_PROOF_CONFLICT")
+   if not x.get("official_response_sha256"):raise RuntimeError("RETRY_OFFICIAL_RESPONSE_UNVERIFIED")
+   proven[fid]=dict(o)
  return [proven[fid] for fid in sorted(proven) if sha_lane(fid)==lane]
 def root(api,bronze):
  p=archive_root(api,bronze)
