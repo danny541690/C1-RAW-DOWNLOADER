@@ -328,7 +328,7 @@ def parse_taifex_csv(blob, month):
     nonempty=[ln for ln in lines if ln.strip()]
     if len(nonempty)<2:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
     head=nonempty[0]
-    separator=',' if head.count(',')>=2 else ('\\t' if head.count('\\t')>=2 else ';')
+    separator=',' if head.count(',')>=2 else ('\t' if head.count('\t')>=2 else ';')
     rows=list(csv.reader(io.StringIO(content),delimiter=separator))
     rows=[row for row in rows if any(x.strip() for x in row)]
     if len(rows)<2:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
@@ -547,8 +547,8 @@ def selftest():
     assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='NDC_NATIVE_CELL_SCHEMA_PASS_NUMERIC_ORIGIN_PIT_HOLD'
     ndc['month']='2021-05'
     assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='HOLD_NDC_MONTH_CONFLICT'
-    csv_sample=('交易日期,契約,到期月份(週別),履約價格,買/賣權,成交價格,成交數量,交易時段\\r\\n'
-       '2026/05/28,CDF,202609,-,-,2360,200,一般,\\r\\n').encode('cp950')
+    csv_sample=('交易日期,契約,到期月份(週別),履約價格,買/賣權,成交價格,成交數量,交易時段\r\n'
+       '2026/05/28,CDF,202609,-,-,2360,200,一般,\r\n').encode('cp950')
     assert parse_taifex_csv(csv_sample,'2026-05')['status']=='TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD'
     assert parse_taifex_csv(csv_sample,'2026-06')['status']=='HOLD_TAIFEX_MONTH_CONFLICT'
     fin_raw=b'{"msg":"success","status":200,"data":[{"date":"2009-03-31","stock_id":"1236","value":2.0}]}'
