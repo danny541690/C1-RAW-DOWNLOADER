@@ -20,9 +20,10 @@ MAX_MEMBERS = 5000
 READY = 'BRONZE_READY_FOR_SILVER'
 NDC_VERSION = 'autopilot-0.1.2-ndc-native-excel-cells'
 FINMIND_VERSION = 'autopilot-0.1.2-finmind-raw-unit-manifest'
+TAIFEX_VERSION = 'autopilot-0.1.2-taifex-cp950-and-trailing-comma'
 
 def adapter_version(source):
-    return NDC_VERSION if source == 'NDC' else (FINMIND_VERSION if source == 'FinMind' else VERSION)
+    return NDC_VERSION if source == 'NDC' else (FINMIND_VERSION if source == 'FinMind' else (TAIFEX_VERSION if source == 'TAIFEX' else VERSION))
 
 
 def source_api():
@@ -313,6 +314,50 @@ def parse_zip(source, name, blob, month, original_path):
             'member_states':dict(states),'members':results}
 
 
+def parse_taifex_csv(blob, month):
+    """Historical TAIFEX CSV uses CP950/Big5 and sometimes trailing comma.
+    Preserve raw bytes; audit every original logical row without data repair.
+    """
+    encoding=None;content=None
+    for codec in ('utf-8-sig','cp950','big5'):
+        try:
+            content=blob.decode(codec);encoding=codec;break
+        except UnicodeError:pass
+    if content is None:return {'status':'HOLD_TAIFEX_CSV_ENCODING'}
+    lines=content.splitlines()
+    nonempty=[ln for ln in lines if ln.strip()]
+    if len(nonempty)<2:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
+    head=nonempty[0]
+    separator=',' if head.count(',')>=2 else ('\\t' if head.count('\\t')>=2 else ';')
+    rows=list(csv.reader(io.StringIO(content),delimiter=separator))
+    rows=[row for row in rows if any(x.strip() for x in row)]
+    if len(rows)<2:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
+    header=[x.strip() for x in rows[0]]
+    if len(header)<3:return {'status':'HOLD_TAIFEX_CSV_HEADER'}
+    day_ix=next((i for i,x in enumerate(header)
+       if x in ('交易日期','日期','Date','交易日')),None)
+    parsed=0;trailing=0;seen_dates=set();missing_date=0
+    for row in rows[1:]:
+        if len(row)==len(header)+1 and not row[-1].strip():
+            row=row[:-1];trailing+=1
+        if len(row)!=len(header):
+            return {'status':'HOLD_TAIFEX_CSV_WIDTH','header_fields':len(header),
+                    'row_fields':len(row),'checked':parsed}
+        if day_ix is not None:
+            dt_value=date_token(row[day_ix])
+            if dt_value is None:return {'status':'HOLD_TAIFEX_DATE_PARSE','value':row[day_ix][:20]}
+            seen_dates.add(dt_value)
+            if dt_value[:7]!=month:return {'status':'HOLD_TAIFEX_MONTH_CONFLICT',
+                'date_sample':dt_value,'path_month':month}
+        else:missing_date+=1
+        parsed+=1
+    return {'status':'TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD',
+      'codec':encoding,'delimiter':separator,'header':header[:30],
+      'rows_checked':parsed,'trailing_empty_cells_ignored':trailing,
+      'date_evidence':bool(seen_dates),'distinct_dates':len(seen_dates),
+      'missing_date_rows':missing_date}
+
+
 def parse_content(source, name, blob, month, original_path='',allow_zip=True):
     n=name.lower()
     if not blob:return {'status':'HOLD_EMPTY_BYTES'}
@@ -326,6 +371,7 @@ def parse_content(source, name, blob, month, original_path='',allow_zip=True):
             return {'status':'JSONL_FULLY_PARSED_DATASET_HOLD','lines':len(lines)}
         except Exception:return {'status':'HOLD_JSONL_PARSE'}
     if n.endswith('.csv'):
+        if source=='TAIFEX':return parse_taifex_csv(blob,month)
         try:
             content=blob.decode('utf-8-sig')
             dialect=csv.Sniffer().sniff(content[:4096],delimiters=',;\t')
@@ -501,6 +547,10 @@ def selftest():
     assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='NDC_NATIVE_CELL_SCHEMA_PASS_NUMERIC_ORIGIN_PIT_HOLD'
     ndc['month']='2021-05'
     assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='HOLD_NDC_MONTH_CONFLICT'
+    csv_sample=('交易日期,契約,到期月份(週別),履約價格,買/賣權,成交價格,成交數量,交易時段\\r\\n'
+       '2026/05/28,CDF,202609,-,-,2360,200,一般,\\r\\n').encode('cp950')
+    assert parse_taifex_csv(csv_sample,'2026-05')['status']=='TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD'
+    assert parse_taifex_csv(csv_sample,'2026-06')['status']=='HOLD_TAIFEX_MONTH_CONFLICT'
     fin_raw=b'{"msg":"success","status":200,"data":[{"date":"2009-03-31","stock_id":"1236","value":2.0}]}'
     fin_unit={'source':'FinMind','dataset':'TaiwanStockFinancialStatements',
         'file':'unit.raw','sha256':digest(fin_raw),'bytes':len(fin_raw),
