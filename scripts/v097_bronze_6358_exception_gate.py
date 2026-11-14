@@ -10,9 +10,18 @@ from scripts.v097_bronze_first_pipeline import service,common,match,load_json,up
 from scripts.v097_phase_a_disposition import evaluate,V4_RUN,EXPECTED
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 TDCC_PREFIX="v097_TDCC_A4_V3"
+TARGETED_RUN="43159677957"
 def main():
  api=service();_,c,q,_=common(api)
  states=Counter();per_source=Counter();detail=[];seen=set();missing_checkpoint=0
+ targeted=match(api,q,"v097_PHASE_A_TARGETED_QA_%s.json"%TARGETED_RUN)
+ if not targeted:raise RuntimeError("MISSING_NINE_TARGETED_QA_RECEIPTS")
+ targeted_doc=load_json(api,targeted["id"])
+ targetrows=targeted_doc.get("rows",[])
+ targets={x["asset_id"]:x for x in targetrows}
+ if len(targetrows)!=9 or len(targets)!=9:raise RuntimeError("EXPECTED_NINE_DISTINCT_TARGETED_QA")
+ target_states=Counter(x.get("status","UNKNOWN") for x in targetrows)
+
  for lane in range(6):
   f=match(api,q,"v097_BF_REPAIR_V4_%s_L%02d.json"%(V4_RUN,lane))
   if not f:raise RuntimeError("MISSING_FROZEN_V4_EVIDENCE_L%02d"%lane)
@@ -27,9 +36,9 @@ def main():
    if r["category"]=="CONTROL_METADATA":
     state="EXCLUDED_CONTROL_NOT_MARKET"
    elif prior=="REPAIRED_SHA_VERIFIED_SEMANTIC_PENDING":
-    state="HOLD_REPAIR_SEMANTIC_QA"
+    state="HOLD_REPAIR_SEMANTIC_QA" if targets.get(fid,{}).get("status")=="BYTE_MATCH_SEMANTIC_PENDING" else "HOLD_REPAIR_QA_FAILED"
    elif prior=="ARCHIVE_EVIDENCE_ONLY":
-    state="HOLD_ARCHIVE_CONTENT_ORIGIN"
+    state="HOLD_ARCHIVE_CONTENT_ORIGIN" if targets.get(fid,{}).get("status")=="ARCHIVE_STRUCTURE_REVIEW" else "HOLD_ARCHIVE_QA_FAILED"
    elif r["category"]=="TDCC_IDENTITY":
     evidence=tdone.get(fid,{})
     status=evidence.get("status","")
@@ -44,13 +53,20 @@ def main():
        "source_path":r.get("source_path"),
        "previous_status":prior,
        "tdcc_checkpoint_state":tdone.get(fid,{}).get("status"),
+       "targeted_qa_state":targets.get(fid,{}).get("status"),
        "decision_reason":reason})
  if len(seen)!=EXPECTED:raise RuntimeError("FROZEN_EXCEPTION_COUNT_MISMATCH:"+str(len(seen)))
+ if not set(targets).issubset(seen):raise RuntimeError("TARGETED_QA_ORPHAN_IDS")
+ if sum(1 for x in detail if x["state"].startswith("HOLD_TDCC_"))!=5035:raise RuntimeError("TDCC_COUNT_MISMATCH")
+ if states.get("EXCLUDED_CONTROL_NOT_MARKET",0)!=1314:raise RuntimeError("CONTROL_COUNT_MISMATCH")
+
  summary={"schema":"v097_bronze_6358_scope_audit_1","run":RUN,
   "at":datetime.now(timezone.utc).isoformat(),
   "original_exception_count":EXPECTED,"unique_file_ids":len(seen),
   "states":dict(states),"source_categories":dict(per_source),
   "tdcc_checkpoint_missing":missing_checkpoint,
+  "targeted_nine_qa_statuses":dict(target_states),
+  "targeted_nine_verified_receipts":len(targets),
   "official_references":[
    "https://schema.gov.tw/lists/75",
    "https://original-www.tdcc.com.tw/portal/zh/smWeb/qryStock",
