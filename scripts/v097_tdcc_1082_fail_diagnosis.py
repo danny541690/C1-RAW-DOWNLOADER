@@ -13,3 +13,16 @@ for f in children(api,q):
   groups[(f["name"].split("_L")[0].split("_")[-1],err)]+=1
   examples.setdefault(str((f["name"].split("_L")[0].split("_")[-1],err)),{"file_id":r.get("file_id"),"date":r.get("date"),"code":r.get("code")})
 print("REASONS="+json.dumps({"total":sum(groups.values()),"causes":{str(k):v for k,v in groups.items()},"examples":examples},ensure_ascii=False))
+
+from scripts.v097_bronze_first_pipeline import call
+from bs4 import BeautifulSoup
+for p in ("1KKTtdvC2pkdwN8GjbJn9eJH7P0VgFi5a","1121GA2OnaetYt4H37BP1dCNZzIBpliB2"):
+    raw=call(lambda:api.files().get_media(fileId=p))
+    soup=BeautifulSoup(raw.decode("utf-8-sig"),"html.parser")
+    tab=next(t for t in soup.select("table") if "持股/單位數分級" in t.get_text(" ",strip=True))
+    levels=[]
+    for tr in tab.select("tr"):
+        cells=[x.get_text(" ",strip=True) for x in tr.find_all("td",recursive=False)]
+        if len(cells)==5:
+            levels.append([cells[0],cells[1],cells[2],cells[3],cells[4]])
+    print("HTML_REAL_LEVELS="+json.dumps({"file":p,"rows":levels[-6:]},ensure_ascii=False))
