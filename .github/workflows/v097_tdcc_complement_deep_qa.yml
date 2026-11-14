@@ -1,0 +1,33 @@
+name: JARVIS v097 TDCC Complement Deep Bronze QA
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v097_tdcc_complement_deep_qa.yml'
+      - 'scripts/v097_tdcc_complement_deep_qa.py'
+permissions:
+  contents: read
+concurrency:
+  group: v097-tdcc-complement-deep-qa
+  cancel-in-progress: false
+jobs:
+  bronze-content-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Selftest TDCC 17-level numeric audit
+        env:
+          TDCC_COMPLEMENT_MODE: selftest
+        run: PYTHONPATH=. python scripts/v097_tdcc_complement_deep_qa.py
+      - name: Audit original 2026-08 and 2026-10 ZIP members only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TDCC_COMPLEMENT_MODE: audit
+        run: PYTHONPATH=. python scripts/v097_tdcc_complement_deep_qa.py
