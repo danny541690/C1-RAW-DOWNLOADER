@@ -110,6 +110,30 @@ def normalize_date(raw):
   try:return datetime.date(int(m[1])+1911,int(m[2]),int(m[3])).isoformat()
   except ValueError:return None
  return None
+def official_table_numeric_check(tables):
+ """Check all official numeric columns without altering the source data."""
+ tested=0
+ for table in tables:
+  fields=table.get("fields",[])
+  data=table.get("data",[])
+  if not isinstance(fields,list) or not isinstance(data,list):
+   return False,"INVALID_OFFICIAL_TABLE",""
+  index=[(i,str(col)) for i,col in enumerate(fields) if any(
+   mark in str(col) for mark in ("收盤","成交股數","成交金額","成交筆數","最高","最低","開盤"))]
+  for row in data:
+   if not isinstance(row,list):return False,"NON_ARRAY_OFFICIAL_DATA_ROW",""
+   if len(row)!=len(fields):return False,"FIELD_ROW_WIDTH_MISMATCH",""
+   for j,col in index:
+    raw=str(row[j]).strip().replace(",","")
+    if raw in ("","--","---","-","X","N/A","NaN","除權","除息","不適用"):
+     continue
+    if not re.fullmatch(r"[+-]?\d+(?:\.\d+)?",raw):
+     return False,"NON_NUMERIC_OFFICIAL_CELL",col+":"+raw[:30]
+    if any(key in col for key in ("成交股數","成交金額","成交筆數")) and raw.startswith("-"):
+     return False,"NEGATIVE_VOLUME_OR_VALUE",col
+    tested+=1
+ return True,"NUMERIC_FIELD_QA_PASS",tested
+
 def validate_file(r,blob):
  """Fail-closed policy. All outputs evidence only, no normalization or transformation."""
  source=r["source"];path=r["source_path"];month=r["year"]+"-"+r["month"]
@@ -153,6 +177,11 @@ def validate_file(r,blob):
     shape_verified=bool(names.intersection({"Code","SecuritiesCompanyCode","代號","證券代號"})) and bool(names.intersection({"Close","ClosingPrice","收盤","TradeVolume","TradingShares","成交股數"}))
    if not shape_verified:
     return dict(result,state="HOLD_DATASET_SCHEMA_NOT_CONFIRMED")
+   if kind in ("JSON_OFFICIAL_TABLES","JSON_FIELD_DATA"):
+    tables=data.get("tables",[]) if kind=="JSON_OFFICIAL_TABLES" else [data]
+    ok,why,extra=official_table_numeric_check(tables)
+    if not ok:return dict(result,state="HOLD_"+why,detail=extra)
+    result["numeric_cells_checked"]=extra
    # Bronze readiness only approves immutable original input; Silver MUST
    # enforce point-in-time publication availability before any historical use.
    return dict(result,state="BRONZE_READY_FOR_SILVER",publication_timestamp_verified=False,
@@ -244,6 +273,8 @@ def selftest():
  assert validate_file(r,b)["state"]=="HOLD_DATASET_SCHEMA_NOT_CONFIRMED"
  good=b'{"date":"20261016","tables":[{"fields":["代號","名稱","收盤"],"data":[["2330","測試","12"]]}]}'
  assert validate_file(r,good)["state"]=="BRONZE_READY_FOR_SILVER"
+ bad=b'{"date":"20261016","tables":[{"fields":["代號","名稱","收盤"],"data":[["2330","測試","corrupt"]]}]}'
+ assert validate_file(r,bad)["state"]=="HOLD_NON_NUMERIC_OFFICIAL_CELL"
  print("BRONZE_74750_SELFTEST_PASS")
 if __name__=="__main__":
  mode=os.getenv("BRONZE_74750_MODE","selftest")
