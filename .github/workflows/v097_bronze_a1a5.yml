@@ -1,0 +1,54 @@
+name: JARVIS v097 Bronze A1-A5 Only
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/v097_bronze_a1a5.yml'
+      - 'scripts/v097_bronze_a1_a5.py'
+  schedule:
+    - cron: '*/15 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-bronze-a1a5
+  cancel-in-progress: false
+jobs:
+  bronze-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: A1-A4 audit existing Bronze, no Silver or Gold
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          A1A5_MODE: lane
+          A1A5_LANE: ${{ matrix.lane }}
+        run: PYTHONPATH=. python scripts/v097_bronze_a1_a5.py
+  bronze-gate:
+    needs: bronze-review
+    if: ${{ always() && needs.bronze-review.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: A5 publish Bronze-only verified counts
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          A1A5_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_bronze_a1_a5.py
