@@ -1,0 +1,28 @@
+name: JARVIS v097 82273 Exact-ID Reconciliation
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/v097_ap_inventory_reconcile.py
+      - .github/workflows/v097_ap_inventory_reconcile.yml
+permissions:
+  contents: read
+concurrency:
+  group: v097-ap-inventory-reconcile
+  cancel-in-progress: false
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Reconcile frozen inventory IDs; read only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_ap_inventory_reconcile.py
