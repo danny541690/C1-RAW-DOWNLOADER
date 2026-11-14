@@ -196,7 +196,17 @@ def validate_file(r,blob):
    content=blob.decode("utf-8-sig",errors="replace")
    if "<table" not in content.lower():return dict(result,state="HOLD_HTML_NOT_TABULAR")
    if source=="TDCC" and ("股權分散" in content or "StockNo" in content):
-    return dict(result,state="BRONZE_TDCC_HTML_TABLE_PASS_MARKET_AND_PIT_HOLD")
+    from scripts.v097_tdcc_a3_a5_auto import assess
+    status,observations=assess(path,blob)
+    result.update(tdcc_adapter_status=status,
+      data_date=observations.get("date"),
+      security_code=observations.get("content_security_id"),
+      distribution_qa=observations.get("table_qa",{}).get("status"))
+    if status=="HTML_CODE_CONSISTENT_OFFICIAL_PROVENANCE_AND_ASOF_MASTER_PENDING":
+     return dict(result,state="BRONZE_TDCC_SEMANTIC_PASS_MARKET_MASTER_HOLD")
+    if status=="HTML_TOKEN_CONSISTENT_SECURITY_CLASS_AND_ORIGIN_PENDING":
+     return dict(result,state="BRONZE_TDCC_SEMANTIC_PASS_NON_COMMON_STOCK_SCOPE")
+    return dict(result,state="HOLD_TDCC_"+status)
    return dict(result,state="HOLD_HTML_DATASET_ADAPTER_REQUIRED")
   if name.endswith(".zip"):
    with zipfile.ZipFile(io.BytesIO(blob)) as z:
