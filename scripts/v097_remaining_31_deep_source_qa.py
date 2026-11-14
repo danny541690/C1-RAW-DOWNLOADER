@@ -98,7 +98,7 @@ def deep(api,item,schema):
        official_current_sha256=official.get("http_body_sha256"))
    if official.get("state")=="OFFICIAL_SCHEMA_READABLE":
     result["official_key_intersection"]=sorted(set(shape)&set(official.get("schema_fields") or []))
-  elif b"<html" in raw[:100000].lower():
+  elif b"<html" in raw[:100000].lower() or b"<table" in raw[:250000].lower():
    soup=BeautifulSoup(raw.decode("utf-8-sig",errors="replace"),"html.parser")
    if not soup.select("table"):raise ValueError("HTML_NO_TABLE")
    if item["source"]=="TDCC":
@@ -111,6 +111,8 @@ def deep(api,item,schema):
     text=soup.get_text(" ",strip=True)
     tags=["資產負債表","現金流量表","綜合損益表","營業收入"]
     known=[x for x in tags if x in text]
+    if soup.select_one("#bodyTable table") and soup.select_one("#headTable table"):known.append("MOPS_IFRS_HTML_FINANCIAL_MATRIX")
+    if "THREE_YEAR_OFFICIAL_GAPS" in meta["name"] and ("Statement_" in meta["name"] or "BalanceSheet_" in meta["name"]):known.append("MOPS_IFRS_ORIGINAL_FILENAME_REPORT")
     result.update(html_tables=len(soup.select("table")),financial_labels=known,
        state="MOPS_HTML_QA_PASS_OFFICIAL_PUBLICATION_AND_ACCOUNTS_PENDING" if known
        else "MOPS_HTML_REPORT_IDENTITY_HOLD")
