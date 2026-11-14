@@ -86,8 +86,8 @@ def validate_levels(raw):
  if len(rows) not in (16,17):raise ValueError("LEVEL_COUNT_NOT_16_17")
  if len({r[0] for r in rows})!=len(rows):raise ValueError("DUPLICATE_HOLDING_LEVEL")
  total=next((r for r in rows if "合計" in r[4]),None)
- if total is None or total[0]!=17:raise ValueError("LEVEL17_TOTAL_NOT_FOUND")
- levels=[x for x in rows if x[0]!=17]
+ if total is None or total[0] not in (16,17):raise ValueError("HTML_SUM_TOTAL_NOT_FOUND")
+ levels=[x for x in rows if x[0]!=total[0]]
  if sum(x[1] for x in levels)!=total[1] or sum(x[2] for x in levels)!=total[2]:
   raise ValueError("HOLDER_SHARE_CONSERVATION_FAIL")
  if abs(sum(x[3] for x in levels)-total[3])>Decimal("0.12"):
@@ -142,16 +142,16 @@ def lane(api,n):
  ck=get(api,c,name) or {"schema":"v097_tdcc_internal_strict_ck_1","lane":n,"done":{}}
  if ck["lane"]!=n or ck["schema"]!="v097_tdcc_internal_strict_ck_1":raise RuntimeError("CHECKPOINT_BAD")
  if not set(ck["done"]).issubset({r["file_id"] for r in rows}):raise RuntimeError("CHECKPOINT_ORPHAN")
- todo=[r for r in rows if r["file_id"] not in ck["done"]][:LIMIT]
+ todo=[r for r in rows if r["file_id"] not in ck["done"] or (ck["done"][r["file_id"]].get("state")=="ORIGINAL_DATA_QA_HOLD" and ck["done"][r["file_id"]].get("retry_version")!="HTML_SUM_V2")][:LIMIT]
  stages=stage_map(api,c)
- receipt=NAME+"_"+RUN+"_L%02d_O%04d.json"%(n,len(ck["done"]))
+ receipt=NAME+"_"+RUN+"_L%02d_O%04d_%s.json"%(n,len(ck["done"]),sha("\n".join(r["file_id"] for r in todo).encode())[:12])
  old=match(api,q,receipt)
  if old:results=load_json(api,old["id"])["rows"]
  else:
   results=[process(api,r,stages,dest["id"]) for r in todo]
   put_once(api,q,receipt,{"schema":"v097_tdcc_internal_strict_receipt_1","run":RUN,
      "lane":n,"rows":results,"external_witness_certified":False})
- for x in results:ck["done"][x["file_id"]]={"state":x["state"],"dest_id":x.get("dest_id"),"error":x.get("error")}
+ for x in results:ck["done"][x["file_id"]]={"state":x["state"],"dest_id":x.get("dest_id"),"error":x.get("error"),"retry_version":"HTML_SUM_V2"}
  upsert(api,c,name,dict(ck,updated_at=now(),last_receipt=receipt))
  st=Counter(x["state"] for x in ck["done"].values())
  print("TDCC_INTERNAL_STRICT_LANE="+json.dumps({"lane":n,"total":len(rows),"checked":len(ck["done"]),
