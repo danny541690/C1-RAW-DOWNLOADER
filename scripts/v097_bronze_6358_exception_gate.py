@@ -45,7 +45,14 @@ def main():
     if not evidence:missing_checkpoint+=1
     # TDCC's official securities-code schema supports four numeric positions plus
     # two suffix positions. A filename token alone cannot authorize exclusion.
-    state="HOLD_TDCC_HISTORICAL_MARKET_AND_PROVENANCE" if status.startswith("HTML_") else "HOLD_TDCC_SOURCE_OR_CONTENT"
+    if status=="HTML_TOKEN_CONSISTENT_SECURITY_CLASS_AND_ORIGIN_PENDING":
+     # Independent original-content checks found a matching non-four-digit token.
+     # Close only JARVIS common-stock scope; DO NOT certify TDCC publication origin.
+     state="EXCLUDED_TDCC_NON_COMMON_STOCK_SCOPE"
+    elif status=="HTML_CODE_CONSISTENT_OFFICIAL_PROVENANCE_AND_ASOF_MASTER_PENDING":
+     state="HOLD_TDCC_HISTORICAL_MARKET_AND_PROVENANCE"
+    else:
+     state="HOLD_TDCC_SOURCE_OR_CONTENT"
    else:state="HOLD_OTHER_EXCEPTION"
    states[state]+=1
    per_source[r.get("category","UNKNOWN")]+=1
@@ -57,7 +64,9 @@ def main():
        "decision_reason":reason})
  if len(seen)!=EXPECTED:raise RuntimeError("FROZEN_EXCEPTION_COUNT_MISMATCH:"+str(len(seen)))
  if not set(targets).issubset(seen):raise RuntimeError("TARGETED_QA_ORPHAN_IDS")
- if sum(1 for x in detail if x["state"].startswith("HOLD_TDCC_"))!=5035:raise RuntimeError("TDCC_COUNT_MISMATCH")
+ if missing_checkpoint:raise RuntimeError("TDCC_PRIOR_QA_MISSING_"+str(missing_checkpoint))
+ tdcc_count=sum(1 for x in detail if x["state"].startswith("HOLD_TDCC_") or x["state"]=="EXCLUDED_TDCC_NON_COMMON_STOCK_SCOPE")
+ if tdcc_count!=5035:raise RuntimeError("TDCC_COUNT_MISMATCH")
  if states.get("EXCLUDED_CONTROL_NOT_MARKET",0)!=1314:raise RuntimeError("CONTROL_COUNT_MISMATCH")
 
  summary={"schema":"v097_bronze_6358_scope_audit_1","run":RUN,
@@ -65,6 +74,9 @@ def main():
   "original_exception_count":EXPECTED,"unique_file_ids":len(seen),
   "states":dict(states),"source_categories":dict(per_source),
   "tdcc_checkpoint_missing":missing_checkpoint,
+  "stock_scope_excluded_total":states["EXCLUDED_CONTROL_NOT_MARKET"]+states["EXCLUDED_TDCC_NON_COMMON_STOCK_SCOPE"],
+  "remaining_unresolved":EXPECTED-states["EXCLUDED_CONTROL_NOT_MARKET"]-states["EXCLUDED_TDCC_NON_COMMON_STOCK_SCOPE"],
+  "scope_closed_count_not_equivalent_to_source_origin_certification":True,
   "targeted_nine_qa_statuses":dict(target_states),
   "targeted_nine_verified_receipts":len(targets),
   "official_references":[
@@ -74,10 +86,12 @@ def main():
   "rules":{"tdcc_security_code":"FIRST_4_NUMERIC_NEXT_0_TO_2_ALNUM",
    "market_scope":"Only historically verified TWSE/TPEx listed/common equity enters the trading universe",
    "non_four_digit_automatic_exclusion":False,
+   "exclusion_requires_verified_prior_html_content_status":True,
    "recheck_verified_74750":False,
    "silver_executed":False,"gold_executed":False},
-  "remaining_blockers":["historical_market_master_asof_date",
-    "original_tdcc_provenance","7_repairs_semantic_gate","2_archives_member_source_provenance"],
+  "remaining_blockers":["source_origin_not_certified_for_scope_excluded_tdcc",
+    "historical_market_master_required_only_for_ambiguous_stock_codes",
+    "7_repairs_semantic_gate","2_archives_member_source_provenance"],
   "silver_ready_from_exception_cohort":0,
   "notice":"Classifies existing proof, does not fabricate independent market certification."}
  put_once(api,q,"v097_BRONZE_6358_SCOPE_ROWS_%s.json"%RUN,
@@ -89,6 +103,7 @@ def selftest():
  code=lambda x:len(x) in (4,5,6) and x[:4].isdigit() and (len(x)==4 or x[4:].isalnum())
  assert code("2330") and code("2330A") and code("2330A1")
  assert not code("YJR4") and not code("2330-") and not code("233")
+ assert "HTML_TOKEN_CONSISTENT_SECURITY_CLASS_AND_ORIGIN_PENDING".startswith("HTML_TOKEN_")
  print("BRONZE_6358_SELFTEST_PASS",flush=True)
 if __name__=="__main__":
  if os.getenv("BRONZE_6358_MODE")=="selftest":selftest()
