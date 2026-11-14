@@ -1,0 +1,26 @@
+name: JARVIS v0.97 - TDCC 1082 exact failure diagnosis
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/v097_tdcc_1082_fail_diagnosis.py'
+      - '.github/workflows/v097-tdcc-1082-failure-diagnosis.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Print actual 1082 per-file immutable exception reasons
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_tdcc_1082_fail_diagnosis.py
