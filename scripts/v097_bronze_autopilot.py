@@ -18,7 +18,7 @@ MAX_MEMBER_BYTES = 32 * 1024 * 1024
 MAX_EXPANDED = 250 * 1024 * 1024
 MAX_MEMBERS = 5000
 READY = 'BRONZE_READY_FOR_SILVER'
-NDC_VERSION = 'autopilot-0.1.2-ndc-native-excel-cells'
+NDC_VERSION = 'autopilot-0.1.3-ndc-documented-series-gaps'
 FINMIND_VERSION = 'autopilot-0.1.2-finmind-raw-unit-manifest'
 TAIFEX_VERSION = 'autopilot-0.1.2-taifex-cp950-and-trailing-comma'
 
@@ -110,7 +110,11 @@ def parse_ndc_native(obj, expected_month):
     tables=obj.get('tables')
     if not isinstance(tables,list) or not tables:
         return {'status':'HOLD_NDC_NO_TABLES'}
-    fields=0;numeric=0;dates=set()
+    fields=0;numeric=0;dates=set();documented_gaps=0
+    gap_items=obj.get('gaps') or []
+    if not isinstance(gap_items,list):return {'status':'HOLD_NDC_GAP_LEDGER_INVALID'}
+    allowed_gaps={(str(g.get('table')),str(g.get('field')),str(g.get('status')))
+        for g in gap_items if isinstance(g,dict)}
     for table in tables:
         if not isinstance(table,dict) or not table.get('table') or not isinstance(table.get('cells'),list) or not table['cells']:
             return {'status':'HOLD_NDC_TABLE_CELLS_INVALID'}
@@ -122,11 +126,17 @@ def parse_ndc_native(obj, expected_month):
             return {'status':'HOLD_NDC_EXCEL_DATE_CELL_INVALID'}
         seen=set()
         for cell in table['cells']:
-            if not isinstance(cell,dict) or not cell.get('field') or cell.get('status')!='VALUE_PRESENT':
+            if not isinstance(cell,dict) or not cell.get('field'):
                 return {'status':'HOLD_NDC_CELL_MISSING_OR_INVALID'}
             field=str(cell['field'])
             if field in seen:return {'status':'HOLD_NDC_DUPLICATE_FIELD'}
             seen.add(field);fields+=1
+            if cell.get('status')!='VALUE_PRESENT':
+                key=(str(table['table']),field,str(cell.get('status')))
+                if key in allowed_gaps and cell.get('native_value') is None:
+                    documented_gaps+=1
+                    continue
+                return {'status':'HOLD_NDC_UNDOCUMENTED_CELL_GAP'}
             val=str(cell.get('native_value','')).strip()
             if not val:return {'status':'HOLD_NDC_EMPTY_VALUE'}
             try:
@@ -141,7 +151,8 @@ def parse_ndc_native(obj, expected_month):
         return {'status':'HOLD_NDC_CONTENT_MONTH_CONFLICT','observed_dates':sorted(dates)}
     return {'status':'NDC_NATIVE_CELL_SCHEMA_PASS_NUMERIC_ORIGIN_PIT_HOLD',
             'dataset':'business_cycle','period':expected_month,'tables':len(tables),
-            'cells':fields,'numeric_cells':numeric,'archive_sha256':archive['sha256'],
+            'cells':fields,'numeric_cells':numeric,'documented_gaps':documented_gaps,
+            'archive_sha256':archive['sha256'],
             'archive_readback_proof_recorded':True,
             'numeric_verified':bool(obj.get('numeric_verified')),
             'pit_verified':bool(obj.get('pit_verified')),
@@ -545,6 +556,9 @@ def selftest():
                              {'field':'景氣對策信號','native_value':'紅','status':'VALUE_PRESENT'}]}],
          'numeric_verified':False,'pit_verified':False}
     assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='NDC_NATIVE_CELL_SCHEMA_PASS_NUMERIC_ORIGIN_PIT_HOLD'
+    ndc['gaps']=[{'table':'景氣指標','field':'新指數','status':'BEFORE_SERIES_START'}]
+    ndc['tables'][0]['cells'].append({'field':'新指數','native_value':None,'status':'BEFORE_SERIES_START'})
+    assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['documented_gaps']==1
     ndc['month']='2021-05'
     assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='HOLD_NDC_MONTH_CONFLICT'
     csv_sample=('交易日期,契約,到期月份(週別),履約價格,買/賣權,成交價格,成交數量,交易時段\r\n'
