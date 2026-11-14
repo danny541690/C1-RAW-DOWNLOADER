@@ -4,6 +4,7 @@ Run INSIDE C1-RAW-DOWNLOADER. Not an assertion that 74,750 files are READY.
 Strictly read-only on raw source/destination; writes only scoped QA evidence.
 """
 import csv, datetime as dt, hashlib, io, json, os, re, sys, zipfile
+from decimal import Decimal, InvalidOperation
 from collections import Counter
 
 SOURCES = ('TWSE', 'TPEx', 'MOPS', 'TDCC', 'TAIFEX', 'NDC', 'FinMind')
@@ -17,6 +18,10 @@ MAX_MEMBER_BYTES = 32 * 1024 * 1024
 MAX_EXPANDED = 250 * 1024 * 1024
 MAX_MEMBERS = 5000
 READY = 'BRONZE_READY_FOR_SILVER'
+NDC_VERSION = 'autopilot-0.1.2-ndc-native-excel-cells'
+
+def adapter_version(source):
+    return NDC_VERSION if source == 'NDC' else VERSION
 
 
 def source_api():
@@ -86,10 +91,67 @@ def check_table(fields, rows):
     return 'OK'
 
 
+def parse_ndc_native(obj, expected_month):
+    """NDC v0.93 extract: genuine Excel cells with archive source reference.
+    Do NOT mistake {tables:[{cells:...}]} for TWSE {fields,data}.
+    Do NOT treat a parsed historical cell as source/numeric/PIT certification.
+    """
+    if obj.get('source')!='NDC':
+        return {'status':'HOLD_NDC_SOURCE_IDENTITY'}
+    if obj.get('month')!=expected_month:
+        return {'status':'HOLD_NDC_MONTH_CONFLICT','observed_month':obj.get('month')}
+    archive=obj.get('source_archive')
+    if not isinstance(archive,dict) or not re.fullmatch(r'[a-f0-9]{64}',str(archive.get('sha256',''))):
+        return {'status':'HOLD_NDC_SOURCE_ARCHIVE_PROOF'}
+    if not archive.get('file_id') or not archive.get('url') or not archive.get('remote_readback_hash_verified'):
+        return {'status':'HOLD_NDC_UNVERIFIED_ORIGIN'}
+    tables=obj.get('tables')
+    if not isinstance(tables,list) or not tables:
+        return {'status':'HOLD_NDC_NO_TABLES'}
+    fields=0;numeric=0;dates=set()
+    for table in tables:
+        if not isinstance(table,dict) or not table.get('table') or not isinstance(table.get('cells'),list) or not table['cells']:
+            return {'status':'HOLD_NDC_TABLE_CELLS_INVALID'}
+        raw_day=table.get('source_date_cell')
+        try:
+            day=dt.date(1899,12,30)+dt.timedelta(days=int(raw_day))
+            dates.add(day.isoformat())
+        except (ValueError,TypeError,OverflowError):
+            return {'status':'HOLD_NDC_EXCEL_DATE_CELL_INVALID'}
+        seen=set()
+        for cell in table['cells']:
+            if not isinstance(cell,dict) or not cell.get('field') or cell.get('status')!='VALUE_PRESENT':
+                return {'status':'HOLD_NDC_CELL_MISSING_OR_INVALID'}
+            field=str(cell['field'])
+            if field in seen:return {'status':'HOLD_NDC_DUPLICATE_FIELD'}
+            seen.add(field);fields+=1
+            val=str(cell.get('native_value','')).strip()
+            if not val:return {'status':'HOLD_NDC_EMPTY_VALUE'}
+            try:
+                d=Decimal(val.replace(',',''))
+                if not d.is_finite():return {'status':'HOLD_NDC_NONFINITE_VALUE'}
+                numeric+=1
+            except InvalidOperation:
+                # Categorical signals such as 紅 / 黃紅 / 綠 are valid text.
+                if not ('信號' in field or '燈號' in field):
+                    return {'status':'HOLD_NDC_UNRECOGNIZED_TEXT_VALUE','field':field}
+    if len(dates)!=1 or next(iter(dates))[:7]!=expected_month:
+        return {'status':'HOLD_NDC_CONTENT_MONTH_CONFLICT','observed_dates':sorted(dates)}
+    return {'status':'NDC_NATIVE_CELL_SCHEMA_PASS_NUMERIC_ORIGIN_PIT_HOLD',
+            'dataset':'business_cycle','period':expected_month,'tables':len(tables),
+            'cells':fields,'numeric_cells':numeric,'archive_sha256':archive['sha256'],
+            'archive_readback_proof_recorded':True,
+            'numeric_verified':bool(obj.get('numeric_verified')),
+            'pit_verified':bool(obj.get('pit_verified')),
+            'coverage_certified':bool(obj.get('coverage_certified'))}
+
+
 def parse_json(source, name, blob, expected_month):
     try: obj = json.loads(blob.decode('utf-8-sig'))
     except (ValueError, UnicodeError): return {'status':'HOLD_BAD_JSON'}
     dataset = classify_dataset(source, name, obj)
+    if source=='NDC' and isinstance(obj,dict) and obj.get('representation')=='EXTRACTED_NATIVE_CELL_TEXT_WITH_SOURCE_ARCHIVE_REFERENCE':
+        return parse_ndc_native(obj,expected_month)
     if isinstance(obj, dict):
         date_candidates = [obj[k] for k in ('date', 'Date', '資料日期', '查詢日期') if k in obj]
         tabs = obj.get('tables')
@@ -243,6 +305,7 @@ def worker(api, control, quality, match, load_json, put_once, upsert, call, sour
     if not f:raise RuntimeError('RUN_INIT_BEFORE_WORKERS')
     candidates=load_json(api,f['id'])['rows']
     chk_name='v097_AP_CHECKPOINT_'+source+'.json'
+    current_version=adapter_version(source)
     for cycle in range(CYCLES):
         f=match(api,control,chk_name)
         ck=load_json(api,f['id']) if f else {'schema':'autopilot_ck_1','version':VERSION,'done':{}}
@@ -250,7 +313,7 @@ def worker(api, control, quality, match, load_json, put_once, upsert, call, sour
         def needs_work(row):
             prior=done.get(row['source_id'])
             if not prior:return True
-            if prior.get('adapter_version')!=VERSION:return True
+            if prior.get('adapter_version')!=current_version:return True
             return prior.get('status')=='HOLD_READ_OR_SHA' and prior.get('retries',0)<3
         batch=[x for x in candidates if needs_work(x)][:CAP]
         if not batch:
@@ -260,7 +323,7 @@ def worker(api, control, quality, match, load_json, put_once, upsert, call, sour
         attempts=[done.get(fid,{}).get('retries',0) for fid in ids]
         # Stable retry-scoped signature makes batch receipts replayable and
         # avoids conflicts when a formerly failed read succeeds later.
-        signature=digest((VERSION+'|'+source+'|'+','.join(
+        signature=digest((current_version+'|'+source+'|'+','.join(
                     '%s:%d'%(fid,k) for fid,k in zip(ids,attempts))).encode())[:16]
         receipt_name='v097_AP_RECEIPT_'+source+'_'+signature+'.json'
         prior_receipt=match(api,quality,receipt_name)
@@ -274,7 +337,7 @@ def worker(api, control, quality, match, load_json, put_once, upsert, call, sour
             for row in batch:
                 fid=row['source_id']
                 record={'source_id':fid,'source':source,'destination_id':row['dest_id'],
-                        'source_sha256':row['sha'],'adapter_version':VERSION,
+                        'source_sha256':row['sha'],'adapter_version':current_version,
                         'source_path':row['source_path']}
                 try:
                     blob=call(lambda:api.files().get_media(fileId=row['dest_id']))
@@ -291,7 +354,7 @@ def worker(api, control, quality, match, load_json, put_once, upsert, call, sour
                                   error=type(e).__name__+':'+error[:160])
                 receipts.append(record)
             put_once(api,quality,receipt_name,
-                     {'schema':'autopilot_receipt_1','adapter_version':VERSION,
+                     {'schema':'autopilot_receipt_1','adapter_version':current_version,
                       'source':source,'rows':receipts})
         # The checkpoint is advanced only after immutable receipt commit.
         # If interrupted between the two writes, next run replays the receipt.
@@ -300,10 +363,10 @@ def worker(api, control, quality, match, load_json, put_once, upsert, call, sour
             retries=previous.get('retries',0)
             if item['status']=='HOLD_READ_OR_SHA':retries+=1
             done[item['source_id']]={'status':item['status'],
-                                     'adapter_version':VERSION,'receipt':receipt_name,
+                                     'adapter_version':current_version,'receipt':receipt_name,
                                      'retries':retries}
         # Durable checkpoint and heartbeat; one writer per source.
-        upsert(api,control,chk_name,{'schema':'autopilot_ck_1','version':VERSION,'source':source,
+        upsert(api,control,chk_name,{'schema':'autopilot_ck_1','version':current_version,'source':source,
                  'done':done,'last_run':os.getenv('GITHUB_RUN_ID','manual'),
                  'last_success_at':dt.datetime.now(dt.timezone.utc).isoformat()})
         print('SOURCE_BATCH',source,len(receipts),len(done),'/',len(candidates),
@@ -322,7 +385,7 @@ def finalize(api, control, quality, match, load_json, put_once):
         if not set(done)<=expected_ids:raise RuntimeError('CHECKPOINT_ORPHAN_'+source)
         statuses=Counter(r['status'] for r in done.values())
         # Any parser-version update requeues stale evidence.
-        stale=sum(r.get('adapter_version')!=VERSION for r in done.values())
+        stale=sum(r.get('adapter_version')!=adapter_version(source) for r in done.values())
         retry_pending=sum(v.get('status')=='HOLD_READ_OR_SHA' and v.get('retries',0)<3 for v in done.values())
         by_source[source]={'total':len(expected),'processed':len(done),
                            'stale':stale,'retry_pending':retry_pending,'states':dict(statuses)}
@@ -360,6 +423,17 @@ def selftest():
     assert parse_content('TPEx','TPEx_BULK_2024-09-10.json',bad,'2024-09',p)['status']=='HOLD_CONTENT_PERIOD_CONFLICT'
     good='{"date":"20240910","tables":[{"fields":["代號","名稱","收盤"],"data":[["1234","abc","10"]]}]}'.encode('utf-8')
     assert parse_content('TPEx','TPEx_BULK_2024-09-10.json',good,'2024-09',p)['status']=='CONTENT_PARSED_ORIGIN_PIT_HOLD'
+    ndc={'source':'NDC','month':'2021-04',
+         'representation':'EXTRACTED_NATIVE_CELL_TEXT_WITH_SOURCE_ARCHIVE_REFERENCE',
+         'source_archive':{'file_id':'sample','url':'https://ws.ndc.gov.tw/x','sha256':'a'*64,
+                           'remote_readback_hash_verified':True},
+         'tables':[{'table':'景氣指標','source_date_cell':'44287',
+                    'cells':[{'field':'指數','native_value':'102.25','status':'VALUE_PRESENT'},
+                             {'field':'景氣對策信號','native_value':'紅','status':'VALUE_PRESENT'}]}],
+         'numeric_verified':False,'pit_verified':False}
+    assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='NDC_NATIVE_CELL_SCHEMA_PASS_NUMERIC_ORIGIN_PIT_HOLD'
+    ndc['month']='2021-05'
+    assert parse_json('NDC','NDC_SOURCE_ROWS.json',json.dumps(ndc,ensure_ascii=False).encode(),'2021-04')['status']=='HOLD_NDC_MONTH_CONFLICT'
     import zipfile
     zbuf=io.BytesIO()
     with zipfile.ZipFile(zbuf,'w') as z:z.writestr('TPEx_BULK_2024-09-10.json',good)
