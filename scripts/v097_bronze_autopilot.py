@@ -237,7 +237,7 @@ def parse_finmind_unit_archive(blob, expected_month):
                 if not isinstance(unit,dict) or unit.get('source')!='FinMind':
                     return {'status':'HOLD_FINMIND_MANIFEST_IDENTITY'}
                 filename=unit.get('file')
-                if not isinstance(filename,str) or not re.fullmatch(r'[a-zA-Z0-9_.-]+\\.raw',filename):
+                if not isinstance(filename,str) or not re.fullmatch(r'[a-zA-Z0-9_.-]+\.raw',filename):
                     return {'status':'HOLD_FINMIND_MEMBER_NAME'}
                 if filename not in names:return {'status':'HOLD_FINMIND_MISSING_MEMBER'}
                 if filename in declared:return {'status':'HOLD_FINMIND_DUPLICATE_MEMBER'}
