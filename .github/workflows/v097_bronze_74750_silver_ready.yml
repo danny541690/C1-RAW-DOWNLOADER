@@ -1,0 +1,75 @@
+name: JARVIS v097 Bronze 74750 SILVER READY QA (no Silver execution)
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v097_bronze_74750_silver_ready_gate.py'
+      - '.github/workflows/v097_bronze_74750_silver_ready.yml'
+  schedule:
+    - cron: '*/15 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: bronze-74750-semantic-only
+  cancel-in-progress: false
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Test schema and temporal guards
+        run: PYTHONPATH=. python scripts/v097_bronze_74750_silver_ready_gate.py
+      - name: Freeze 74750 V3 SHA-proven candidates (push/manual only)
+        if: github.event_name != 'schedule'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BRONZE_74750_MODE: inventory
+        run: PYTHONPATH=. python scripts/v097_bronze_74750_silver_ready_gate.py
+  six-lane-content-qa:
+    needs: preflight
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [0, 1, 2, 3, 4, 5]
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Reuse prior hashes and validate destination content incrementally
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BRONZE_74750_MODE: lane
+          BRONZE_LANE: ${{ matrix.lane }}
+          BRONZE_SEMANTIC_CAP: '1200'
+        run: PYTHONPATH=. python scripts/v097_bronze_74750_silver_ready_gate.py
+  readiness-summary:
+    needs: six-lane-content-qa
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Write fail-closed Bronze-only readiness ledger
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BRONZE_74750_MODE: aggregate
+        run: PYTHONPATH=. python scripts/v097_bronze_74750_silver_ready_gate.py
