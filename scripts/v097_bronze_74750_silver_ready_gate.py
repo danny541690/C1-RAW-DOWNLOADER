@@ -224,7 +224,12 @@ def lane(api,ln):
  cf=match(api,c,ckname)
  d=load_json(api,cf["id"]) if cf else {"schema":"v097_bronze_74750_semantic_ck_1","lane":ln,"done":{}}
  done=d["done"]
- todo=[r for r in candidates if r["source_id"] not in done][:CAP]
+ # Re-evaluate only provisional states superseded by new adapters.
+ # All other records and the 6358 exceptions remain untouched.
+ obsolete_states={"BRONZE_CONTENT_DATE_SCHEMA_PASS_PIT_HOLD",
+                  "BRONZE_TDCC_HTML_TABLE_PASS_MARKET_AND_PIT_HOLD"}
+ todo=[r for r in candidates if r["source_id"] not in done or
+       done[r["source_id"]].get("state") in obsolete_states][:CAP]
  if not todo:
   print("BRONZE_74750_LANE_IDLE="+str(ln)+" completed="+str(len(done)));return
  results=[]
