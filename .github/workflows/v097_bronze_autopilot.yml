@@ -1,6 +1,12 @@
 name: JARVIS v097 Bronze Autopilot 74750 Seven Sources
 on:
   workflow_dispatch:
+    inputs:
+      chain_depth:
+        description: 'Self-continuation cycle, stop at 60 per chain'
+        required: false
+        default: '0'
+        type: string
   workflow_call:
   push:
     paths:
@@ -8,11 +14,13 @@ on:
       - scripts/v097_ap_silver_input_gate.py
       - scripts/v097_ap_silver_input_gate_all.py
       - scripts/v097_ap_publish_artifacts.py
+      - scripts/v097_ap_continuation.py
       - .github/workflows/v097_bronze_autopilot.yml
   schedule:
     - cron: '7,22,37,52 * * * *'
 permissions:
   contents: read
+  actions: write
 concurrency:
   group: v097-bronze-autopilot-74750
   cancel-in-progress: false
@@ -107,3 +115,29 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: PYTHONPATH=. python scripts/v097_ap_publish_artifacts.py
+      - name: Test persistent postrun continuation
+        run: PYTHONPATH=. python scripts/v097_ap_continuation.py selftest
+      - name: Examine same-run checkpoint and decide next batch
+        id: advance
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_ap_continuation.py postrun
+      - name: Dispatch next batch from persistent checkpoint (not cron)
+        if: steps.advance.outputs.continue == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CHAIN_DEPTH: ${{ inputs.chain_depth || '0' }}
+        run: |
+          if ! [[ "$CHAIN_DEPTH" =~ ^[0-9]+$ ]]; then
+            echo "REJECT_NONNUMERIC_CHAIN_DEPTH"; exit 1
+          fi
+          if [ "$CHAIN_DEPTH" -ge 60 ]; then
+            echo "CHAIN_DEPTH_60_REACHED - watchdog retains responsibility"; exit 0
+          fi
+          next=$((CHAIN_DEPTH + 1))
+          gh workflow run v097_bronze_autopilot.yml --ref main -f chain_depth="$next"
+          echo "NEXT_RUN_ACCEPTED source_run=${GITHUB_RUN_ID} chain_depth=$next"
+
