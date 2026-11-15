@@ -15,6 +15,7 @@ on:
       - scripts/v097_ap_silver_input_gate_all.py
       - scripts/v097_ap_publish_artifacts.py
       - scripts/v097_ap_continuation.py
+      - scripts/v097_bronze_first_pipeline.py
       - .github/workflows/v097_bronze_autopilot.yml
   schedule:
     - cron: '7,22,37,52 * * * *'
