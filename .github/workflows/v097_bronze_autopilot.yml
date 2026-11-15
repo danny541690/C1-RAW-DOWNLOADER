@@ -1,6 +1,7 @@
 name: JARVIS v097 Bronze Autopilot 74750 Seven Sources
 on:
   workflow_dispatch:
+  workflow_call:
   push:
     paths:
       - scripts/v097_bronze_autopilot.py
