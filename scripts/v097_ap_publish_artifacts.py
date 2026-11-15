@@ -17,16 +17,23 @@ def decision(status,version_ok):
 def run():
  api,control,quality,match,load_json,put_once,_,_=source_api()
  totals=Counter();per_source={};ledger_files=[];ex=[];ready_rows=[]
- gatefile=match(api,quality,"v097_AP_SILVER_INPUT_RELEASE_NDC_"+RUN+".json")
- if not gatefile:raise RuntimeError("NDC_SILVER_INPUT_GATE_NOT_RUN")
- gate=load_json(api,gatefile["id"])
- if (gate.get("schema")!="v097_silver_input_release_ndc_v1" or gate.get("run")!=RUN
-     or gate.get("cohort")!=320 or gate.get("pit_backtest_approved") is not False):
-  raise RuntimeError("NDC_GATE_REPORT_INVALID")
- gated={r["source_id"]:r for r in gate["records"]}
- if len(gated)!=320 or len(gate["records"])!=320:
-  raise RuntimeError("NDC_GATE_DUPLICATE_SOURCE_IDS")
- gate_ready="BRONZE_READY_FOR_SILVER"
+ gates={}
+ for source in SOURCES:
+  name="v097_AP_SILVER_INPUT_RELEASE_"+source+"_"+RUN+".json"
+  found=match(api,quality,name)
+  if not found:raise RuntimeError("MISSING_SEVEN_SOURCE_RELEASE_GATE_"+source)
+  report=load_json(api,found["id"])
+  if (report.get("schema")!="v097_silver_input_release_source_v1"
+     or report.get("source")!=source or report.get("run")!=RUN
+     or report.get("pit_backtest_approved") is not False):
+   raise RuntimeError("INVALID_SEVEN_SOURCE_RELEASE_GATE_"+source)
+  rows=report.get("records",[])
+  keys={r.get("source_id") for r in rows}
+  if len(keys)!=len(rows) or len(rows)!=report.get("cohort"):
+   raise RuntimeError("SEVEN_SOURCE_GATE_COLLISION_"+source)
+  gates[source]={"records":{r["source_id"]:r for r in rows},
+                 "name":name}
+ gate_ready=READY
  for src in SOURCES:
   inp=match(api,quality,"v097_AP_INPUT_"+src+".json")
   if not inp:raise RuntimeError("INPUT_NOT_INITIALIZED_"+src)
@@ -42,9 +49,10 @@ def run():
    state=rec.get("status","NOT_EXAMINED")
    good_version=rec.get("adapter_version")==adapter_version(src)
    mode=decision(state,good_version) if rec else "NOT_EXAMINED"
-   release_evidence=None
-   if src=="NDC" and fid in gated:
-    release_evidence=gated[fid]
+   release_evidence=gates[src]["records"].get(fid)
+   if release_evidence:
+    if release_evidence.get("source")!=src or release_evidence.get("gate_version")!="bronze-silver-seven-sources-v1":
+     raise RuntimeError("SOURCE_GATE_VERSION_OR_SCOPE_CONFLICT_"+fid)
     if (release_evidence["source_sha256"]!=r["sha"]
        or release_evidence["destination_id"]!=r["dest_id"]
        or release_evidence["source_path"]!=r["source_path"]
@@ -61,7 +69,7 @@ def run():
     "source_path":r.get("source_path"),"state":state,
     "disposition":mode,"adapter_version":rec.get("adapter_version"),
     "receipt":rec.get("receipt"),"retries":rec.get("retries",0),
-    "release_gate_receipt":"v097_AP_SILVER_INPUT_RELEASE_NDC_"+RUN+".json" if release_evidence and mode=="READY" else None,
+    "release_gate_receipt":gates[src]["name"] if release_evidence and mode=="READY" else None,
     "pit_ready_for_backtest":False}
    ledger.append(out);counts[mode]+=1
    if mode=="READY":
@@ -93,8 +101,8 @@ def run():
   "recheck_rule":"Only requeue source adapter version changed or transient retry under cap",
   "pit_rule":"Do not use prior-period values before actual publication; Silver PIT gate mandatory",
   "formal_release_not_inferred_from_parser_shape":True,
-  "ndc_release_gate_version":"bronze-silver-input-ndc-v1",
-  "ndc_gate_name":"v097_AP_SILVER_INPUT_RELEASE_NDC_"+RUN+".json"}
+  "release_gate_version":"bronze-silver-seven-sources-v1",
+  "source_release_gates":{src:gates[src]["name"] for src in SOURCES}}
  put_once(api,quality,"BRONZE_SOURCE_ADAPTER_RULEBOOK_%s.json"%RUN,rulebook)
  put_once(api,quality,"BRONZE_EXCEPTION_REGISTER_%s.json"%RUN,
   {"schema":"v097_bronze_exception_register_1","run":RUN,"hold_records":ex,
@@ -102,6 +110,7 @@ def run():
  put_once(api,quality,"BRONZE_READY_FOR_SILVER_MANIFEST_%s.json"%RUN,
   {"schema":"v097_bronze_ready_manifest_1","run":RUN,
    "ready_records":ready_rows,"ready_count":len(ready_rows),
+   "release_gate_version":"bronze-silver-seven-sources-v1",
    "silver_gold_executed":False,"ready_status_not_inferred":True})
  final={"schema":"v097_bronze_final_acceptance_1","run":RUN,
    "at":datetime.now(timezone.utc).isoformat(),"cohort":COHORT,
@@ -111,7 +120,7 @@ def run():
    "recheck_pending":totals["RECHECK_PENDING"],
    "ledger_files":ledger_files,"total_unique":sum(totals.values()),
    "official_source_release_approved":totals["READY"]>0,
-   "official_source_release_scope":"NDC_SILVER_INPUT_ONLY",
+   "official_source_release_scope":"SEVEN_SOURCE_SILVER_INPUT_ONLY_WITH_PER_DATASET_GATE",
    "pit_backtest_release_approved":False,
    "decision":"NOT_COMPLETE" if totals["NOT_EXAMINED"] or totals["RECHECK_PENDING"]
       else ("AWAITING_SOURCE_AND_SEMANTIC_CLEARANCE" if totals["HOLD"] else "EVIDENCE_GATE_COMPLETE"),
