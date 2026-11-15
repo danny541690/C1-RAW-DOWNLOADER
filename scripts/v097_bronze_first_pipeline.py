@@ -7,6 +7,8 @@ import os,re,json,io,hashlib,zipfile,time,random
 from datetime import datetime,timezone
 from collections import Counter
 from googleapiclient.http import MediaInMemoryUpload
+from googleapiclient.errors import HttpError
+import socket
 from scripts.v097_bronze_content_qa import service,call,folder,children,load_json,save
 from scripts.v097_bronze_diagnosis import save_or_update
 from scripts.v097_round2_verify import dirs,one
@@ -52,12 +54,54 @@ def common(api):
  bronze=folder(api,lake,"01_BRONZE_ORIGINAL")
  return m,c,q,bronze
 def put_once(api,parent,name,obj):
- found=match(api,parent,name)
- if found:
-  old=load_json(api,found["id"])
-  if old!=obj:raise RuntimeError("IMMUTABLE_MANIFEST_CONFLICT:"+name)
-  return found["id"]
- return save(api,parent,name,obj)["id"]
+ """Immutable and idempotent receipt publication.
+
+ Large QA reports are streamed through Drive's resumable upload session,
+ avoiding the one-shot HTTPS send timeout seen on TDCC's 25k-row release.
+ On ambiguous transport errors first reconcile the Drive filename and
+ exact contents; never overwrite or silently duplicate a committed receipt.
+ """
+ def existing():
+  item=match(api,parent,name)
+  if item:
+   if load_json(api,item["id"])!=obj:
+    raise RuntimeError("IMMUTABLE_MANIFEST_CONFLICT:"+name)
+   return item["id"]
+  return None
+ found=existing()
+ if found:return found
+ if not isinstance(obj,(dict,list)):
+  return save(api,parent,name,obj)["id"]
+ payload=json.dumps(obj,ensure_ascii=False,separators=(",",":")).encode("utf-8")
+ if len(payload)<2*1024*1024:
+  return save(api,parent,name,obj)["id"]
+ print("RESUMABLE_IMMUTABLE_UPLOAD",name,"bytes",len(payload),flush=True)
+ media=MediaInMemoryUpload(payload,mimetype="application/json",chunksize=1024*1024,resumable=True)
+ request=api.files().create(
+  body={"name":name,"parents":[parent],"mimeType":"application/json"},
+  media_body=media,fields="id,name,size")
+ response=None
+ for attempt in range(9):
+  try:
+   while response is None:
+    progress,response=request.next_chunk(num_retries=2)
+   break
+  except (TimeoutError,socket.timeout,ConnectionError,OSError,HttpError) as exc:
+   # Retry transient failures on the SAME resumable upload session. Query
+   # destination first: a timed-out final chunk may have succeeded remotely.
+   if isinstance(exc,HttpError) and exc.resp.status not in (403,408,429,500,502,503,504):
+    raise
+   time.sleep(min(2**attempt,20))
+   prior=existing()
+   if prior:return prior
+   if attempt==8:raise
+ if response is None or not response.get("id"):
+  raise RuntimeError("RESUMABLE_UPLOAD_NO_COMMIT:"+name)
+ # Read-back protects against partial or incorrectly serialized uploads.
+ actual=load_json(api,response["id"])
+ if actual!=obj:raise RuntimeError("RESUMABLE_UPLOAD_READBACK_CONFLICT:"+name)
+ print("RESUMABLE_UPLOAD_VERIFIED",name,response["id"],flush=True)
+ return response["id"]
 def upsert(api,parent,name,obj):
  f=match(api,parent,name)
  if f:save_or_update(api,parent,name,obj,f["id"])
