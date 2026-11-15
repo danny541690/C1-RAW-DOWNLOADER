@@ -5,8 +5,10 @@ on:
     paths:
       - scripts/v097_silver_ready_hold_triage.py
       - .github/workflows/v097_silver_ready_hold_triage.yml
-  schedule:
-    - cron: '11 0,6,12,18 * * *'
+  workflow_run:
+    workflows:
+      - JARVIS v097 Bronze Autopilot 74750 Seven Sources
+    types: [completed]
 permissions:
   contents: read
 concurrency:
