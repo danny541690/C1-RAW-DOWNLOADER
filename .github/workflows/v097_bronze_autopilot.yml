@@ -5,6 +5,7 @@ on:
     paths:
       - scripts/v097_bronze_autopilot.py
       - scripts/v097_ap_silver_input_gate.py
+      - scripts/v097_ap_silver_input_gate_all.py
       - scripts/v097_ap_publish_artifacts.py
       - .github/workflows/v097_bronze_autopilot.yml
   schedule:
@@ -55,11 +56,34 @@ jobs:
           AUTOPILOT_BATCH: '350'
           AUTOPILOT_CYCLES: '3'
         run: PYTHONPATH=. python scripts/v097_bronze_autopilot.py worker --source '${{ matrix.source }}'
-  final-status:
+  source-release:
     needs: [preflight, source-qa]
     if: always() && needs.preflight.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Seven-source gate positive and negative self-test
+        run: PYTHONPATH=. python scripts/v097_ap_silver_input_gate_all.py selftest
+      - name: Verify immutable source QA receipt and emit source-specific Silver input release
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_ap_silver_input_gate_all.py '${{ matrix.source }}'
+  final-status:
+    needs: [preflight, source-qa, source-release]
+    if: always() && needs.preflight.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -72,14 +96,8 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: PYTHONPATH=. python scripts/v097_bronze_autopilot.py finalize
-      - name: Test evidence-backed Silver input release gate
-        run: PYTHONPATH=. python scripts/v097_ap_silver_input_gate.py selftest
-      - name: Issue Silver input release attestations (NDC evidence cohort only)
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: PYTHONPATH=. python scripts/v097_ap_silver_input_gate.py
+      - name: Verify all seven source gates completed
+        run: PYTHONPATH=. python scripts/v097_ap_silver_input_gate_all.py selftest
       - name: Test acceptance publisher
         run: PYTHONPATH=. python scripts/v097_ap_publish_artifacts.py selftest
       - name: Save Bronze adapter rulebook, sharded file ledger, exception register, and READY manifest
