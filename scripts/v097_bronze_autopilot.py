@@ -517,22 +517,58 @@ def finalize(api, control, quality, match, load_json, put_once):
         all_states.update(statuses)
     total=sum(x['total'] for x in by_source.values())
     if total!=COHORT:raise RuntimeError('FINAL_COHORT_MISMATCH')
-    ready=all_states[READY]
+    # Release is a SECOND, independent gate. Parser-level 'HOLD' is not
+    # Silver READY; but the inverse is also true: a HOLD_PIT parser label can
+    # have a documented Bronze->Silver input attestation. Use only the signed
+    # per-source release receipts from THIS SAME Run ID.
+    run_id=os.getenv('GITHUB_RUN_ID','manual')
+    gate_counts=Counter();source_gate_status={};seen_ready=set()
+    gate_complete=True
+    for source in SOURCES:
+        name='v097_AP_SILVER_INPUT_RELEASE_'+source+'_'+run_id+'.json'
+        gf=match(api,quality,name)
+        if not gf:
+            gate_complete=False
+            source_gate_status[source]='MISSING_GATE'
+            continue
+        release=load_json(api,gf['id'])
+        if (release.get('run')!=run_id or release.get('source')!=source
+            or release.get('schema')!='v097_silver_input_release_source_v1'
+            or release.get('gate_version')!='bronze-silver-seven-sources-v1'
+            or release.get('pit_backtest_approved') is not False):
+            raise RuntimeError('INVALID_SOURCE_GATE_'+source)
+        gated=release.get('records',[])
+        if len(gated)!=by_source[source]['total']:
+            raise RuntimeError('SOURCE_GATE_COHORT_MISMATCH_'+source)
+        cohort_ids=set()
+        for result in gated:
+            source_id=result.get('source_id')
+            if source_id in cohort_ids:raise RuntimeError('SOURCE_GATE_DUPLICATE_'+source)
+            cohort_ids.add(source_id)
+            if result.get('status')==READY:
+                if source_id in seen_ready:raise RuntimeError('DUPLICATE_READY_ID_ACROSS_SOURCES')
+                if result.get('silver_input_only') is not True or result.get('receipt') is None:
+                    raise RuntimeError('INCOMPLETE_READY_ATTESTATION_'+source)
+                seen_ready.add(source_id)
+        count=sum(result.get('status')==READY for result in gated)
+        if count!=release.get('ready_for_silver_input'):
+            raise RuntimeError('SOURCE_READY_TOTAL_MISMATCH_'+source)
+        source_gate_status[source]=count
+        gate_counts[source]=count
+    ready=len(seen_ready) if gate_complete else None
     unresolved=sum(v for k,v in all_states.items() if k!=READY and not k.startswith('EXCLUDED_'))
-    # Explicit release cannot be inferred from JSON shape or a matching filename.
-    # Integrate evidence-based source/published-at adapter attestations in the
-    # next production validation before enabling READY issuance.
-    report={'schema':'autopilot_bronze_acceptance_1','run':os.getenv('GITHUB_RUN_ID','manual'),
+    report={'schema':'autopilot_bronze_acceptance_1','run':run_id,
             'cohort':COHORT,'processed_current_version':completed,'remaining':COHORT-completed,
             'by_source':by_source,'states':dict(all_states),'silver_ready':ready,
+            'release_gate_complete':gate_complete,'silver_ready_by_source':dict(source_gate_status),
+            'parser_only_states':True,'silver_input_only':True,
             'fully_examined':completed==COHORT,
             'fully_dispositioned':completed==COHORT and unresolved==0,
             'unresolved_holds':unresolved,
             'silver_gold_executed':False,
-            'release_approved':False,
-            'release_blockers':['SOURCE_AND_DATASET_SPECIFIC_ORIGIN_CERTIFICATION',
-                                'PIT_PUBLICATION_PROVENANCE_FOR_BACKTESTS',
-                                'FINAL_READY_MANIFEST_NOT_CERTIFIED']}
+            'release_approved':bool(gate_complete and ready),
+            'release_blockers':([] if gate_complete else ['NOT_ALL_SEVEN_SOURCE_GATE_REPORTS_AVAILABLE']),
+            'pit_ready_for_backtest':False}
     # Current run immutable; latest status can update only after produced.
     put_once(api,quality,'v097_AP_REPORT_'+report['run']+'.json',report)
     print('AUTOPILOT_REPORT',stable_json(report),flush=True)
