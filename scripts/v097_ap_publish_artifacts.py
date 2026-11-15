@@ -17,6 +17,16 @@ def decision(status,version_ok):
 def run():
  api,control,quality,match,load_json,put_once,_,_=source_api()
  totals=Counter();per_source={};ledger_files=[];ex=[];ready_rows=[]
+ gatefile=match(api,quality,"v097_AP_SILVER_INPUT_RELEASE_NDC_"+RUN+".json")
+ if not gatefile:raise RuntimeError("NDC_SILVER_INPUT_GATE_NOT_RUN")
+ gate=load_json(api,gatefile["id"])
+ if (gate.get("schema")!="v097_silver_input_release_ndc_v1" or gate.get("run")!=RUN
+     or gate.get("cohort")!=320 or gate.get("pit_backtest_approved") is not False):
+  raise RuntimeError("NDC_GATE_REPORT_INVALID")
+ gated={r["source_id"]:r for r in gate["records"]}
+ if len(gated)!=320 or len(gate["records"])!=320:
+  raise RuntimeError("NDC_GATE_DUPLICATE_SOURCE_IDS")
+ gate_ready="BRONZE_READY_FOR_SILVER"
  for src in SOURCES:
   inp=match(api,quality,"v097_AP_INPUT_"+src+".json")
   if not inp:raise RuntimeError("INPUT_NOT_INITIALIZED_"+src)
@@ -32,11 +42,27 @@ def run():
    state=rec.get("status","NOT_EXAMINED")
    good_version=rec.get("adapter_version")==adapter_version(src)
    mode=decision(state,good_version) if rec else "NOT_EXAMINED"
+   release_evidence=None
+   if src=="NDC" and fid in gated:
+    release_evidence=gated[fid]
+    if (release_evidence["source_sha256"]!=r["sha"]
+       or release_evidence["destination_id"]!=r["dest_id"]
+       or release_evidence["source_path"]!=r["source_path"]
+       or release_evidence["adapter_version"]!=adapter_version(src)):
+     raise RuntimeError("NDC_GATE_EVIDENCE_CONFLICT_"+fid)
+    if release_evidence["status"]==gate_ready:
+     if not good_version or not rec.get("receipt") or release_evidence["receipt"]!=rec["receipt"]:
+      raise RuntimeError("NDC_GATE_STALE_RECEIPT_"+fid)
+     mode="READY"
+    elif release_evidence["status"]=="RECHECK_PENDING":
+     mode="RECHECK_PENDING"
    out={"source_id":fid,"destination_id":r.get("dest_id"),
     "source_sha256":r.get("sha"),"source":src,
     "source_path":r.get("source_path"),"state":state,
     "disposition":mode,"adapter_version":rec.get("adapter_version"),
-    "receipt":rec.get("receipt"),"retries":rec.get("retries",0)}
+    "receipt":rec.get("receipt"),"retries":rec.get("retries",0),
+    "release_gate_receipt":"v097_AP_SILVER_INPUT_RELEASE_NDC_"+RUN+".json" if release_evidence and mode=="READY" else None,
+    "pit_ready_for_backtest":False}
    ledger.append(out);counts[mode]+=1
    if mode=="READY":
     if not out["receipt"] or not out["source_sha256"]:
@@ -66,7 +92,9 @@ def run():
   "ready_rule":"Requires authenticated source/dataset evidence, semantic QA and immutable SHA receipt",
   "recheck_rule":"Only requeue source adapter version changed or transient retry under cap",
   "pit_rule":"Do not use prior-period values before actual publication; Silver PIT gate mandatory",
-  "formal_release_not_inferred_from_parser_shape":True}
+  "formal_release_not_inferred_from_parser_shape":True,
+  "ndc_release_gate_version":"bronze-silver-input-ndc-v1",
+  "ndc_gate_name":"v097_AP_SILVER_INPUT_RELEASE_NDC_"+RUN+".json"}
  put_once(api,quality,"BRONZE_SOURCE_ADAPTER_RULEBOOK_%s.json"%RUN,rulebook)
  put_once(api,quality,"BRONZE_EXCEPTION_REGISTER_%s.json"%RUN,
   {"schema":"v097_bronze_exception_register_1","run":RUN,"hold_records":ex,
@@ -82,7 +110,9 @@ def run():
    "excluded":totals["EXCLUDED"],"not_examined":totals["NOT_EXAMINED"],
    "recheck_pending":totals["RECHECK_PENDING"],
    "ledger_files":ledger_files,"total_unique":sum(totals.values()),
-   "official_source_release_approved":False,
+   "official_source_release_approved":totals["READY"]>0,
+   "official_source_release_scope":"NDC_SILVER_INPUT_ONLY",
+   "pit_backtest_release_approved":False,
    "decision":"NOT_COMPLETE" if totals["NOT_EXAMINED"] or totals["RECHECK_PENDING"]
       else ("AWAITING_SOURCE_AND_SEMANTIC_CLEARANCE" if totals["HOLD"] else "EVIDENCE_GATE_COMPLETE"),
    "silver_gold_executed":False,"no_raw_modification":True}
