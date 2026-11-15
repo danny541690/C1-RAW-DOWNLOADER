@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - scripts/v097_bronze_autopilot.py
+      - scripts/v097_ap_silver_input_gate.py
+      - scripts/v097_ap_publish_artifacts.py
       - .github/workflows/v097_bronze_autopilot.yml
   schedule:
     - cron: '7,22,37,52 * * * *'
@@ -70,6 +72,14 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: PYTHONPATH=. python scripts/v097_bronze_autopilot.py finalize
+      - name: Test evidence-backed Silver input release gate
+        run: PYTHONPATH=. python scripts/v097_ap_silver_input_gate.py selftest
+      - name: Issue Silver input release attestations (NDC evidence cohort only)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_ap_silver_input_gate.py
       - name: Test acceptance publisher
         run: PYTHONPATH=. python scripts/v097_ap_publish_artifacts.py selftest
       - name: Save Bronze adapter rulebook, sharded file ledger, exception register, and READY manifest
