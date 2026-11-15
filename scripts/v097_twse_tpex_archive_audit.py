@@ -87,8 +87,8 @@ def run(source):
  print("ARCHIVE_MEMBER_AUDIT_PROGRESS="+json.dumps(progress,ensure_ascii=False),flush=True)
  if os.getenv("GITHUB_OUTPUT"):
   with open(os.environ["GITHUB_OUTPUT"],"a") as o:
-   o.write("remaining="+str(remaining)+"\\n")
-   o.write("progress="+("true" if new else "false")+"\\n")
+   o.write("remaining="+str(remaining)+chr(10))
+   o.write("progress="+("true" if new else "false")+chr(10))
 
 def selftest():
  row={"source_id":"x","dest_id":"y","sha":"a"*64,"source_path":"2024/TWSE/2024-10/test.zip","year":"2024","month":"10"}
