@@ -1,0 +1,27 @@
+{
+  "schema": "JARVIS_PYTHON_ENVIRONMENT_V1",
+  "python": "3.11",
+  "environments": {
+    "raw": {
+      "requirements": "requirements-qa.lock",
+      "purpose": "Existing production source collection; unchanged until compatibility audit"
+    },
+    "qa": {
+      "requirements": "requirements-qa.lock",
+      "purpose": "Existing verified source QA baseline; supplemental validation is opt-in"
+    },
+    "analytics": {
+      "requirements": "requirements-analytics.txt",
+      "purpose": "Isolated post-RAW analytics, Parquet and indicator calculations"
+    }
+  },
+  "routing": {
+    "source_download": "raw",
+    "raw_repair": "raw",
+    "readback_validation": "qa",
+    "quality_validation": "qa",
+    "indicator_calculation": "analytics",
+    "pit_research": "analytics"
+  },
+  "production_cutover": false
+}
