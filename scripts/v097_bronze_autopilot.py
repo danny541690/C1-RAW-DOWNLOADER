@@ -556,7 +556,10 @@ def finalize(api, control, quality, match, load_json, put_once):
         source_gate_status[source]=count
         gate_counts[source]=count
     ready=len(seen_ready) if gate_complete else None
-    unresolved=sum(v for k,v in all_states.items() if k!=READY and not k.startswith('EXCLUDED_'))
+    # Parser states are not source-release states: most READY files still have
+    # parser statuses such as *_PIT_HOLD. Count unresolved files from the
+    # independent seven-source gate, never from parser-state labels.
+    unresolved=(COHORT-ready) if ready is not None else None
     report={'schema':'autopilot_bronze_acceptance_1','run':run_id,
             'cohort':COHORT,'processed_current_version':completed,'remaining':COHORT-completed,
             'by_source':by_source,'states':dict(all_states),'silver_ready':ready,
@@ -564,6 +567,8 @@ def finalize(api, control, quality, match, load_json, put_once):
             'parser_only_states':True,'silver_input_only':True,
             'fully_examined':completed==COHORT,
             'fully_dispositioned':completed==COHORT and unresolved==0,
+            'all_candidate_records_accounted':completed==COHORT and gate_complete,
+            'silver_ready_rate':round(ready/COHORT,6) if ready is not None else None,
             'unresolved_holds':unresolved,
             'silver_gold_executed':False,
             'release_approved':bool(gate_complete and ready),
