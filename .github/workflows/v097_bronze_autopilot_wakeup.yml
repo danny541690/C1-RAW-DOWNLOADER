@@ -60,5 +60,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          # Recheck immediately before dispatch: main postrun self-dispatch
+          # might have started while this watchdog read Drive checkpoints.
+          gh run list --workflow v097_bronze_autopilot.yml --limit 30 --json status > /tmp/bronze_recheck.json
+          if python - <<'PY'
+          import json,sys
+          runs=json.load(open('/tmp/bronze_recheck.json'))
+          sys.exit(0 if any(r['status'] != 'completed' for r in runs) else 1)
+          PY
+          then
+            echo "WATCHDOG_SKIPPED_ALREADY_QUEUED_OR_RUNNING"
+            exit 0
+          fi
           gh workflow run v097_bronze_autopilot.yml --ref main -f chain_depth=0
           echo "WATCHDOG_NEXT_RUN_ACCEPTED source_run=${GITHUB_RUN_ID}"
