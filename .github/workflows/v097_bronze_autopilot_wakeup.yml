@@ -1,0 +1,18 @@
+name: JARVIS v097 Bronze Autopilot Independent Wakeup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '4,19,34,49 * * * *'
+  workflow_run:
+    workflows:
+      - 'JARVIS v0.97 - Live 7489 exception accounting'
+      - 'JARVIS v0.97 - Full Dataset Release Gate Audit'
+      - 'JARVIS v0.97 - Merged original Bronze QA and conditional admission'
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  wake-resumable-bronze:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.event != 'workflow_run' }}
+    uses: ./.github/workflows/v097_bronze_autopilot.yml
+    secrets: inherit
