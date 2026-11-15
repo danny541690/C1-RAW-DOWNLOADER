@@ -35,7 +35,7 @@ def classify(source,row,ck,detail):
   if m.get("status")!="CONTENT_PARSED_ORIGIN_PIT_HOLD":
    states["HOLD_MEMBER_"+str(m.get("status","UNKNOWN"))[:60]]+=1;continue
   dates=m.get("dates",[])
-  if not dates or not all(isinstance(d,str) and re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}",d) and d[:7]==period for d in dates):
+  if not dates or not all(isinstance(d,str) and re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}",d) and d[:7]==period for d in dates):
    states["HOLD_MEMBER_DATE_OR_PERIOD"]+=1;continue
   if m.get("dataset")!=SCHEMAS[source]:
    states["HOLD_MEMBER_DATASET_IDENTITY"]+=1;continue
