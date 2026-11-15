@@ -142,3 +142,5 @@ jobs:
           gh workflow run v097_bronze_autopilot.yml --ref main -f chain_depth="$next"
           echo "NEXT_RUN_ACCEPTED source_run=${GITHUB_RUN_ID} chain_depth=$next"
 
+
+# 2026-11-16 requested operational restart: no gate relaxation; resume immutable Bronze checkpoints.
