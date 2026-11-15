@@ -1,6 +1,10 @@
 name: JARVIS v097 Bronze Autopilot Independent Wakeup
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/v097_bronze_autopilot_wakeup.yml
+      - scripts/v097_ap_continuation.py
   schedule:
     - cron: '4,19,34,49 * * * *'
   workflow_run:
