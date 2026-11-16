@@ -364,7 +364,11 @@ def parse_taifex_csv(blob, month):
                 row=row[:width]
             if len(row)!=width:
                 return {'status':'HOLD_TAIFEX_CSV_WIDTH','header_fields':width,
-                    'row_fields':len(row),'checked':count}
+                    'row_fields':len(row),'checked':count,
+                    'header_preview':header[:9],
+                    'row_excerpt':[str(v)[:28] for v in row[:6]],
+                    'delimiter':delimiter,'codec':encoding,
+                    'header_row_index':index,'preamble_lines_accounted':preamble}
             dt_value=date_token(row[day_ix])
             if dt_value is None:return {'status':'HOLD_TAIFEX_DATE_PARSE',
                 'value':str(row[day_ix])[:20],'checked':count}
