@@ -64,7 +64,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           DEPTH: ${{ inputs.depth || '0' }}
         run: |
-          python - <<'PY'
+          B_PENDING=$(python - <<'PY'
           import os
           from scripts.v097_bronze_autopilot import source_api
           api,control,quality,match,load_json,*_=source_api()
@@ -78,10 +78,10 @@ jobs:
               done=load_json(api,checkpoint["id"])["done"]
               targeted=sum(done.get(r["source_id"],{}).get("status")=="ZIP_MEMBERS_AUDITED_ORIGIN_HOLD" for r in src)
               remaining[s]=targeted-len(ck["done"])
-          print("B_FORENSICS_REMAINING",remaining,flush=True)
-          with open(os.environ["GITHUB_ENV"],"a") as o:
-              o.write("B_PENDING="+str(sum(remaining.values()))+"\n")
+          print(sum(remaining.values()))
           PY
+          )
+          echo "B_FORENSICS_REMAINING_TOTAL=$B_PENDING"
           if ! [[ "$DEPTH" =~ ^[0-9]+$ ]]; then exit 1; fi
           if [ "$B_PENDING" -eq 0 ]; then echo "B_FORENSICS_ALL_SCANNED; source evidence still required"; exit 0; fi
           if [ "$DEPTH" -ge 60 ]; then echo "B_DEPTH_CAP_WATCHDOG_RESUMES"; exit 0; fi
