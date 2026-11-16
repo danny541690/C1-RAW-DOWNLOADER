@@ -10,6 +10,7 @@ on:
     paths:
       - scripts/v097_c_manifest_numeric.py
       - scripts/v097_bc_integration_selftest.py
+      - scripts/v097_bc_single_read_pilot.py
       - .github/workflows/v097_c_manifest_numeric_continuous.yml
   schedule:
     - cron: '9,24,39,54 * * * *'
@@ -37,6 +38,8 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_c_manifest_numeric.py selftest
       - name: B+C end-to-end historical evidence contracts
         run: PYTHONPATH=. python scripts/v097_bc_integration_selftest.py
+      - name: Single ZIP read B+C parity pilot eight synthetic scenarios
+        run: PYTHONPATH=. python scripts/v097_bc_single_read_pilot.py
       - name: Resume C stage on current B stage evidence only
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
