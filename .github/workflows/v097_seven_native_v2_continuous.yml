@@ -43,12 +43,12 @@ jobs:
           PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py selftest
           PYTHONPATH=. python scripts/v097_seven_deep_format_inspector.py
           PYTHONPATH=. python scripts/v097_taifex_mops_format_diagnostics.py selftest
-      - name: Process 36 unresolved source-native format records per source; immutable Bronze
+      - name: Process 80 unresolved source-native format records per source; immutable Bronze
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          SOURCE_BATCH: '36'
+          SOURCE_BATCH: '80'
         run: PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py '${{ matrix.source }}'
   d-gate:
     needs: source-parser
@@ -129,6 +129,13 @@ jobs:
           )
           echo "SEVEN_NATIVE_V2_PENDING=$PENDING"
           if ! [[ "$DEPTH" =~ ^[0-9]+$ ]]; then exit 1; fi
+          # Every tenth native parsing cycle, refresh the separate v2.1
+          # official-source Bronze gate. No Silver/Gold is ever dispatched.
+          # The independent v2.1 workflow has its own single-run lock.
+          if [ "$((DEPTH % 10))" -eq 0 ]; then
+            echo "BRONZE_V21_DIRECT_REVALIDATION_REQUEST depth=$DEPTH"
+            gh workflow run v097_bronze_v21_direct_release.yml --ref main
+          fi
           if [ "$PENDING" -eq 0 ]; then echo "ALL_SEVEN_NATIVE_V2_AND_D_GATES_CAUGHT_UP; independently verified numerical data still required for READY increases"; exit 0; fi
           if [ "$DEPTH" -ge 60 ]; then echo "CHAIN_LIMIT_60 backup schedule will resume"; exit 0; fi
           gh workflow run v097_seven_native_v2_continuous.yml --ref main -f depth="$((DEPTH+1))"
