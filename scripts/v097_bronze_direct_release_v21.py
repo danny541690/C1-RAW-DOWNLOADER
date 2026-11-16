@@ -14,7 +14,7 @@ from scripts.v097_ap_silver_input_gate_all import build as old_build
 from scripts.v097_seven_parser_triage import latest_complete
 from scripts.v097_bronze_first_batch_v3 import ck_name
 from scripts.v097_bronze_first_pipeline import common,match,load_json
-VERSION="v097_bronze_direct_release_v21_2"
+VERSION="v097_bronze_direct_release_v21_3"
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 PREFIX="v097_BRONZE_V21_SOURCE_RELEASE_"
 HASH=re.compile("[0-9a-f]{64}\\Z")
@@ -54,15 +54,30 @@ def strict_new_candidate(src,row,old,native,copy,qa):
   # publisher retrieval, nor publication-PIT backtest certification.
   return "READY_NEW_V21_ORIGINAL_ARCHIVE_V3_SHA_AND_FULL_MEMBER_QA"
  if src=="FinMind" and st=="FINMIND_UNIT_MEMBER_SHA_ROWS_PASS_SOURCE_PIT_HOLD":
-  if d.get("member_count",0)>0 and d.get("rows_checked",0)>0 and d.get("unit_count",0)>0 and d.get("members_verified",0)>=2:
-   return "HOLD_PROVIDER_ORIGIN_DOWNLOAD_RECEIPT_REQUIRED"
+  # Source-native FinMind parser has checked each .raw member SHA, bytes,
+  # all row dates/stock_ids, nonfinite values, and undeclared ZIP members.
+  # Unverified extra numeric/PIT attestations are downstream, not Bronze.
+  if (d.get("member_count",0)>=2 and d.get("unit_count",0)>0
+      and d.get("rows_checked",0)>0 and d.get("members_verified",0)==d.get("unit_count",0)+1
+      and d.get("dataset_ids") and all(isinstance(x,str) and x not in ("","UNDECLARED") for x in d["dataset_ids"])):
+   return "READY_NEW_V21_FINMIND_UNIT_SHA_ROWS_AND_DATASET_QA"
   return "HOLD_FINMIND_ARCHIVE_FULL_QA"
+ if src=="TAIFEX" and st=="TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD":
+  # The source-native adapter checks every CSV row and the original trading
+  # date (not contract-month). Do not waive date/width/encoding defects.
+  header=d.get("header",[])
+  if (d.get("rows_checked",0)>0 and d.get("date_evidence") is True
+      and d.get("missing_date_rows")==0 and d.get("codec") in ("cp950","big5","utf-8-sig")
+      and isinstance(header,list) and len(header)>=3
+      and any(("日期" in str(k) or str(k) in ("Date","交易日")) for k in header)
+      and any(any(token in str(k) for token in ("商品","契約","成交","口數","未平倉")) for k in header)):
+   return "READY_NEW_V21_TAIFEX_ALL_ROWS_CSV_DATE_WIDTH_QA"
+  return "HOLD_TAIFEX_COMPLETE_CSV_DATASET_QA"
  if src=="MOPS":
   return "HOLD_MOPS_TABLE_FIELD_AND_ACCOUNTING_QA_NOT_PROVEN"
  if src=="TDCC":
   return "HOLD_TDCC_SECURITY_CLASS_AND_DATE_QA"
- if src=="TAIFEX":
-  return "HOLD_TAIFEX_COMPLETE_CSV_DATASET_QA"
+
  if src=="NDC":
   return "HOLD_NDC_HISTORICAL_CELL_ORIGIN_QA"
  return "HOLD_DATASET_SPECIFIC_PROOF"
@@ -90,6 +105,13 @@ def selftest():
  assert decision("TWSE",row,{"status":"HOLD"},old,{**n,"parser_detail":{**n["parser_detail"],"official_host_claims_in_manifest":0}},copy,qa)=="HOLD_ARCHIVE_SOURCE_MANIFEST_OR_HOST"
  assert decision("TWSE",row,{"status":"HOLD"},old,n,copy,{**qa,"state":"HOLD"})=="HOLD_V3_COPY_AND_INDEPENDENT_SHA_QA"
  assert decision("TWSE",row,{"status":"HOLD"},old,{**n,"status":"HOLD_BAD_ZIP"},copy,qa)=="HOLD_HISTORICAL_FORMAT_OR_CONTENT"
+ fin={**n,"status":"FINMIND_UNIT_MEMBER_SHA_ROWS_PASS_SOURCE_PIT_HOLD","parser_detail":{"member_count":3,"unit_count":2,"rows_checked":300,"members_verified":3,"dataset_ids":["TaiwanStockPrice"]}}
+ assert decision("FinMind",row,{"status":"HOLD"},old,fin,copy,qa)=="READY_NEW_V21_FINMIND_UNIT_SHA_ROWS_AND_DATASET_QA"
+ assert decision("FinMind",row,{"status":"HOLD"},old,{**fin,"parser_detail":{**fin["parser_detail"],"members_verified":2}},copy,qa)=="HOLD_FINMIND_ARCHIVE_FULL_QA"
+ assert decision("FinMind",row,{"status":"HOLD"},old,{**fin,"parser_detail":{**fin["parser_detail"],"dataset_ids":["UNDECLARED"]}},copy,qa)=="HOLD_FINMIND_ARCHIVE_FULL_QA"
+ tx={**n,"status":"TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD","parser_detail":{"rows_checked":100,"date_evidence":True,"missing_date_rows":0,"codec":"cp950","header":["交易日期","契約","成交量"]}}
+ assert decision("TAIFEX",row,{"status":"HOLD"},old,tx,copy,qa)=="READY_NEW_V21_TAIFEX_ALL_ROWS_CSV_DATE_WIDTH_QA"
+ assert decision("TAIFEX",row,{"status":"HOLD"},old,{**tx,"parser_detail":{**tx["parser_detail"],"missing_date_rows":1}},copy,qa)=="HOLD_TAIFEX_COMPLETE_CSV_DATASET_QA"
  print("BRONZE_V21_DIRECT_RELEASE_NEGATIVE_TESTS_PASS")
 def source(src):
  if src not in SOURCES:raise ValueError("UNKNOWN_SOURCE")
