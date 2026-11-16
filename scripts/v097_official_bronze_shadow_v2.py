@@ -5,7 +5,7 @@ No third party is required for *Bronze intake*. PIT certification remains separa
 Cannot change original 74,750 cohort, published READY/HOLD, or run Silver/Gold.
 Official provenance is affirmative evidence, not a filename/domain claim.
 """
-import json,os,re,sys
+import json,os,re,sys,hashlib
 from collections import Counter
 from datetime import datetime,timezone
 from scripts.v097_bronze_autopilot import SOURCES,READY,source_api
@@ -107,13 +107,19 @@ def run(source):
  if ck.get("schema")!=VERSION or ck.get("source")!=source:raise RuntimeError("SHADOW_CHECKPOINT_VERSION_MISMATCH")
  done=ck["done"]
  if set(done)-set(byid):raise RuntimeError("SHADOW_CHECKPOINT_ORPHAN")
+ def signature(row):
+  sid=row["source_id"]
+  context={"source_sha":row["sha"],"formal":fby[sid].get("status"),
+      "native":native.get(sid),"provenance":proofs.get(sid)}
+  return hashlib.sha256(json.dumps(context,sort_keys=True,ensure_ascii=False,
+    separators=(",",":"),default=str).encode()).hexdigest()
  pending=[r for r in rows if fby[r["source_id"]]["status"]!=READY and
-       r["source_id"] not in done][:LIMIT]
+       done.get(r["source_id"],{}).get("revision")!=signature(r)][:LIMIT]
  fresh=Counter()
  for row in pending:
   sid=row["source_id"]
   status=decide(source,row,fby[sid],native.get(sid),proofs.get(sid))
-  done[sid]={"status":status,"source_sha256":row["sha"],
+  done[sid]={"status":status,"source_sha256":row["sha"],"revision":signature(row),
     "official_provenance_ledger":pf["id"] if pf else None,
     "signed":False,"new_ready":False}
   fresh[status]+=1
