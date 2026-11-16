@@ -129,8 +129,13 @@ def run(src):
  if ck.get("version")!=VERSION:raise RuntimeError("D_VERSION_CONFLICT")
  if set(ck["done"])-set(byid):raise RuntimeError("D_CHECKPOINT_ORPHAN")
  # Existing READY must not be reprocessed; however tally for accurate reporting.
- pending=[r for r in rows if r["source_id"] not in ck["done"] and
-          (r["source_id"] in native or gate[r["source_id"]]["status"]==READY)][:BATCH]
+ # New witness evidence can arrive after the corresponding D row was gated.
+ # Recheck only newly proven sample IDs; never replay all already accepted rows.
+ refreshed=[byid[sid] for sid in witness_by_id if sid in ck["done"] and
+   ck["done"][sid].get("status")=="HOLD_THREE_WAY_NUMERIC_NOT_INDEPENDENTLY_PROVEN"]
+ new_rows=[r for r in rows if r["source_id"] not in ck["done"] and
+          (r["source_id"] in native or gate[r["source_id"]]["status"]==READY)]
+ pending=refreshed[:min(10,BATCH//4)]+new_rows[:BATCH-len(refreshed[:min(10,BATCH//4)])]
  new={}
  for row in pending:
   sid=row["source_id"]
@@ -147,7 +152,7 @@ def run(src):
  totals=Counter(v["status"] for v in ck["done"].values())
  print("D_SEVEN_SOURCE_TRIAGE="+json.dumps({"source":src,
     "cohort":len(rows),"native_available":len(native),"d_checked":len(ck["done"]),
-    "this_batch":len(new),"existing_ready":sum(x["status"]==READY for x in gate.values()),
+    "this_batch":len(new),"rechecked_evidence":len(refreshed[:min(10,BATCH//4)]),"existing_ready":sum(x["status"]==READY for x in gate.values()),
     "newly_promoted":0,"d_status_counts":dict(totals),
     "formal_release_source_run":rid},ensure_ascii=False),flush=True)
 
