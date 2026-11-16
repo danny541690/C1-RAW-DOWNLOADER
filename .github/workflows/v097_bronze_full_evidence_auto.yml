@@ -5,6 +5,7 @@ on:
     paths:
       - scripts/v097_evidence_contract.py
       - scripts/v097_fullfile_evidence_builder.py
+      - scripts/v097_bronze_full_evidence_run_request.txt
       - .github/workflows/v097_bronze_full_evidence_auto.yml
   workflow_dispatch:
   schedule:
@@ -36,7 +37,7 @@ jobs:
           PYTHONPATH=. python scripts/v097_fullfile_pit_release_preflight.py selftest
   evidence-build:
     needs: strict-contract-tests
-    if: github.event_name != 'push'
+    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[BRONZE-FULL]')
     runs-on: ubuntu-latest
     timeout-minutes: 80
     concurrency:
@@ -62,7 +63,7 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_fullfile_evidence_builder.py '${{ matrix.source }}'
   independent-release-preflight:
     needs: evidence-build
-    if: github.event_name != 'push' && needs.evidence-build.result == 'success'
+    if: (github.event_name != 'push' || contains(github.event.head_commit.message, '[BRONZE-FULL]')) && needs.evidence-build.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 80
     strategy:
@@ -92,7 +93,7 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_fullfile_pit_release_preflight.py '${{ matrix.source }}'
   final-reconcile-and-dispatch:
     needs: [strict-contract-tests,evidence-build,independent-release-preflight]
-    if: github.event_name != 'push' && always()
+    if: (github.event_name != 'push' || contains(github.event.head_commit.message, '[BRONZE-FULL]')) && always()
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
