@@ -367,7 +367,7 @@ def parse_taifex_csv(blob, month):
                 'header_row_index':index,'preamble_lines_accounted':preamble}
         for row in records[index+1:]:
             if not any(str(v).strip() for v in row):continue
-            clean=[str(v).strip().replace('（','(').replace('）',') for v in row]
+            clean=[str(v).strip().replace('（','(').replace('）',')') for v in row]
             if clean==header:
                 repeats+=1;mode='primary';continue
             if (combo and len(clean)>=6 and clean[:3]==
