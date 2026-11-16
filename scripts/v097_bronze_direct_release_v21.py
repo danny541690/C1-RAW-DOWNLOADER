@@ -14,12 +14,12 @@ from scripts.v097_ap_silver_input_gate_all import build as old_build
 from scripts.v097_seven_parser_triage import latest_complete
 from scripts.v097_bronze_first_batch_v3 import ck_name
 from scripts.v097_bronze_first_pipeline import common,match,load_json
-VERSION="v097_bronze_direct_release_v21_3"
+VERSION="v097_bronze_direct_release_v21_4"
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 PREFIX="v097_BRONZE_V21_SOURCE_RELEASE_"
 HASH=re.compile("[0-9a-f]{64}\\Z")
 def ishash(h):return isinstance(h,str) and bool(HASH.fullmatch(h))
-def strict_new_candidate(src,row,old,native,copy,qa):
+def strict_new_candidate(src,row,old,native,copy,qa,translation=None):
  """The source was already independently re-read in 0.93->0.97 V3 QA.
  Do not reparse a shape-only claim as full QA; no third-party comparison."""
  if not copy or not qa or copy.get("state")!="COPY_MATCHED_PENDING_INDEPENDENT_QA" or qa.get("state")!="BRONZE_BYTE_PROVENANCE_AND_PATH_PASS":
@@ -28,6 +28,19 @@ def strict_new_candidate(src,row,old,native,copy,qa):
   return "HOLD_V3_COPY_PROVENANCE_CONFLICT"
  if not old.get("receipt") or old.get("source_sha256")!=row["sha"] or old.get("destination_id")!=row["dest_id"]:
   return "HOLD_EXACT_CONTENT_RECEIPT_MISSING"
+ if src=="TAIFEX" and translation:
+  # Newly re-read source-native CSV translation overrides an older V2
+  # parser's FORMAT-only HOLD, never source SHA/copy or actual row defects.
+  tr=translation
+  if (tr.get("source_id")==row["source_id"] and tr.get("source_sha256")==row["sha"]
+      and tr.get("destination_id")==row["dest_id"] and tr.get("source_path")==row["source_path"]
+      and tr.get("format_translator_version")=="v097_taifex_native_csv_translation_v1"
+      and tr.get("status")=="TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD"
+      and tr.get("original_bytes_preserved") is True and tr.get("rows_checked",0)>0
+      and tr.get("date_evidence") is True and tr.get("missing_date_rows")==0
+      and isinstance(tr.get("header"),list) and len(tr["header"])>=3):
+   return "READY_NEW_V21_TAIFEX_REPARSED_HISTORICAL_CSV_V3_SHA"
+  return "HOLD_TAIFEX_TRANSLATION_PROOF_OR_FORMAT"
  if not native or native.get("source_id")!=row["source_id"] or native.get("bronze_sha256")!=row["sha"] or native.get("input_bytes_sha_checked") is not True:
   return "HOLD_NATIVE_BYTES_NOT_VERIFIED"
  st=str(native.get("status",""))
@@ -81,7 +94,7 @@ def strict_new_candidate(src,row,old,native,copy,qa):
  if src=="NDC":
   return "HOLD_NDC_HISTORICAL_CELL_ORIGIN_QA"
  return "HOLD_DATASET_SPECIFIC_PROOF"
-def decision(src,row,formal,old,native,copy,qa):
+def decision(src,row,formal,old,native,copy,qa,translation=None):
  if formal.get("status")==READY:return "READY_PRESERVED_FORMAL_V1"
  if old.get("status")==READY:
   # Old gate passed its separate receipt check; protect its provenance
@@ -89,7 +102,7 @@ def decision(src,row,formal,old,native,copy,qa):
   if copy and qa and copy.get("state")=="COPY_MATCHED_PENDING_INDEPENDENT_QA" and qa.get("state")=="BRONZE_BYTE_PROVENANCE_AND_PATH_PASS" and copy.get("sha")==row["sha"] and copy.get("dest_id")==row["dest_id"] and old.get("source_sha256")==row["sha"] and old.get("receipt"):
    return "READY_NEW_V21_FROM_EXISTING_SOURCE_GATE_AND_V3_QA"
   return "HOLD_OLD_GATE_V3_SHA_RECEIPT_CONFLICT"
- return strict_new_candidate(src,row,old,native,copy,qa)
+ return strict_new_candidate(src,row,old,native,copy,qa,translation)
 def selftest():
  row={"source_id":"x","dest_id":"dest","sha":"a"*64,"source_path":"2026/TWSE/2026-11/file.zip"}
  old={"status":"HOLD","receipt":"receipt","source_sha256":"a"*64,"destination_id":"dest"}
@@ -112,6 +125,14 @@ def selftest():
  tx={**n,"status":"TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD","parser_detail":{"rows_checked":100,"date_evidence":True,"missing_date_rows":0,"codec":"cp950","header":["交易日期","契約","成交量"]}}
  assert decision("TAIFEX",row,{"status":"HOLD"},old,tx,copy,qa)=="READY_NEW_V21_TAIFEX_ALL_ROWS_CSV_DATE_WIDTH_QA"
  assert decision("TAIFEX",row,{"status":"HOLD"},old,{**tx,"parser_detail":{**tx["parser_detail"],"missing_date_rows":1}},copy,qa)=="HOLD_TAIFEX_COMPLETE_CSV_DATASET_QA"
+ tr={"source_id":"x","source_sha256":"a"*64,"destination_id":"dest",
+ "source_path":row["source_path"],"format_translator_version":"v097_taifex_native_csv_translation_v1",
+ "status":"TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD","original_bytes_preserved":True,
+ "rows_checked":3,"date_evidence":True,"missing_date_rows":0,
+ "header":["交易日期","契約","成交量"]}
+ assert decision("TAIFEX",row,{"status":"HOLD"},old,{**n,"status":"HOLD_TAIFEX_CSV_WIDTH"},copy,qa,tr)=="READY_NEW_V21_TAIFEX_REPARSED_HISTORICAL_CSV_V3_SHA"
+ assert decision("TAIFEX",row,{"status":"HOLD"},old,{**n,"status":"HOLD_TAIFEX_CSV_WIDTH"},copy,qa,{**tr,"source_sha256":"f"*64})=="HOLD_TAIFEX_TRANSLATION_PROOF_OR_FORMAT"
+ assert decision("TAIFEX",row,{"status":"HOLD"},old,{**n,"status":"HOLD_TAIFEX_CSV_WIDTH"},copy,{**qa,"state":"HOLD"},tr)=="HOLD_V3_COPY_AND_INDEPENDENT_SHA_QA"
  print("BRONZE_V21_DIRECT_RELEASE_NEGATIVE_TESTS_PASS")
 def source(src):
  if src not in SOURCES:raise ValueError("UNKNOWN_SOURCE")
@@ -127,6 +148,10 @@ def source(src):
  if set(fby)!=set(byid):raise RuntimeError("FORMAL_SOURCE_ID_COHORT_CONFLICT")
  f=match(api,control,"v097_SEVEN_FORMAT_V2_CK_"+src+".json")
  native=load_json(api,f["id"]).get("done",{}) if f else {}
+ translation={}
+ if src=="TAIFEX":
+  tf=match(api,control,"v097_TAIFEX_NATIVE_CSV_TRANSLATION_CK_v1.json")
+  translation=load_json(api,tf["id"]).get("done",{}) if tf else {}
  v3copy={};v3qa={}
  for lane in range(6):
   c=match(api,control,ck_name("COPY",lane))
@@ -144,7 +169,7 @@ def source(src):
  final=[];counts=Counter()
  for row in rows:
   sid=row["source_id"]
-  state=decision(src,row,fby[sid],oby[sid],native.get(sid),v3copy.get(sid),v3qa.get(sid))
+  state=decision(src,row,fby[sid],oby[sid],native.get(sid),v3copy.get(sid),v3qa.get(sid),translation.get(sid))
   approved=state.startswith("READY_")
   counts["BRONZE_READY_FOR_SILVER" if approved else "HOLD"]+=1
   counts[state]+=1
