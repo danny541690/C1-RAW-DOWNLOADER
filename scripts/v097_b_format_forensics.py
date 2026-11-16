@@ -91,6 +91,44 @@ def fingerprint(name,blob):
          "dataset_fingerprint":dataset,"key_names":keys,"field_names":columns,
          "sha256":digest(blob),"bytes":len(blob)}
 
+def manifest_linkage(z,details):
+ """Verify internal archive manifest bytes without claiming official provenance."""
+ lookup={x["name"]:x for x in details}
+ summaries=[]
+ for m in details:
+  if m["name"].rsplit("/",1)[-1].lower()!="manifest.json":continue
+  try:
+   manifest=json.loads(z.read(m["name"]).decode("utf-8-sig"))
+  except (UnicodeError,ValueError,KeyError):
+   summaries.append({"status":"HOLD_MANIFEST_UNREADABLE"});continue
+  if not isinstance(manifest,dict) or not isinstance(manifest.get("units"),list):
+   summaries.append({"status":"HOLD_MANIFEST_UNSUPPORTED_SHAPE"});continue
+  units=manifest["units"]
+  if len(units)>15000:
+   summaries.append({"status":"HOLD_MANIFEST_UNIT_COUNT_LIMIT","unit_count":len(units)});continue
+  found=0;verified=0;conflict=0;missing=0;source_refs=0;unit_keys=set()
+  for u in units:
+   if not isinstance(u,dict):
+    conflict+=1;continue
+   unit_keys.update(str(k)[:50] for k in u.keys())
+   member=next((u.get(k) for k in ("file","member","filename","raw_file","path") if isinstance(u.get(k),str)),None)
+   sha=next((u.get(k) for k in ("sha256","hash","raw_sha256") if isinstance(u.get(k),str)),None)
+   if any(k in u for k in ("source_url","url","official_url","endpoint")):source_refs+=1
+   if member is None or member not in lookup:
+    missing+=1;continue
+   found+=1
+   if isinstance(sha,str) and re.fullmatch("[0-9a-f]{64}",sha.lower()) and sha.lower()==lookup[member]["sha256"]:
+    verified+=1
+   else:conflict+=1
+  summaries.append({"status":"MANIFEST_MEMBER_LINKAGE_AUDITED_NOT_OFFICIAL_SOURCE_PROOF",
+    "units":len(units),"matched_members":found,"verified_sha256":verified,
+    "missing_member_references":missing,"hash_or_shape_conflicts":conflict,
+    "units_with_source_reference_field":source_refs,
+    "unit_field_names":sorted(unit_keys)[:35],
+    "declared_numeric_verified":manifest.get("numeric_verified") is True,
+    "declared_pit_verified":manifest.get("pit_verified") is True})
+ return summaries
+
 def audit(source,row,blob):
  period=str(row["year"])+"-"+str(row["month"])
  result={"source_id":row["source_id"],"source_sha256":row["sha"],"original_path":row["source_path"],
@@ -115,10 +153,11 @@ def audit(source,row,blob):
     data=z.read(m)
     if len(data)!=m.file_size:return {**result,"status":"HOLD_ZIP_MEMBER_SIZE"}
     details.append(fingerprint(m.filename,data))
+  linkage=manifest_linkage(z,details)
   kinds=Counter(t["signature"] for t in details)
   sets=Counter(t["dataset_fingerprint"] for t in details)
   return {**result,"status":"B_CONTENT_FINGERPRINTED_SOURCE_PROOF_PENDING",
-    "member_count":len(details),"members":details,
+    "member_count":len(details),"members":details,"manifest_linkage":linkage,
     "formats":dict(kinds),"dataset_fingerprints":dict(sets),
     "official_bytes_retrieved_independently":False}
  except (ValueError,zipfile.BadZipFile,RuntimeError,UnicodeError,MemoryError) as e:
