@@ -161,6 +161,18 @@ def analyze(source,name,blob,day=None,depth=0):
    "source_provenance_verified":False,"published_at_verified":False,
    "third_party_values_checked":False,"silver_ready_promoted":False}
  if len(blob)>MAX_INPUT:return {**base,"status":"HOLD_SIZE_LIMIT"}
+ # Historical *.raw.receipt_<hash>.json files are collection/provenance
+ # receipts, never exchange quote tables. Keep their SHA but require the
+ # paired original *.raw payload before any dataset/numeric evidence.
+ if re.search(r"[.]raw[.]receipt_[0-9a-f]+[.]json$",name,re.I):
+  try:
+   meta=json.loads(blob.decode("utf-8-sig"))
+  except (ValueError,UnicodeError):
+   return {**base,"status":"HOLD_RECEIPT_JSON_MALFORMED"}
+  return {**base,"status":"RECEIPT_METADATA_ONLY_RAW_PAIR_PENDING",
+    "receipt_keys":list(meta)[:30] if isinstance(meta,dict) else [],
+    "is_market_numeric_dataset":False,"raw_pair_sha_verified":False,
+    "silver_ready_promoted":False}
  if depth>3:return {**base,"status":"HOLD_ARCHIVE_NESTING_LIMIT"}
  if signature(blob)=="ZIP_OR_XLSX":
   if not zipfile.is_zipfile(io.BytesIO(blob)):return {**base,"status":"HOLD_NOT_VALID_ZIP"}
@@ -221,5 +233,8 @@ def selftest():
  assert out["status"]=="HOLD_XLSX_NATIVE_WORKBOOK_CELL_EXTRACTION_REQUIRED"
  assert out["worksheet_count"]==1
  assert analyze("TWSE","nested.zip",z.getvalue(),depth=4)["status"]=="HOLD_ARCHIVE_NESTING_LIMIT"
+ receipt=analyze("TPEx","abc.raw.receipt_"+("f"*12)+".json",b'{"url":"https://www.tpex.org.tw","sha256":"abc"}')
+ assert receipt["status"]=="RECEIPT_METADATA_ONLY_RAW_PAIR_PENDING"
+ assert receipt["is_market_numeric_dataset"] is False and not receipt["silver_ready_promoted"]
  print("SEVEN_DEEP_FORMAT_TEST_PASS")
 if __name__=="__main__":selftest()
