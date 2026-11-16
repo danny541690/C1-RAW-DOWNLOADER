@@ -326,48 +326,60 @@ def parse_zip(source, name, blob, month, original_path):
 
 
 def parse_taifex_csv(blob, month):
-    """Historical TAIFEX CSV uses CP950/Big5 and sometimes trailing comma.
-    Preserve raw bytes; audit every original logical row without data repair.
+    """Conservative TAIFEX historical CSV layout translator, original bytes intact.
+
+    Identify an actual date-bearing header even after native archive preambles.
+    Verify every data row; repeated identical headers and empty trailing cells
+    are layout evidence, never silently treated as market observations.
     """
     encoding=None;content=None
     for codec in ('utf-8-sig','cp950','big5'):
-        try:
-            content=blob.decode(codec);encoding=codec;break
+        try:content=blob.decode(codec);encoding=codec;break
         except UnicodeError:pass
     if content is None:return {'status':'HOLD_TAIFEX_CSV_ENCODING'}
-    lines=content.splitlines()
-    nonempty=[ln for ln in lines if ln.strip()]
-    if len(nonempty)<2:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
-    head=nonempty[0]
-    separator=',' if head.count(',')>=2 else ('\t' if head.count('\t')>=2 else ';')
-    rows=list(csv.reader(io.StringIO(content),delimiter=separator))
-    rows=[row for row in rows if any(x.strip() for x in row)]
-    if len(rows)<2:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
-    header=[x.strip() for x in rows[0]]
-    if len(header)<3:return {'status':'HOLD_TAIFEX_CSV_HEADER'}
-    day_ix=next((i for i,x in enumerate(header)
-       if x in ('交易日期','日期','Date','交易日')),None)
-    parsed=0;trailing=0;seen_dates=set();missing_date=0
-    for row in rows[1:]:
-        if len(row)==len(header)+1 and not row[-1].strip():
-            row=row[:-1];trailing+=1
-        if len(row)!=len(header):
-            return {'status':'HOLD_TAIFEX_CSV_WIDTH','header_fields':len(header),
-                    'row_fields':len(row),'checked':parsed}
-        if day_ix is not None:
+    try:
+        layouts=[]
+        for delimiter in (',','\t',';'):
+            records=list(csv.reader(io.StringIO(content),delimiter=delimiter))
+            for index,row in enumerate(records[:24]):
+                cols=[str(x).strip().replace('（','(').replace('）',')') for x in row]
+                dates=[k for k,v in enumerate(cols) if v in
+                    ('交易日期','日期','Date','交易日','交易日期(年月日)')]
+                if len(cols)>=3 and dates:
+                    layouts.append((index,delimiter,records,cols,dates[0]))
+        if not layouts:
+            return {'status':'HOLD_TAIFEX_DATE_HEADER_UNRECOGNIZED'}
+        # A real header is mandatory. Do not interpret a contract month as
+        # the trading date; identical date-bearing repeats are permitted.
+        index,delimiter,records,header,day_ix=min(layouts,key=lambda x:(x[0],-len(x[3])))
+        width=len(header);count=0;trailing=0;repeats=0;seen_dates=set()
+        preamble=sum(bool(''.join(str(v).strip() for v in row)) for row in records[:index])
+        for row in records[index+1:]:
+            if not any(str(v).strip() for v in row):continue
+            clean=[str(v).strip().replace('（','(').replace('）',')') for v in row]
+            if clean==header:
+                repeats+=1;continue
+            if len(row)>width and not any(str(v).strip() for v in row[width:]):
+                trailing+=1
+                row=row[:width]
+            if len(row)!=width:
+                return {'status':'HOLD_TAIFEX_CSV_WIDTH','header_fields':width,
+                    'row_fields':len(row),'checked':count}
             dt_value=date_token(row[day_ix])
-            if dt_value is None:return {'status':'HOLD_TAIFEX_DATE_PARSE','value':row[day_ix][:20]}
-            seen_dates.add(dt_value)
-            if dt_value[:7]!=month:return {'status':'HOLD_TAIFEX_MONTH_CONFLICT',
-                'date_sample':dt_value,'path_month':month}
-        else:missing_date+=1
-        parsed+=1
-    return {'status':'TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD',
-      'codec':encoding,'delimiter':separator,'header':header[:30],
-      'rows_checked':parsed,'trailing_empty_cells_ignored':trailing,
-      'date_evidence':bool(seen_dates),'distinct_dates':len(seen_dates),
-      'missing_date_rows':missing_date}
-
+            if dt_value is None:return {'status':'HOLD_TAIFEX_DATE_PARSE',
+                'value':str(row[day_ix])[:20],'checked':count}
+            if dt_value[:7]!=month:
+                return {'status':'HOLD_TAIFEX_MONTH_CONFLICT',
+                    'date_sample':dt_value,'path_month':month,'checked':count}
+            seen_dates.add(dt_value);count+=1
+        if not count:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
+        return {'status':'TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD',
+            'codec':encoding,'delimiter':delimiter,'header':header[:40],
+            'rows_checked':count,'trailing_empty_cells_ignored':trailing,
+            'repeated_headers_accounted':repeats,'preamble_lines_accounted':preamble,
+            'header_row_index':index,'date_evidence':True,
+            'distinct_dates':len(seen_dates),'missing_date_rows':0}
+    except csv.Error:return {'status':'HOLD_TAIFEX_CSV_READER_ERROR'}
 
 def parse_content(source, name, blob, month, original_path='',allow_zip=True):
     n=name.lower()
