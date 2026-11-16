@@ -14,7 +14,7 @@ from scripts.v097_ap_silver_input_gate_all import build as old_build
 from scripts.v097_seven_parser_triage import latest_complete
 from scripts.v097_bronze_first_batch_v3 import ck_name
 from scripts.v097_bronze_first_pipeline import common,match,load_json
-VERSION="v097_bronze_direct_release_v21_4"
+VERSION="v097_bronze_direct_release_v21_5"
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 PREFIX="v097_BRONZE_V21_SOURCE_RELEASE_"
 HASH=re.compile("[0-9a-f]{64}\\Z")
@@ -34,7 +34,7 @@ def strict_new_candidate(src,row,old,native,copy,qa,translation=None):
   tr=translation
   if (tr.get("source_id")==row["source_id"] and tr.get("source_sha256")==row["sha"]
       and tr.get("destination_id")==row["dest_id"] and tr.get("source_path")==row["source_path"]
-      and tr.get("format_translator_version")=="v097_taifex_native_csv_translation_v1"
+      and tr.get("format_translator_version")=="v097_taifex_native_csv_layout_20261117_v2"
       and tr.get("status")=="TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD"
       and tr.get("original_bytes_preserved") is True and tr.get("rows_checked",0)>0
       and tr.get("date_evidence") is True and tr.get("missing_date_rows")==0
@@ -129,7 +129,7 @@ def selftest():
  assert decision("TAIFEX",row,{"status":"HOLD"},old,tx,copy,qa)=="READY_NEW_V21_TAIFEX_ALL_ROWS_CSV_DATE_WIDTH_QA"
  assert decision("TAIFEX",row,{"status":"HOLD"},old,{**tx,"parser_detail":{**tx["parser_detail"],"missing_date_rows":1}},copy,qa)=="HOLD_TAIFEX_COMPLETE_CSV_DATASET_QA"
  tr={"source_id":"x","source_sha256":"a"*64,"destination_id":"dest",
- "source_path":row["source_path"],"format_translator_version":"v097_taifex_native_csv_translation_v1",
+ "source_path":row["source_path"],"format_translator_version":"v097_taifex_native_csv_layout_20261117_v2",
  "status":"TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD","original_bytes_preserved":True,
  "rows_checked":3,"date_evidence":True,"missing_date_rows":0,
  "header":["交易日期","契約","成交量"]}
