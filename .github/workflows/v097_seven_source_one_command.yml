@@ -1,0 +1,88 @@
+name: JARVIS v097 Seven-Source One-Command Coordinator
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "One-click audit and dispatch; always preserve immutable Bronze and formal release"
+        default: "resume_all"
+        type: choice
+        options:
+          - resume_all
+          - inventory_only
+  push:
+    paths:
+      - scripts/v097_seven_parser_triage.py
+      - .github/workflows/v097_seven_source_one_command.yml
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-seven-source-coordinator
+  cancel-in-progress: false
+jobs:
+  preflight-and-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      ready: ${{ steps.inventory.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Seven source gate negative selftests
+        run: |
+          PYTHONPATH=. python scripts/v097_seven_parser_triage.py selftest
+          PYTHONPATH=. python scripts/v097_ap_silver_input_gate_all.py selftest
+          PYTHONPATH=. python scripts/v097_b_format_forensics.py selftest
+          PYTHONPATH=. python scripts/v097_c_manifest_numeric.py selftest
+          PYTHONPATH=. python scripts/v097_bc_integration_selftest.py
+          PYTHONPATH=. python scripts/v097_bc_single_read_pilot.py
+      - id: inventory
+        name: Analyze all seven latest complete immutable formal gate reports
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          PYTHONPATH=. python scripts/v097_seven_parser_triage.py all
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+  dispatch-unfinished-tasks:
+    needs: preflight-and-inventory
+    if: needs.preflight-and-inventory.result == 'success' && (github.event_name == 'push' || inputs.mode != 'inventory_only')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Dispatch full seven-source formal Bronze->Silver-input gate batch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run v097_bronze_autopilot.yml --ref main -f chain_depth=0
+          echo "SEVEN_SOURCE_BRONZE_RELEASE_DISPATCH_ACCEPTED"
+      - name: Dispatch TWSE TPEx versioned B historical member forensics
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run v097_b_format_continuous.yml --ref main -f depth=0
+          echo "B_STAGE_DISPATCH_ACCEPTED"
+      - name: Dispatch C manifest numeric official-source-pending verifier
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run v097_c_manifest_numeric_continuous.yml --ref main -f depth=0
+          echo "C_STAGE_DISPATCH_ACCEPTED"
+      - name: Dispatch strict seven-source hold exception register
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run v097_silver_ready_hold_triage.yml --ref main
+          echo "HOLD_TRIAGE_DISPATCH_ACCEPTED"
