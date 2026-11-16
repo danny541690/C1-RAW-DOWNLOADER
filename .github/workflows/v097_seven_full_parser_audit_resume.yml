@@ -11,6 +11,8 @@ on:
   push:
     paths:
       - scripts/v097_seven_source_full_error_census.py
+      - scripts/v097_success_hold_format_learning.py
+      - scripts/v097_taifex_mops_format_diagnostics.py
       - scripts/v097_seven_deep_format_inspector.py
       - scripts/v097_seven_historical_format_registry.py
       - scripts/v097_silver_ready_hold_triage.py
@@ -38,6 +40,7 @@ jobs:
           set -euo pipefail
           PYTHONPATH=. python scripts/v097_seven_deep_format_inspector.py
           PYTHONPATH=. python scripts/v097_seven_source_full_error_census.py selftest
+          PYTHONPATH=. python scripts/v097_success_hold_format_learning.py selftest
           PYTHONPATH=. python scripts/v097_seven_independent_depth.py selftest
           PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
           PYTHONPATH=. python scripts/v097_seven_source_specific_resolvers.py selftest
@@ -53,6 +56,12 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: PYTHONPATH=. python scripts/v097_seven_source_full_error_census.py
+      - name: Compare all 74750 success vs HOLD source-native schemas and prioritize known repairs
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_success_hold_format_learning.py
   independent-resume:
     needs: source-logic-and-ledger
     if: needs.source-logic-and-ledger.result == 'success' && (github.event_name == 'push' || inputs.mode == 'audit_and_resume')
