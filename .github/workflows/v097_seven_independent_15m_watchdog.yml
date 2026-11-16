@@ -92,7 +92,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Strict negative checks: never promote a sample or a forged evidence receipt
+      - name: "Strict negative checks: never promote a sample or a forged evidence receipt"
         run: PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
       - name: Reconsider changed native formats and independent numeric evidence without altering formal release
         env:
