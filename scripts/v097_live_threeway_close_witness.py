@@ -108,9 +108,14 @@ def official_close(source,stock,when):
   if o.get("stat")!="OK":raise RuntimeError("OFFICIAL_RESPONSE_NOT_OK")
   rows=o.get("data",[])
  elif source=="TPEx":
-  o,p=request_json("https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php",
-        {"l":"zh-tw","d":str(int(y)-1911)+"/"+m,"stkno":stock})
-  rows=o.get("aaData",[])
+  # Current official history endpoint (Gregorian month), not today's
+  # OpenAPI snapshot. Legacy st43 often serves HTML rather than JSON.
+  o,p=request_json("https://www.tpex.org.tw/www/zh-tw/afterTrading/tradingStock",
+        {"code":stock,"date":y+"/"+m+"/01","id":"","response":"json"})
+  tables=o.get("tables",[])
+  if not isinstance(tables,list) or not tables:raise RuntimeError("TPEX_HISTORY_TABLE_MISSING")
+  rows=tables[0].get("data",[])
+  if not isinstance(rows,list):raise RuntimeError("TPEX_HISTORY_DATA_MISSING")
  else:raise ValueError("ONLY_TWSE_TPEX")
  for row in rows:
   if isinstance(row,list) and len(row)>=7 and day(row[0])==when:
@@ -179,6 +184,7 @@ def run(source):
 def selftest():
  assert day("115/11/16")=="2026-11-16"
  assert day("2026-11-16")=="2026-11-16"
+ assert day("115/08/19")=="2026-08-19"
  x=json.dumps({"date":"2026-11-16","tables":[{"fields":["證券代號","收盤價"],"data":[["2330","1,000"],["00956","9"]]}]},ensure_ascii=False).encode()
  assert original_quotes(x)==[{"date":"2026-11-16","stock":"2330","close":"1000"}]
  assert original_quotes(x, "2026-11-16")[0]["stock"]=="2330"
