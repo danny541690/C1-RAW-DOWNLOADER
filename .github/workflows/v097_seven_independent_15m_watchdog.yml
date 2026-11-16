@@ -67,6 +67,19 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           EVIDENCE_DEPTH_BATCH: '12'
         run: PYTHONPATH=. python scripts/v097_seven_independent_depth.py '${{ inputs.source }}'
+      - name: All-row close-only reconciliation regression suite
+        if: inputs.source == 'TWSE' || inputs.source == 'TPEx'
+        run: PYTHONPATH=. python scripts/v097_equity_allrows_close_witness.py selftest
+      - name: Incremental all-row dated exchange and FinMind close matching
+        if: inputs.source == 'TWSE' || inputs.source == 'TPEx'
+        continue-on-error: true
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+          EQUITY_CLOSE_ROW_BATCH: '8'
+        run: PYTHONPATH=. python scripts/v097_equity_allrows_close_witness.py '${{ inputs.source }}'
       - name: Independent official HTTP and dataset-specific value probes
         if: success()
         env:
