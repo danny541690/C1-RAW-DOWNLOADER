@@ -9,6 +9,7 @@ on:
   push:
     paths:
       - scripts/v097_seven_native_v2_probe.py
+      - scripts/v097_d_seven_source_gate.py
       - scripts/v097_taifex_mops_format_diagnostics.py
       - scripts/v097_seven_historical_format_registry.py
       - .github/workflows/v097_seven_native_v2_continuous.yml
@@ -47,9 +48,33 @@ jobs:
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           SOURCE_BATCH: '35'
         run: PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py '${{ matrix.source }}'
-  continuation:
+  d-gate:
     needs: source-parser
-    if: always() && needs.source-parser.result == 'success'
+    if: needs.source-parser.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Reject invented triple evidence and retain existing 35467 formal READY
+        run: PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
+      - name: Reconcile native parser evidence with formal gate and independent numerical attestations
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          D_BATCH: '300'
+        run: PYTHONPATH=. python scripts/v097_d_seven_source_gate.py '${{ matrix.source }}'
+  continuation:
+    needs: [source-parser, d-gate]
+    if: always() && needs.source-parser.result == 'success' && needs.d-gate.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
