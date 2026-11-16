@@ -1,0 +1,83 @@
+name: JARVIS v097 C Manifest Numeric Continuous Evidence
+on:
+  workflow_dispatch:
+    inputs:
+      depth:
+        description: "Checkpointed continuation"
+        default: "0"
+        type: string
+  push:
+    paths:
+      - scripts/v097_c_manifest_numeric.py
+      - .github/workflows/v097_c_manifest_numeric_continuous.yml
+  schedule:
+    - cron: '9,24,39,54 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-c-manifest-numeric-continuous
+  cancel-in-progress: false
+jobs:
+  c-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Exact dataset semantic and numeric tests
+        run: PYTHONPATH=. python scripts/v097_c_manifest_numeric.py selftest
+      - name: Resume C stage on current B stage evidence only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          C_BATCH: '60'
+        run: PYTHONPATH=. python scripts/v097_c_manifest_numeric.py '${{ matrix.source }}'
+  continuation:
+    needs: [c-source]
+    if: always() && needs.c-source.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Dispatch next C batch if B evidence is ahead
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DEPTH: ${{ inputs.depth || '0' }}
+        run: |
+          C_PENDING=$(python - <<'PY'
+          from scripts.v097_bronze_autopilot import source_api
+          api,control,quality,match,load_json,*_=source_api()
+          total=0
+          for src in ("TWSE","TPEx"):
+              f=match(api,control,"v097_B_FORMAT_FORENSICS_CK_"+src+".json")
+              c=match(api,control,"v097_C_MANIFEST_NUMERIC_CK_"+src+".json")
+              b=load_json(api,f["id"])["done"] if f else {}
+              done=load_json(api,c["id"])["done"] if c else {}
+              if not set(done).issubset(b):raise RuntimeError("C_NOT_SUBSET_OF_B")
+              total+=len(b)-len(done)
+          print(total)
+          PY
+          )
+          echo "C_PENDING=$C_PENDING"
+          if ! [[ "$DEPTH" =~ ^[0-9]+$ ]]; then exit 1; fi
+          if [ "$C_PENDING" -eq 0 ]; then echo "C_CAUGHT_UP_WITH_B; hourly watchdog catches new B"; exit 0; fi
+          if [ "$DEPTH" -ge 60 ]; then echo "C_CHAIN_DEPTH_LIMIT; 15-minute watchdog resumes"; exit 0; fi
+          gh workflow run v097_c_manifest_numeric_continuous.yml --ref main -f depth="$((DEPTH+1))"
+          echo "C_NEXT_RUN_ACCEPTED_DEPTH=$((DEPTH+1))"
