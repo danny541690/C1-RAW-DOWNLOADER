@@ -98,6 +98,27 @@ def run(source="all"):
  api,control,quality,match,load_json,put_once,upsert,call=source_api()
  rid,gates=latest_complete(api,quality,match,load_json)
  report=inspect(gates)
+ # Classify actual source-native adapter checkpoint statuses, distinct from the
+ # formal coarse Silver release gate. Missing checkpoint remains a hard failure.
+ from scripts.v097_seven_source_specific_resolvers import triage
+ for src in SOURCES:
+  file=match(api,control,"v097_AP_CHECKPOINT_"+src+".json")
+  if not file:raise RuntimeError("MISSING_SOURCE_ADAPTER_CHECKPOINT:"+src)
+  checkpoint=load_json(api,file["id"])
+  actual=checkpoint.get("done")
+  if not isinstance(actual,dict):raise RuntimeError("BAD_SOURCE_ADAPTER_CHECKPOINT:"+src)
+  expected=report["by_source"][src]["total"]
+  if len(actual)>expected:raise RuntimeError("SOURCE_ADAPTER_EXCEEDS_COHORT:"+src)
+  raw_status=Counter(str(v.get("status","MISSING_STATUS")) for v in actual.values())
+  source_specific=[]
+  for status,count in raw_status.most_common():
+   guidance=triage(src,status)
+   source_specific.append({"parser_status":status,"count":count,
+     "resolver":guidance["resolver"],"required_release_evidence":guidance["required_release_evidence"],
+     "silver_ready_promoted":False})
+  report["by_source"][src]["checkpoint_parsed"]=len(actual)
+  report["by_source"][src]["adapter_status_reasons"]=source_specific
+  report["by_source"][src]["checkpoint_not_examined"]=expected-len(actual)
  summary={"schema":"v097_seven_parser_remediation_inventory_v1",
    "source_release_run":rid,"generated_at":datetime.now(timezone.utc).isoformat(),
    "scope":source,"cohort":report["cohort"],"ready":report["ready"],"hold":report["hold"],
@@ -121,6 +142,8 @@ def selftest():
  except RuntimeError as e:assert "FROZEN_COHORT_MISMATCH" in str(e)
  else:raise AssertionError("must reject invented empty cohort")
  assert all("adapter" in RULES[s] and "fix" in RULES[s] for s in SOURCES)
+ from scripts.v097_seven_source_specific_resolvers import triage
+ assert all(triage(s,"HOLD_UNKNOWN_JSON_DATASET")["source"]==s for s in SOURCES)
  print("SEVEN_SOURCE_PARSER_COORDINATION_SELFTEST_PASS")
 if __name__=="__main__":
  if sys.argv[1:]==["selftest"]:selftest()
