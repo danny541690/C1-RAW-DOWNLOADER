@@ -23,7 +23,7 @@ SOURCE_PUBLISHERS={
  "MOPS":{"twse.com.tw","www.twse.com.tw","mops.twse.com.tw","mopsfin.twse.com.tw"},
  "TDCC":{"tdcc.com.tw","www.tdcc.com.tw","original-www.tdcc.com.tw"},
  "TAIFEX":{"taifex.com.tw","www.taifex.com.tw"},
- "NDC":{"ndc.gov.tw","www.ndc.gov.tw","ws.ndc.gov.tw"},
+ "NDC":{"ndc.gov.tw","www.ndc.gov.tw","ws.ndc.gov.tw","data.gov.tw"},
  "FinMind":{"finmind.github.io","api.finmindtrade.com"}}
 # Exact documented publisher pages; these are version-reference witnesses, not
 # the original trading-date source payload. FinMind is provider not TW regulator.
@@ -100,6 +100,15 @@ def run(source):
  api,control,quality,match,load_json,put_once,upsert,call=source_api()
  session=requests.Session()
  doc=live_page(source,PAGES[source],session)
+ if source=="NDC" and doc.get("status")=="HOLD_OFFICIAL_HTTP_403":
+  # Government open-data catalogue has NDC as explicitly named publisher.
+  # A metadata page can corroborate dataset/schema; it is NOT a data-value witness.
+  catalog=live_page("NDC","https://data.gov.tw/dataset/6099",session)
+  if catalog["status"]=="PUBLISHER_FORMAT_DOCUMENT_RETRIEVED":
+   catalog["status"]="NDC_GOVERNMENT_DATASET_CATALOGUE_RETRIEVED"
+   catalog["direct_ndc_site_blocked"]=True
+   catalog["numeric_source_origin_independently_proven"]=False
+   doc=catalog
  original=sample_original(source,api,quality,control,match,load_json,call)
  special={}
  if source in ("TWSE","TPEx"):
