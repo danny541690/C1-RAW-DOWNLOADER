@@ -1,0 +1,63 @@
+name: JARVIS v097 Seven Source Full Parser Audit & Resume (One Click)
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "audit_and_resume or audit_only"
+        type: choice
+        options: [audit_and_resume, audit_only]
+        default: audit_and_resume
+        required: true
+  push:
+    paths:
+      - scripts/v097_seven_source_full_error_census.py
+      - .github/workflows/v097_seven_full_parser_audit_resume.yml
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-seven-full-parser-audit-resume
+  cancel-in-progress: false
+jobs:
+  source-logic-and-ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Versioned parser and strict D release selftest
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_seven_deep_format_inspector.py
+          PYTHONPATH=. python scripts/v097_seven_source_full_error_census.py selftest
+          PYTHONPATH=. python scripts/v097_seven_independent_depth.py selftest
+          PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
+          PYTHONPATH=. python scripts/v097_seven_source_specific_resolvers.py selftest
+          PYTHONPATH=. python scripts/v097_taifex_mops_format_diagnostics.py selftest
+          PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
+          PYTHONPATH=. python scripts/v097_seven_independent_publisher_bridge.py selftest
+          PYTHONPATH=. python scripts/v097_live_threeway_close_witness.py selftest
+      - name: Cross-check real last complete seven-source formal gate vs all available A B C V2 deep D error ledgers
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_seven_source_full_error_census.py
+  independent-resume:
+    needs: source-logic-and-ledger
+    if: needs.source-logic-and-ledger.result == 'success' && (github.event_name == 'push' || inputs.mode == 'audit_and_resume')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Trigger seven independent per-source checkpoint lanes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run v097_seven_independent_15m_watchdog.yml --ref main -f source=ALL
+          echo "SEVEN_SOURCE_INDEPENDENT_WATCHDOG_DISPATCH_ACCEPTED"
