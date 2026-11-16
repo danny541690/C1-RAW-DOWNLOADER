@@ -64,7 +64,14 @@ def dataset(source,cols):
   if anyof("資產","負債"):return "BALANCE_SHEET"
  if source=="TDCC" and anyof("持股分級","佔集保庫存比例","股數","人數"):return "HOLDER_DISTRIBUTION"
  if source=="NDC" and anyof("景氣","領先指標","同時指標"):return "ECONOMIC_SIGNAL"
- if source=="FinMind" and anyof("trading_volume","trading_money","close","stock_id"):return "FINMIND_PRICE"
+ if source=="FinMind":
+  # All FinMind datasets have stock_id; never classify finances as prices.
+  cols={norm(x) for x in cols}
+  if {"date","stock_id","type","value"}<=cols:return "FINMIND_FINANCIAL_FACTS"
+  if "stock_id" in cols and ({"close","open","max","min"} & cols):
+   return "FINMIND_PRICE"
+  if "stock_id" in cols and {"trading_volume","trading_money"}<=cols:
+   return "FINMIND_PRICE"
  if source=="TAIFEX" and anyof("到期月份","未沖銷","契約","交易日期"):return "DERIVATIVE_CONTRACT"
  if anyof("市值佰萬元","發行股數") and anyof("排名","市值"):return "MARKET_CAP"
  if anyof("融資","融券","資餘額"):return "MARGIN_FINANCING"
@@ -191,6 +198,9 @@ def selftest():
  assert dataset("TWSE",["代號","收盤","成交股數"])=="DAILY_OHLCV_CANDIDATE"
  assert dataset("MOPS",["公司代號","營業收入"])=="MONTHLY_REVENUE_OR_INCOME"
  assert dataset("TDCC",["持股分級","人數","股數"])=="HOLDER_DISTRIBUTION"
+ assert dataset("FinMind",["date","stock_id","type","value","origin_name"])=="FINMIND_FINANCIAL_FACTS"
+ assert dataset("FinMind",["date","stock_id","open","close","Trading_Volume"])=="FINMIND_PRICE"
+ assert dataset("FinMind",["date","stock_id","type","value"])!="FINMIND_PRICE"
  assert analyze("TAIFEX","test.csv",b"date,contract,volume\n20261113,TX,100\n")["detail"]["row_width_histogram"]=={3:1}
  z=io.BytesIO()
  with zipfile.ZipFile(z,"w") as a:a.writestr("market.raw",sample)
