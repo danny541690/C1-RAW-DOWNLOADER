@@ -1,0 +1,39 @@
+name: JARVIS v097 TAIFEX Source-Native CSV Format Translation
+# Reparse ONLY unresolved TAIFEX originals. No mutation of 0.93/0.97 Bronze.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/v097_taifex_translation_v1.py
+      - .github/workflows/v097_taifex_native_translation.yml
+  schedule:
+    - cron: '6,21,36,51 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-taifex-format-translation
+  cancel-in-progress: false
+jobs:
+  original-csv-format-translation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Original format translator positive and negative tests
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_taifex_translation_v1.py scripts/v097_bronze_autopilot.py
+          PYTHONPATH=. python scripts/v097_taifex_translation_v1.py selftest
+          PYTHONPATH=. python scripts/v097_bronze_direct_release_v21.py selftest
+      - name: Recheck only frozen TAIFEX CSV translation holds and write SHA-backed evidence
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          TRANSLATION_BATCH: '300'
+        run: PYTHONPATH=. python scripts/v097_taifex_translation_v1.py
