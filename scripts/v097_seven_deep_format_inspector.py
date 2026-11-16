@@ -105,7 +105,12 @@ def analyze_json(source,blob):
   rows=x.get("data",[])
   if not isinstance(fields,list) or not isinstance(rows,list):bad_widths+=1;continue
   ds=dataset(source,fields);fingerprints[ds]+=1
-  sizes=Counter(len(v) if isinstance(v,(list,dict)) else -1 for v in rows[:MAX_ROWS])
+  # A dict row with different keys but the same column count is still a
+  # schema conflict; checking len(dict) alone silently accepted it.
+  sizes=Counter(
+    len(v) if isinstance(v,list) else
+    len(fields) if isinstance(v,dict) and set(v)==set(fields) else -1
+    for v in rows[:MAX_ROWS])
   bad_widths+=sum(n for size,n in sizes.items() if size!=len(fields))
   num_rows+=len(rows)
   if len(schemas)<12:schemas.append({"dataset":ds,"cols":len(fields),"rows":len(rows),
@@ -164,7 +169,7 @@ def analyze(source,name,blob,day=None,depth=0):
    if len(infos)>MAX_MEMBERS:return {**base,"status":"HOLD_MEMBER_LIMIT"}
    names={x.filename for x in infos}
    if "xl/workbook.xml" in names and "[Content_Types].xml" in names:
-    return {**base,"status":"XLSX_NATIVE_WORKBOOK_CELL_EXTRACTION_PENDING",
+    return {**base,"status":"HOLD_XLSX_NATIVE_WORKBOOK_CELL_EXTRACTION_REQUIRED",
       "workbook_members":len(infos),"workbook_xml_sha256":digest(z.read("xl/workbook.xml")),
       "worksheet_count":sum(x.startswith("xl/worksheets/") and x.endswith(".xml") for x in names),
       "silver_ready_promoted":False}
@@ -201,6 +206,8 @@ def selftest():
  assert dataset("FinMind",["date","stock_id","type","value","origin_name"])=="FINMIND_FINANCIAL_FACTS"
  assert dataset("FinMind",["date","stock_id","open","close","Trading_Volume"])=="FINMIND_PRICE"
  assert dataset("FinMind",["date","stock_id","type","value"])!="FINMIND_PRICE"
+ j=json.dumps({"fields":["date","stock_id"],"data":[{"date":"2026-11-13","type":"EPS"}]}).encode()
+ assert analyze_json("FinMind",j)["row_width_conflicts"]==1
  assert analyze("TAIFEX","test.csv",b"date,contract,volume\n20261113,TX,100\n")["detail"]["row_width_histogram"]=={3:1}
  z=io.BytesIO()
  with zipfile.ZipFile(z,"w") as a:a.writestr("market.raw",sample)
@@ -211,7 +218,7 @@ def selftest():
   wb.writestr("xl/workbook.xml",b"<workbook/>")
   wb.writestr("xl/worksheets/sheet1.xml",b"<worksheet/>")
  out=analyze("NDC","history.xlsx",xlsx.getvalue())
- assert out["status"]=="XLSX_NATIVE_WORKBOOK_CELL_EXTRACTION_PENDING"
+ assert out["status"]=="HOLD_XLSX_NATIVE_WORKBOOK_CELL_EXTRACTION_REQUIRED"
  assert out["worksheet_count"]==1
  assert analyze("TWSE","nested.zip",z.getvalue(),depth=4)["status"]=="HOLD_ARCHIVE_NESTING_LIMIT"
  print("SEVEN_DEEP_FORMAT_TEST_PASS")
