@@ -110,3 +110,27 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: PYTHONPATH=. python scripts/v097_seven_bidirectional_lineage.py '${{ inputs.source }}'
+
+  fullfile-pit-release-preflight:
+    needs: d-recheck
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.source != 'ALL'
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    concurrency:
+      group: v097-fullfile-pit-${{ inputs.source }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Strict full-file row digest, all-field equality and publication PIT selftest
+        run: PYTHONPATH=. python scripts/v097_fullfile_pit_release_preflight.py selftest
+      - name: Incremental full-file official and third-party evidence eligibility
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          PIT_GATE_BATCH: '500'
+        run: PYTHONPATH=. python scripts/v097_fullfile_pit_release_preflight.py '${{ inputs.source }}'
