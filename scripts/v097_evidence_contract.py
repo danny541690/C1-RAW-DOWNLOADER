@@ -31,7 +31,7 @@ def canon_decimal(value):
  try:
   raw=str(value).strip()
   # No silent reinterpretation of locale-dependent commas (e.g. "1,2").
-  if "," in raw and not re.fullmatch(r"[+-]?[0-9]{1,3}(,[0-9]{3})+(\\.[0-9]+)?",raw):
+  if "," in raw and not re.fullmatch(r"[+-]?[0-9]{1,3}(,[0-9]{3})+(\.[0-9]+)?",raw):
    raise ValueError("AMBIGUOUS_NUMERIC_THOUSANDS_SEPARATOR")
   x=Decimal(raw.replace(",",""))
   if not x.is_finite():raise ValueError("NAN_OR_INFINITY")
@@ -116,6 +116,7 @@ def selftest():
   else:raise AssertionError("STRICT_SCHEMA_DID_NOT_REJECT")
  assert not verify_pit("2026-11-16T09:00:00Z","2026-11-15T09:00:00Z")
  assert safe_evidence_claim({},"x","a"*64).startswith("HOLD")
+ assert canon_decimal("1,234.50")=="1234.5"
  for number in ("1,2","1,23","1,234,5"):
   try:canon_decimal(number)
   except ValueError:pass
