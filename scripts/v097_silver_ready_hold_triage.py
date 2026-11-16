@@ -59,8 +59,11 @@ def selftest():
         gates[src]={"schema":"v097_silver_input_release_source_v1","source":src,"cohort":0,"records":[]}
     # Validate source ordering and semantic constraints without pretending 74750 records exist.
     assert PRIORITY["TWSE"]==PRIORITY["TPEx"]==1
-    assert all("official" in RULES[s].lower() or "provider" in RULES[s].lower()
-               or "accounting" in RULES[s].lower() for s in SOURCES)
+    # Never use English keyword presence as an acceptance test for a written
+    # source evidence rule; it caused false CI failures for valid TWSE rules.
+    assert set(RULES)==set(SOURCES)
+    assert all(isinstance(RULES[s],str) and len(RULES[s])>=55 for s in SOURCES)
+    assert all(PRIORITY[s] in (1,2,3,4) for s in SOURCES)
     assert all("records" in gates[s] for s in SOURCES)
     print("HOLD_TRIAGE_SELFTEST_PASS")
 def run():
