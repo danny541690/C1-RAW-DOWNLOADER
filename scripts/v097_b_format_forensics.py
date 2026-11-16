@@ -153,7 +153,7 @@ def audit(source,row,blob):
     data=z.read(m)
     if len(data)!=m.file_size:return {**result,"status":"HOLD_ZIP_MEMBER_SIZE"}
     details.append(fingerprint(m.filename,data))
-  linkage=manifest_linkage(z,details)
+   linkage=manifest_linkage(z,details)
   kinds=Counter(t["signature"] for t in details)
   sets=Counter(t["dataset_fingerprint"] for t in details)
   return {**result,"status":"B_CONTENT_FINGERPRINTED_SOURCE_PROOF_PENDING",
