@@ -13,6 +13,8 @@ on:
       - scripts/v097_seven_source_full_error_census.py
       - scripts/v097_seven_deep_format_inspector.py
       - scripts/v097_seven_historical_format_registry.py
+      - scripts/v097_silver_ready_hold_triage.py
+      - scripts/v097_c_manifest_numeric.py
       - .github/workflows/v097_seven_full_parser_audit_resume.yml
 permissions:
   contents: read
@@ -43,6 +45,8 @@ jobs:
           PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
           PYTHONPATH=. python scripts/v097_seven_independent_publisher_bridge.py selftest
           PYTHONPATH=. python scripts/v097_live_threeway_close_witness.py selftest
+          PYTHONPATH=. python scripts/v097_silver_ready_hold_triage.py selftest
+          PYTHONPATH=. python scripts/v097_c_manifest_numeric.py selftest
       - name: Cross-check real last complete seven-source formal gate vs all available A B C V2 deep D error ledgers
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
