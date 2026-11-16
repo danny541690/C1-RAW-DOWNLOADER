@@ -1,0 +1,38 @@
+name: JARVIS v097 Real Independent TWSE TPEx Three-Way Price Witness
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/v097_live_threeway_close_witness.py
+      - .github/workflows/v097_live_threeway_price_witness.yml
+  schedule:
+    - cron: '12 */3 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-real-independent-price-witness
+  cancel-in-progress: false
+jobs:
+  independent-price:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Reject incorrect date or adjusted-price crossmatches
+        run: PYTHONPATH=. python scripts/v097_live_threeway_close_witness.py selftest
+      - name: Independent live official vs FinMind vs stored original sample
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+          WITNESS_SAMPLES: '2'
+        run: PYTHONPATH=. python scripts/v097_live_threeway_close_witness.py '${{ matrix.source }}'
