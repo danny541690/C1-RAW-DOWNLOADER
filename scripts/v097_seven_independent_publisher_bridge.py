@@ -31,7 +31,7 @@ PAGES={
  "TWSE":"https://www.twse.com.tw/zh/trading/historical/mi-index.html",
  "TPEx":"https://www.tpex.org.tw/zh-tw/mainboard/trading/info/pricing.html",
  "MOPS":"https://www.twse.com.tw/rwd/IFRS/aboutIFRS",
- "TDCC":"https://original-www.tdcc.com.tw/portal/zh/smWeb/qryStock",
+ "TDCC":"https://www.tdcc.com.tw/portal/zh/smWeb/qryStock",
  "TAIFEX":"https://www.taifex.com.tw/cht/3/futDailyMarketView",
  "NDC":"https://www.ndc.gov.tw/nc_335_2236",
  "FinMind":"https://finmind.github.io/tutor/TaiwanMarket/Technical/"}
