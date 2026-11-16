@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - scripts/v097_seven_parser_triage.py
+      - scripts/v097_seven_source_specific_resolvers.py
       - .github/workflows/v097_seven_source_one_command.yml
 permissions:
   contents: read
@@ -34,6 +35,7 @@ jobs:
       - name: Seven source gate negative selftests
         run: |
           PYTHONPATH=. python scripts/v097_seven_parser_triage.py selftest
+          PYTHONPATH=. python scripts/v097_seven_source_specific_resolvers.py selftest
           PYTHONPATH=. python scripts/v097_ap_silver_input_gate_all.py selftest
           PYTHONPATH=. python scripts/v097_b_format_forensics.py selftest
           PYTHONPATH=. python scripts/v097_c_manifest_numeric.py selftest
