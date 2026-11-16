@@ -99,8 +99,16 @@ def run():
     "row_width":ck["done"][row["source_id"]].get("row_fields")}
     for row in rows if row["source_id"] in fresh and
     ck["done"][row["source_id"]].get("status")=="HOLD_TAIFEX_CSV_WIDTH"][:8]
+ remaining_unread=max(0,len(candidates)-(len(batch)-len(revisits)))
+ remaining_stale=sum(1 for v in ck["done"].values()
+     if str(v.get("status","")).startswith("HOLD_TAIFEX_")
+     and v.get("format_translator_version")!=PARSER_REV)
+ pending=remaining_unread+remaining_stale
+ if os.getenv("GITHUB_OUTPUT"):
+  with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf8") as out:
+   out.write("pending="+str(pending)+"\n")
  print("TAIFEX_TRANSLATION_PROGRESS="+json.dumps({"batch":len(fresh),"completed":len(ck["done"]),
-     "remaining":max(0,len(candidates)-(len(batch)-len(revisits))),
+     "remaining":pending,
      "states":dict(count),"width_histogram":{str(k):v for k,v in widths.most_common(15)},
      "samples":samples,"original_bytes_unchanged":True,
      "silver_gold_executed":False},ensure_ascii=False),flush=True)
