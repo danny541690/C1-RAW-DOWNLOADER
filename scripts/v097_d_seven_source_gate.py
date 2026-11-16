@@ -103,6 +103,23 @@ def run(src):
  rid,gates=latest_complete(api,quality,match,load_json)
  gate={r["source_id"]:r for r in gates[src]["records"]}
  if set(gate)!=set(byid):raise RuntimeError("COHORT_FORMAL_VS_INPUT_MISMATCH")
+ # Locate externally retrieved one-row witnesses for C -> D traceability.
+ # These reports are partial by design and never satisfy all-file release.
+ witness_by_id={}
+ if src in ("TWSE","TPEx"):
+  from scripts.v097_bronze_content_qa import children
+  prefix="v097_INDEPENDENT_CLOSE_WITNESS_"+src+"_"
+  candidates=[x for x in children(api,quality) if x["name"].startswith(prefix) and x["name"].endswith(".json")]
+  if candidates:
+   latest=max(candidates,key=lambda x:x.get("modifiedTime",""))
+   witness_report=load_json(api,latest["id"])
+   for item in witness_report.get("records",[]):
+    if item.get("source_id") and item.get("status")=="THREE_WAY_DAILY_CLOSE_MATCHED_SAMPLE":
+     witness_by_id[item["source_id"]]={"source_report":latest["name"],
+       "stock_id":item["stock_id"],"trade_date":item["trade_date"],
+       "original_sha256":item.get("original_sha256"),
+       "official_response_sha256":item.get("official_fetch",{}).get("response_sha256"),
+       "third_party_response_sha256":item.get("finmind_fetch",{}).get("response_sha256")}
  evidence_file=match(api,quality,"v097_INDEPENDENT_TRIPLE_NUMERIC_EVIDENCE_"+src+".json")
  attest=load_json(api,evidence_file["id"]).get("by_source_id",{}) if evidence_file else {}
  name="v097_D_THREE_WAY_GATE_CK_"+src+".json"
@@ -117,7 +134,12 @@ def run(src):
  new={}
  for row in pending:
   sid=row["source_id"]
-  new[sid]=decision({**row,"source":src},gate[sid],native.get(sid),attest.get(sid))
+  result=decision({**row,"source":src},gate[sid],native.get(sid),attest.get(sid))
+  if sid in witness_by_id and result["status"]=="HOLD_THREE_WAY_NUMERIC_NOT_INDEPENDENTLY_PROVEN":
+   result={**result,"status":"HOLD_PARTIAL_THREE_WAY_WITNESS_FULL_FILE_PENDING",
+     "matched_sample":witness_by_id[sid],
+     "newly_ready":False}
+  new[sid]=result
  ck["done"].update(new)
  ck["last_run"]=os.getenv("GITHUB_RUN_ID","manual")
  ck["source_release_run"]=rid
@@ -139,6 +161,7 @@ def selftest():
  assert decision(row,old,{**native,"status":"HOLD_UNKNOWN_DATASET"})["status"]=="HOLD_SOURCE_NATIVE_SEMANTIC"
  assert not independently_attested(row,{"official_value":"100","third_party_value":"100"})[0]
  assert set(NUMERIC_FIELDS)==set(SOURCES)
+ assert decision(row,old,native)["newly_ready"] is False
  print("D_SEVEN_SOURCE_INDEPENDENT_GATE_NEGATIVE_TESTS_PASS")
 if __name__=="__main__":
  if sys.argv[1:]==["selftest"]:selftest()
