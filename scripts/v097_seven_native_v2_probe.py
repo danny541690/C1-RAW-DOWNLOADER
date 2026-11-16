@@ -11,6 +11,7 @@ from scripts.v097_bronze_autopilot import source_api,parse_content,digest,SOURCE
 from scripts.v097_seven_historical_format_registry import period,OFFICIAL_VERSIONS
 from scripts.v097_seven_source_specific_resolvers import triage
 from scripts.v097_bc_single_read_pilot import joint_audit
+from scripts.v097_seven_deep_format_inspector import analyze as deep_analyze
 from scripts.v097_taifex_mops_format_diagnostics import taifex_csv_width_diagnostic,mops_zip_member_diagnostic
 VERSION="seven-source-format-probe-v2-20261116"
 BATCH=max(1,min(80,int(os.getenv("SOURCE_BATCH","18"))))
@@ -62,6 +63,17 @@ def probe(source,row,bytes_,prior_status):
    if "members" in d:
     details["member_count"]=len(d["members"])
     details["member_state_summary"]=dict(Counter(str(x.get("status","UNKNOWN")) for x in d["members"]))
+  # Advisory source-native deep content inspection, with original Bronze intact.
+  try:
+   deep=deep_analyze(source,name,bytes_,ym+"-01")
+   details["deep_content"]={"status":deep["status"],"signature":deep["signature"],
+    "official_format_version_hint":deep["official_format_version_hint"],
+    "member_count":deep.get("member_count",0),"dataset":deep.get("dataset"),
+    "detail":deep.get("detail",{}),"member_samples":deep.get("members",[])[:12],
+    "source_provenance_verified":False,"third_party_values_checked":False}
+  except (ValueError,RuntimeError,zipfile.BadZipFile,UnicodeError,KeyError,TypeError) as e:
+   details["deep_content"]={"status":"HOLD_DEEP_INSPECTION_"+type(e).__name__,
+     "source_provenance_verified":False}
   if source=="TAIFEX" and name.lower().endswith(".csv") and status=="HOLD_TAIFEX_CSV_WIDTH":
    details["source_native_diagnostic"]=taifex_csv_width_diagnostic(bytes_)
   if source=="MOPS" and name.lower().endswith(".zip"):
@@ -148,6 +160,10 @@ def selftest():
   assert "resolver" in o
   assert probe(s,row,b"tamper","X")["status"]=="HOLD_ORIGINAL_SHA_MISMATCH"
  assert detected_name("foo.raw",sample).endswith(".json")
+ z=probe("TWSE",{"source_id":"deep","sha":digest(sample),
+     "source_path":"2026/TWSE/2026-11/deep.raw","year":"2026","month":"11"},sample,"HOLD_UNKNOWN_JSON_DATASET")
+ assert z["parser_detail"]["deep_content"]["detail"]["table_count"]==1
+ assert z["parser_detail"]["deep_content"]["source_provenance_verified"] is False
  assert retry_ids({"done":{"a":{"status":"RETRY_SOURCE_READ_TimeoutError","attempts":1},
        "b":{"status":"RETRY_SOURCE_READ_TimeoutError","attempts":3}}},
        {"a","b"})=={"a"}
