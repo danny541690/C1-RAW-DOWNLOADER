@@ -14,7 +14,8 @@ from scripts.v097_bronze_autopilot import source_api,digest,SOURCES
 from scripts.v097_seven_native_v2_probe import detected_name
 
 MAX_ATTEMPTS=2
-MAX_SAMPLES=min(8,max(1,int(os.getenv("WITNESS_SAMPLES","2"))))
+MAX_SAMPLES=min(12,max(1,int(os.getenv("WITNESS_SAMPLES","4"))))
+MAX_ROW_ATTEMPTS=3
 UA="JARVIS-0.97-EvidenceVerifier/1.0"
 def num(x):
  try:
@@ -142,9 +143,20 @@ def run(source):
  if not inp or not f:raise RuntimeError("MISSING_FROZEN_INPUT_OR_CHECKPOINT")
  rows={r["source_id"]:r for r in load_json(api,inp["id"])["rows"]}
  done=load_json(api,f["id"])["done"]
+ checkpoint_name=os.getenv("WITNESS_CK_PREFIX","v097_STANDALONE_PRICE_WITNESS_CK_")+source+".json"
+ checkpoint_file=match(api,control,checkpoint_name)
+ checkpoint=load_json(api,checkpoint_file["id"]) if checkpoint_file else {
+  "schema":"v097_independent_price_witness_checkpoint_v1","source":source,"done":{}}
+ if checkpoint.get("source")!=source:raise RuntimeError("PRICE_WITNESS_CHECKPOINT_SOURCE_CONFLICT")
+ seen=checkpoint["done"]
  results=[];attempts=0
  for sid,v in done.items():
   if len(results)>=MAX_SAMPLES or attempts>=MAX_SAMPLES*24:break
+  previous=seen.get(sid)
+  if previous:
+   state=str(previous.get("status",""))
+   if not state.startswith("RECHECK_THREE_WAY_") or previous.get("attempts",0)>=MAX_ROW_ATTEMPTS:
+    continue
   path=str(v.get("original_path",""))
   if not path.lower().endswith((".raw",".json",".zip")):continue
   if str(v.get("status","")).startswith(("HOLD_SOURCE","HOLD_ORIGINAL")):continue
@@ -173,6 +185,17 @@ def run(source):
    results.append({"source_id":sid,"status":"RECHECK_THREE_WAY_"+type(e).__name__,
       "error_category":str(e)[:90],"silver_ready_promoted":False})
   time.sleep(0.7)
+ if results:
+  for item in results:
+   sid=item["source_id"]
+   seen[sid]={"status":item["status"],
+    "attempts":seen.get(sid,{}).get("attempts",0)+1,
+    "last_run":os.getenv("GITHUB_RUN_ID","manual"),
+    "stock_id":item.get("stock_id"),"trade_date":item.get("trade_date"),
+    "official_response_sha256":item.get("official_fetch",{}).get("response_sha256"),
+    "third_party_response_sha256":item.get("finmind_fetch",{}).get("response_sha256")}
+  checkpoint["last_run"]=os.getenv("GITHUB_RUN_ID","manual")
+  if os.getenv("GITHUB_RUN_ID"):upsert(api,control,checkpoint_name,checkpoint)
  report={"schema":"v097_independent_three_way_close_witness_v1",
    "source":source,"run":os.getenv("GITHUB_RUN_ID","manual"),
    "records":results,"full_file_verified":False,
@@ -193,6 +216,7 @@ def selftest():
   z.writestr("quote.raw",x)
   z.writestr("manifest.json",json.dumps({"units":[{"file":"quote.raw","date":"2026-11-16"}]}))
  assert archive_quotes(b.getvalue())[0]["close"]=="1000"
+ assert MAX_ROW_ATTEMPTS==3
  assert num("--") is None and num("0.00")==0
  print("THREEWAY_INDEPENDENT_CLOSE_WITNESS_SELFTEST_PASS")
 if __name__=="__main__":
