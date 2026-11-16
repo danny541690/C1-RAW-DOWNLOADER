@@ -20,6 +20,36 @@ def buckets(api,c,prefix):
   all_ids.update(d)
   by.update(v.get("state","MISSING_STATE") for v in d.values())
  return len(all_ids),dict(by)
+def ids_by_state(api,c,prefix,state):
+ found=set()
+ for lane in range(6):
+  done=get(api,c,prefix+"_CK_%02d.json"%lane).get("done",{})
+  matches={fid for fid,x in done.items() if x.get("state")==state}
+  if found&matches:raise RuntimeError("DUPLICATE_OFFICIAL_PROOF_ID")
+  found.update(matches)
+ return found
+def retry_official_proof_ids(api,q):
+ """Only allow independently evidenced 2025 official retries tied to original IDs."""
+ r=get(api,q,"v097_TDCC_TWO_OFFICIAL_RETRY_43521418693.json")
+ if not r:return set()
+ if r.get("official_proved")!=2:raise RuntimeError("RETRY_OFFICIAL_PROOF_RECEIPT_CHANGED")
+ original=get(api,q,"v097_TDCC_5035_THIRDPARTY_ALL_43428270828.json")
+ byid={x["file_id"]:x for x in original.get("records",[])}
+ proved=set()
+ for x in r.get("items",[]):
+  if x.get("state")!="EXACT_SAME_DATE_CONTENT_MATCH":continue
+  fid=x.get("file_id");o=byid.get(fid)
+  if not o or not str(o.get("day","")).startswith("2025"):
+   raise RuntimeError("RETRY_ID_NOT_IN_FROZEN_2025")
+  if not x.get("official_response_sha256"):
+   raise RuntimeError("RETRY_NO_OFFICIAL_RESPONSE_SHA")
+  if any(o.get(a)!=x.get(b) for a,b in (
+   ("source_sha256","source_sha256"),("day","day"),("code","code"),
+   ("holders","original_holders"),("shares","original_shares"))):
+   raise RuntimeError("RETRY_ORIGINAL_ID_SHA_DATE_CODE_TOTAL_MISMATCH")
+  proved.add(fid)
+ if len(proved)!=2:raise RuntimeError("RETRY_OFFICIAL_VERIFIED_ID_COUNT_NOT_2")
+ return proved
 def main():
  api=service();m,c,q,_=common(api)
  master=get(api,q,"v097_FINAL_OPEN_ISSUES_20261113_V1_SUMMARY_43404850198.json")
@@ -49,7 +79,20 @@ def main():
  external_800=int(v800.get("INTERNAL_AND_THIRDPARTY_TOTALS_EXACT_NONSTOCK",0))
  official_2025=int(v2025.get("EXACT_SAME_DATE_CONTENT_MATCH",0))
  proof_gap_800=max(0,add800-external_800)
- proof_gap_2025=max(0,add2025-official_2025)
+ # Unlike the historical-date checkpoint, the separately SHA-validated
+ # official retry receipt can contain TWO additional, non-overlapping 2025 IDs.
+ # Reconcile individual file IDs rather than comparing aggregate counters.
+ official_2025_ids=ids_by_state(api,c,"v097_TDCC_2025_OFFICIAL_HISTORY_PROOFS","EXACT_SAME_DATE_CONTENT_MATCH")
+ retry_ids=retry_official_proof_ids(api,q)
+ if len(official_2025_ids)!=official_2025:
+  raise RuntimeError("2025_CHECKPOINT_OFFICIAL_ID_COUNT_CONFLICT")
+ admission_ids=ids_by_state(api,c,"v097_TDCC_2025_OFFICIAL_EXACT_SPECIAL_RAW","NONSTOCK_RAW_SHA_AND_3WAY_HOLDINGS_QA_PASS")
+ if len(admission_ids)!=add2025:raise RuntimeError("2025_SPECIAL_RAW_ID_COUNT_CONFLICT")
+ overlapping=official_2025_ids&retry_ids
+ extra_retry_ids=retry_ids-official_2025_ids
+ official_unmatched_ids=admission_ids-(official_2025_ids|retry_ids)
+ proof_gap_2025=len(official_unmatched_ids)
+ if overlapping:print("OFFICIAL_RETRY_IDS_ALREADY_IN_HISTORY="+str(len(overlapping)),flush=True)
  if min(add800,add2025,external_800,official_2025)<0:
   raise RuntimeError("NEGATIVE_EXTERNAL_PROOF_COUNTER")
  # Counts are conservative lower bounds for a *necessary* ID-level evidence
@@ -81,9 +124,12 @@ def main():
    "official_proof_gap":{"tdcc_800_external_count_shortfall":proof_gap_800,
       "tdcc_2025_exact_same_day_count_shortfall":proof_gap_2025,
       "raw_qa_800_count":add800,"external_match_800_count":external_800,
-      "raw_qa_2025_count":add2025,"official_exact_match_2025_count":official_2025},
+      "raw_qa_2025_count":add2025,"official_exact_match_2025_count":official_2025,
+      "verified_extra_retry_2025_ids":len(extra_retry_ids),
+      "unmatched_2025_file_ids":sorted(official_unmatched_ids)},
    "unverified_raw_qa_remains_hold":True,
    "requires_per_file_proof_id_sha_date_code_holders_shares":True,
+   "tdcc_2025_ids_reconciled_from_official_history_and_separate_retry":len(admission_ids)-len(official_unmatched_ids),
    "subset_counters":{"tdcc_800_rechecked":n800,"tdcc_800_recheck_by_state":v800,
       "tdcc_800_special_raw_checked":n800_admit,"tdcc_800_special_raw_by_state":a800,
       "tdcc_2025_official_checked":n2025,"tdcc_2025_official_by_state":v2025,
