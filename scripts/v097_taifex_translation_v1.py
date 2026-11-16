@@ -72,7 +72,12 @@ def run():
   if st in TARGETS or (st=="ZIP_MEMBERS_AUDITED_ORIGIN_HOLD" and
       r["source_path"].lower().endswith((".csv",".txt",".raw"))):
    candidates.append(r)
- batch=candidates[:BATCH]
+ # Refresh a small representative sample of last-pass width failures
+ # whenever their diagnostic schema changes, without re-reading all files.
+ revisits=[r for r in rows if r["source_id"] in ck["done"] and
+      ck["done"][r["source_id"]].get("status")=="HOLD_TAIFEX_CSV_WIDTH" and
+      "header_preview" not in ck["done"][r["source_id"]]][:8]
+ batch=revisits+candidates[:max(0,BATCH-len(revisits))]
  fresh={}
  for row in batch:
   sid=row["source_id"]
@@ -84,9 +89,20 @@ def run():
  ck["done"].update(fresh);ck["run"]=os.getenv("GITHUB_RUN_ID","manual")
  if fresh:checkpoint_commit(api,control,NAME,ck,upsert,match,load_json)
  count=Counter(x["status"] for x in fresh.values())
+ widths=Counter((x.get("header_fields"),x.get("row_fields")) for x in ck["done"].values()
+    if x.get("status")=="HOLD_TAIFEX_CSV_WIDTH")
+ samples=[{"source_path":row["source_path"],
+    "header":ck["done"][row["source_id"]].get("header_preview"),
+    "row_excerpt":ck["done"][row["source_id"]].get("row_excerpt"),
+    "header_width":ck["done"][row["source_id"]].get("header_fields"),
+    "row_width":ck["done"][row["source_id"]].get("row_fields")}
+    for row in rows if row["source_id"] in fresh and
+    ck["done"][row["source_id"]].get("status")=="HOLD_TAIFEX_CSV_WIDTH"][:8]
  print("TAIFEX_TRANSLATION_PROGRESS="+json.dumps({"batch":len(fresh),"completed":len(ck["done"]),
-     "remaining":max(0,len(candidates)-len(batch)),"states":dict(count),
-     "original_bytes_unchanged":True,"silver_gold_executed":False}),flush=True)
+     "remaining":max(0,len(candidates)-(len(batch)-len(revisits))),
+     "states":dict(count),"width_histogram":{str(k):v for k,v in widths.most_common(15)},
+     "samples":samples,"original_bytes_unchanged":True,
+     "silver_gold_executed":False},ensure_ascii=False),flush=True)
 if __name__=="__main__":
  if sys.argv[1:]==["selftest"]:selftest()
  elif len(sys.argv)==1:run()
