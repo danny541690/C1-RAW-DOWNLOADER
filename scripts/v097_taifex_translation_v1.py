@@ -11,6 +11,7 @@ from collections import Counter
 from scripts.v097_bronze_autopilot import source_api,parse_taifex_csv,digest
 from scripts.v097_seven_native_v2_probe import checkpoint_commit
 VERSION="v097_taifex_native_csv_translation_v1"
+PARSER_REV="v097_taifex_native_csv_layout_20261117_v2"
 NAME="v097_TAIFEX_NATIVE_CSV_TRANSLATION_CK_v1.json"
 BATCH=max(1,min(450,int(os.getenv("TRANSLATION_BATCH","250"))))
 TARGETS={"HOLD_TAIFEX_CSV_WIDTH","HOLD_TAIFEX_DATE_HEADER_UNRECOGNIZED",
@@ -27,7 +28,7 @@ def examine(row,raw):
   return {**base,"status":"HOLD_TRANSLATION_NON_CSV_NOT_RECLASSIFIED"}
  parsed=parse_taifex_csv(raw,str(row["year"])+"-"+str(row["month"]))
  # This is a full-file independent parse, not a derived metadata-only READY.
- return {**base,**parsed,"format_translator_version":VERSION,
+ return {**base,**parsed,"format_translator_version":PARSER_REV,
          "date_vs_contract_month_kept_distinct":True}
 def selftest():
  row={"source_id":"example","sha":"","dest_id":"destination","source_path":"2026/TAIFEX/2026-11/data.csv","year":"2026","month":"11"}
@@ -75,8 +76,8 @@ def run():
  # Refresh a small representative sample of last-pass width failures
  # whenever their diagnostic schema changes, without re-reading all files.
  revisits=[r for r in rows if r["source_id"] in ck["done"] and
-      ck["done"][r["source_id"]].get("status")=="HOLD_TAIFEX_CSV_WIDTH" and
-      "header_preview" not in ck["done"][r["source_id"]]][:8]
+      ck["done"][r["source_id"]].get("status","").startswith("HOLD_TAIFEX_") and
+      ck["done"][r["source_id"]].get("format_translator_version")!=PARSER_REV][:BATCH]
  batch=revisits+candidates[:max(0,BATCH-len(revisits))]
  fresh={}
  for row in batch:
