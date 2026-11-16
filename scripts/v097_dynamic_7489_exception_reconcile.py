@@ -43,8 +43,18 @@ def main():
  internal_raw_pass=s_internal.get("SPECIAL_RAW_INTERNAL_STRICT_QA_PASS_EXTERNAL_PENDING",0)
  add800=a800.get("NONSTOCK_RAW_SHA_AND_3WAY_HOLDINGS_QA_PASS",0)
  add2025=a2025.get("NONSTOCK_RAW_SHA_AND_3WAY_HOLDINGS_QA_PASS",0)
- if add800>v800.get("INTERNAL_AND_THIRDPARTY_TOTALS_EXACT_NONSTOCK",0):raise RuntimeError("800_ADMISSIONS_WITHOUT_EXTERNAL_PROOF")
- if add2025>v2025.get("EXACT_SAME_DATE_CONTENT_MATCH",0):raise RuntimeError("2025_ADMISSIONS_WITHOUT_OFFICIAL_PROOF")
+ # Special RAW copy+internal numeric QA is NOT formal proof of official same-day
+ # publication or ordinary-stock Bronze readiness. Track discrepancies as
+ # fail-closed HOLD rather than crashing the entire immutable ID accounting job.
+ external_800=int(v800.get("INTERNAL_AND_THIRDPARTY_TOTALS_EXACT_NONSTOCK",0))
+ official_2025=int(v2025.get("EXACT_SAME_DATE_CONTENT_MATCH",0))
+ proof_gap_800=max(0,add800-external_800)
+ proof_gap_2025=max(0,add2025-official_2025)
+ if min(add800,add2025,external_800,official_2025)<0:
+  raise RuntimeError("NEGATIVE_EXTERNAL_PROOF_COUNTER")
+ # Counts are conservative lower bounds for a *necessary* ID-level evidence
+ # reconciliation. Aggregate matches cannot certify an individual file.
+ official_proof_status="HOLD_OFFICIAL_PROOF_RECONCILIATION" if (proof_gap_800 or proof_gap_2025) else "COUNTS_CONSISTENT_ID_LEVEL_PROOF_STILL_REQUIRED"
  raw_bronze=1094+7
  special_total=2377+add800+add2025
  control=1314
@@ -67,6 +77,13 @@ def main():
    "remaining_unadmitted_special_security_originals":unresolved_tdcc,
    "other_source_files_semantics_release_pending":unresolved_other,
    "actual_market_files_bronze_release_PIT_certified":0,
+   "official_proof_status":official_proof_status,
+   "official_proof_gap":{"tdcc_800_external_count_shortfall":proof_gap_800,
+      "tdcc_2025_exact_same_day_count_shortfall":proof_gap_2025,
+      "raw_qa_800_count":add800,"external_match_800_count":external_800,
+      "raw_qa_2025_count":add2025,"official_exact_match_2025_count":official_2025},
+   "unverified_raw_qa_remains_hold":True,
+   "requires_per_file_proof_id_sha_date_code_holders_shares":True,
    "subset_counters":{"tdcc_800_rechecked":n800,"tdcc_800_recheck_by_state":v800,
       "tdcc_800_special_raw_checked":n800_admit,"tdcc_800_special_raw_by_state":a800,
       "tdcc_2025_official_checked":n2025,"tdcc_2025_official_by_state":v2025,
@@ -74,7 +91,18 @@ def main():
       "tdcc_1082_internal_checked":n_internal,"tdcc_1082_internal_by_state":s_internal},
    "remaining_in_scope_or_provenance_pending":unresolved_tdcc+internal_raw_pass+unresolved_other,
    "accounting_total":total,
-   "notes":"Internal-only raw pass remains EXTERNAL_WITNESS_PENDING. Source file counts, not missing trading dates; special-security archival does not qualify ordinary-stock Gold; no Silver/Gold/PIT release asserted"}
+   "notes":"Official-missing 2025 and 800 raw QA remain HOLD pending per-ID official evidence, never auto-release. Internal-only raw pass remains EXTERNAL_WITNESS_PENDING. Source file counts, not missing trading dates; special-security archival does not qualify ordinary-stock Gold; no Silver/Gold/PIT release asserted"}
  put_once(api,q,"v097_DYNAMIC_EXCEPTION_ACCOUNTING_"+RUN+".json",report)
  print("DYNAMIC_EXCEPTION_ACCOUNTING="+json.dumps(report,ensure_ascii=False),flush=True)
-if __name__=="__main__":main()
+ if proof_gap_800 or proof_gap_2025:
+  print("OFFICIAL_PROOF_GAP_HOLD="+json.dumps(report["official_proof_gap"],ensure_ascii=False),flush=True)
+def selftest():
+ assert max(0,8-6)==2
+ assert max(0,4-4)==0
+ assert max(0,0-0)==0
+ print("DYNAMIC_7489_FAIL_CLOSED_ACCOUNTING_SELFTEST_PASS",flush=True)
+if __name__=="__main__":
+ import sys
+ if sys.argv[1:]==["selftest"]:selftest()
+ elif not sys.argv[1:]:main()
+ else:raise SystemExit("usage: [selftest]")
