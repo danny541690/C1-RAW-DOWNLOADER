@@ -7,7 +7,7 @@ on:
       - scripts/v097_bronze_direct_release_v21.py
       - .github/workflows/v097_bronze_v21_direct_release.yml
   schedule:
-    - cron: '25,55 * * * *'
+    - cron: '10,25,40,55 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -35,7 +35,7 @@ jobs:
     timeout-minutes: 100
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 4
       matrix:
         source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
     steps:
