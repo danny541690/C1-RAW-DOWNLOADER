@@ -10,7 +10,6 @@ on:
     paths:
       - scripts/v097_seven_native_v2_probe.py
       - scripts/v097_d_seven_source_gate.py
-      - scripts/v097_d_seven_source_gate.py
       - scripts/v097_taifex_mops_format_diagnostics.py
       - scripts/v097_seven_historical_format_registry.py
       - .github/workflows/v097_seven_native_v2_continuous.yml
@@ -51,7 +50,7 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py '${{ matrix.source }}'
   d-gate:
     needs: source-parser
-    if: needs.source-parser.result == 'success'
+    if: always() && needs.source-parser.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -75,7 +74,7 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_d_seven_source_gate.py '${{ matrix.source }}'
   continuation:
     needs: [source-parser, d-gate]
-    if: always() && needs.source-parser.result == 'success' && needs.d-gate.result == 'success'
+    if: always() && needs.source-parser.result != 'cancelled' && needs.d-gate.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -118,6 +117,8 @@ jobs:
               # the active parser loop alive: D handles source checkpoint rows
               # and preserved READY from frozen input independently.
               total+=len(set(ck)-set(dd))
+              from scripts.v097_seven_native_v2_probe import retry_ids
+              total+=len(retry_ids({"done":ck},eligible))
           print(total)
           PY
           )
