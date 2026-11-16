@@ -1,0 +1,90 @@
+name: JARVIS v097 Bronze Official Source V2 Shadow Gate
+# This job explicitly does NOT change the formal 74,750 READY/HOLD ledger,
+# does NOT launch Silver/Gold and does NOT silently waive source provenance.
+on:
+  push:
+    paths:
+      - scripts/v097_official_bronze_shadow_v2.py
+      - .github/workflows/v097_bronze_official_v2_shadow.yml
+      - scripts/v097_bronze_official_v2_run_request.txt
+  workflow_dispatch:
+  schedule:
+    - cron: '17,47 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: v097-bronze-official-source-v2-shadow
+  cancel-in-progress: false
+jobs:
+  strict-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies for repo-native imports
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Fail-closed official source and historical-schema tests
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_official_bronze_shadow_v2.py
+          PYTHONPATH=. python scripts/v097_official_bronze_shadow_v2.py selftest
+          PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py selftest
+          PYTHONPATH=. python scripts/v097_evidence_contract.py selftest
+  seven-source-shadow:
+    needs: strict-tests
+    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[BRONZE-OFFICIAL-V2]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    concurrency:
+      group: v097-bronze-official-shadow-${{ matrix.source }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Audit official/provider original source proof and native all-content QA, preserve HOLD
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BRONZE_V2_SHADOW_BATCH: '500'
+        run: PYTHONPATH=. python scripts/v097_official_bronze_shadow_v2.py '${{ matrix.source }}'
+  read-only-final-census:
+    needs: [strict-tests, seven-source-shadow]
+    if: (github.event_name != 'push' || contains(github.event.head_commit.message, '[BRONZE-OFFICIAL-V2]')) && always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - name: Stop if source audit failed
+        env:
+          TEST: ${{ needs.strict-tests.result }}
+          SHADOW: ${{ needs.seven-source-shadow.result }}
+        run: |
+          echo "STRICT_TEST=$TEST SEVEN_SOURCE_SHADOW=$SHADOW"
+          test "$TEST" = success
+          test "$SHADOW" = success
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Recheck unchanged formal release against all 74750 IDs
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_bronze_evidence_gap_census.py
+          echo "SHADOW_ONLY_NO_SIGNED_READY_CHANGES"
+          echo "NO_SILVER_GOLD_NO_BRONZE_RAW_WRITES"
