@@ -49,7 +49,7 @@ def selftest():
  invalid=example.replace(b",TX,101,",b",TX,101,UNEXPECTED,")
  ri={**row,"sha":digest(invalid)}
  assert examine(ri,invalid)["status"]=="HOLD_TAIFEX_CSV_WIDTH"
- print("TAIFEX_ORIGINAL_FORMAT_TRANSLATION_SELFTEST_PASS")
+ print("TAIFEX_ORIGINAL_FORMAT_TRANSLATION_SELFTEST_PASS parser="+PARSER_REV)
 def run():
  api,control,quality,match,load_json,put_once,upsert,call=source_api()
  inp=match(api,quality,"v097_AP_INPUT_TAIFEX.json")
