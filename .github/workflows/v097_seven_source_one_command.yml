@@ -133,6 +133,14 @@ jobs:
           set -euo pipefail
           gh workflow run v097_seven_independent_depth_continuous.yml --ref main -f depth=0
           echo "SEVEN_INDEPENDENT_DEPTH_DISPATCH_ACCEPTED"
+      - name: Dispatch source-isolated 15-minute independent evidence watchdog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run v097_seven_independent_15m_watchdog.yml --ref main -f source=ALL
+          echo "SEVEN_INDEPENDENT_WATCHDOG_DISPATCH_ACCEPTED"
       - name: Dispatch strict seven-source hold exception register
         env:
           GH_TOKEN: ${{ github.token }}
