@@ -9,6 +9,7 @@ on:
   push:
     paths:
       - scripts/v097_seven_native_v2_probe.py
+      - scripts/v097_seven_deep_format_inspector.py
       - scripts/v097_d_seven_source_gate.py
       - scripts/v097_taifex_mops_format_diagnostics.py
       - scripts/v097_seven_historical_format_registry.py
@@ -40,13 +41,14 @@ jobs:
           PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
           PYTHONPATH=. python scripts/v097_seven_source_specific_resolvers.py selftest
           PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py selftest
+          PYTHONPATH=. python scripts/v097_seven_deep_format_inspector.py
           PYTHONPATH=. python scripts/v097_taifex_mops_format_diagnostics.py selftest
       - name: Recheck only typed unresolved native-format evidence; immutable Bronze
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          SOURCE_BATCH: '35'
+          SOURCE_BATCH: '12'
         run: PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py '${{ matrix.source }}'
   d-gate:
     needs: source-parser
