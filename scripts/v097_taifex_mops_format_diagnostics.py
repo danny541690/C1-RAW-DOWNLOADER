@@ -24,11 +24,16 @@ def taifex_csv_width_diagnostic(blob):
   parsed=csv.reader(io.StringIO(text),delimiter=delimiter)
   head=next(parsed,[])
   widths=Counter();footer=0;repeat_headers=0;singletons=[];count=0
+  whitespace_only_extra=0;nonempty_extra=0;short_rows=0
   for row in parsed:
    if not any(x.strip() for x in row):continue
    count+=1
    if count>MAX_ROWS:return {"status":"HOLD_TAIFEX_ROW_LIMIT","release":False}
    widths[len(row)]+=1
+   if len(row)>len(head):
+    if any(str(x).strip() for x in row[len(head):]):nonempty_extra+=1
+    else:whitespace_only_extra+=1
+   elif len(row)<len(head):short_rows+=1
    if len(row)==1:
     footer+=1
     if len(singletons)<4:singletons.append(str(row[0])[:80])
@@ -37,14 +42,22 @@ def taifex_csv_width_diagnostic(blob):
   anomalies={str(n):v for n,v in widths.items() if n!=expected}
   trailing_empty=widths.get(expected+1,0)
   reason="HOLD_TAIFEX_MIXED_LAYOUT_REQUIRES_VERSIONED_SCHEMA"
-  if anomalies and set(anomalies)=={str(expected+1)}:reason="HOLD_TAIFEX_TRAILING_COLUMN_NEEDS_CELL_CHECK"
+  if anomalies and set(anomalies)=={str(expected+1)}:
+   reason=("CANDIDATE_TAIFEX_TRAILING_EMPTY_COLUMN_DETECTED_NO_DATA_LOSS"
+      if whitespace_only_extra==trailing_empty and nonempty_extra==0
+      else "HOLD_TAIFEX_NONEMPTY_EXTRA_COLUMN")
+  if nonempty_extra or short_rows:reason="HOLD_TAIFEX_MIXED_LAYOUT_REQUIRES_VERSIONED_SCHEMA"
   if not anomalies:reason="CANDIDATE_VALID_CSV_WIDTH_REQUIRE_DATE_AND_SOURCE_QA"
   return {"status":reason,"encoding":codec,"delimiter":repr(delimiter),
     "header_width":expected,"header_tokens":[str(x)[:45] for x in head[:24]],
     "row_count":count,"row_width_histogram":dict(widths),
     "anomaly_widths":anomalies,"repeated_headers":repeat_headers,
     "singleton_lines":footer,"singleton_samples":singletons,
-    "trailing_column_candidates":trailing_empty,"release":False}
+    "trailing_column_candidates":trailing_empty,
+    "whitespace_only_extra_rows":whitespace_only_extra,
+    "nonempty_extra_rows":nonempty_extra,"short_rows":short_rows,
+    "candidate_normalization_reversible":bool(whitespace_only_extra and not nonempty_extra and not short_rows),
+    "original_bytes_preserved":True,"release":False}
  except (csv.Error,UnicodeError) as e:
   return {"status":"HOLD_TAIFEX_CSV_READER_ERROR","error_type":type(e).__name__,"release":False}
 def mops_zip_member_diagnostic(blob):
@@ -79,6 +92,9 @@ def selftest():
  a=b"\xef\xbb\xbf"+("交易日期,商品代號,成交口數\n20261113,TX,123,\n20261112,TX,456,\n").encode()
  x=taifex_csv_width_diagnostic(a)
  assert x["header_width"]==3 and x["trailing_column_candidates"]==2 and not x["release"]
+ assert x["whitespace_only_extra_rows"]==2 and x["candidate_normalization_reversible"]
+ not_empty=taifex_csv_width_diagnostic(b"A,B,C\\n1,2,3,4\\n".replace(b"\\n",b"\n"))
+ assert not_empty["nonempty_extra_rows"]==1 and not not_empty["candidate_normalization_reversible"]
  b=io.BytesIO()
  with zipfile.ZipFile(b,"w") as z:
   z.writestr("statement.raw",json.dumps({"fields":["公司代號","營業收入"],"data":[["2330","100"]]},ensure_ascii=False).encode())
