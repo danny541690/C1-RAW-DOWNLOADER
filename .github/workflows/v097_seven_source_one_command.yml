@@ -15,6 +15,7 @@ on:
       - scripts/v097_seven_source_specific_resolvers.py
       - scripts/v097_seven_historical_format_registry.py
       - scripts/v097_seven_native_v2_probe.py
+      - scripts/v097_seven_threeway_schema_crosswalk.py
       - .github/workflows/v097_seven_source_one_command.yml
 permissions:
   contents: read
@@ -40,6 +41,7 @@ jobs:
           PYTHONPATH=. python scripts/v097_seven_source_specific_resolvers.py selftest
           PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
           PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py selftest
+          PYTHONPATH=. python scripts/v097_seven_threeway_schema_crosswalk.py selftest
           PYTHONPATH=. python scripts/v097_ap_silver_input_gate_all.py selftest
           PYTHONPATH=. python scripts/v097_b_format_forensics.py selftest
           PYTHONPATH=. python scripts/v097_c_manifest_numeric.py selftest
@@ -54,6 +56,13 @@ jobs:
         run: |
           PYTHONPATH=. python scripts/v097_seven_parser_triage.py all
           echo "ready=true" >> "$GITHUB_OUTPUT"
+      - name: v0.97 Bronze vs historical official schema vs third-party documented schema
+        continue-on-error: true
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_seven_threeway_schema_crosswalk.py
   dispatch-unfinished-tasks:
     needs: preflight-and-inventory
     if: needs.preflight-and-inventory.result == 'success' && (github.event_name == 'push' || inputs.mode != 'inventory_only')
