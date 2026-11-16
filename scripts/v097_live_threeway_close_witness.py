@@ -4,7 +4,7 @@ Actual Bronze bytes -> dated official public historical quote -> FinMind unadjus
 Samples only; reports cannot certify all rows or automatically release Silver.
 Rate-limited, bounded and independently hashed on download.
 """
-import hashlib,json,os,re,sys,time
+import hashlib,json,os,re,sys,time,zipfile,io
 from collections import Counter
 from datetime import datetime,timezone
 from decimal import Decimal,InvalidOperation
@@ -28,26 +28,67 @@ def day(x):
  y=int(m[1]);y+=1911 if y<1911 else 0
  if y<2000:return None
  return f"{y:04d}-{int(m[2]):02d}-{int(m[3]):02d}"
-def original_quotes(raw):
+def original_quotes(raw, fallback_date=None):
  try:o=json.loads(raw.decode("utf-8-sig"))
  except (ValueError,UnicodeError):return []
  if not isinstance(o,dict):return []
- date=day(o.get("date",""))
+ date=day(o.get("date","")) or day(o.get("Date","")) or fallback_date
  quotes=[]
  for t in o.get("tables",[]) if isinstance(o.get("tables"),list) else [o]:
   if not isinstance(t,dict):continue
   fields=[str(x).strip().replace(" ","") for x in t.get("fields",[])]
+  tdate=day(t.get("date","")) or date
   rows=t.get("data",[])
-  code=next((i for i,s in enumerate(fields) if s in ("代號","證券代號","股票代號")),None)
-  close=next((i for i,s in enumerate(fields) if s in ("收盤價","收盤")),None)
+  code=next((i for i,s in enumerate(fields) if s in ("代號","證券代號","股票代號","股票代碼","有價證券代號")),None)
+  close=next((i for i,s in enumerate(fields) if s in ("收盤價","收盤","收市價")),None)
   if code is None or close is None:continue
-  for row in rows[:100]:
+  for row in rows[:10000]:
    if not isinstance(row,list) or max(code,close)>=len(row):continue
    stock=str(row[code]).strip()
    value=num(row[close])
-   if re.fullmatch(r"[0-9]{4}",stock) and value is not None and value>0 and date:
-    quotes.append({"date":date,"stock":stock,"close":str(value)})
+   if re.fullmatch(r"[0-9]{4}",stock) and value is not None and value>0 and tdate:
+    quotes.append({"date":tdate,"stock":stock,"close":str(value)})
  return quotes
+def archive_quotes(blob):
+ if len(blob)>50*1024*1024 or not zipfile.is_zipfile(io.BytesIO(blob)):return []
+ quotes=[]
+ with zipfile.ZipFile(io.BytesIO(blob)) as z:
+  infos=z.infolist()
+  if len(infos)>400:return []
+  manifest={}
+  for member in infos:
+   if member.filename.rsplit("/",1)[-1].lower()=="manifest.json" and member.file_size<3*1024*1024:
+    try:manifest=json.loads(z.read(member))
+    except (UnicodeError,ValueError):pass
+  dated={}
+  if isinstance(manifest,dict):
+   for u in manifest.get("units",[])[:1000]:
+    if isinstance(u,dict) and isinstance(u.get("file"),str):
+     dated[u["file"]]=day(u.get("date","")) or day(u.get("period",""))
+  total=0
+  for m in infos:
+   if m.is_dir() or m.file_size>15*1024*1024:continue
+   total+=m.file_size
+   if total>70*1024*1024:break
+   if m.filename.rsplit("/",1)[-1].lower()=="manifest.json":continue
+   if not m.filename.lower().endswith((".json",".raw")):continue
+   quotes.extend(original_quotes(z.read(m),dated.get(m.filename)))
+   if quotes:break
+ return quotes
+
+def diagnose_shape(blob):
+ try:
+  if zipfile.is_zipfile(io.BytesIO(blob)):
+   with zipfile.ZipFile(io.BytesIO(blob)) as z:
+    return {"kind":"ZIP","members":len(z.infolist()),
+      "sample_names":[x.filename[-65:] for x in z.infolist()[:6]]}
+  o=json.loads(blob.decode("utf-8-sig"))
+  if isinstance(o,dict):
+   return {"kind":"JSON","top_keys":[str(k)[:60] for k in list(o.keys())[:12]],
+      "table_fields":[[str(q)[:45] for q in t.get("fields",[])[:12]]
+        for t in o.get("tables",[])[:3] if isinstance(t,dict)]}
+  return {"kind":type(o).__name__}
+ except Exception as e:return {"kind":"NOT_DECODED","error":type(e).__name__}
 def request_json(url,params):
  for t in range(MAX_ATTEMPTS):
   try:
@@ -98,19 +139,20 @@ def run(source):
  done=load_json(api,f["id"])["done"]
  results=[];attempts=0
  for sid,v in done.items():
-  if len(results)>=MAX_SAMPLES or attempts>=MAX_SAMPLES*12:break
+  if len(results)>=MAX_SAMPLES or attempts>=MAX_SAMPLES*24:break
   path=str(v.get("original_path",""))
-  if not path.lower().endswith((".raw",".json")):continue
-  if not str(v.get("status","")).startswith("CONTENT_PARSED"):continue
+  if not path.lower().endswith((".raw",".json",".zip")):continue
+  if str(v.get("status","")).startswith(("HOLD_SOURCE","HOLD_ORIGINAL")):continue
   row=rows.get(sid)
   if not row:continue
   attempts+=1
   try:
    raw=call(lambda:api.files().get_media(fileId=row["dest_id"]))
    if digest(raw)!=row["sha"]:raise RuntimeError("BRONZE_SOURCE_SHA_CHANGED")
-   quotes=original_quotes(raw)
+   quotes=archive_quotes(raw) if zipfile.is_zipfile(io.BytesIO(raw)) else original_quotes(raw)
    if not quotes:
-    results.append({"source_id":sid,"status":"HOLD_NO_SINGLE_DAY_EQUITY_QUOTES_IDENTIFIED"})
+    results.append({"source_id":sid,"status":"HOLD_NO_SINGLE_DAY_EQUITY_QUOTES_IDENTIFIED",
+      "source_shape":diagnose_shape(raw)})
     continue
    q=quotes[0]
    official,op=official_close(source,q["stock"],q["date"])
@@ -139,6 +181,12 @@ def selftest():
  assert day("2026-11-16")=="2026-11-16"
  x=json.dumps({"date":"2026-11-16","tables":[{"fields":["證券代號","收盤價"],"data":[["2330","1,000"],["00956","9"]]}]},ensure_ascii=False).encode()
  assert original_quotes(x)==[{"date":"2026-11-16","stock":"2330","close":"1000"}]
+ assert original_quotes(x, "2026-11-16")[0]["stock"]=="2330"
+ b=io.BytesIO()
+ with zipfile.ZipFile(b,"w") as z:
+  z.writestr("quote.raw",x)
+  z.writestr("manifest.json",json.dumps({"units":[{"file":"quote.raw","date":"2026-11-16"}]}))
+ assert archive_quotes(b.getvalue())[0]["close"]=="1000"
  assert num("--") is None and num("0.00")==0
  print("THREEWAY_INDEPENDENT_CLOSE_WITNESS_SELFTEST_PASS")
 if __name__=="__main__":
