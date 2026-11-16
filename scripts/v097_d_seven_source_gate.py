@@ -7,7 +7,7 @@ record (independent official + independent provider; verified hashes/values).
 A provider URL or manifest self-assertion is never independently verified data.
 Write new D decision checkpoint, not prior original Bronze or Silver release.
 """
-import json,os,sys,re
+import json,os,sys,re,hashlib
 from collections import Counter
 from datetime import datetime,timezone
 from decimal import Decimal,InvalidOperation
@@ -88,6 +88,16 @@ def decision(row,old_release,probe,evidence=None):
          "evidence_receipts":[evidence["official_fetch_receipt_id"],
              evidence["third_party_fetch_receipt_id"],
              evidence["original_extracted_value_receipt_id"]]}
+def evidence_revision(row,formal,native,attestation,witness):
+ """Fingerprint all mutable D decision inputs, not just first-sample arrival."""
+ payload={"source_sha256":row["sha"],"formal_status":formal["status"],
+  "native_status":(native or {}).get("status"),
+  "native_audit_version":(native or {}).get("audit_version"),
+  "native_historical_version":(native or {}).get("historical_version"),
+  "native_sha_ok":(native or {}).get("input_bytes_sha_checked"),
+  "attestation":attestation,"witness":witness}
+ return hashlib.sha256(json.dumps(payload,sort_keys=True,ensure_ascii=False,
+     default=str,separators=(",",":")).encode()).hexdigest()
 def run(src):
  if src not in SOURCES:raise RuntimeError("SOURCE_REQUIRED")
  api,control,quality,match,load_json,put_once,upsert,call=source_api()
@@ -128,14 +138,20 @@ def run(src):
   "schema":"v097_d_three_way_gate_checkpoint","source":src,"version":VERSION,"done":{}}
  if ck.get("version")!=VERSION:raise RuntimeError("D_VERSION_CONFLICT")
  if set(ck["done"])-set(byid):raise RuntimeError("D_CHECKPOINT_ORPHAN")
- # Existing READY must not be reprocessed; however tally for accurate reporting.
- # New witness evidence can arrive after the corresponding D row was gated.
- # Recheck only newly proven sample IDs; never replay all already accepted rows.
- refreshed=[byid[sid] for sid in witness_by_id if sid in ck["done"] and
-   ck["done"][sid].get("status")=="HOLD_THREE_WAY_NUMERIC_NOT_INDEPENDENTLY_PROVEN"]
+ # Refresh when historical schema, native parser, PIT attestation or
+ # independent witness changes; never permanently trap stale HOLD decisions.
+ # Older records without an evidence revision are re-evaluated once.
+ valid_ids=set(native) | {sid for sid in gate if gate[sid]["status"]==READY}
+ def revision(sid):
+  return evidence_revision(byid[sid],gate[sid],native.get(sid),
+       attest.get(sid),witness_by_id.get(sid))
+ refresh_ids=[sid for sid in ck["done"] if sid in valid_ids
+     and ck["done"][sid].get("evidence_revision")!=revision(sid)]
+ refresh_cap=min(30,max(1,BATCH//4))
+ refreshed=[byid[sid] for sid in refresh_ids[:refresh_cap]]
  new_rows=[r for r in rows if r["source_id"] not in ck["done"] and
-          (r["source_id"] in native or gate[r["source_id"]]["status"]==READY)]
- pending=refreshed[:min(10,BATCH//4)]+new_rows[:BATCH-len(refreshed[:min(10,BATCH//4)])]
+         r["source_id"] in valid_ids]
+ pending=refreshed+new_rows[:BATCH-len(refreshed)]
  new={}
  for row in pending:
   sid=row["source_id"]
@@ -144,15 +160,17 @@ def run(src):
    result={**result,"status":"HOLD_PARTIAL_THREE_WAY_WITNESS_FULL_FILE_PENDING",
      "matched_sample":witness_by_id[sid],
      "newly_ready":False}
-  new[sid]=result
+  new[sid]={**result,"evidence_revision":revision(sid)}
  ck["done"].update(new)
  ck["last_run"]=os.getenv("GITHUB_RUN_ID","manual")
  ck["source_release_run"]=rid
- if new:upsert(api,control,name,ck)
+ if new:
+  from scripts.v097_seven_native_v2_probe import checkpoint_commit
+  checkpoint_commit(api,control,name,ck,upsert,match,load_json)
  totals=Counter(v["status"] for v in ck["done"].values())
  print("D_SEVEN_SOURCE_TRIAGE="+json.dumps({"source":src,
     "cohort":len(rows),"native_available":len(native),"d_checked":len(ck["done"]),
-    "this_batch":len(new),"rechecked_evidence":len(refreshed[:min(10,BATCH//4)]),"existing_ready":sum(x["status"]==READY for x in gate.values()),
+    "this_batch":len(new),"rechecked_evidence":len(refreshed),"existing_ready":sum(x["status"]==READY for x in gate.values()),
     "newly_promoted":0,"d_status_counts":dict(totals),
     "formal_release_source_run":rid},ensure_ascii=False),flush=True)
 
@@ -167,6 +185,10 @@ def selftest():
  assert not independently_attested(row,{"official_value":"100","third_party_value":"100"})[0]
  assert set(NUMERIC_FIELDS)==set(SOURCES)
  assert decision(row,old,native)["newly_ready"] is False
+ assert evidence_revision(row,old,native,None,None)!=evidence_revision(
+  row,old,{**native,"status":"HOLD_DATE_EVIDENCE"},None,None)
+ assert evidence_revision(row,old,native,None,None)!=evidence_revision(
+  row,old,native,{"official_value":"100"},None)
  print("D_SEVEN_SOURCE_INDEPENDENT_GATE_NEGATIVE_TESTS_PASS")
 if __name__=="__main__":
  if sys.argv[1:]==["selftest"]:selftest()
