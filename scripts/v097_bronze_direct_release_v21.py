@@ -160,7 +160,7 @@ def final():
   "newly_ready":sum(d["newly_ready"] for d in details.values()),
   "by_source":details,"silver_input_eligible":True,
   "silver_gold_executed":False,"pit_backtest_approved":False,
-  "formal_v1_unchanged":True,"published_v21_signed_receipts":True}
+  "formal_v1_unchanged":True,"immutable_v21_release_receipts":True}
  if RUN!="manual":put_once(api,quality,"v097_BRONZE_V21_FINAL_RELEASE_"+RUN+".json",result)
  print("BRONZE_V21_FINAL_RELEASE="+json.dumps(result,ensure_ascii=False),flush=True)
 if __name__=="__main__":
