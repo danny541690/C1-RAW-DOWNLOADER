@@ -11,6 +11,7 @@ on:
       - scripts/v097_c_manifest_numeric.py
       - scripts/v097_bc_integration_selftest.py
       - scripts/v097_bc_single_read_pilot.py
+      - scripts/v097_bc_real_shadow.py
       - .github/workflows/v097_c_manifest_numeric_continuous.yml
   schedule:
     - cron: '9,24,39,54 * * * *'
@@ -40,6 +41,14 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_bc_integration_selftest.py
       - name: Single ZIP read B+C parity pilot eight synthetic scenarios
         run: PYTHONPATH=. python scripts/v097_bc_single_read_pilot.py
+      - name: Real Bronze shadow parity pilot (read-only, no checkpoint writes)
+        continue-on-error: true
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SHADOW_SAMPLE: '4'
+        run: PYTHONPATH=. python scripts/v097_bc_real_shadow.py
       - name: Resume C stage on current B stage evidence only
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
