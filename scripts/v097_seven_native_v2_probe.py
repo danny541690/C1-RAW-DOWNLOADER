@@ -3,7 +3,9 @@
 One original Bronze read per pending record, never change Bronze/old checkpoints.
 Seven typed parsers + official version windows + diagnostic evidence; NO Silver release.
 """
-import json,os,sys,re,zipfile,io
+import json,os,sys,re,zipfile,io,time,socket
+from googleapiclient.errors import HttpError
+MAX_RETRY=3
 from collections import Counter
 from scripts.v097_bronze_autopilot import source_api,parse_content,digest,SOURCES
 from scripts.v097_seven_historical_format_registry import period,OFFICIAL_VERSIONS
@@ -72,6 +74,32 @@ def probe(source,row,bytes_,prior_status):
  except (ValueError,RuntimeError,zipfile.BadZipFile,UnicodeError,KeyError,TypeError) as e:
   return {**base,"status":"HOLD_NATIVE_PARSE_"+type(e).__name__,
      "resolver":triage(source,prior_status)["resolver"]}
+def checkpoint_commit(api,control,name,checkpoint,upsert,match,load_json):
+ """Retry non-idempotent Drive update safely; re-read after uncertain timeout."""
+ for attempt in range(MAX_RETRY):
+  try:
+   upsert(api,control,name,checkpoint)
+   return
+  except (TimeoutError,socket.timeout,ConnectionError,OSError,HttpError) as exc:
+   if isinstance(exc,HttpError) and exc.resp.status not in (403,408,429,500,502,503,504):
+    raise
+   try:
+    remote=match(api,control,name)
+    if remote:
+     saved=load_json(api,remote["id"])
+     if saved.get("version")==checkpoint.get("version") and saved.get("done")==checkpoint.get("done"):
+      print("CHECKPOINT_TIMEOUT_BUT_READBACK_CONFIRMED",name,flush=True)
+      return
+   except (TimeoutError,socket.timeout,ConnectionError,OSError,HttpError):
+    pass
+   print("CHECKPOINT_WRITE_RETRY",name,"attempt",attempt+1,
+         "error",type(exc).__name__,flush=True)
+   if attempt==MAX_RETRY-1:raise
+   time.sleep(min(2**attempt,5))
+def retry_ids(checkpoint,target_ids):
+ return {sid for sid,v in checkpoint["done"].items() if sid in target_ids and
+     str(v.get("status","")).startswith("RETRY_SOURCE_READ_") and
+     int(v.get("attempts",0))<MAX_RETRY}
 def worker(source):
  if source not in SOURCES:raise ValueError("UNKNOWN_SOURCE")
  api,control,quality,match,load_json,put_once,upsert,call=source_api()
@@ -87,7 +115,10 @@ def worker(source):
  if checkpoint.get("version")!=VERSION:raise RuntimeError("CHECKPOINT_VERSION_MISMATCH")
  ids={x["source_id"] for x in targeted}
  if set(checkpoint["done"])-ids:raise RuntimeError("SOURCE_SCOPE_CHANGED_OR_ORPHANS")
- batch=[x for x in targeted if x["source_id"] not in checkpoint["done"]][:BATCH]
+ retry=retry_ids(checkpoint,ids)
+ new_ids=[x for x in targeted if x["source_id"] not in checkpoint["done"]]
+ redo=[x for x in targeted if x["source_id"] in retry][:min(5,BATCH//4)]
+ batch=redo+new_ids[:BATCH-len(redo)]
  fresh={}
  for row in batch:
   sid=row["source_id"]
@@ -96,13 +127,13 @@ def worker(source):
    fresh[sid]=probe(source,row,blob,old.get(sid,{}).get("status","NOT_EXAMINED"))
   except Exception as e:
    fresh[sid]={"source_id":sid,"source":source,"status":"RETRY_SOURCE_READ_"+type(e).__name__,
-      "attempts":1,"silver_ready_promoted":False}
+      "attempts":checkpoint["done"].get(sid,{}).get("attempts",0)+1,"silver_ready_promoted":False}
  checkpoint["done"].update(fresh);checkpoint["last_run"]=os.getenv("GITHUB_RUN_ID","manual")
- if fresh:upsert(api,control,name,checkpoint)
+ if fresh:checkpoint_commit(api,control,name,checkpoint,upsert,match,load_json)
  status_counts=Counter(x["status"] for x in fresh.values())
  print("SEVEN_SOURCE_V2_PROGRESS="+json.dumps({"source":source,"total_targets":len(targeted),
      "already_done":len(checkpoint["done"]),"new_this_batch":len(fresh),
-     "remaining":len(targeted)-len(checkpoint["done"]),
+     "remaining":len(targeted)-len(checkpoint["done"]),"retry_pending":len(retry_ids(checkpoint,ids)),
      "statuses":dict(status_counts),"silver_promoted":0},ensure_ascii=False),flush=True)
 def selftest():
  from scripts.v097_bronze_autopilot import digest
@@ -117,6 +148,9 @@ def selftest():
   assert "resolver" in o
   assert probe(s,row,b"tamper","X")["status"]=="HOLD_ORIGINAL_SHA_MISMATCH"
  assert detected_name("foo.raw",sample).endswith(".json")
+ assert retry_ids({"done":{"a":{"status":"RETRY_SOURCE_READ_TimeoutError","attempts":1},
+       "b":{"status":"RETRY_SOURCE_READ_TimeoutError","attempts":3}}},
+       {"a","b"})=={"a"}
  assert taifex_csv_width_diagnostic(b"date,product,volume\n20261113,TX,100,\n")["header_width"]==3
  print("SEVEN_SOURCE_NATIVE_V2_SELFTEST_PASS")
 if __name__=="__main__":
