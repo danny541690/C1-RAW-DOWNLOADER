@@ -1,0 +1,93 @@
+name: BRONZE_READY_FINAL_RECOVERY
+# JARVIS 0.97 Bronze-only audit and safe evidence dispatch; never runs Silver/Gold.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/v097_bronze_ready_final_recovery.yml
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-bronze-ready-final-recovery
+  cancel-in-progress: false
+jobs:
+  A-proof-gap-read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install source and QA dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Test fail-closed release and immutable proof contracts
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_bronze_evidence_gap_census.py selftest
+          PYTHONPATH=. python scripts/v097_fullfile_pit_release_preflight.py selftest
+          PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
+          PYTHONPATH=. python scripts/v097_dynamic_7489_exception_reconcile.py selftest
+      - name: Census current complete signed release and preserve per-ID HOLD evidence
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_bronze_evidence_gap_census.py
+          PYTHONPATH=. python scripts/v097_seven_source_full_error_census.py
+  BCDE-evidence-lanes:
+    needs: A-proof-gap-read
+    if: needs.A-proof-gap-read.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Dispatch existing evidence workers once; checkpoints and source locks prevent duplicates
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          dispatch_if_idle() {
+            local file="$1"; shift
+            local active
+            active="$(gh api "repos/$GH_REPO/actions/workflows/$file/runs?per_page=30" --jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "pending" or .status == "requested")] | length')"
+            if [ "$active" -gt 0 ]; then
+              echo "KEEP_RUNNING_CHECKPOINT_SKIP $file active=$active"
+            else
+              gh workflow run "$file" --ref main "$@"
+              echo "BRONZE_EVIDENCE_LANE_ACCEPTED $file"
+            fi
+          }
+          # B: missing V2 historical parsers and source identity.
+          dispatch_if_idle v097_seven_native_v2_continuous.yml -f depth=0
+          dispatch_if_idle v097_b_format_continuous.yml -f depth=0
+          # C: real, independent source publisher observations and source-specific QA.
+          dispatch_if_idle v097_seven_independent_publisher_bridge.yml
+          dispatch_if_idle v097-tdcc-2025-official-historical-qa.yml
+          dispatch_if_idle v097-mops-accounting-qa.yml
+          # D: all seven deep evidence gates and full-file/PIT preflight.
+          dispatch_if_idle v097_seven_independent_depth_continuous.yml -f depth=0
+          dispatch_if_idle v097_seven_independent_15m_watchdog.yml -f source=ALL
+          # E: existing independent Bronze-only QA/release (NOT Silver conversion).
+          dispatch_if_idle v097_bronze_autopilot.yml -f chain_depth=0
+          # F: exception accounting to verify official 2025 supplemental evidence.
+          dispatch_if_idle v097-dynamic-7489-exception-accounting.yml
+          echo "BRONZE_FINAL_COORDINATOR_DISPATCH_COMPLETE"
+  F-checkpoint:
+    needs: [A-proof-gap-read,BCDE-evidence-lanes]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record coordinator disposition honestly, without claiming downstream READY
+        env:
+          AUDIT: ${{ needs.A-proof-gap-read.result }}
+          DISPATCH: ${{ needs.BCDE-evidence-lanes.result }}
+        run: |
+          echo "BRONZE_FINAL_COORDINATOR_AUDIT=$AUDIT"
+          echo "BRONZE_FINAL_COORDINATOR_DISPATCH=$DISPATCH"
+          echo "No Bronze original bytes altered by this workflow; no Silver/Gold executed."
+          if [ "$AUDIT" != "success" ] || [ "$DISPATCH" != "success" ]; then exit 1; fi
