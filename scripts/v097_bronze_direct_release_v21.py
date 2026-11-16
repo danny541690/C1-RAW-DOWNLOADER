@@ -14,7 +14,7 @@ from scripts.v097_ap_silver_input_gate_all import build as old_build
 from scripts.v097_seven_parser_triage import latest_complete
 from scripts.v097_bronze_first_batch_v3 import ck_name
 from scripts.v097_bronze_first_pipeline import common,match,load_json
-VERSION="v097_bronze_direct_release_v21_1"
+VERSION="v097_bronze_direct_release_v21_2"
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 PREFIX="v097_BRONZE_V21_SOURCE_RELEASE_"
 HASH=re.compile("[0-9a-f]{64}\\Z")
@@ -47,9 +47,12 @@ def strict_new_candidate(src,row,old,native,copy,qa):
   deep=d.get("deep_content",{})
   if str(deep.get("status","")).startswith(("HOLD_","ERROR_")):
    return "HOLD_NATIVE_DEEP_CONTENT"
-  # V2 B/C says *official recheck pending*: is not enough to certify
-  # official download alone. Require an independent publisher receipt.
-  return "HOLD_ORIGINAL_OFFICIAL_DOWNLOAD_RECEIPT_REQUIRED"
+  # Bronze v2.1 accepts the user's 0.93 official-origin archive as the
+  # authoritative original when V3 independent copy/readback SHA AND the
+  # archived official host manifest and complete member numeric/shape QA pass.
+  # This is original-archive quality acceptance, NOT independent original
+  # publisher retrieval, nor publication-PIT backtest certification.
+  return "READY_NEW_V21_ORIGINAL_ARCHIVE_V3_SHA_AND_FULL_MEMBER_QA"
  if src=="FinMind" and st=="FINMIND_UNIT_MEMBER_SHA_ROWS_PASS_SOURCE_PIT_HOLD":
   if d.get("member_count",0)>0 and d.get("rows_checked",0)>0 and d.get("unit_count",0)>0 and d.get("members_verified",0)>=2:
    return "HOLD_PROVIDER_ORIGIN_DOWNLOAD_RECEIPT_REQUIRED"
@@ -80,8 +83,11 @@ def selftest():
  n={"source_id":"x","bronze_sha256":"a"*64,"input_bytes_sha_checked":True,"status":"C_NUMERIC_AND_MANIFEST_PARSED_OFFICIAL_RECHECK_PENDING","parser_detail":{"bc_c_status":"C_NUMERIC_AND_MANIFEST_PARSED_OFFICIAL_RECHECK_PENDING","numerics_checked":15,"numeric_invalid":0,"table_datasets":{"QUOTES":1},"manifest_linkage":[{"x":1}],"official_host_claims_in_manifest":1}}
  assert decision("TWSE",row,{"status":READY},old,None,None,None)=="READY_PRESERVED_FORMAL_V1"
  assert decision("TWSE",row,{"status":"HOLD"},{**old,"status":READY},n,copy,qa)=="READY_NEW_V21_FROM_EXISTING_SOURCE_GATE_AND_V3_QA"
- assert decision("TWSE",row,{"status":"HOLD"},old,n,copy,qa)=="HOLD_ORIGINAL_OFFICIAL_DOWNLOAD_RECEIPT_REQUIRED"
+ assert decision("TWSE",row,{"status":"HOLD"},old,n,copy,qa)=="READY_NEW_V21_ORIGINAL_ARCHIVE_V3_SHA_AND_FULL_MEMBER_QA"
  assert decision("TWSE",row,{"status":"HOLD"},old,{**n,"bronze_sha256":"f"*64},copy,qa)=="HOLD_NATIVE_BYTES_NOT_VERIFIED"
+ assert decision("TWSE",row,{"status":"HOLD"},old,{**n,"parser_detail":{**n["parser_detail"],"numeric_invalid":1}},copy,qa)=="HOLD_FULL_ARCHIVE_NUMERIC_QA"
+ assert decision("TWSE",row,{"status":"HOLD"},old,{**n,"parser_detail":{**n["parser_detail"],"table_datasets":{"UNRESOLVED_SCHEMA":1}}},copy,qa)=="HOLD_ARCHIVE_DATASET_IDENTITY"
+ assert decision("TWSE",row,{"status":"HOLD"},old,{**n,"parser_detail":{**n["parser_detail"],"official_host_claims_in_manifest":0}},copy,qa)=="HOLD_ARCHIVE_SOURCE_MANIFEST_OR_HOST"
  assert decision("TWSE",row,{"status":"HOLD"},old,n,copy,{**qa,"state":"HOLD"})=="HOLD_V3_COPY_AND_INDEPENDENT_SHA_QA"
  assert decision("TWSE",row,{"status":"HOLD"},old,{**n,"status":"HOLD_BAD_ZIP"},copy,qa)=="HOLD_HISTORICAL_FORMAT_OR_CONTENT"
  print("BRONZE_V21_DIRECT_RELEASE_NEGATIVE_TESTS_PASS")
@@ -134,7 +140,7 @@ def source(src):
   "ready":current,"hold":len(rows)-current,"newly_ready":current-existing,
   "counts":dict(counts),"release_mode":"DIRECT_IF_VERIFIED_NO_SHADOW_ONLY",
   "third_party_required":False,"pit_backtest_approved":False,
-  "silver_gold_executed":False,"raw_modified":False,"records":final}
+  "silver_gold_executed":False,"raw_modified":False,"original_source_trust_basis":"USER_DECLARED_OFFICIAL_093_ARCHIVE_PLUS_INDEPENDENT_V3_COPY_SHA_AND_MANIFEST","records":final}
  if RUN!="manual":put_once(api,quality,PREFIX+src+"_"+RUN+".json",report)
  print("BRONZE_V21_SOURCE_RELEASE="+json.dumps({k:v for k,v in report.items() if k!="records"},ensure_ascii=False),flush=True)
 def final():
