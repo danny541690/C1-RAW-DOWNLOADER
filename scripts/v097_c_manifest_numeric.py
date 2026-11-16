@@ -10,7 +10,7 @@ from scripts.v097_bronze_autopilot import source_api,digest,date_token
 from scripts.v097_b_format_forensics import fingerprint,manifest_linkage
 SOURCES=("TWSE","TPEx")
 VERSION="c-source-manifest-number-date-v1"
-SEMANTIC_VERSION="c-semantics-20261116-v2"
+SEMANTIC_VERSION="c-semantics-20261116-v3"
 MAX_TRANSIENT_RETRY=3
 BATCH=max(1,min(int(os.getenv("C_BATCH","60")),150))
 NA={"","-","--","---","N/A","X","不適用","除權","除息","null"}
@@ -58,7 +58,7 @@ def inspect_member(raw):
   if not isinstance(fields,list) or not isinstance(data,list):shape+=1;continue
   datasets[detect(fields)]+=1
   numeric_ix=[i for i,v in enumerate(fields) if any(q in str(v) for q in
-    ("收盤","開盤","最高","最低","成交","市值","發行股數","買進","賣出","餘額","本益比","股價淨值比"))]
+    ("收盤","開盤","最高","最低","成交金額","成交股數","成交筆數","成交量","成交值","市值","發行股數","買進","賣出","餘額","本益比","股價淨值比"))]
   code_ix=[i for i,v in enumerate(fields) if str(v).strip() in ("代號","股票代號","證券代號")]
   for row in data:
    if not isinstance(row,list) or len(row)!=len(fields):shape+=1;continue
@@ -169,6 +169,7 @@ def selftest():
  assert detect(["排名","股票代號","收盤價","市值(佰萬元)"])=="MARKET_CAPITALIZATION"
  assert numeric("1,000")=="OK" and numeric("oops")=="INVALID"
  assert "www.twse.com.tw" in DOMAIN["TWSE"]
+ assert inspect_member(json.dumps({"tables":[{"fields":["成交統計","成交金額(元)"],"data":[["1.一般股票","123456"]]}]},ensure_ascii=False).encode())["invalid_numeric_cells"]==0
  assert columns([" 成 交 股 數 "])==["成交股數"]
  assert inspect_member(json.dumps({"date":"2024-01-02","tables":[{"fields":["代號","收盤"],"data":[["2330","150"]]}]},ensure_ascii=False).encode())["state"]=="TABLES_EXAMINED"
  print("C_MANIFEST_NUMERIC_SELFTEST_PASS")
