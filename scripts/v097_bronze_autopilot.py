@@ -326,11 +326,13 @@ def parse_zip(source, name, blob, month, original_path):
 
 
 def parse_taifex_csv(blob, month):
-    """Conservative TAIFEX historical CSV layout translator, original bytes intact.
+    """Versioned TAIFEX native CSV layout interpretation; NEVER change raw bytes.
 
-    Identify an actual date-bearing header even after native archive preambles.
-    Verify every data row; repeated identical headers and empty trailing cells
-    are layout evidence, never silently treated as market observations.
+    Historical futures/options large-trader files append one-column notes.
+    Historical combination-order files contain a date-bearing four-column
+    master section and an eight-column contract child section. The child
+    records have no independent date; connect by combination sequence ID.
+    Unknown layouts remain HOLD. No official numeric/PIT attestation claimed.
     """
     encoding=None;content=None
     for codec in ('utf-8-sig','cp950','big5'):
@@ -347,40 +349,66 @@ def parse_taifex_csv(blob, month):
                     ('交易日期','日期','Date','交易日','交易日期(年月日)')]
                 if len(cols)>=3 and dates:
                     layouts.append((index,delimiter,records,cols,dates[0]))
-        if not layouts:
-            return {'status':'HOLD_TAIFEX_DATE_HEADER_UNRECOGNIZED'}
-        # A real header is mandatory. Do not interpret a contract month as
-        # the trading date; identical date-bearing repeats are permitted.
+        if not layouts:return {'status':'HOLD_TAIFEX_DATE_HEADER_UNRECOGNIZED'}
         index,delimiter,records,header,day_ix=min(layouts,key=lambda x:(x[0],-len(x[3])))
         width=len(header);count=0;trailing=0;repeats=0;seen_dates=set()
+        notes=0;child_rows=0;child_header=[];primary_ids=set();child_ids=set()
+        combo=(width==4 and '組合式序號' in header and '契約數' in header
+               and '交易時段' in header)
+        order_ix=header.index('組合式序號') if combo else None
         preamble=sum(bool(''.join(str(v).strip() for v in row)) for row in records[:index])
+        mode='primary'
+        def fail_width(row):
+            return {'status':'HOLD_TAIFEX_CSV_WIDTH','header_fields':width,
+                'row_fields':len(row),'checked':count,
+                'header_preview':header[:9],
+                'row_excerpt':[str(v)[:28] for v in row[:6]],
+                'delimiter':delimiter,'codec':encoding,
+                'header_row_index':index,'preamble_lines_accounted':preamble}
         for row in records[index+1:]:
             if not any(str(v).strip() for v in row):continue
-            clean=[str(v).strip().replace('（','(').replace('）',')') for v in row]
+            clean=[str(v).strip().replace('（','(').replace('）',') for v in row]
             if clean==header:
-                repeats+=1;continue
-            if len(row)>width and not any(str(v).strip() for v in row[width:]):
-                trailing+=1
-                row=row[:width]
-            if len(row)!=width:
-                return {'status':'HOLD_TAIFEX_CSV_WIDTH','header_fields':width,
-                    'row_fields':len(row),'checked':count,
-                    'header_preview':header[:9],
-                    'row_excerpt':[str(v)[:28] for v in row[:6]],
-                    'delimiter':delimiter,'codec':encoding,
-                    'header_row_index':index,'preamble_lines_accounted':preamble}
+                repeats+=1;mode='primary';continue
+            if (combo and len(clean)>=6 and clean[:3]==
+                ['組合式序號','子序號','契約']):
+                child_header=clean
+                mode='child';continue
+            if len(row)==1 and re.match(
+                r'^\s*(備註|月份類別格式|說明|註[：:]|資料來源)',clean[0]):
+                # Preserve explanatory rows in counted format metadata.
+                notes+=1;continue
+            active_width=len(child_header) if mode=='child' else width
+            if len(row)>active_width and not any(str(v).strip() for v in row[active_width:]):
+                trailing+=1;row=row[:active_width]
+            if len(row)!=active_width:return fail_width(row)
+            if mode=='child':
+                if not str(row[0]).strip() or not str(row[1]).strip():
+                    return {'status':'HOLD_TAIFEX_COMBINATION_CHILD_ID'}
+                child_ids.add(str(row[0]).strip())
+                child_rows+=1;count+=1
+                continue
             dt_value=date_token(row[day_ix])
             if dt_value is None:return {'status':'HOLD_TAIFEX_DATE_PARSE',
                 'value':str(row[day_ix])[:20],'checked':count}
-            if dt_value[:7]!=month:
-                return {'status':'HOLD_TAIFEX_MONTH_CONFLICT',
-                    'date_sample':dt_value,'path_month':month,'checked':count}
+            if dt_value[:7]!=month:return {'status':'HOLD_TAIFEX_MONTH_CONFLICT',
+                'date_sample':dt_value,'path_month':month,'checked':count}
+            if combo:
+                key=str(row[order_ix]).strip()
+                if not key:return {'status':'HOLD_TAIFEX_COMBINATION_MASTER_ID'}
+                primary_ids.add(key)
             seen_dates.add(dt_value);count+=1
-        if not count:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
+        if not count or not seen_dates:return {'status':'HOLD_TAIFEX_CSV_NO_ROWS'}
+        if child_ids-primary_ids:return {'status':'HOLD_TAIFEX_COMBINATION_UNLINKED_CHILD',
+            'unlinked':len(child_ids-primary_ids),'child_rows':child_rows}
         return {'status':'TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD',
             'codec':encoding,'delimiter':delimiter,'header':header[:40],
             'rows_checked':count,'trailing_empty_cells_ignored':trailing,
-            'repeated_headers_accounted':repeats,'preamble_lines_accounted':preamble,
+            'repeated_headers_accounted':repeats,
+            'explanatory_rows_accounted':notes,
+            'combination_child_rows':child_rows,
+            'combination_linkage_verified':bool(not child_ids-primary_ids),
+            'preamble_lines_accounted':preamble,
             'header_row_index':index,'date_evidence':True,
             'distinct_dates':len(seen_dates),'missing_date_rows':0}
     except csv.Error:return {'status':'HOLD_TAIFEX_CSV_READER_ERROR'}
@@ -636,6 +664,22 @@ def selftest():
     zbuf=io.BytesIO()
     with zipfile.ZipFile(zbuf,'w') as z:z.writestr('TPEx_BULK_2024-09-10.json',good)
     assert parse_zip('TPEx','q.zip',zbuf.getvalue(),'2024-09',p)['member_count']==1
+    # Native TAIFEX layout rows must retain exact data and explanatory footer.
+    historical=('日期,商品(契約),商品名稱(契約名稱),到期月份(週別),交易人類別,前五大交易人買方,前五大交易人賣方,前十大交易人買方,前十大交易人賣方,合計\\n'
+      '20261116,TX,臺指期,202611,交易人,1,2,3,4,10\\n'
+      '備註一：666666為所有週到期契約合計\\n').encode()
+    th=parse_taifex_csv(historical,'2026-11')
+    assert th['status']=='TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD',th
+    assert th['rows_checked']==1 and th['explanatory_rows_accounted']==1
+    combo=('組合式序號,日期,契約數,交易時段\\n'
+      'A1,20261116,2,一般交易\\n'
+      '組合式序號,子序號,契約,到期月份(週別),履約價格,買/賣權,買賣,口數\\n'
+      'A1,1,TX,202611,0,買,買,1\\n').encode()
+    tc=parse_taifex_csv(combo,'2026-11')
+    assert tc['status']=='TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD',tc
+    assert tc['combination_child_rows']==1 and tc['combination_linkage_verified']
+    assert parse_taifex_csv(combo.replace(b'A1,1,TX',b'A2,1,TX'),'2026-11')['status']=='HOLD_TAIFEX_COMBINATION_UNLINKED_CHILD'
+    assert parse_taifex_csv(historical.replace('備註一：'.encode(), '隨便：'.encode()),'2026-11')['status']=='HOLD_TAIFEX_CSV_WIDTH'
     print('AUTOPILOT_SELFTEST_PASS')
 
 
