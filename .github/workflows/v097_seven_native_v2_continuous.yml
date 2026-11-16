@@ -10,6 +10,7 @@ on:
     paths:
       - scripts/v097_seven_native_v2_probe.py
       - scripts/v097_d_seven_source_gate.py
+      - scripts/v097_d_seven_source_gate.py
       - scripts/v097_taifex_mops_format_diagnostics.py
       - scripts/v097_seven_historical_format_registry.py
       - .github/workflows/v097_seven_native_v2_continuous.yml
