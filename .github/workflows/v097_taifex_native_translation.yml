@@ -2,6 +2,11 @@ name: JARVIS v097 TAIFEX Source-Native CSV Format Translation
 # Reparse ONLY unresolved TAIFEX originals. No mutation of 0.93/0.97 Bronze.
 on:
   workflow_dispatch:
+    inputs:
+      depth:
+        default: '0'
+        required: false
+        type: string
   push:
     paths:
       - scripts/v097_taifex_translation_v1.py
@@ -31,9 +36,25 @@ jobs:
           PYTHONPATH=. python scripts/v097_taifex_translation_v1.py selftest
           PYTHONPATH=. python scripts/v097_bronze_direct_release_v21.py selftest
       - name: Recheck only frozen TAIFEX CSV translation holds and write SHA-backed evidence
+        id: format
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           TRANSLATION_BATCH: '300'
         run: PYTHONPATH=. python scripts/v097_taifex_translation_v1.py
+      - name: Immediately recheck Bronze eligibility and continue unresolved format-only records
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPTH: ${{ inputs.depth || '0' }}
+          PENDING: ${{ steps.format.outputs.pending }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$DEPTH" =~ ^[0-9]+$ ]]; then exit 1; fi
+          if ! [[ "$PENDING" =~ ^[0-9]+$ ]]; then exit 1; fi
+          gh workflow run v097_bronze_v21_direct_release.yml --ref main
+          echo "BRONZE_V21_DIRECT_FORMAT_GATE_REQUESTED"
+          if [ "$PENDING" -gt 0 ] && [ "$DEPTH" -lt 12 ]; then
+            gh workflow run v097_taifex_native_translation.yml --ref main -f depth="$((DEPTH+1))"
+            echo "TAIFEX_TRANSLATION_CONTINUATION_REQUESTED pending=$PENDING depth=$DEPTH"
+          fi
