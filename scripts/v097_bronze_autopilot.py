@@ -665,16 +665,16 @@ def selftest():
     with zipfile.ZipFile(zbuf,'w') as z:z.writestr('TPEx_BULK_2024-09-10.json',good)
     assert parse_zip('TPEx','q.zip',zbuf.getvalue(),'2024-09',p)['member_count']==1
     # Native TAIFEX layout rows must retain exact data and explanatory footer.
-    historical=('日期,商品(契約),商品名稱(契約名稱),到期月份(週別),交易人類別,前五大交易人買方,前五大交易人賣方,前十大交易人買方,前十大交易人賣方,合計\\n'
-      '20261116,TX,臺指期,202611,交易人,1,2,3,4,10\\n'
-      '備註一：666666為所有週到期契約合計\\n').encode()
+    historical=('日期,商品(契約),商品名稱(契約名稱),到期月份(週別),交易人類別,前五大交易人買方,前五大交易人賣方,前十大交易人買方,前十大交易人賣方,合計\n'
+      '20261116,TX,臺指期,202611,交易人,1,2,3,4,10\n'
+      '備註一：666666為所有週到期契約合計\n').encode()
     th=parse_taifex_csv(historical,'2026-11')
     assert th['status']=='TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD',th
     assert th['rows_checked']==1 and th['explanatory_rows_accounted']==1
-    combo=('組合式序號,日期,契約數,交易時段\\n'
-      'A1,20261116,2,一般交易\\n'
-      '組合式序號,子序號,契約,到期月份(週別),履約價格,買/賣權,買賣,口數\\n'
-      'A1,1,TX,202611,0,買,買,1\\n').encode()
+    combo=('組合式序號,日期,契約數,交易時段\n'
+      'A1,20261116,2,一般交易\n'
+      '組合式序號,子序號,契約,到期月份(週別),履約價格,買/賣權,買賣,口數\n'
+      'A1,1,TX,202611,0,買,買,1\n').encode()
     tc=parse_taifex_csv(combo,'2026-11')
     assert tc['status']=='TAIFEX_CSV_ENCODING_WIDTH_PASS_DATE_PIT_HOLD',tc
     assert tc['combination_child_rows']==1 and tc['combination_linkage_verified']
