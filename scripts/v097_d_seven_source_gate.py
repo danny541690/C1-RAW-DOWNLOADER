@@ -111,7 +111,7 @@ def run(src):
   prefix="v097_INDEPENDENT_CLOSE_WITNESS_"+src+"_"
   candidates=[x for x in children(api,quality) if x["name"].startswith(prefix) and x["name"].endswith(".json")]
   if candidates:
-   latest=max(candidates,key=lambda x:x.get("modifiedTime",""))
+   latest=max(candidates,key=lambda x:int(re.search(r"_(\\d+)\\.json$",x["name"]).group(1)))
    witness_report=load_json(api,latest["id"])
    for item in witness_report.get("records",[]):
     if item.get("source_id") and item.get("status")=="THREE_WAY_DAILY_CLOSE_MATCHED_SAMPLE":
