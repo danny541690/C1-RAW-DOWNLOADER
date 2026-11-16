@@ -108,12 +108,21 @@ jobs:
               eligible={x["source_id"] for x in inp if old.get(x["source_id"],{}).get("status") not in SKIP_READY_PARSER[src]}
               if not set(ck).issubset(eligible):raise RuntimeError("CHECKPOINT_SCOPE_INVALID_"+src)
               total+=len(eligible)-len(ck)
+              # Keep dispatching if D-stage evidence gating has fallen behind
+              # already available native records or preserved formal READY.
+              df=match(api,control,"v097_D_THREE_WAY_GATE_CK_"+src+".json")
+              dd=load_json(api,df["id"])["done"] if df else {}
+              source_release_run=None
+              # Existing READY count need not force a full backfill to keep
+              # the active parser loop alive: D handles source checkpoint rows
+              # and preserved READY from frozen input independently.
+              total+=len(set(ck)-set(dd))
           print(total)
           PY
           )
           echo "SEVEN_NATIVE_V2_PENDING=$PENDING"
           if ! [[ "$DEPTH" =~ ^[0-9]+$ ]]; then exit 1; fi
-          if [ "$PENDING" -eq 0 ]; then echo "ALL_SEVEN_NATIVE_V2_SCANNED; official numeric evidence still required for Silver release"; exit 0; fi
+          if [ "$PENDING" -eq 0 ]; then echo "ALL_SEVEN_NATIVE_V2_AND_D_GATES_CAUGHT_UP; independently verified numerical data still required for READY increases"; exit 0; fi
           if [ "$DEPTH" -ge 60 ]; then echo "CHAIN_LIMIT_60 backup schedule will resume"; exit 0; fi
           gh workflow run v097_seven_native_v2_continuous.yml --ref main -f depth="$((DEPTH+1))"
           echo "SEVEN_NATIVE_V2_NEXT_RUN_ACCEPTED_DEPTH=$((DEPTH+1))"
