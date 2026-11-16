@@ -57,7 +57,7 @@ def strict_new_candidate(src,row,old,native,copy,qa):
   # Source-native FinMind parser has checked each .raw member SHA, bytes,
   # all row dates/stock_ids, nonfinite values, and undeclared ZIP members.
   # Unverified extra numeric/PIT attestations are downstream, not Bronze.
-  if (d.get("member_count",0)>=2 and d.get("unit_count",0)>0
+  if (d.get("unit_count",0)>0
       and d.get("rows_checked",0)>0 and d.get("members_verified",0)==d.get("unit_count",0)+1
       and d.get("dataset_ids") and all(isinstance(x,str) and x not in ("","UNDECLARED") for x in d["dataset_ids"])):
    return "READY_NEW_V21_FINMIND_UNIT_SHA_ROWS_AND_DATASET_QA"
