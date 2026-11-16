@@ -10,11 +10,13 @@ from scripts.v097_bronze_autopilot import source_api,digest,date_token
 from scripts.v097_b_format_forensics import fingerprint,manifest_linkage
 SOURCES=("TWSE","TPEx")
 VERSION="c-source-manifest-number-date-v1"
+SEMANTIC_VERSION="c-semantics-20261116-v2"
+MAX_TRANSIENT_RETRY=3
 BATCH=max(1,min(int(os.getenv("C_BATCH","60")),150))
 NA={"","-","--","---","N/A","X","不適用","除權","除息","null"}
-DOMAIN={"TWSE":("twse.com.tw","openapi.twse.com.tw"),"TPEx":("tpex.org.tw","www.tpex.org.tw")}
+DOMAIN={"TWSE":("twse.com.tw","www.twse.com.tw","openapi.twse.com.tw"),"TPEx":("tpex.org.tw","www.tpex.org.tw")}
 def columns(fields):
- return [re.sub(r"\\s+","",str(f)).replace("（","(").replace("）",")") for f in fields]
+ return [re.sub(r"\s+","",str(f)).replace("（","(").replace("）",")") for f in fields]
 def detect(fields):
  f=columns(fields);s=set(f)
  if {"代號","收盤","開盤","最高","最低"}.issubset(s) or {"證券代號","收盤價","開盤價","最高價","最低價"}.issubset(s):
@@ -47,7 +49,7 @@ def inspect_member(raw):
  except (UnicodeError,ValueError):return {"state":"NOT_JSON"}
  tbl=extract_tables(obj)
  if not tbl:return {"state":"NO_TABLES","keys":list(obj.keys())[:16] if isinstance(obj,dict) else []}
- datasets=Counter();numeric_checked=0;bad=0;shape=0;observed_dates=[];stock_codes=0
+ datasets=Counter();numeric_checked=0;bad=0;shape=0;observed_dates=[];stock_codes=0;bad_samples=[]
  if isinstance(obj,dict):
   for name in ("date","Date","資料日期"):
    if name in obj:observed_dates.append(str(obj[name])[:20])
@@ -62,14 +64,18 @@ def inspect_member(raw):
    if not isinstance(row,list) or len(row)!=len(fields):shape+=1;continue
    for i in numeric_ix:
     numeric_checked+=1
-    if numeric(row[i])=="INVALID":bad+=1
+    if numeric(row[i])=="INVALID":
+     bad+=1
+     if len(bad_samples)<8:
+      bad_samples.append({"field":str(fields[i])[:80],"value_excerpt":str(row[i])[:28]})
    if code_ix and re.fullmatch(r"[0-9A-Z]{4,6}",str(row[code_ix[0]]).strip()):
     stock_codes+=1
  return {"state":"TABLES_EXAMINED","datasets":dict(datasets),"tables":len(tbl),
          "invalid_numeric_cells":bad,"numeric_cells_checked":numeric_checked,
-         "row_width_conflicts":shape,"observed_dates":observed_dates[:5],"code_like_rows":stock_codes}
+         "row_width_conflicts":shape,"observed_dates":observed_dates[:5],"code_like_rows":stock_codes,
+         "invalid_numeric_samples":bad_samples}
 def audit(source,row,raw):
- result={"source_id":row["source_id"],"source_sha256":row["sha"],
+ result={"source_id":row["source_id"],"source_sha256":row["sha"],"audit_version":SEMANTIC_VERSION,
          "official_origin_retrieved":False,"third_party_values_compared":False,
          "silver_ready_promoted":False}
  if digest(raw)!=row["sha"]:return {**result,"status":"HOLD_SHA_MISMATCH"}
@@ -132,8 +138,14 @@ def run(source):
  ck=load_json(api,f["id"]) if f else {"schema":"v097_c_manifest_numeric_checkpoint_1","version":VERSION,"source":source,"done":{}}
  if ck.get("version")!=VERSION:raise RuntimeError("C_VERSION_MISMATCH")
  if set(ck["done"])-set(eligible):raise RuntimeError("C_ORPHAN_KEYS")
- pending=[sid for sid in eligible if sid not in ck["done"]][:BATCH]
- new={}
+ failures={"HOLD_NUMERIC_OR_WIDTH_CONFLICT","HOLD_DATASET_IDENTITY_UNRESOLVED","HOLD_MANIFEST_LINKAGE_CONFLICT","HOLD_NO_MANIFEST_PROOF"}
+ recheck=[sid for sid,v in ck["done"].items() if sid in eligible and
+    ((v.get("status") in failures and v.get("audit_version")!=SEMANTIC_VERSION)
+     or (str(v.get("status","")).startswith("RECHECK_C_") and v.get("attempts",0)<MAX_TRANSIENT_RETRY))]
+ new_ids=[sid for sid in eligible if sid not in ck["done"]]
+ selected_recheck=recheck[:BATCH//3]
+ pending=selected_recheck+new_ids[:BATCH-len(selected_recheck)]
+ new={};rechecked=0
  for sid in pending:
   try:
    row=rows[sid]
@@ -141,19 +153,23 @@ def run(source):
     new[sid]={"status":"HOLD_B_SHA_CONFLICT","silver_ready_promoted":False};continue
    raw=call(lambda:api.files().get_media(fileId=row["dest_id"]))
    new[sid]=audit(source,row,raw)
+   if sid in ck["done"]:rechecked+=1
   except Exception as e:
-   new[sid]={"status":"RECHECK_C_"+type(e).__name__,"silver_ready_promoted":False}
+   new[sid]={"status":"RECHECK_C_"+type(e).__name__,
+      "attempts":ck["done"].get(sid,{}).get("attempts",0)+1,"silver_ready_promoted":False}
  ck["done"].update(new)
  ck["last_run"]=os.getenv("GITHUB_RUN_ID","manual")
  if new:upsert(api,control,name,ck)
  remaining=len(eligible)-len(ck["done"])
  print("C_MANIFEST_NUMERIC="+json.dumps({"source":source,"batch":len(new),"checked":len(ck["done"]),
-      "b_available":len(eligible),"remaining_ready_for_c":remaining,
+      "b_available":len(eligible),"remaining_ready_for_c":remaining,"rechecked_existing":rechecked,
       "statuses":dict(Counter(x["status"] for x in new.values())),"silver_promoted":0}),flush=True)
 def selftest():
  assert detect(["代號","名稱","收盤","開盤","最高","最低","成交股數"])=="STOCK_DAILY_OHLCV"
  assert detect(["排名","股票代號","收盤價","市值(佰萬元)"])=="MARKET_CAPITALIZATION"
  assert numeric("1,000")=="OK" and numeric("oops")=="INVALID"
+ assert "www.twse.com.tw" in DOMAIN["TWSE"]
+ assert columns([" 成 交 股 數 "])==["成交股數"]
  assert inspect_member(json.dumps({"date":"2024-01-02","tables":[{"fields":["代號","收盤"],"data":[["2330","150"]]}]},ensure_ascii=False).encode())["state"]=="TABLES_EXAMINED"
  print("C_MANIFEST_NUMERIC_SELFTEST_PASS")
 if __name__=="__main__":
