@@ -40,7 +40,10 @@ def strict_new_candidate(src,row,old,native,copy,qa,translation=None):
       and tr.get("date_evidence") is True and tr.get("missing_date_rows")==0
       and isinstance(tr.get("header"),list) and len(tr["header"])>=3):
    return "READY_NEW_V21_TAIFEX_REPARSED_HISTORICAL_CSV_V3_SHA"
-  return "HOLD_TAIFEX_TRANSLATION_PROOF_OR_FORMAT"
+  # A failed supplementary format recheck must not override a different,
+  # independently successful native parser result.
+  if not native or str(native.get("status","")).startswith(("HOLD_","RETRY_")):
+   return "HOLD_TAIFEX_TRANSLATION_PROOF_OR_FORMAT"
  if not native or native.get("source_id")!=row["source_id"] or native.get("bronze_sha256")!=row["sha"] or native.get("input_bytes_sha_checked") is not True:
   return "HOLD_NATIVE_BYTES_NOT_VERIFIED"
  st=str(native.get("status",""))
