@@ -1,0 +1,35 @@
+name: JARVIS v097 Bronze Release Evidence Gap Census
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/v097_bronze_evidence_gap_census.py
+      - .github/workflows/v097_bronze_release_evidence_gap.yml
+permissions:
+  contents: read
+concurrency:
+  group: v097-bronze-release-evidence-gap
+  cancel-in-progress: false
+jobs:
+  exact-proof-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install evidence registry reader
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Reject unproven release claims with negative selftests
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
+          PYTHONPATH=. python scripts/v097_fullfile_pit_release_preflight.py selftest
+          PYTHONPATH=. python scripts/v097_bronze_evidence_gap_census.py selftest
+      - name: Publish exact frozen-cohort per-ID full-file and PIT evidence shortfalls
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_bronze_evidence_gap_census.py
