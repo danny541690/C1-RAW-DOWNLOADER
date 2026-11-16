@@ -29,7 +29,11 @@ def canon_decimal(value):
  if value is None:return None
  if isinstance(value,bool):raise ValueError("BOOLEAN_NOT_NUMERIC")
  try:
-  x=Decimal(str(value).replace(",",""))
+  raw=str(value).strip()
+  # No silent reinterpretation of locale-dependent commas (e.g. "1,2").
+  if "," in raw and not re.fullmatch(r"[+-]?[0-9]{1,3}(,[0-9]{3})+(\\.[0-9]+)?",raw):
+   raise ValueError("AMBIGUOUS_NUMERIC_THOUSANDS_SEPARATOR")
+  x=Decimal(raw.replace(",",""))
   if not x.is_finite():raise ValueError("NAN_OR_INFINITY")
   return format(x.normalize(),"f")
  except (InvalidOperation,ValueError,TypeError) as exc:
@@ -47,6 +51,8 @@ def digest_rows(rows,keys,fields,numeric_fields=()):
  for row in rows:
   if not isinstance(row,dict) or set(row)!=set(fields):
    raise ValueError("MISSING_OR_EXTRA_COLUMNS")
+  if any(row[k] is None or str(row[k]).strip()=="" for k in keys):
+   raise ValueError("EMPTY_OR_MISSING_BUSINESS_KEY")
   key=tuple(str(row[k]) for k in keys)
   if key in keyset:raise ValueError("DUPLICATE_BUSINESS_KEY")
   keyset.add(key)
@@ -110,6 +116,13 @@ def selftest():
   else:raise AssertionError("STRICT_SCHEMA_DID_NOT_REJECT")
  assert not verify_pit("2026-11-16T09:00:00Z","2026-11-15T09:00:00Z")
  assert safe_evidence_claim({},"x","a"*64).startswith("HOLD")
+ for number in ("1,2","1,23","1,234,5"):
+  try:canon_decimal(number)
+  except ValueError:pass
+  else:raise AssertionError("AMBIGUOUS_THOUSANDS_WERE_ACCEPTED")
+ try:digest_rows([dict(r[0],stock_id=None)],("trade_date","stock_id","market"),fields,("close",))
+ except ValueError:pass
+ else:raise AssertionError("MISSING_KEY_WAS_ACCEPTED")
  assert set(SOURCE_FAMILIES)=={"TWSE","TPEx","MOPS","TDCC","TAIFEX","NDC","FinMind"}
  print("EVIDENCE_CONTRACT_SELFTEST_PASS")
 if __name__=="__main__":
