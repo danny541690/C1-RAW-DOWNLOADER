@@ -6,7 +6,7 @@ on:
       - scripts/v097_seven_independent_publisher_bridge.py
       - .github/workflows/v097_seven_independent_publisher_bridge.yml
   schedule:
-    - cron: '6 */6 * * *'
+    - cron: '6 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -38,5 +38,6 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
-          WITNESS_SAMPLES: '2'
+          WITNESS_SAMPLES: '6'
+          WITNESS_CK_PREFIX: 'v097_BRIDGE_PRICE_WITNESS_CK_'
         run: PYTHONPATH=. python scripts/v097_seven_independent_publisher_bridge.py '${{ matrix.source }}'
