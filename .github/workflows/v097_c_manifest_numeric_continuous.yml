@@ -72,6 +72,11 @@ jobs:
               done=load_json(api,c["id"])["done"] if c else {}
               if not set(done).issubset(b):raise RuntimeError("C_NOT_SUBSET_OF_B")
               total+=len(b)-len(done)
+              from scripts.v097_c_manifest_numeric import SEMANTIC_VERSION,MAX_TRANSIENT_RETRY
+              failures={"HOLD_NUMERIC_OR_WIDTH_CONFLICT","HOLD_DATASET_IDENTITY_UNRESOLVED","HOLD_MANIFEST_LINKAGE_CONFLICT","HOLD_NO_MANIFEST_PROOF"}
+              total+=sum(1 for sid,v in done.items() if sid in b and
+                  ((v.get("status") in failures and v.get("audit_version")!=SEMANTIC_VERSION)
+                   or (str(v.get("status","")).startswith("RECHECK_C_") and v.get("attempts",0)<MAX_TRANSIENT_RETRY)))
           print(total)
           PY
           )
