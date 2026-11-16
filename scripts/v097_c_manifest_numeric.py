@@ -159,7 +159,11 @@ def run(source):
       "attempts":ck["done"].get(sid,{}).get("attempts",0)+1,"silver_ready_promoted":False}
  ck["done"].update(new)
  ck["last_run"]=os.getenv("GITHUB_RUN_ID","manual")
- if new:upsert(api,control,name,ck)
+ if new:
+  # Google Drive update may time out after committing the write. Re-read
+  # before retrying and never change the original immutable Bronze bytes.
+  from scripts.v097_seven_native_v2_probe import checkpoint_commit
+  checkpoint_commit(api,control,name,ck,upsert,match,load_json)
  remaining=len(eligible)-len(ck["done"])
  print("C_MANIFEST_NUMERIC="+json.dumps({"source":source,"batch":len(new),"checked":len(ck["done"]),
       "b_available":len(eligible),"remaining_ready_for_c":remaining,"rechecked_existing":rechecked,
