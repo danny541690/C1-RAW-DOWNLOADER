@@ -19,6 +19,7 @@ on:
       - scripts/v097_d_seven_source_gate.py
       - scripts/v097_live_threeway_close_witness.py
       - scripts/v097_seven_independent_publisher_bridge.py
+      - scripts/v097_seven_independent_depth.py
       - .github/workflows/v097_seven_source_one_command.yml
 permissions:
   contents: read
@@ -48,6 +49,7 @@ jobs:
           PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
           PYTHONPATH=. python scripts/v097_live_threeway_close_witness.py selftest
           PYTHONPATH=. python scripts/v097_seven_independent_publisher_bridge.py selftest
+          PYTHONPATH=. python scripts/v097_seven_independent_depth.py selftest
           PYTHONPATH=. python scripts/v097_ap_silver_input_gate_all.py selftest
           PYTHONPATH=. python scripts/v097_b_format_forensics.py selftest
           PYTHONPATH=. python scripts/v097_c_manifest_numeric.py selftest
@@ -123,6 +125,14 @@ jobs:
           set -euo pipefail
           gh workflow run v097_seven_independent_publisher_bridge.yml --ref main
           echo "SEVEN_PUBLISHER_INDEPENDENT_EVIDENCE_DISPATCH_ACCEPTED"
+      - name: Dispatch all seven deep independent evidence backlog audit lanes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run v097_seven_independent_depth_continuous.yml --ref main -f depth=0
+          echo "SEVEN_INDEPENDENT_DEPTH_DISPATCH_ACCEPTED"
       - name: Dispatch strict seven-source hold exception register
         env:
           GH_TOKEN: ${{ github.token }}
