@@ -140,7 +140,7 @@ def analyze_text(source,blob):
           "row_width_histogram":dict(widths),"anomaly_samples":sample,
           "dataset":dataset(source,header),"data_cap_reached":count>=MAX_ROWS}
  except csv.Error:return {"kind":"CSV_ERROR","encoding":codec}
-def analyze(source,name,blob,day=None):
+def analyze(source,name,blob,day=None,depth=0):
  if source not in OFFICIAL_CHANGE_DATES:raise ValueError("SOURCE")
  base={"source":source,"member":name[:145],"sha256":digest(blob),
    "bytes":len(blob),"signature":signature(blob),
@@ -149,11 +149,18 @@ def analyze(source,name,blob,day=None):
    "source_provenance_verified":False,"published_at_verified":False,
    "third_party_values_checked":False,"silver_ready_promoted":False}
  if len(blob)>MAX_INPUT:return {**base,"status":"HOLD_SIZE_LIMIT"}
+ if depth>3:return {**base,"status":"HOLD_ARCHIVE_NESTING_LIMIT"}
  if signature(blob)=="ZIP_OR_XLSX":
   if not zipfile.is_zipfile(io.BytesIO(blob)):return {**base,"status":"HOLD_NOT_VALID_ZIP"}
   with zipfile.ZipFile(io.BytesIO(blob)) as z:
    infos=[x for x in z.infolist() if not x.is_dir()]
    if len(infos)>MAX_MEMBERS:return {**base,"status":"HOLD_MEMBER_LIMIT"}
+   names={x.filename for x in infos}
+   if "xl/workbook.xml" in names and "[Content_Types].xml" in names:
+    return {**base,"status":"XLSX_NATIVE_WORKBOOK_CELL_EXTRACTION_PENDING",
+      "workbook_members":len(infos),"workbook_xml_sha256":digest(z.read("xl/workbook.xml")),
+      "worksheet_count":sum(x.startswith("xl/worksheets/") and x.endswith(".xml") for x in names),
+      "silver_ready_promoted":False}
    members=[];unpacked=0
    for entry in infos:
     if entry.filename.startswith("/") or ".." in entry.filename.replace("\\","/").split("/"):
@@ -162,7 +169,7 @@ def analyze(source,name,blob,day=None):
     unpacked+=entry.file_size
     if unpacked>MAX_UNPACKED:return {**base,"status":"HOLD_ZIP_BOMB_BOUND"}
     raw=z.read(entry)
-    child=analyze(source,entry.filename,raw,day)
+    child=analyze(source,entry.filename,raw,day,depth+1)
     members.append({"name":entry.filename[:120],"sha256":child["sha256"],"format":child["signature"],
         "dataset":child.get("dataset"),"detail":child.get("detail",{})})
   return {**base,"status":"ZIP_MEMBER_DEPTH_COMPLETE_ORIGIN_PENDING",
@@ -188,5 +195,14 @@ def selftest():
  z=io.BytesIO()
  with zipfile.ZipFile(z,"w") as a:a.writestr("market.raw",sample)
  assert analyze("TWSE","x.zip",z.getvalue())["member_count"]==1
+ xlsx=io.BytesIO()
+ with zipfile.ZipFile(xlsx,"w") as wb:
+  wb.writestr("[Content_Types].xml",b"<Types/>")
+  wb.writestr("xl/workbook.xml",b"<workbook/>")
+  wb.writestr("xl/worksheets/sheet1.xml",b"<worksheet/>")
+ out=analyze("NDC","history.xlsx",xlsx.getvalue())
+ assert out["status"]=="XLSX_NATIVE_WORKBOOK_CELL_EXTRACTION_PENDING"
+ assert out["worksheet_count"]==1
+ assert analyze("TWSE","nested.zip",z.getvalue(),depth=4)["status"]=="HOLD_ARCHIVE_NESTING_LIMIT"
  print("SEVEN_DEEP_FORMAT_TEST_PASS")
 if __name__=="__main__":selftest()
