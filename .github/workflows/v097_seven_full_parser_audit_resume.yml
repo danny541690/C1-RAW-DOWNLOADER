@@ -11,6 +11,8 @@ on:
   push:
     paths:
       - scripts/v097_seven_source_full_error_census.py
+      - scripts/v097_seven_deep_format_inspector.py
+      - scripts/v097_seven_historical_format_registry.py
       - .github/workflows/v097_seven_full_parser_audit_resume.yml
 permissions:
   contents: read
