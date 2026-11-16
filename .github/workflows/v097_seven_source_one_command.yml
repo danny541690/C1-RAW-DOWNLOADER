@@ -13,6 +13,8 @@ on:
     paths:
       - scripts/v097_seven_parser_triage.py
       - scripts/v097_seven_source_specific_resolvers.py
+      - scripts/v097_seven_historical_format_registry.py
+      - scripts/v097_seven_native_v2_probe.py
       - .github/workflows/v097_seven_source_one_command.yml
 permissions:
   contents: read
@@ -36,6 +38,8 @@ jobs:
         run: |
           PYTHONPATH=. python scripts/v097_seven_parser_triage.py selftest
           PYTHONPATH=. python scripts/v097_seven_source_specific_resolvers.py selftest
+          PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
+          PYTHONPATH=. python scripts/v097_seven_native_v2_probe.py selftest
           PYTHONPATH=. python scripts/v097_ap_silver_input_gate_all.py selftest
           PYTHONPATH=. python scripts/v097_b_format_forensics.py selftest
           PYTHONPATH=. python scripts/v097_c_manifest_numeric.py selftest
@@ -80,6 +84,14 @@ jobs:
           set -euo pipefail
           gh workflow run v097_c_manifest_numeric_continuous.yml --ref main -f depth=0
           echo "C_STAGE_DISPATCH_ACCEPTED"
+      - name: Dispatch all seven source-native historical format V2 incremental probes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run v097_seven_native_v2_continuous.yml --ref main -f depth=0
+          echo "SEVEN_HISTORICAL_NATIVE_V2_DISPATCH_ACCEPTED"
       - name: Dispatch strict seven-source hold exception register
         env:
           GH_TOKEN: ${{ github.token }}
