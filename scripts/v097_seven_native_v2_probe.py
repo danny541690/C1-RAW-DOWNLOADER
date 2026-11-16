@@ -9,6 +9,7 @@ from scripts.v097_bronze_autopilot import source_api,parse_content,digest,SOURCE
 from scripts.v097_seven_historical_format_registry import period,OFFICIAL_VERSIONS
 from scripts.v097_seven_source_specific_resolvers import triage
 from scripts.v097_bc_single_read_pilot import joint_audit
+from scripts.v097_taifex_mops_format_diagnostics import taifex_csv_width_diagnostic,mops_zip_member_diagnostic
 VERSION="seven-source-format-probe-v2-20261116"
 BATCH=max(1,min(80,int(os.getenv("SOURCE_BATCH","18"))))
 SKIP_READY_PARSER={
@@ -59,6 +60,10 @@ def probe(source,row,bytes_,prior_status):
    if "members" in d:
     details["member_count"]=len(d["members"])
     details["member_state_summary"]=dict(Counter(str(x.get("status","UNKNOWN")) for x in d["members"]))
+  if source=="TAIFEX" and name.lower().endswith(".csv") and status=="HOLD_TAIFEX_CSV_WIDTH":
+   details["source_native_diagnostic"]=taifex_csv_width_diagnostic(bytes_)
+  if source=="MOPS" and name.lower().endswith(".zip"):
+   details["source_native_diagnostic"]=mops_zip_member_diagnostic(bytes_)
   resolver=triage(source,status)
   return {**base,"status":status,"parser_detail":details,
    "resolver":resolver["resolver"],
@@ -112,6 +117,7 @@ def selftest():
   assert "resolver" in o
   assert probe(s,row,b"tamper","X")["status"]=="HOLD_ORIGINAL_SHA_MISMATCH"
  assert detected_name("foo.raw",sample).endswith(".json")
+ assert taifex_csv_width_diagnostic(b"date,product,volume\n20261113,TX,100,\n")["header_width"]==3
  print("SEVEN_SOURCE_NATIVE_V2_SELFTEST_PASS")
 if __name__=="__main__":
  if sys.argv[1:]==["selftest"]:selftest()
