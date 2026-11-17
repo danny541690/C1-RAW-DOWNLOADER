@@ -255,7 +255,7 @@ def selftest():
             "status": "completed", "conclusion": "failure",
             "html_url": "https://github.com/example"}
     report = {**fake, "schema": REPORT_SCHEMA, "workflow": "Test",
-              "category": "OTHER", "sources": [], "errors_captured": 0,
+              "category": "OTHER", "sources": [], "errors_captured": 0, "errors": [],
               "created_at": "2026-11-17T00:00:00Z",
               "updated_at": "2026-11-17T00:00:01Z",
               "github_url": "https://github.com/example"}
