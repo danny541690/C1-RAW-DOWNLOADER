@@ -117,6 +117,8 @@ def basic(blob,name,source=None):
             obj=json.loads(blob.decode("utf-8-sig"))
             if not isinstance(obj,(dict,list)):return {"status":"FORMAT_UNSUPPORTED","reason":"JSON_SCALAR"}
             k=list(obj.keys())[:30] if isinstance(obj,dict) else []
+            matched=next((c for head in headers_from_json(obj) if (c:=contract_for(source,head))),None) if source else None
+            if matched:return {**matched,"signature":"JSON","keys":k}
             return {"status":"SCHEMA_PROFILED_NEEDS_MAPPING","signature":"JSON","keys":k}
         except Exception as e:return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"JSON_"+type(e).__name__}
     if typ=="CSV_CANDIDATE":
