@@ -21,7 +21,7 @@ def utc():return datetime.now(timezone.utc).isoformat()
 def h(b):return hashlib.sha256(b).hexdigest()
 def fmt(name,blob):
     ext=name.lower().rsplit(".",1)[-1]
-    if blob[:4]==b"PK\x03\x04":return "ZIP"
+    if blob[:4]==b"PK\x03\x04":return "XLSX" if ext=="xlsx" else "ZIP"
     if blob[:4]==b"%PDF":return "PDF"
     hd=blob[:1000].lstrip().lower()
     if hd.startswith((b"{",b"[")):return "JSON"
@@ -31,6 +31,15 @@ def fmt(name,blob):
 def basic(blob,name):
     """Prove structural readability only; never inspect financial numeric correctness."""
     typ=fmt(name,blob)
+    if typ=="XLSX":
+        try:
+            with zipfile.ZipFile(io.BytesIO(blob)) as z:
+                if z.testzip() is not None:return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"XLSX_CRC"}
+                names=set(z.namelist())
+                if "xl/workbook.xml" not in names or not any(n.startswith("xl/worksheets/") for n in names):
+                    return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"XLSX_WORKBOOK_STRUCTURE"}
+                return {"status":"SCHEMA_PROFILED_NEEDS_MAPPING","signature":"XLSX","sheets":sum(n.startswith("xl/worksheets/sheet") and n.endswith(".xml") for n in names)}
+        except Exception as e:return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"XLSX_"+type(e).__name__}
     if typ=="ZIP":
         try:
             with zipfile.ZipFile(io.BytesIO(blob)) as z:
@@ -47,6 +56,8 @@ def basic(blob,name):
                     types[fmt(p.filename,b)]+=1
                 return {"status":"SCHEMA_PROFILED_NEEDS_MAPPING","signature":"ZIP","member_types":dict(types),"members":len(members)}
         except Exception as e:return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"ZIP_"+type(e).__name__}
+    if re.search(r"\\.raw\\.receipt_[^/]*\\.json$",name,re.I):
+        return {"status":"FORMAT_UNSUPPORTED","reason":"PROVENANCE_RECEIPT_NOT_MARKET_DATA"}
     if typ=="JSON":
         try:
             obj=json.loads(blob.decode("utf-8-sig"))
@@ -62,7 +73,8 @@ def basic(blob,name):
                 header=next(reader,None)
                 if header is None:return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"EMPTY_CSV"}
                 if len(header)<2:continue
-                return {"status":"SCHEMA_PROFILED_NEEDS_MAPPING","signature":"CSV","encoding":enc,"header":header[:80]}
+                trailing=len(header)-len(list(reversed(list(__import__("itertools").dropwhile(lambda x:not str(x).strip(),reversed(header)))))
+                return {"status":"SCHEMA_PROFILED_NEEDS_MAPPING","signature":"CSV","encoding":enc,"header":header[:80],"header_has_optional_empty_tail":bool(header and not header[-1].strip())}
             except (UnicodeError,csv.Error):continue
         return {"status":"FORMAT_UNSUPPORTED","reason":"CSV_UNKNOWN_ENCODING_OR_LAYOUT"}
     if typ=="HTML_XML":
@@ -183,6 +195,8 @@ def selftest():
     assert basic(b'{"tables":[{"fields":["date","code"]}]}',"a.json")["signature"]=="JSON"
     assert basic("日期,代碼\n2026-11-17,2330".encode(),"a.csv")["signature"]=="CSV"
     assert basic(b"x","a.zip")["status"]=="FORMAT_UNSUPPORTED"
+    assert basic(b"{\\\"ok\\\":1}","a.raw.receipt_123.json")["reason"]=="PROVENANCE_RECEIPT_NOT_MARKET_DATA"
+    assert basic("交易日期,契約,成交量,\\n2026-11-17,TX,1,".encode(),"a.csv")["header_has_optional_empty_tail"] is True
     assert reusable({"bronze_sha256":"a"*64,"input_bytes_sha_checked":True,
                      "status":"CONTENT_PARSED","parser_detail":{"deep_content":{"signature":"JSON_CANDIDATE"}}},None,"a"*64)["status"]=="SCHEMA_PROFILED_NEEDS_MAPPING"
     assert reusable({"bronze_sha256":"b"*64,"input_bytes_sha_checked":True},None,"a"*64) is None
