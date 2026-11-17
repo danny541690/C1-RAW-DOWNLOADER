@@ -6,7 +6,7 @@ Raw unit metadata retained; nothing normalized and nothing materialized.
 import re,sys
 from scripts.v097_seven_historical_format_registry import OFFICIAL_VERSIONS
 
-REGISTRY_VERSION="v097_v3_contract_candidates_20261117_r1"
+REGISTRY_VERSION="v097_v3_contract_candidates_20261118_r2"
 # Proposed minimum keys. They are NOT authority to certify a complete file.
 CONTRACTS={
  "TWSE":{"STOCK_DAILY_OHLCV":{
