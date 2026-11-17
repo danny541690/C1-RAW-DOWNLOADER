@@ -1,40 +1,14 @@
-name: JARVIS v0.95 official TPEx 2026-09 missing original recheck
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-tpex-official-gap-recheck.yml'
-      - 'tests/v095_202609_tpex_gap_recheck.py'
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-202609-tpex-official-gap-recheck
-  cancel-in-progress: false
 jobs:
-  tpex-gap-recheck:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        category: [prices, institutional]
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Official date-scoped missing original recheck (QA-only)
-        run: python tests/v095_202609_tpex_gap_recheck.py --category "${{ matrix.category }}"
-      - name: Retain official source bytes, hashes, and failures
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-tpex-202609-${{ matrix.category }}-${{ github.run_id }}
-          retention-days: 60
-          path: v095_202609_tpex_gap_recheck/
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

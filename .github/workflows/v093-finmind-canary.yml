@@ -1,18 +1,14 @@
-name: JARVIS v0.93 FinMind 2024 Canary
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - 'scripts/finmind_canary.py'
-      - 'tests/test_finmind_canary.py'
-      - '.github/workflows/v093-finmind-canary.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  probe:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - run: python3 -m unittest discover -s tests -p 'test_*.py' -v
-      - run: python3 scripts/finmind_canary.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

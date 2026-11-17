@@ -1,35 +1,14 @@
-name: JARVIS v0.97 - Phase A consolidated exception disposition
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-phase-a-disposition.yml'
-      - 'scripts/v097_phase_a_disposition.py'
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: v097-phase-a-disposition-single-writer
-  cancel-in-progress: false
 jobs:
-  reconcile:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Combined regression and evidence reconciliation
-        run: |
-          python -m py_compile scripts/v097_phase_a_disposition.py
-          PYTHONPATH=. python scripts/v097_phase_a_disposition.py
-      - name: Publish complete distinct-file exception inventory and phase-A gate
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          PHASE_A_MODE: aggregate
-        run: PYTHONPATH=. python scripts/v097_phase_a_disposition.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

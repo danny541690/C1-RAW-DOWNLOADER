@@ -1,24 +1,14 @@
-name: JARVIS stage06 cleanup safe handoff
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - '.github/workflows/jarvis-stage06-full-launch-20261022.yml'
   workflow_dispatch:
 permissions:
-  contents: write
-  actions: write
+  contents: read
 jobs:
-  handoff:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install -r requirements-qa.lock
-      - name: Transfer old owners only after terminal cancellation
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CLEANUP_DEPLOY_COMMIT: 218d6b8002ffd2162af4b870ea2bb63e2725996f
-        run: python -m scripts.v093_stage06_cleanup_handoff
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

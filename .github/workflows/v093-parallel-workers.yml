@@ -1,49 +1,14 @@
-name: JARVIS Parallel Repair and Feature Preparation
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
 permissions:
   contents: read
-  actions: read
-concurrency:
-  group: jarvis-parallel-workers-v2
-  cancel-in-progress: false
 jobs:
-  code_gate:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      ready: ${{ steps.evidence.outputs.ready }}
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - name: Reuse consolidated code acceptance
-        id: evidence
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python3 -m scripts.v093_ci_gate
-  repair:
-    needs: code_gate
-    if: needs.code_gate.outputs.ready == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 55
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        lane: ['2024', july, financial]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: pip install -r requirements-qa.lock
-      - name: Resume isolated repair lane
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GITHUB_TOKEN: ${{ github.token }}
-          LANE: ${{ matrix.lane }}
-        run: python -u -m scripts.v093_parallel_worker --lane "$LANE" --minutes 35
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

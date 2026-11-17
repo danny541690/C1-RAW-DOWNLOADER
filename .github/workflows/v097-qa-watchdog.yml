@@ -1,27 +1,14 @@
-name: JARVIS v0.97 - A and B Schedule Recovery Watchdog
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
 permissions:
-  actions: write
   contents: read
-concurrency:
-  group: v097-qa-watchdog
-  cancel-in-progress: false
 jobs:
-  check-and-recover:
-    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Validate watchdog syntax
-        run: python -m py_compile scripts/v097_qa_watchdog.py
-      - name: Hourly failure-only fallback; long-running A/B self-dispatch without waiting
-        env:
-          GH_TOKEN: ${{ github.token }}
-          AB_STALE_MINUTES: '30'
-          AB_STUCK_MINUTES: '120'
-        run: python scripts/v097_qa_watchdog.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

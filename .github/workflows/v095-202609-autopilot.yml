@@ -1,41 +1,14 @@
-name: JARVIS v0.95 2026-09 ONE-CLICK AUTO Bronze Silver Gold PIT
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  # Superseded by the 2026-09 R3 controller; manual-only for historical forensic replay.
 permissions:
-  actions: write
-  contents: write
-concurrency:
-  group: jarvis-v095-202609-one-click-autopilot
-  cancel-in-progress: false
+  contents: read
 jobs:
-  controller:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Resumable Bronze to Silver to Gold and PIT release gate
-        env:
-          GH_TOKEN: ${{ github.token }}
-          POLL_BUDGET_SECONDS: '2700'
-        run: python scripts/v095_202609_autopilot.py
-      - name: Preserve current checkpoint
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p v095_autopilot
-          gh api repos/${{ github.repository }}/contents/governance/v095/runtime/202609_autopilot_state.json --jq '.content' | tr -d '\n' | base64 -d > v095_autopilot/state.json || true
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: sept2026-autopilot-${{ github.run_id }}
-          path: v095_autopilot/
-          retention-days: 90
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

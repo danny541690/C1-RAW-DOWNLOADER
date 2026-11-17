@@ -1,40 +1,14 @@
-name: JARVIS v0.95 September B physical Bronze full audit
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-B-full-audit.yml'
-      - 'scripts/v095_202609_B_full_audit.py'
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-sep-B-full-audit
-  cancel-in-progress: false
 jobs:
-  full-bronze-audit:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Drive dependencies
-        run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2,<3' 'google-auth>=2,<3' 'google-auth-httplib2>=0.2,<1'
-      - name: Recheck all inventoried September Bronze bytes and ZIP member CRC
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_B_full_audit.py
-      - name: Retain Bronze audit and targeted correction queue
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jarvis-v095-202609-B-full-audit-${{ github.run_id }}
-          path: v095_202609_B_full_audit/
-          retention-days: 90
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

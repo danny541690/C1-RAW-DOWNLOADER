@@ -1,68 +1,14 @@
-name: JARVIS v0.95 September TDCC native Bronze original migration
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-tdcc-202609-native-bronze-migration.yml'
-      - 'scripts/v095_tdcc_202609_native_bronze_migration.py'
-      - 'scripts/v095_tdcc_202609_native_completion_gate.py'
   workflow_dispatch:
 permissions:
   contents: read
-  actions: write
-concurrency:
-  group: jarvis-v095-tdcc-202609-native-migration
-  cancel-in-progress: false
 jobs:
-  native-originals:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
-    strategy:
-      fail-fast: false
-      max-parallel: 3
-      matrix:
-        shard: [0, 1, 2]
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Drive API runtime
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 requests
-      - name: Migrate one resumable bounded native TDCC batch, preserve v093 originals
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_tdcc_202609_native_bronze_migration.py --shard ${{ matrix.shard }} --limit 60 --max-batches 30
-      - name: Retain actual Drive migration receipt
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-tdcc-202609-shard-${{ matrix.shard }}-${{ github.run_id }}
-          path: tdcc_202609_migration/
-          retention-days: 45
-          if-no-files-found: warn
-  native-completion-gate:
-    needs: [native-originals]
-    if: always() && needs.native-originals.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 requests
-      - name: Certify source and archive ID/SHA equality and disable completed September scheduler
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/v095_tdcc_202609_native_completion_gate.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

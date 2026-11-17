@@ -1,10 +1,14 @@
-# Retired 2026-11-17: Q0-Q4 evidence-only snapshot replaced by Schema V2 Autopilot.
-# Original report, logs, and code retained in Git history and Drive.
-name: JARVIS v097 Q0-Q4 Combined Integrity and Schema Inventory [ARCHIVED]
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  archived-noop:
+  no-op:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
-      - run: echo 'OLD_Q0Q4_SCHEDULE_DISABLED_NO_DATA_MUTATION'
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

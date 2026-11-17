@@ -1,62 +1,14 @@
-name: JARVIS guarded twelve-source recovery watchdog
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths: [config/v093_source_release.json]
-  workflow_run:
-    workflows:
-      - "證交所排程一之一（1-1）｜最新往舊｜受控執行入口"
-      - "證交所排程一之二（1-2）｜最舊往新｜受控執行入口"
-      - "櫃買中心排程二之一（2-1）｜最新往舊｜受控執行入口"
-      - "櫃買中心排程二之二（2-2）｜最舊往新｜受控執行入口"
-      - "公開資訊觀測站排程三之一（3-1）｜最新往舊｜受控執行入口"
-      - "公開資訊觀測站排程三之二（3-2）｜最舊往新｜受控執行入口"
-      - "集保所排程四之一（4-1）｜最新往舊｜受控執行入口"
-      - "集保所排程四之二（4-2）｜最舊往新｜受控執行入口"
-      - "期交所排程五之一（5-1）｜最新往舊｜受控執行入口"
-      - "期交所排程五之二（5-2）｜最舊往新｜受控執行入口"
-      - "國發會排程六之一（6-1）｜最新往舊｜受控執行入口"
-      - "FinMind補缺排程七之一（7-1）｜最新往舊｜受控執行入口"
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 permissions:
-  contents: write
-  actions: write
-concurrency:
-  group: jarvis-seven-production-watchdog-v3
-  cancel-in-progress: false
+  contents: read
 jobs:
-  watchdog:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - name: Release must be explicitly enabled before runtime setup
-        id: gate
-        run: |
-          python - <<'PY'
-          import json,os
-          release=json.load(open('config/v093_source_release.json'))
-          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('enabled='+str(release.get('enabled') is True).lower()+'\n')
-          PY
-      - uses: actions/setup-python@v5
-        if: steps.gate.outputs.enabled == 'true'
-        with: {python-version: '3.11'}
-      - if: steps.gate.outputs.enabled == 'true'
-        run: pip install -r requirements-qa.lock
-      - name: Validate changed recovery code before production dispatch
-        if: steps.gate.outputs.enabled == 'true' && github.event_name == 'push'
-        run: python -m unittest discover -s tests -p 'test_*.py'
-      - name: Recover only eligible work after complete pinned release checks
-        if: steps.gate.outputs.enabled == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_source_continuation
-      - name: Preserve recovery decisions
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: recovery-decisions
-          path: results/watchdog.json
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

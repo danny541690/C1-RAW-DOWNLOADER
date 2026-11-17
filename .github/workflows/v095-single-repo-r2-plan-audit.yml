@@ -1,38 +1,14 @@
-name: JARVIS v0.95 Single-Repo R2 Plan Gate (No Downloads)
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'config/v095_single_repo_fast_backfill_r2.json'
-      - 'scripts/v095_single_repo_plan_gate.py'
-      - 'scripts/v095_r2_full_architecture_audit.py'
-      - 'scripts/v095_r2_canary_gate.py'
-      - 'tests/test_v095_r2_canary_gate.py'
-      - '.github/workflows/v095-single-repo-r2-plan-audit.yml'
 permissions:
   contents: read
-concurrency:
-  group: v095-r2-plan-only
-  cancel-in-progress: false
 jobs:
-  plan-contract:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Validate single-repo configuration and bulk start lock
-        run: python scripts/v095_single_repo_plan_gate.py --out r2_plan_audit/report.json
-      - name: Test failure classification and non-PIT promotion policy
-        run: python -m unittest discover -s tests -p 'test_v095_r2_canary_gate.py' -v
-      - name: Perform full static architecture risk audit
-        run: python scripts/v095_r2_full_architecture_audit.py --out r2_plan_audit/full_architecture_review.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: v095-r2-plan-only-${{ github.run_id }}
-          path: r2_plan_audit/
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

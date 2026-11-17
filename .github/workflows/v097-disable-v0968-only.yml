@@ -1,39 +1,14 @@
-name: JARVIS v0.97 SAFETY - disable v0.968 only
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-disable-v0968-only.yml'
-      - 'scripts/v097_disable_legacy_v0968_workflows.py'
   workflow_dispatch:
 permissions:
   contents: read
-  actions: write
-concurrency:
-  group: v097-v0968-safe-stop
-  cancel-in-progress: false
 jobs:
-  selective-v0968-stop:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Syntax verification
-        run: python -m py_compile scripts/v097_disable_legacy_v0968_workflows.py
-      - name: Disable only v0968 workflow registrations, cancel their active runs, verify v097 safety
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python scripts/v097_disable_legacy_v0968_workflows.py
-      - name: Upload audit evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v0968-safe-stop-audit
-          path: |
-            v0968_disable_preflight.json
-            v0968_disable_result.json
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

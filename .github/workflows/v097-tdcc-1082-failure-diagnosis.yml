@@ -1,26 +1,14 @@
-name: JARVIS v0.97 - TDCC 1082 exact failure diagnosis
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/v097_tdcc_1082_fail_diagnosis.py'
-      - '.github/workflows/v097-tdcc-1082-failure-diagnosis.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  diagnose:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
-      - name: Print actual 1082 per-file immutable exception reasons
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: PYTHONPATH=. python scripts/v097_tdcc_1082_fail_diagnosis.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

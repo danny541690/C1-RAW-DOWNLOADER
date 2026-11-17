@@ -1,36 +1,14 @@
-name: JARVIS 2026-09 TDCC weekly tier descriptive Gold
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-tdcc-gold-weekly.yml'
-      - 'scripts/v095_202609_tdcc_gold_weekly_delta.py'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  tier-weekly:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
-      - name: Calculate native-tier WoW deltas using original Silver, preserve PIT restriction
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_tdcc_gold_weekly_delta.py
-      - name: Preserve real execution and QA result
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: tdcc-gold-evidence-${{ github.run_id }}
-          path: tdcc_gold_qa/
-          if-no-files-found: warn
-          retention-days: 90
-
-# Re-run 2026-09 measured validation with unchanged safety gates on 2026-11-06.
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

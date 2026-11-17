@@ -1,70 +1,14 @@
-name: JARVIS v0.93 Layer02 STANDARD R2 2025-2026 Annual Staging
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths: [.github/workflows/v093-layer02-2025-2026-all-months.yml]
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  stage-month:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        include:
-          - year: 2025
-            month: 1
-          - year: 2025
-            month: 2
-          - year: 2025
-            month: 3
-          - year: 2025
-            month: 4
-          - year: 2025
-            month: 5
-          - year: 2025
-            month: 6
-          - year: 2025
-            month: 7
-          - year: 2025
-            month: 8
-          - year: 2025
-            month: 9
-          - year: 2025
-            month: 10
-          - year: 2025
-            month: 11
-          - year: 2025
-            month: 12
-          - year: 2026
-            month: 1
-          - year: 2026
-            month: 2
-          - year: 2026
-            month: 3
-          - year: 2026
-            month: 4
-          - year: 2026
-            month: 5
-          - year: 2026
-            month: 6
-          - year: 2026
-            month: 7
-          - year: 2026
-            month: 8
-          - year: 2026
-            month: 9
-          - year: 2026
-            month: 10
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install google-api-python-client google-auth google-auth-httplib2 pyarrow
-      - name: Convert native source files into unapproved Parquet staging and monthly QA
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -u -m scripts.v093_standard_r2 --year ${{ matrix.year }} --month ${{ matrix.month }}
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

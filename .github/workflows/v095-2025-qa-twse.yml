@@ -1,46 +1,14 @@
-name: JARVIS v0.95 2025 TWSE independent QA exception inventory
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-2025-qa-twse.yml'
-  schedule:
-    - cron: '33 * * * *'
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-2025-qa-twse-single
-  cancel-in-progress: false
 jobs:
-  qa-twse:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-      V095_DATA_YEAR: '2025'
-      V095_QA_SOURCE: 'TWSE'
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install source QA dependency
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
-      - name: Verify independent source quality reader
-        run: python -m py_compile scripts/v095_2026_source_qa.py
-      - name: Read only 2025 source and transformation receipts and persist exceptions
-        run: python -u -m scripts.v095_2026_source_qa
-      - name: Retain QA report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-2025-qa-twse-${{ github.run_id }}
-          path: v095_2025_source_qa/result.json
-          if-no-files-found: warn
-          retention-days: 90
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

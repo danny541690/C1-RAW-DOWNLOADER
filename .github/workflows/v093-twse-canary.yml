@@ -1,20 +1,14 @@
-name: JARVIS v0.93 TWSE 2024 Public API Canary
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - 'scripts/source_canary.py'
-      - 'tests/test_source_canary.py'
-      - '.github/workflows/v093-twse-canary.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  twse-canary:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - name: Verify local parser and period assertions
-        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
-      - name: Query 2024-01 TWSE 2330 sample only
-        run: python3 scripts/source_canary.py --year 2024 --month 1 --stock 2330
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

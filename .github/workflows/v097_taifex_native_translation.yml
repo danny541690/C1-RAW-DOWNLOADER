@@ -1,10 +1,14 @@
-# ARCHIVED 2026-11-17 by user: old mixed Bronze/content validation removed from execution.
-# Restore only from Git history if explicitly authorized; this workflow does no data work.
-name: "JARVIS v097 TAIFEX Source-Native CSV Format Translation [ARCHIVED — no processing]"
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  archived-no-op:
+  no-op:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
-      - run: echo 'LEGACY_DEEP_CONTENT_WORKFLOW_DISABLED_NO_DATA_MUTATION'
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

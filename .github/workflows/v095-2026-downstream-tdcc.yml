@@ -1,58 +1,14 @@
-name: JARVIS v0.95 2026 TDCC independent Silver Gold candidate worker
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-2026-downstream-tdcc-single-writer
-  cancel-in-progress: false
 jobs:
-  downstream-tdcc:
-    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
-    env:
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-      V095_BRONZE_SOURCE: 'TDCC'
-      V095_DOWNSTREAM_BATCH: '1'
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Verify fail-closed 2026 candidate scope
-        run: |
-          python -m py_compile scripts/v095_2026_immediate_silver_gold.py
-          python - <<'PY'
-          import json
-          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
-          assert not f['BULK_COPY_APPROVED'] and not f['RELEASE_APPROVED']
-          print('SOURCE_SCOPED_CANDIDATE_ONLY;NO_443_RELEASE')
-          PY
-      - name: Validate original-source daily native adapter and reject incorrect SHA
-        run: |
-          python -m unittest discover -s tests -p 'test_v095_2025_2026_source_native_adapters.py' -v
-          python -m py_compile scripts/v095_legacy_tdcc_mirror_adapter.py scripts/v095_legacy_taifex_csv_adapter.py
-      - name: Install separate transform dependencies
-        run: python -m pip install --disable-pip-version-check pyarrow openpyxl google-api-python-client google-auth google-auth-httplib2
-      - name: Read existing verified Bronze and incrementally transform to Silver and descriptive Gold
-        run: python -u -m scripts.v095_2026_immediate_silver_gold
-      - name: Archive actual downstream result to Drive SHA ledger
-        if: always()
-        env:
-          V095_RECEIPT_LANE: 'SILVER_GOLD'
-        run: python -u -m scripts.v095_2026_publish_run_receipt
-      - name: Preserve per-partition downstream and missing-indicator receipts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-2026-downstream-tdcc-${{ github.run_id }}
-          path: |
-            v095_2026_immediate_downstream/result.json
-            v095_2026_immediate_downstream/missing_indicators.json
-          if-no-files-found: warn
-          retention-days: 90
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

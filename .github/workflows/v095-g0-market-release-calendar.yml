@@ -1,142 +1,14 @@
-name: JARVIS v0.95 G0 2000-2026 market and publication calendars
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-g0-market-release-calendar.yml'
-      - 'scripts/v095_market_release_calendar_2000_2026.py'
-      - 'scripts/v095_market_release_calendar_drive_archive.py'
-      - 'scripts/v095_market_release_official_history_merge.py'
-      - 'scripts/v095_market_release_tpex_history_merge.py'
-      - 'scripts/v095_market_release_taifex_history_merge.py'
-      - 'scripts/v095_market_release_taifex_gap_dates_merge.py'
-      - 'scripts/v095_g0_six_source_date_quality.py'
-      - 'scripts/v095_tdcc_week_reference_audit.py'
-      - 'scripts/v095_g0_bronze_download_gate.py'
-      - 'tests/test_v095_g0_bronze_download_gate.py'
-      - 'governance/v095/MARKET_RELEASE_CONTRACTS.json'
-      - 'governance/v095/MARKET_CALENDAR_EVIDENCE_2000_2025.csv'
-  schedule:
-    - cron: '13 1 * * *'
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-g0-calendars
-  cancel-in-progress: false
 jobs:
-  certify-known-vs-unknown:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Test market-date calendar and source-specific publication contracts
-        run: |
-          python -m unittest discover -s tests -p 'test_v095_2026_cash_market_calendar.py' -v
-          python -m unittest discover -s tests -p 'test_v095_market_release_calendar_2000_2026.py' -v
-      - name: Generate every 2000-2026 source/day state with source SHA and unknown markers
-        run: python -m scripts.v095_market_release_calendar_2000_2026
-      - name: Confirm no historic closures or release timestamps have been fabricated
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          a=json.loads(Path('v095_market_release_calendar/report.json').read_text())
-          assert a['calendar_rows']==9862*6
-          assert a['dataset_contracts']==26
-          assert a['historical_primary_evidence_rows']==0
-          assert not a['g0_coverage_denominator_certified']
-          assert not a['PIT_APPROVED']
-          print('G0_CALENDAR_GENERATED_NO_FALSE_MISSING_CLAIMS')
-          PY
-      - name: Confirm and import officially published positive TWSE historical dates from SHA-verified Drive archives
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: |
-          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
-          python -m scripts.v095_market_release_official_history_merge
-      - name: Reconcile independent TPEx official positive historical stock dates into G0 without future or holiday inference
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v095_market_release_tpex_history_merge
-      - name: Revalidate TAIFEX annual native futures archives and admit only confirmed session dates
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v095_market_release_taifex_history_merge
-      - name: Reconcile 2015-2017 TAIFEX date-only salvage and 2026 positive futures sessions
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v095_market_release_taifex_gap_dates_merge
-      - name: Audit verified six-source date and availability ledger against raw archived receipts
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v095_g0_six_source_date_quality
-      - name: Validate Bronze download eligibility separately from historical publication/PIT coverage
-        run: |
-          python -m unittest discover -s tests -p 'test_v095_g0_bronze_download_gate.py' -v
-          python -m scripts.v095_g0_bronze_download_gate
-      - name: Save immutable G0 calendar and evidence to Google Drive Operations
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: |
-          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
-          python -m scripts.v095_market_release_calendar_drive_archive
-      - name: Retain G0 calendars, denominator status, dataset clocks and source evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-g0-market-release-${{ github.run_id }}
-          retention-days: 90
-          if-no-files-found: warn
-          path: |
-            v095_market_release_calendar/
-            governance/v095/MARKET_RELEASE_CONTRACTS.json
-            governance/v095/MARKET_CALENDAR_EVIDENCE_2000_2025.csv
-            governance/v095/CASH_MARKET_CALENDAR_2026.csv
-
-  tdcc-historical-week-reference-dates:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    env:
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Compile independent TDCC checkpoint date reader
-        run: python -m py_compile scripts/v095_tdcc_week_reference_audit.py
-      - name: Read preexisting official TDCC weekly date SHA receipts without refetching valid RAW
-        run: |
-          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
-          python -m scripts.v095_tdcc_week_reference_audit
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: v095-tdcc-existing-date-receipts-${{ github.run_id }}
-          path: v095_tdcc_week_inventory/
-          retention-days: 90
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

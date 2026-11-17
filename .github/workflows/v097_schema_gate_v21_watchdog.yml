@@ -1,12 +1,14 @@
-# PAUSED by explicit user direction 2026-11-17 Asia/Taipei.
-# Original workflow, worker definitions and cron schedule preserved in Git history.
-# This workflow has no schedule, push or workflow_run trigger; manual dispatch is a no-op.
-name: "PAUSED - v097_schema_gate_v21_watchdog"
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  paused-no-op:
+  no-op:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
-      - name: Confirm paused
-        run: echo 'PAUSED_USER_REQUEST_NO_BRONZE_SCHEMA_SILVER_GOLD_EXECUTION'
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

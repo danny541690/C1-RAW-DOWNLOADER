@@ -1,37 +1,14 @@
-name: JARVIS v0.97 - cancel only known superseded pre-sidecar-guard cycle
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-cancel-stale-canary.yml'
   workflow_dispatch:
 permissions:
   contents: read
-  actions: write
 jobs:
-  cancel-specific-superseded-run:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 1
     steps:
-      - name: Cancel only old canary run with known SHA; keep durable receipts
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          python - <<'PY'
-          import json,os,urllib.request
-          repo="danny541690/C1-RAW-DOWNLOADER";run="42843529574"
-          u="https://api.github.com/repos/"+repo+"/actions/runs/"+run
-          h={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json","User-Agent":"jarvis-bf-old-canary-guard"}
-          with urllib.request.urlopen(urllib.request.Request(u,headers=h),timeout=30) as r:x=json.load(r)
-          if x.get("head_sha")!="448cd70fe1862f9a4da5074d8b7a0b4259703d4f":
-           raise RuntimeError("Refuse to cancel run with different version")
-          if x.get("status")!="in_progress":
-           print("OLD_CANARY_ALREADY_TERMINAL",x.get("status"),x.get("conclusion"));exit(0)
-          if x.get("path")!=".github/workflows/v097-bronze-first-autopilot.yml":
-           raise RuntimeError("Wrong workflow")
-          req=urllib.request.Request(u+"/cancel",headers=h,data=b"{}",method="POST")
-          with urllib.request.urlopen(req,timeout=30) as r:
-           if r.status!=202:raise RuntimeError("Cancel rejected "+str(r.status))
-          print("OLD_CANARY_CANCEL_REQUESTED_SAFELY",run)
-          PY
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

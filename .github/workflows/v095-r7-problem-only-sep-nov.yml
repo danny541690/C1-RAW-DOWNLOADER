@@ -1,68 +1,14 @@
-name: JARVIS v0.95 R7 Problem-Only Sep-Oct-Nov Delta Repairs
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-r7-problem-only-sep-nov.yml'
-      - 'scripts/v095_r7_problem_only_dispatch.py'
-      - 'scripts/v095_r8_official_semantic_gate.py'
-      - 'config/v095_r8_official_source_semantics_20261107.json'
-      - 'tests/test_v095_r8_official_semantic_gate.py'
-      - 'governance/v095/202609_11_R7_ACCEPTED_CANDIDATE_RECEIPTS.json'
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-r7-problem-only
-  cancel-in-progress: false
 jobs:
-  problem-only:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Compile-check delta planner and verify production release remains locked
-        run: |
-          python -m py_compile scripts/v095_r7_problem_only_dispatch.py
-          python - <<'PY'
-          import json
-          f=json.load(open('governance/v095/PHASE1_FLAGS.json'))
-          assert not f['BULK_COPY_APPROVED'] and not f['RELEASE_APPROVED']
-          print('R7_NO_DUPLICATE_DOWNLOAD_NO_FULL_MONTH_REVALIDATION')
-          PY
-      - name: Verify official source semantics, history start and PIT segregation
-        run: |
-          python -m unittest discover -s tests -p 'test_v095_r8_official_semantic_gate.py' -v
-          python scripts/v095_r8_official_semantic_gate.py
-      - name: Generate exact pending tasks and skip all accepted candidate partitions
-        run: python scripts/v095_r7_problem_only_dispatch.py --mode plan
-      - name: Probe blocked TWSE official transport only when manually requested or code changed
-        if: github.event_name != 'schedule'
-        run: python scripts/v095_r7_problem_only_dispatch.py --mode probe
-      - name: Verify skip count and zero repeated downloads
-        run: |
-          python - <<'PY'
-          import json
-          r=json.load(open('r7_problem_only/report.json'))
-          assert r['skipped_prior_candidate_count']==12
-          assert r['open_issue_count']==6
-          assert r['download_count']==0 and r['existing_files_rechecked']==0
-          assert r['production_release_approved'] is False and r['historical_pit_certified'] is False
-          print('R7_DELTA_ONLY_RESULT: 12 old candidates skipped, six unresolved issue classes, zero duplicate downloads')
-          PY
-      - name: Retain only delta work and actual problem results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-r7-delta-problem-only-${{ github.run_id }}
-          path: |
-            r7_problem_only/report.json
-            r8_official_semantics/result.json
-          retention-days: 90
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

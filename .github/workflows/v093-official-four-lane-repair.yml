@@ -1,123 +1,14 @@
-name: JARVIS official repair schedules 1 to 4
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v093-official-four-lane-repair.yml'
-      - 'scripts/v093_official_repair.py'
-      - 'scripts/v093_official_finmind_gapfill.py'
-      - 'tests/test_official_finmind_gapfill.py'
-      - 'scripts/v093_official_content_audit.py'
-      - 'scripts/v093_repair_coordination.py'
-      - 'scripts/v093_official_problem_catalog.py'
-      - 'tests/test_official_repair_v6.py'
-      - 'tests/test_official_repair_v7.py'
-      - 'tests/test_official_repair_v8.py'
-  # Revalidated inward frontiers; preserve RAW and checkpoints.
   workflow_dispatch:
 permissions:
-  contents: write
-  actions: write
+  contents: read
 jobs:
-  checks:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: pip install -r requirements-qa.lock
-      - run: python -m unittest discover -s tests -q
-      - name: Hand off previous repair batches after validation
-        if: github.event_name == 'push'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          python - <<'PYCODE'
-          import os,json,time,urllib.request,urllib.error
-          from scripts.v093_github_budget import open_json
-          base='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
-          current=int(os.environ['GITHUB_RUN_ID'])
-          own='.github/workflows/v093-official-four-lane-repair.yml'
-          def api(path,method='GET'):
-              req=urllib.request.Request(base+path,method=method,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
-              if method=='GET':return open_json(req,25)[0]
-              with urllib.request.urlopen(req,timeout=25) as r:
-                  b=r.read();return json.loads(b) if b else {}
-          rows=api('/actions/runs?per_page=100')['workflow_runs']
-          old=[r['id'] for r in rows if r['path']==own and r['id']<current and r['status']!='completed']
-          for rid in old:
-              try:api('/actions/runs/'+str(rid)+'/cancel','POST')
-              except urllib.error.HTTPError as e:
-                  if e.code not in (409,422):raise
-          deadline=time.monotonic()+180;force_at=time.monotonic()+45;forced=False
-          while old:
-              old=[rid for rid in old if api('/actions/runs/'+str(rid))['status']!='completed']
-              if old and not forced and time.monotonic()>force_at:
-                  for rid in old:
-                      try:api('/actions/runs/'+str(rid)+'/force-cancel','POST')
-                      except urllib.error.HTTPError as e:
-                          if e.code not in (409,422):raise
-                  forced=True
-              if old and time.monotonic()>deadline:raise RuntimeError('PRIOR_REPAIR_RUN_NOT_TERMINAL')
-              if old:time.sleep(5)
-          print('FOUR_LANE_VALIDATED_HANDOFF_RAW_AND_CURSORS_PRESERVED',flush=True)
-          PYCODE
-  repair:
-    needs: checks
-    name: Schedule ${{ matrix.number }} ${{ matrix.lane }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 55
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        include:
-          - number: 1
-            lane: RECENT_ASC
-          - number: 2
-            lane: RECENT_DESC
-          - number: 3
-            lane: EARLY_ASC
-          - number: 4
-            lane: EARLY_DESC
-    concurrency:
-      group: jarvis-official-four-lane-${{ matrix.lane }}
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: pip install -r requirements-qa.lock
-      - name: Confirm assigned inward range
-        env:
-          REPAIR_LANE: ${{ matrix.lane }}
-        run: |
-          python - <<'PY'
-          import os,json
-          from scripts.v093_repair_coordination import lane_months
-          months=lane_months(os.environ['REPAIR_LANE'])
-          print('ASSIGNED_INWARD_RANGE '+json.dumps(dict(lane=os.environ['REPAIR_LANE'],start=months[0],end=months[-1],months=len(months),resume='EXISTING_CURSOR',valid_raw='PRESERVE_SKIP',coverage_certified=False)),flush=True)
-          PY
-      - name: Reserve shared GitHub control budget
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_github_budget --minimum 250 --max-wait 300
-      - name: Audit saved RAW and repair missing or invalid official units
-        env:
-          FINMIND_GAPFILL_ENABLED: '1'
-          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
-          FINMIND_API_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
-          OFFICIAL_BACKFILL_PASS: OFFICIAL_DATABASE_BACKFILL_20261027_V2
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
-          REPAIR_LANE: ${{ matrix.lane }}
-        run: python -m scripts.v093_official_repair --lane "$REPAIR_LANE" --minutes 40
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

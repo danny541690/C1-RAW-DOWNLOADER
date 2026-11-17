@@ -1,29 +1,14 @@
-name: JARVIS Drive publication transient-error regression
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  pull_request:
-    paths:
-      - 'scripts/v093_acceptance_publish.py'
-      - '.github/workflows/jarvis-drive-publication-retry-tests.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  test:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: python -m compileall -q scripts/v093_acceptance_publish.py
-      - run: python -m unittest discover -s tests -p 'test_v093_partitioned_acceptance_publish.py' -v
-      - name: Verify backoff and pre-write reconciliation
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          s=Path('scripts/v093_acceptance_publish.py').read_text()
-          assert 'existing=read_existing()' in s
-          assert 'status not in (429,500,502,503,504)' in s
-          assert 'time.sleep(min(2**attempt,8))' in s
-          print('Readback-before-write and bounded transient retry present')
-          PY
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

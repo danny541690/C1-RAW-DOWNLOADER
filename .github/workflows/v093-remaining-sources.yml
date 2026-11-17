@@ -1,22 +1,14 @@
-name: JARVIS v0.93 TPEx MOPS and Drive Contract Tests
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - 'scripts/multi_source_canary.py'
-      - 'scripts/drive_storage.py'
-      - 'tests/test_multi_source_canary.py'
-      - 'tests/test_drive_storage.py'
-      - '.github/workflows/v093-remaining-sources.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  source-and-drive:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - name: All unit tests
-        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
-      - name: TPEx and MOPS real archive sample
-        run: python3 scripts/multi_source_canary.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

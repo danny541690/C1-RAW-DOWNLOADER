@@ -1,72 +1,14 @@
-name: JARVIS v097 BRONZE READY Recovery One Click
-# Bronze-only orchestration. No Silver/Gold, no raw-file writes.
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/v097_bronze_ready_recovery.yml
 permissions:
   contents: read
-  actions: write
-concurrency:
-  group: v097-bronze-ready-recovery-coordinator
-  cancel-in-progress: false
 jobs:
-  audit-frozen-cohort:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install read-only audit dependencies
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
-      - name: Enforce Bronze-only formal gate negative tests
-        run: |
-          set -euo pipefail
-          PYTHONPATH=. python scripts/v097_bronze_autopilot.py selftest
-          PYTHONPATH=. python scripts/v097_seven_source_full_error_census.py selftest
-          PYTHONPATH=. python scripts/v097_silver_ready_hold_triage.py selftest
-          PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
-          PYTHONPATH=. python scripts/v097_fullfile_pit_release_preflight.py selftest
-      - name: Read real latest complete seven-source gate and record every stage HOLD
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: |
-          set -euo pipefail
-          PYTHONPATH=. python scripts/v097_seven_source_full_error_census.py
-          PYTHONPATH=. python scripts/v097_silver_ready_hold_triage.py
-  dispatch-existing-safe-lanes:
-    needs: audit-frozen-cohort
-    if: needs.audit-frozen-cohort.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Dispatch only idle existing Bronze evidence workers, never competing duplicates
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          dispatch_if_idle() {
-            local file="$1"
-            shift
-            local active
-            active="$(gh api -X GET "repos/$GH_REPO/actions/workflows/$file/runs?per_page=20" --jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "pending" or .status == "requested")] | length')"
-            if [ "$active" -gt 0 ]; then
-              echo "ALREADY_ACTIVE_SKIP $file active=$active"
-              return 0
-            fi
-            gh workflow run "$file" --ref main "$@"
-            echo "BRONZE_LANE_DISPATCH_ACCEPTED $file"
-          }
-          # Existing formal gate, targeted parser audit, and per-source proof lanes.
-          # Their own source locks/checkpoints handle resumptions. Do not call Silver/Gold.
-          dispatch_if_idle v097_bronze_autopilot.yml -f chain_depth=0
-          dispatch_if_idle v097_seven_full_parser_audit_resume.yml -f mode=audit_and_resume
-          dispatch_if_idle v097_seven_independent_15m_watchdog.yml -f source=ALL
-          echo "BRONZE_READY_RECOVERY_COORDINATION_COMPLETE"
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

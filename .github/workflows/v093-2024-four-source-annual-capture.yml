@@ -1,30 +1,14 @@
-name: JARVIS 2024 Four-Source Annual Actual Capture
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: v093-2024-four-source-annual-actual
-  cancel-in-progress: false
 jobs:
-  monthly-capture:
-    if: ${{ false }} # legacy writer retired during v0.93 five-stage cutover
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        month: [1,2,3,4,5,6,7,8,9,10,11,12]
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Drive client
-        run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
-      - name: Capture 2024 four-source available raw datasets month by month
-        env:
-          PYTHONPATH: .
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-        run: python3 -u scripts/unified_annual_downloader.py --year 2024 --month ${{ matrix.month }} --mode capture
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

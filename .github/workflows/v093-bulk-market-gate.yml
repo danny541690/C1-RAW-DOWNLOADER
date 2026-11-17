@@ -1,18 +1,14 @@
-name: JARVIS Official Bulk Market Daily Source Gate
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - '.github/workflows/v093-bulk-market-gate.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  bulk-market-real:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - name: TWSE plus TPEx real 2024 one-day bulk coverage probe
-        env:
-          PYTHONPATH: .
-        run: python3 -u scripts/bulk_market_canary.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

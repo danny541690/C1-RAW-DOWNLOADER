@@ -1,42 +1,14 @@
-name: Jarvis stage06 real Drive fenced publication test
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/jarvis-stage06-drive-publish-test-20261022.yml'
-      - 'scripts/v093_stage06_fenced_store.py'
-      - 'scripts/v093_stage06_drive_artifacts.py'
-      - 'scripts/v093_stage06_drive_canary.py'
-      - 'tests/test_stage06_drive_publish.py'
-      - 'tests/test_stage06_prelaunch_bridge.py'
-      - 'scripts/v093_stage06_worker_bridge.py'
-      - 'scripts/v093_stage06_raw_replay.py'
-      - 'scripts/v093_stage06_admission.py'
-      - 'scripts/v093_stage06_ledger.py'
-      - 'scripts/v093_replanned_five_stage.py'
   workflow_dispatch:
 permissions:
-  contents: write
-concurrency:
-  group: jarvis-stage06-drive-publish-test
-  cancel-in-progress: false
+  contents: read
 jobs:
-  isolated-integration:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install -r requirements-qa.lock
-      - name: Full regression
-        run: python -m unittest discover -s tests -q
-      - name: Real Drive and owner-fenced GitHub publication
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_stage06_drive_canary
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

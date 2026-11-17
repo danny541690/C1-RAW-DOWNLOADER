@@ -1,42 +1,14 @@
-name: JARVIS v0.95 September B evidence-ledger canary
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-B-evidence-ledger.yml'
-      - 'scripts/v095_202609_B_evidence_ledger.py'
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-sep-B-evidence-ledger
-  cancel-in-progress: false
 jobs:
-  evidence-ledger:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install frozen run dependencies
-        run: python -m pip install --disable-pip-version-check 'pyarrow>=18,<24' 'google-api-python-client>=2,<3' 'google-auth>=2,<3' 'google-auth-httplib2>=0.2,<1'
-      - name: Self-check fail-closed partition logic
-        run: python scripts/v095_202609_B_evidence_ledger.py --self-test
-      - name: Read live September artifacts and write independently verified versioned evidence
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_B_evidence_ledger.py
-      - name: Retain manifest checkpoint lineage and P0 report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jarvis-v095-202609-B-evidence-${{ github.run_id }}
-          path: v095_202609_B_evidence/
-          retention-days: 90
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

@@ -1,18 +1,14 @@
-name: JARVIS 2024 TPEx Historical Date Canary
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - .github/workflows/v093-2024-tpex-date-canary.yml
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  check:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install google-api-python-client google-auth google-auth-httplib2
-      - name: Compare historical endpoint requested date against actual returned date
-        run: python -u -m scripts.v093_2024_tpex_date_canary
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

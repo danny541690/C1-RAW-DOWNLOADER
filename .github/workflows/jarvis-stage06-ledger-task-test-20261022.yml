@@ -1,40 +1,14 @@
-name: Jarvis stage06 ledger and repair task tests
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/jarvis-stage06-ledger-task-test-20261022.yml'
-      - 'scripts/v093_stage06_ledger.py'
-      - 'scripts/v093_stage06_canary.py'
-      - 'tests/test_stage06_ledger.py'
-      - 'scripts/v093_stage06_owner_replay.py'
-      - 'tests/test_stage06_owner_replay.py'
-      - 'tests/fixtures/stage06_legacy_identity_202610.json'
-      - 'scripts/v093_stage06_native_repair.py'
-      - 'scripts/v093_stage06_artifacts.py'
-      - 'scripts/v093_stage06_native_trial.py'
-      - 'tests/test_stage06_native_repair.py'
-      - 'tests/fixtures/stage06_native/**'
   workflow_dispatch:
 permissions:
-  contents: write
-concurrency:
-  group: jarvis-stage06-ledger-test
-  cancel-in-progress: false
+  contents: read
 jobs:
-  isolated-tests:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install locked test dependencies
-        run: python -m pip install -r requirements-qa.lock
-      - name: Regression tests
-        run: python -m unittest discover -s tests -q
-      - name: Isolated cloud ledger CAS canary
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_stage06_canary
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

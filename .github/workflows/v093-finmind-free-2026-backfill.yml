@@ -1,29 +1,14 @@
-name: RETIRED - FinMind 2026 Full Backfill
-# Retired 2026-10-19: official sources first; FinMind only for verified gaps.
-# Preserve this workflow and downloader for audit; no full-universe executions.
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-concurrency:
-  group: finmind-free-2026-backfill
-  cancel-in-progress: false
+permissions:
+  contents: read
 jobs:
-  ingest-batch:
-    if: ${{ false }} # Full-universe ingestion superseded by official-first gap policy.
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    permissions:
-      contents: read
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install google-api-python-client google-auth google-auth-httplib2
-      - name: Download safe FREE 2026 stock/dataset annual API and split to existing monthly folders
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN || secrets.FINMIND_API_TOKEN }}
-        run: python -u -m scripts.v093_finmind_free_2026_backfill --max-requests 270
-
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

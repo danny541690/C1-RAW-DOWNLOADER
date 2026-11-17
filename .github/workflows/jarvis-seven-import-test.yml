@@ -1,96 +1,14 @@
-name: JARVIS seven-source merged handoff import acceptance
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [codex/seven-source-closed-loop-design-20261029]
-    paths: [scripts/v093_import_live_preflight.py]
   workflow_dispatch:
 permissions:
-  contents: write
-concurrency:
-  group: jarvis-seven-import-test
-  cancel-in-progress: false
+  contents: read
 jobs:
-  save:
-    strategy:
-      fail-fast: false
-      matrix:
-        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install -r requirements-qa.lock
-      - name: Restore frozen reviewed queues
-        run: |
-          mkdir frozen
-          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen-review
-          git archive refs/remotes/origin/frozen-review | tar -x -C frozen
-      - run: python -m scripts.v093_import_live_preflight save --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Automatically preserve acceptance evidence in Git and Drive
-        if: always()
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job 'save-${{ matrix.source }}' --status '${{ job.status }}'
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: import-save-${{ matrix.source }}
-          path: results
-          retention-days: 90
-  verify:
-    needs: save
-    strategy:
-      fail-fast: false
-      matrix:
-        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install -r requirements-qa.lock
-      - uses: actions/download-artifact@v4
-        with:
-          name: import-save-${{ matrix.source }}
-          path: expected
-      - name: Restore frozen reviewed queues
-        run: |
-          mkdir frozen
-          git fetch --depth=1 origin refs/heads/jarvis-handoff-replay/20261029-40812627597:refs/remotes/origin/frozen-review
-          git archive refs/remotes/origin/frozen-review | tar -x -C frozen
-      - run: python -m scripts.v093_import_live_preflight verify --source '${{ matrix.source }}' --namespace import-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Verify independent readback matches saved digest
-        env:
-          SOURCE: ${{ matrix.source }}
-        run: |
-          python - <<'PY'
-          import json,os
-          from pathlib import Path
-          source=os.environ['SOURCE']
-          saved=json.loads((Path('expected')/(source+'-save.json')).read_text())
-          restored=json.loads((Path('results')/(source+'-verify.json')).read_text())
-          for field in ('tasks','sha256','commit','statuses'):
-              if saved[field]!=restored[field]:raise ValueError('COLD_RESTORE_'+field)
-          PY
-      - name: Automatically preserve acceptance evidence in Git and Drive
-        if: always()
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_acceptance_publish --source '${{ matrix.source }}' --job 'verify-${{ matrix.source }}' --status '${{ job.status }}'
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: import-verify-${{ matrix.source }}
-          path: results
-          retention-days: 90
-
-# R2: quarantine conflicting legacy periods instead of blocking all source tasks.
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

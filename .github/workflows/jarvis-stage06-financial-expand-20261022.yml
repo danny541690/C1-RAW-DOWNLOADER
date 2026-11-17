@@ -1,37 +1,14 @@
-name: JARVIS stage06 all-data financial repair expansion
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - '.github/workflows/jarvis-stage06-financial-expand-20261022.yml'
   workflow_dispatch:
 permissions:
-  contents: write
-  actions: write
-concurrency:
-  group: jarvis-v093-live-financial
-  cancel-in-progress: false
+  contents: read
 jobs:
-  financial:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: python -m pip install -r requirements-qa.lock
-      - name: Full regression including financial cells and all-data coverage gates
-        run: python -m unittest discover -s tests -q
-      - name: Wait for shared GitHub quota before acquiring an owner lock
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_github_budget --minimum 400 --max-wait 300
-      - name: Repair the verified financial backlog under the FINANCIAL owner
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_stage06_live --owner-stage FINANCIAL --owner-month 2026-03 --minutes 20
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

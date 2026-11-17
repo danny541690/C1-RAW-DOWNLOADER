@@ -1,39 +1,14 @@
-name: JARVIS v0.95 Reuse Existing Durable CAS and Fencing QA
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-cas-fencing-regression.yml'
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-cas-tests-only
-  cancel-in-progress: false
 jobs:
-  isolated-transactional-and-git-cas:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Run historic checkpoint, lease and stale owner regression
-        run: |
-          mkdir -p v095_cas_regression
-          python -m unittest discover -s tests -p 'test_source_coordination.py' -v > v095_cas_regression/coordination.log 2>&1
-          python -m unittest discover -s tests -p 'test_source_git_store.py' -v > v095_cas_regression/git_store.log 2>&1
-          python -m unittest discover -s tests -p 'test_source_state_pages.py' -v > v095_cas_regression/pages.log 2>&1
-          echo "V093_CAS_FENCING_TESTS_PASS_NOT_YET_CONNECTED_TO_V095_BULK" | tee v095_cas_regression/status.txt
-      - name: Preserve exact CAS test logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-existing-cas-fencing-regression-${{ github.run_id }}
-          path: v095_cas_regression/
-          retention-days: 90
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

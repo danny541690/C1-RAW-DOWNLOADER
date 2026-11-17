@@ -1,50 +1,14 @@
-name: JARVIS Live Staging Provenance Followthrough
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - '.github/workflows/jarvis-live-staging-followthrough-20261021.yml'
+  workflow_dispatch:
 permissions:
-  contents: write
-  actions: write
+  contents: read
 jobs:
-  wait_first_chain:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 1
     steps:
-      - name: Wait for initial downstream workers to finish without competing for their slot
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          for attempt in $(seq 1 200); do
-            status=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/39613119269" --jq '.status')
-            if [ "$status" = completed ]; then exit 0; fi
-            sleep 5
-          done
-          exit 1
-  price:
-    needs: wait_first_chain
-    uses: ./.github/workflows/v093-v2-03-price.yml
-    with:
-      minutes: '1'
-    secrets: inherit
-  financial:
-    needs: price
-    uses: ./.github/workflows/v093-v2-04-financial.yml
-    with:
-      minutes: '1'
-    secrets: inherit
-  chip:
-    needs: financial
-    uses: ./.github/workflows/v093-v2-05-chip.yml
-    with:
-      minutes: '1'
-    secrets: inherit
-  finish:
-    if: always()
-    needs: [wait_first_chain, price, financial, chip]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Disable completed one-shot followthrough
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api --method PUT "repos/$GITHUB_REPOSITORY/actions/workflows/jarvis-live-staging-followthrough-20261021.yml/disable"
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

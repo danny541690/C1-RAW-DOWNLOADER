@@ -1,10 +1,14 @@
-# ARCHIVED on 2026-11-17 after V2.1 migration; full original in Git history.
-# Intentionally no schedule/push, no Bronze writes, no Silver or Gold.
-name: "JARVIS v097 Schema Format Gate V2 [ARCHIVED - no processing]"
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  archived-no-op:
+  no-op:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
-      - run: echo 'V2_ARCHIVED_V21_IS_THE_ACTIVE_SCHEMA_GATE'
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

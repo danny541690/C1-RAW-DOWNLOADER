@@ -1,32 +1,14 @@
-name: JARVIS resume terminal workers from durable checkpoints
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - '.github/workflows/jarvis-terminal-worker-recovery-20261022.yml'
   workflow_dispatch:
 permissions:
-  contents: write
-concurrency:
-  group: jarvis-terminal-worker-recovery-20261022
-  cancel-in-progress: false
+  contents: read
 jobs:
-  raw:
-    uses: ./.github/workflows/v093-v2-01-raw.yml
-    with:
-      minutes: '60'
-    secrets: inherit
-  qa1:
-    uses: ./.github/workflows/v093-v2-02-qa.yml
-    with:
-      minutes: '60'
-    secrets: inherit
-  price:
-    uses: ./.github/workflows/v093-v2-03-price.yml
-    with:
-      minutes: '60'
-    secrets: inherit
-  chip:
-    uses: ./.github/workflows/v093-v2-05-chip.yml
-    with:
-      minutes: '60'
-    secrets: inherit
+  no-op:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

@@ -1,38 +1,14 @@
-name: JARVIS v097 Silver READY Evidence Pilot (NDC)
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/v097_ap_silver_ready_pilot.yml'
 permissions:
   contents: read
-concurrency:
-  group: v097-ap-silver-ready-ndc-pilot
-  cancel-in-progress: false
 jobs:
-  release-gate-pilot:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Verify release rule and downstream manifest gates
-        run: |
-          PYTHONPATH=. python scripts/v097_ap_silver_input_gate.py selftest
-          PYTHONPATH=. python scripts/v097_ap_publish_artifacts.py selftest
-      - name: Issue evidence backed NDC Silver input attestations
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: PYTHONPATH=. python scripts/v097_ap_silver_input_gate.py
-      - name: Build auditable seven-source disposition ledger and Silver READY manifest
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: PYTHONPATH=. python scripts/v097_ap_publish_artifacts.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

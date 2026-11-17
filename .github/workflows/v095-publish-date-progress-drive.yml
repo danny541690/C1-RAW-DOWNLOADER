@@ -1,53 +1,14 @@
-name: JARVIS v0.95 publish six source DATE progress to Google Drive
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '25 1,13 * * *'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-publish-date-progress-drive.yml'
-      - 'scripts/v095_publish_date_progress_to_drive.py'
-      - 'scripts/v095_publish_bsg_date_progress.py'
-      - 'scripts/v095_2026_price_incremental.py'
-      - 'scripts/v095_2026_bsg_lineage_gate.py'
-      - 'scripts/v095_2026_four_source_archive_intake.py'
-      - 'governance/v095/OFFICIAL_VS_JARVIS_FORMAT_REPAIR_20261108.md'
-      - 'governance/v095/JARVIS_V095_SCHEDULE_ERROR_PLAN_20261108.md'
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-date-progress-snapshot
-  cancel-in-progress: false
 jobs:
-  publish-date-evidence:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 17
-    env:
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Compile strict six-source date-progress report
-        run: |
-          python -m py_compile scripts/v095_publish_date_progress_to_drive.py
-          python -m py_compile scripts/v095_publish_bsg_date_progress.py
-      - name: Read latest immutable Drive cursors and archive dated progress sheet with SHA
-        run: |
-          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 pyarrow openpyxl
-          python -u -m scripts.v095_publish_date_progress_to_drive
-          python -u -m scripts.v095_publish_bsg_date_progress
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: v095-date-progress-drive-${{ github.run_id }}
-          path: v095_schedule_date_progress/
-          retention-days: 90
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

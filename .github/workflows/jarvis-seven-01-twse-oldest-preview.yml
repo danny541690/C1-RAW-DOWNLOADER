@@ -1,29 +1,14 @@
-name: 證交所排程一之二（1-2）｜最舊往新｜受控執行入口
-run-name: '${{ github.workflow }} | ${{ inputs.mode }} | ${{ inputs.continuation_id }}'
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-    inputs:
-      continuation_id:
-        description: Durable continuation identity; empty for initial guarded start
-        type: string
-        required: false
-      mode:
-        description: Entry validation uses fixtures; production remains blocked
-        type: choice
-        options: [entry-validation, production]
-        default: entry-validation
 permissions:
-  contents: write
-  actions: write
-concurrency:
-  group: jarvis-seven-entry-twse-asc
-  cancel-in-progress: false
+  contents: read
 jobs:
-  worker:
-    uses: ./.github/workflows/jarvis-seven-worker.yml
-    with:
-      source: TWSE
-      direction: ASC
-      mode: ${{ inputs.mode }}
-      continuation_id: ${{ inputs.continuation_id }}
-    secrets: inherit
+  no-op:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

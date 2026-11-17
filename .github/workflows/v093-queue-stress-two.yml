@@ -1,21 +1,14 @@
-name: JARVIS v0.93 Queue Stress TWO
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
+on:
+  workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v093-test-only-queue-stress
-  cancel-in-progress: false
 jobs:
-  worker:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 1
     steps:
-    - name: Observe shared concurrency pending queue
-      run: 'echo "QUEUE_STRESS_TWO_START $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-
-        sleep 35
-
-        echo "QUEUE_STRESS_TWO_END $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-
-        '
-'on':
-  workflow_dispatch: null
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

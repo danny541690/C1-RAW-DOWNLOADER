@@ -1,10 +1,14 @@
-# PAUSED 2026-11-17 by user instruction; original preserved in Git history.
-# No schedule, workflow_run, push, or downstream writes.
-name: "PAUSED JARVIS v097 execution history ledger"
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  paused-no-op:
+  no-op:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
-      - run: echo 'PAUSED_NO_GITHUB_DRIVE_MUTATION'
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

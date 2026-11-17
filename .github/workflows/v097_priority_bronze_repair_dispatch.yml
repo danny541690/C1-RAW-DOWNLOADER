@@ -1,47 +1,14 @@
-name: JARVIS v097 Priority P0 P1 P2 Bronze Repair Dispatch
-# Coordinator only: all selected downstream workflows are Bronze-only.
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/v097_priority_bronze_repair_dispatch.yml
 permissions:
   contents: read
-  actions: write
-concurrency:
-  group: v097-priority-bronze-repair-dispatch
-  cancel-in-progress: false
 jobs:
-  dispatch-priority:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 1
     steps:
-      - name: Reuse established checkpoints and dispatch only idle source-evidence workflows
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          dispatch_if_idle() {
-            local workflow="$1"; shift
-            local active
-            active=$(gh api "repos/$GH_REPO/actions/workflows/$workflow/runs?per_page=30" --jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "requested" or .status == "pending")] | length')
-            if [ "$active" -gt 0 ]; then
-              echo "PRESERVE_EXISTING_CHECKPOINT_SKIP_ACTIVE $workflow active=$active"
-            else
-              gh workflow run "$workflow" --ref main "$@"
-              echo "PRIORITY_REPAIR_DISPATCH_ACCEPTED $workflow"
-            fi
-          }
-          # P0: exact 2025 same-date TDCC official evidence, historical ZIP members,
-          # source-native schemas, TDCC code classification, and SHA-linked evidence.
-          dispatch_if_idle v097-tdcc-2025-official-historical-qa.yml
-          dispatch_if_idle v097-tdcc-code-permutation-diagnosis.yml
-          dispatch_if_idle v097_b_format_continuous.yml -f depth=0
-          # P1/P2: all seven independent publisher/PIT and deep original-source
-          # evidence lanes cover MOPS, FinMind, TAIFEX and final NDC workbook cell.
-          dispatch_if_idle v097_seven_independent_publisher_bridge.yml
-          dispatch_if_idle v097_seven_independent_depth_continuous.yml -f depth=0
-          dispatch_if_idle v097-mops-accounting-qa.yml
-          # No Silver/Gold, no original Bronze mutation; formal gate owns release.
-          echo "PRIORITY_BRONZE_EVIDENCE_DISPATCH_COMPLETE"
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

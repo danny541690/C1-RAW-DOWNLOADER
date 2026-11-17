@@ -1,52 +1,14 @@
-name: JARVIS v0.97 - 12 lane receipt reconciliation (no redownload)
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: v097-reconcile-12-evidence-single
-  cancel-in-progress: false
 jobs:
-  reconcile-existing:
-    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      max-parallel: 6
-      matrix:
-        lane: [0,1,2,3,4,5,6,7,8,9,10,11]
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
-      - name: Validate syntax before reading immutable receipts
-        run: python -m py_compile scripts/v097_receipt_reconciliation_12.py
-      - name: Reconcile frozen manifest and existing R2 evidence only
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          RECON_MODE: lane
-          RECON_LANE: ${{ matrix.lane }}
-        run: PYTHONPATH=. python scripts/v097_receipt_reconciliation_12.py
-  publish-reconciliation:
-    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
-    needs: [reconcile-existing]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
-      - name: Reconcile all 12 mutually exclusive shards and save private Drive report
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          RECON_MODE: aggregate
-        run: PYTHONPATH=. python scripts/v097_receipt_reconciliation_12.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

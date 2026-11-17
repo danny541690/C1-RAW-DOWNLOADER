@@ -1,44 +1,14 @@
-name: JARVIS explicit continuation real dispatch test
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths: [.github/workflows/jarvis-seven-continuation-test.yml]
   workflow_dispatch:
-    inputs:
-      phase:
-        type: choice
-        options: [start, verify]
-        default: start
-      namespace:
-        type: string
-        default: ''
-      continuation_id:
-        type: string
-        default: ''
 permissions:
-  contents: write
-  actions: write
+  contents: read
 jobs:
-  probe:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: e17b6180ff0083794443b61e5db88fe5b02be72d
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Save checkpoint, dispatch once, or verify in an independent run
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PHASE: ${{ inputs.phase || 'start' }}
-          NAMESPACE: ${{ inputs.namespace }}
-          CONTINUATION_ID: ${{ inputs.continuation_id }}
-        run: python -m scripts.v093_continuation_live_test
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: continuation-${{ github.run_id }}
-          path: results
-          retention-days: 90
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

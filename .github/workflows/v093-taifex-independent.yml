@@ -1,47 +1,14 @@
-name: JARVIS independent TAIFEX download 6
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v093-taifex-independent.yml'
-      - 'scripts/v093_taifex_independent.py'
-      - 'scripts/v093_taifex_full_range.py'
-      - 'tests/test_taifex_full_range_20261027.py'
-      - 'scripts/taifex_verified_catalog.json'
-      - 'tests/test_taifex_recovery_v4.py'
-      - 'tests/test_taifex_api_native_v5.py'
-      - 'tests/test_taifex_catalog_v6.py'
-      - 'tests/test_taifex_official_mirror_v7.py'
-      - 'tests/test_taifex_route_health_v8.py'
   workflow_dispatch:
 permissions:
-  contents: write
-concurrency:
-  group: jarvis-independent-taifex-stage06
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  contents: read
 jobs:
-  download:
-    name: TAIFEX RAW backfill 6 — latest to 2000-01
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: pip install -r requirements-qa.lock
-      - name: Validate TAIFEX native format repairs, preservation and retry safety
-        run: python -m unittest discover -s tests -q
-      - name: Reserve shared GitHub control budget
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python -m scripts.v093_github_budget --minimum 250 --max-wait 300
-      - name: Audit saved TAIFEX RAW and repair missing files
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_taifex_independent --minutes 45 --direction DESC --audit-round 2 --backfill --full-range
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

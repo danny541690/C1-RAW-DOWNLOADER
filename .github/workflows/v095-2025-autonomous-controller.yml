@@ -1,35 +1,14 @@
-name: JARVIS v0.95 2025 autonomous six-source resume controller
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
 permissions:
   contents: read
-  actions: write
-concurrency:
-  group: jarvis-v095-2025-autonomous-controller-single
-  cancel-in-progress: false
 jobs:
-  supervise-2025:
-    if: ${{ false }} # BRONZE_FIRST_V11_PAUSE
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
-    env:
-      GH_TOKEN: ${{ github.token }}
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Validate 2025 source lane dispatch supervisor
-        run: python -m py_compile scripts/v095_2025_autonomous_controller.py
-      - name: Wake only missing and inactive 2025 source runs
-        run: python -u -m scripts.v095_2025_autonomous_controller
-      - name: Store 2025 source dispatch receipt
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-2025-autonomous-controller-${{ github.run_id }}
-          path: v095_2025_controller/result.json
-          if-no-files-found: warn
-          retention-days: 90
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

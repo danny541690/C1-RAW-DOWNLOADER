@@ -1,46 +1,14 @@
-name: JARVIS v0.95 2026-09 four-lane typed Silver numerical QA and Gold release gate
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-typed-silver-gate.yml'
-      - 'scripts/v095_202609_typed_silver_gate.py'
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-202609-typed-silver
-  cancel-in-progress: false
 jobs:
-  validate-and-convert:
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        lane: [twse-flow, twse-credit]
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
-      - name: Convert to typed Silver and evaluate quality; block unsafe Gold release
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_typed_silver_gate.py --lane ${{ matrix.lane }}
-      - name: Preserve QA reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-202609-typed-silver-qa-${{ matrix.lane }}-${{ github.run_id }}
-          path: v095_202609_typed_silver/
-          if-no-files-found: warn
-          retention-days: 90
-
-# Re-run 2026-09 measured validation with unchanged safety gates on 2026-11-06.
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

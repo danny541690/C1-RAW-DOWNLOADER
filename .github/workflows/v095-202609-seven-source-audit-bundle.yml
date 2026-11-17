@@ -1,32 +1,14 @@
-name: JARVIS 2026-09 seven-source Bronze audit evidence bundle
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-seven-source-audit-bundle.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  create-audit-bundle:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Bundle exact governance evidence and observed contracts with SHA
-        run: |
-          mkdir -p v095_sept_audit_package
-          cp governance/v095/202609_SEVEN_SOURCE_FINAL_SCOPE_AUDIT_20261105.json v095_sept_audit_package/
-          cp governance/v095/DATASET_CONTRACTS.csv v095_sept_audit_package/
-          cp governance/v095/OFFICIAL_FIRST_FINMIND_FREE_FALLBACK_V1.json v095_sept_audit_package/
-          cd v095_sept_audit_package
-          sha256sum *.json *.csv > BUNDLE_SHA256.txt
-      - name: Keep audit evidence, not a claimed Bronze release
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-202609-seven-source-audit-evidence-${{ github.run_id }}
-          path: v095_sept_audit_package/
-          retention-days: 90
-          if-no-files-found: error
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

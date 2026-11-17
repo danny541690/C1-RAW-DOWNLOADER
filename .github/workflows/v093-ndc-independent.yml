@@ -1,64 +1,14 @@
-name: JARVIS independent NDC download 7
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - '.github/workflows/v093-ndc-independent.yml'
-      - 'scripts/v093_ndc_independent.py'
-      - 'tests/test_ndc_independent.py'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  validate:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Verify dates, source gaps, native precision and immutable receipts
-        run: python -m unittest tests.test_ndc_independent -v
-      - name: Inspect official ZIP archive layout on deployment
-        if: github.event_name == 'push'
-        run: |
-          python - <<'PY'
-          import json
-          from scripts import v093_ndc_independent as n
-          probe=object.__new__(n.Worker);probe.requests=0
-          try:
-              raw=probe.request(n.ZIP_URL)
-              z=n.bounded_zip(raw)
-              print('NDC_OFFICIAL_ZIP_MEMBERS',json.dumps(z.namelist(),ensure_ascii=False),flush=True)
-              for name in z.namelist():
-                  if name.lower().endswith('manifest.csv'):
-                      print('NDC_OFFICIAL_MANIFEST',repr(z.read(name)[:1600]),flush=True)
-              for name in z.namelist():
-                  if name.lower().endswith('.csv') and not name.startswith('schema-') and name!='manifest.csv':
-                      print('NDC_OFFICIAL_CSV_HEADER',name,repr(z.read(name)[:800]),flush=True)
-              print('NDC_ZIP_AVAILABILITY',json.dumps(n.availability(n.parse_bundle(raw)),ensure_ascii=False),flush=True)
-          except Exception as exc:
-              print('NDC_SOURCE_PROBE_OPEN_ITEM',type(exc).__name__,str(exc)[:500],flush=True)
-          PY
-  download:
-    needs: validate
-    concurrency:
-      group: jarvis-independent-ndc-stage07
-      cancel-in-progress: false
-    name: Independent NDC latest to 2000 monthly history
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: pip install -r requirements-qa.lock
-      - name: Capture official NDC RAW and descending monthly history
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_ndc_independent --minutes 45
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

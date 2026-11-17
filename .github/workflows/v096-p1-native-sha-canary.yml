@@ -1,44 +1,14 @@
-name: JARVIS v0.96 P1 | verify original 0.93 byte SHA only
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v096-p1-native-sha-canary.yml'
-      - 'scripts/v096_native_sha_canary.py'
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v096-p1-original-sha-single-writer
-  cancel-in-progress: true
 jobs:
-  sha-canary:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-      V096_P0_MANIFEST_ID: '19dUb1cerzQ7LI5Uaxe6GAjBNuD3kUs8w'
-      V096_CONTROL_ID: '1DkvbQpcNYXmVzIzK0kHRZntB6qv5miIT'
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Google Drive client
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
-      - name: Compile read-only original SHA verifier
-        run: python -m py_compile scripts/v096_native_sha_canary.py
-      - name: Read bounded v0.93 source originals, verify SHA, MD5, native container integrity
-        run: python -u -m scripts.v096_native_sha_canary
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: v096-p1-native-sha-${{ github.run_id }}
-          path: v096_sha_canary/result.json
-          if-no-files-found: warn
-          retention-days: 30
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

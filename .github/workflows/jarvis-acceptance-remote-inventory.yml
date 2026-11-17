@@ -1,34 +1,14 @@
-name: JARVIS acceptance read-only RAW metadata inventory
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/jarvis-acceptance-remote-inventory.yml']
 permissions:
   contents: read
-concurrency:
-  group: jarvis-acceptance-readonly-inventory
-  cancel-in-progress: false
 jobs:
-  metadata-inventory:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: pip
-          cache-dependency-path: requirements-qa.lock
-      - run: pip install -r requirements-qa.lock
-      - name: Enumerate existing RAW metadata with pagination and local checkpoint
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python -m scripts.v093_acceptance_remote_inventory --out results/remote-inventory --max-requests 300 --max-seconds 480
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: jarvis-remote-metadata-${{ github.sha }}
-          path: results/remote-inventory/
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

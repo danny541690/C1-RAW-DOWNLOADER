@@ -1,29 +1,14 @@
-name: JARVIS followup report partition regression
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  pull_request:
-    paths:
-      - 'scripts/v093_partitioned_acceptance_publish.py'
-      - 'tests/test_v093_partitioned_acceptance_publish.py'
-      - '.github/workflows/jarvis-seven-official-followup.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  test:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: python -m unittest discover -s tests -p 'test_v093_partitioned_acceptance_publish.py' -v
-      - name: Verify schedule frequency and partition invocation
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          y=Path('.github/workflows/jarvis-seven-official-followup.yml').read_text()
-          assert "9,19,29,39,49,59 * * * *" in y
-          assert "v093_partitioned_acceptance_publish" in y
-          print("ten-minute cadence and lossless publisher wired")
-          PY
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

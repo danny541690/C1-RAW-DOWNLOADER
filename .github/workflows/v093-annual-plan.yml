@@ -1,40 +1,14 @@
-name: JARVIS v0.93 Annual Capture Plan
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-    inputs:
-      year:
-        description: "Calendar year to plan (no download yet)"
-        required: true
-        default: "2023"
-        type: string
-      dry_run:
-        description: "Safety mode — true only until data adapters are validated"
-        required: true
-        default: true
-        type: boolean
 permissions:
   contents: read
 jobs:
-  annual-plan:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - name: Fail closed on non-dry-run request
-        shell: bash
-        env:
-          DRY_RUN: ${{ inputs.dry_run }}
-        run: |
-          test "$DRY_RUN" = "true" || { echo 'BLOCKED: download implementation has not been validated'; exit 1; }
-      - name: Test annual planner and safety status
-        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
-      - name: Generate offline annual plan
-        env:
-          YEAR: ${{ inputs.year }}
-        run: python3 scripts/annual_plan.py --year "$YEAR" --output output/annual_manifest.json --dry-run true
-      - name: Upload plan artifact (NOT raw data)
-        uses: actions/upload-artifact@v4
-        with:
-          name: annual-plan-${{ inputs.year }}
-          path: output/annual_manifest.json
-          retention-days: 7
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

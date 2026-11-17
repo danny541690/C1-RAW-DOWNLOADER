@@ -1,27 +1,14 @@
-name: JARVIS 2024 Bounded Actual Source First Pass (PARTIAL)
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - '.github/workflows/v093-actual-partial-2024.yml'
-      - 'scripts/annual_actual_firstpass.py'
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: v093-2024-partial
-  cancel-in-progress: false
 jobs:
-  actual-source-first-pass:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
-      - name: Capture actual 2024 source responses month-by-month (NOT full market)
-        env:
-          PYTHONPATH: .
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-        run: python3 -u scripts/annual_actual_firstpass.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

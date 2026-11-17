@@ -1,43 +1,14 @@
-name: JARVIS v0.93 Bulk Market Drive End-to-End
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    paths:
-      - '.github/workflows/v093-bulk-drive-e2e.yml'
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: v093-bulk-drive-e2e
-  cancel-in-progress: false
 jobs:
-  actual-write:
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
-      - name: Download and store official TWSE TPEx bulk 2024-01-02 snapshot
-        env:
-          PYTHONPATH: .
-          MODE: write
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-        run: python3 scripts/bulk_drive_e2e.py
-  cross-job-resume:
-    needs: actual-write
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - run: python3 -m pip install google-api-python-client google-auth google-auth-httplib2
-      - name: Verify SHA256 and zero refetch on different runner
-        env:
-          PYTHONPATH: .
-          MODE: resume
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-        run: python3 scripts/bulk_drive_e2e.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

@@ -1,36 +1,14 @@
-name: JARVIS 2026-09 Bronze contract admission and Silver candidate readiness
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-bronze-admission.yml'
-      - 'tests/v095_202609_bronze_governance_admission.py'
-      - 'governance/v095/202609_BRONZE_MIGRATION_RESUME_20261105.json'
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: jarvis-v095-202609-bronze-admission
-  cancel-in-progress: false
 jobs:
-  bronze-release-evidence-admission:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Evaluate candidate contracts and known source deficits - no private Drive access
-        run: python tests/v095_202609_bronze_governance_admission.py
-      - name: Preserve explicit fail-closed Bronze gate and Silver candidate boundary
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-202609-bronze-gate-${{ github.run_id }}
-          retention-days: 90
-          path: v095_202609_bronze_admission/
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

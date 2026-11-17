@@ -1,44 +1,14 @@
-name: JARVIS v0.95 2026-09 R3 evidence-aware scheduler
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-R3-scheduler.yml'
-      - 'scripts/v095_202609_R3_scheduler.py'
-  # R3 controller is now included in single-closed-loop; legacy workflow stays manual.
 permissions:
-  actions: write
-  contents: write
-concurrency:
-  group: jarvis-v095-september-R3-controller
-  cancel-in-progress: false
+  contents: read
 jobs:
-  inspect-and-dispatch:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Drive metadata read-only and checkpoint runtime
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2
-      - name: Evaluate v0.93-first source evidence and existing Bronze/Silver/Gold/PIT gates
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_R3_scheduler.py
-      - name: Archive phase status separately from data acceptance
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v095-september-R3-control-${{ github.run_id }}
-          path: v095_202609_R3/
-          retention-days: 30
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

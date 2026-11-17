@@ -1,115 +1,14 @@
-name: JARVIS v0.95 September ONE Bronze Silver Gold PIT lineage pipeline
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
   workflow_dispatch:
-    inputs:
-      mode:
-        description: 'pipeline or query; same workflow'
-        type: choice
-        options: [pipeline, query]
-        default: pipeline
-      stock:
-        description: '4-digit stock code for query'
-        default: '2330'
-      indicator:
-        description: '443 registry ID for query'
-        default: 'MA5'
-      trade_date:
-        description: 'September 2026 trading date'
-        default: '2026-09-30'
-      market:
-        description: 'TSE or OTC'
-        default: 'TSE'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v095-202609-single-closed-loop.yml'
 permissions:
-  contents: write
-  actions: write
-concurrency:
-  group: jarvis-v095-202609-single-workflow
-  cancel-in-progress: false
+  contents: read
 jobs:
-  full-chain:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 65
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install runtime ONCE for all three layers and PIT
-        run: python -m pip install --disable-pip-version-check pyarrow google-api-python-client google-auth google-auth-httplib2
-      - name: Bronze v093 to v095 original migration inventory and source contracts
-        if: github.event_name != 'workflow_dispatch' || inputs.mode != 'query'
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_3tier_inventory.py
-      - name: Silver and Gold immutable partition checkpoints - no verified data redownload
-        if: github.event_name != 'workflow_dispatch' || inputs.mode != 'query'
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_unified_resume.py
-      - name: Reconcile source and TDCC checkpoints with live Drive; bounded dispatch if truly missing
-        if: github.event_name != 'workflow_dispatch' || inputs.mode != 'query'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_R3_scheduler.py
-      - name: Gold 443 ID mapping and bidirectional Gold Silver Bronze SHA lineage + PIT matrix
-        if: github.event_name != 'workflow_dispatch' || inputs.mode != 'query'
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_unified_lineage.py
-      - name: AI query index and historical PIT release gate (do not confuse pass with full 443 certification)
-        if: github.event_name != 'workflow_dispatch' || inputs.mode != 'query'
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: python scripts/v095_202609_ai_query_gate.py
-      - name: Daily reverse trace smoke test 2330 MA5 2026-09-30
-        if: github.event_name != 'workflow_dispatch' || inputs.mode != 'query'
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          JARVIS_STOCK: '2330'
-          JARVIS_INDICATOR: 'MA5'
-          JARVIS_DATE: '2026-09-30'
-          JARVIS_MARKET: 'TSE'
-        run: python scripts/v095_202609_query_trace.py
-      - name: On-demand Gold indicator lookup and backward Silver Bronze trace
-        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'query'
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          JARVIS_STOCK: ${{ inputs.stock }}
-          JARVIS_INDICATOR: ${{ inputs.indicator }}
-          JARVIS_DATE: ${{ inputs.trade_date }}
-          JARVIS_MARKET: ${{ inputs.market }}
-        run: python scripts/v095_202609_query_trace.py
-      - name: Preserve ONE consolidated complete-chain receipt
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jarvis-v095-sep-Bronze-Silver-Gold-PIT-${{ github.run_id }}
-          path: |
-            v095_202609_3tier_inventory/
-            v095_unified_202609/
-            v095_202609_R3/
-            v095_september_ai_query/
-          retention-days: 90
-          if-no-files-found: warn
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'

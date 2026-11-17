@@ -1,78 +1,14 @@
-name: JARVIS v0.97 - Bronze bounded content QA - six lanes
+# JARVIS GLOBAL FREEZE 2026-11-17, user-authorized.
+# Prior workflow contents preserved in Git parent commit f37716dd69f2c96b1ad63b4fc9495e27982dfb81.
+# No cron, push, workflow_run, repository_dispatch or processing paths.
+name: JARVIS GLOBAL FREEZE - archived no-op
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-bronze-qa-six-lanes.yml'
-      - 'scripts/v097_bronze_content_qa.py'
-      - 'scripts/v097_continue_workflow.py'
   workflow_dispatch:
 permissions:
   contents: read
-  actions: write
-concurrency:
-  group: v097-bronze-content-qa
-  cancel-in-progress: false
 jobs:
-  inspect-six-lanes:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
-    name: Bronze content QA lane ${{ matrix.lane }} of 6
+  no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 310
-    strategy:
-      fail-fast: false
-      max-parallel: 6
-      matrix:
-        lane: [0, 1, 2, 3, 4, 5]
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Drive client
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
-      - name: Verify QA script syntax before running
-        run: python -m py_compile scripts/v097_bronze_content_qa.py
-      - name: Read actual file bytes and record private QA evidence
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          QA_MODE: lane
-          QA_LANE: ${{ matrix.lane }}
-          QA_BATCH_PER_LANE: '120'
-          QA_BATCH_CYCLES: '24'
-        run: python scripts/v097_bronze_content_qa.py
-  aggregate-private-drive:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
-    needs: inspect-six-lanes
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Drive client
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
-      - name: Verify QA script syntax before merging
-        run: python -m py_compile scripts/v097_bronze_content_qa.py
-      - name: Merge six QA results privately in v0.97
-        id: merge
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          QA_MODE: aggregate
-        run: python scripts/v097_bronze_content_qa.py
-      - name: Wake B immediately after every completed A QA batch
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CONTINUE_GROUP: B
-        run: python scripts/v097_continue_workflow.py
-      - name: Immediately continue A if Drive checkpoint still has pending files
-        if: ${{ steps.merge.outputs.remaining != '0' && steps.merge.outputs.remaining != '' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CONTINUE_GROUP: A
-        run: python scripts/v097_continue_workflow.py
+      - run: echo 'GLOBAL_PAUSE_BRONZE_READ_ONLY_NO_SILVER_NO_GOLD_NO_DRIVE_WRITES'
