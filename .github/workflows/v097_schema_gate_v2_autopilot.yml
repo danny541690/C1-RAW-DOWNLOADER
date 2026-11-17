@@ -1,0 +1,87 @@
+name: JARVIS v097 Schema Format Gate V2 Autopilot
+# Single continuous incremental format workflow, seven independent source checkpoints.
+# Legacy Bronze content/PIT/numeric release remains retired. No Silver or Gold execution.
+on:
+  workflow_dispatch:
+    inputs:
+      depth:
+        type: string
+        default: '0'
+        required: false
+  push:
+    paths:
+      - scripts/v097_schema_gate_v2.py
+      - .github/workflows/v097_schema_gate_v2_autopilot.yml
+  schedule:
+    - cron: '5,20,35,50 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-schema-v2-single-pipeline
+  cancel-in-progress: false
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Verify format-only code and previous error regression contracts
+        run: |
+          python -m py_compile scripts/v097_schema_gate_v2.py
+          PYTHONPATH=. python scripts/v097_schema_gate_v2.py selftest
+  formats:
+    needs: contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Incremental format evidence and Drive delta checkpoint
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SCHEMA_BATCH: '75'
+        run: PYTHONPATH=. python scripts/v097_schema_gate_v2.py '${{ matrix.source }}'
+  reconcile-and-resume:
+    needs: [contracts, formats]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Reconcile Drive progress and publish immutable report
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_schema_gate_v2.py final | tee /tmp/schema-v2-progress.log
+      - name: Continue automatically until all records receive a terminal format disposition
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPTH: ${{ github.event.inputs.depth || '0' }}
+        run: |
+          remaining=$(grep '^SCHEMA_V2_MASTER=' /tmp/schema-v2-progress.log | tail -1 | python -c "import json,sys;print(json.loads(sys.stdin.read().split('=',1)[1])['remaining'])")
+          echo "SCHEMA_V2_REMAINING=$remaining"
+          if [ "$remaining" -gt 0 ] && [ "$DEPTH" -lt 12 ]; then
+            gh workflow run v097_schema_gate_v2_autopilot.yml --ref main -f depth="$((DEPTH+1))"
+          else
+            echo "No immediate continuation. Fifteen-minute GitHub cron remains a fallback."
+          fi
