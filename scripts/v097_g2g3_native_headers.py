@@ -48,7 +48,7 @@ def header_for(blob,name):
         for enc in ("utf-8-sig","cp950","big5"):
             try:
                 h=HeaderParser();h.feed(blob[:3*1024*1024].decode(enc))
-                choices=[r for table in h.tables for r in table[:4] if len(r)>1]
+                choices=[r for table,types in h.tables for r,has_th in list(zip(table,types))[:4] if len(r)>1 and has_th]
                 if choices:return {"format":"HTML","header":max(choices,key=lambda r:(len(r),sum(len(x)>0 for x in r)))[:100],
                                    "tables_observed":len(h.tables),"encoding":enc,
                                    "status":"HEADER_OBSERVED_UNCERTIFIED"}
