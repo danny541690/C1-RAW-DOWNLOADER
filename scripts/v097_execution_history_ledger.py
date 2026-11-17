@@ -257,7 +257,8 @@ def selftest():
     report = {**fake, "schema": REPORT_SCHEMA, "workflow": "Test",
               "category": "OTHER", "sources": [], "errors_captured": 0,
               "created_at": "2026-11-17T00:00:00Z",
-              "updated_at": "2026-11-17T00:00:01Z"}
+              "updated_at": "2026-11-17T00:00:01Z",
+              "github_url": "https://github.com/example"}
     assert master_row(report, "/test", "a")["report_file_id"] == "a"
     print("EXECUTION_HISTORY_SELFTEST_PASS")
 
