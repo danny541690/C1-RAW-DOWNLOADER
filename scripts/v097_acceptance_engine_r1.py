@@ -160,11 +160,37 @@ def source(src,shard):
                 try:historical=period(src,ym)["id"]
                 except (ValueError,KeyError,TypeError):pass
         p2=c2.get(sid);p3=c3.get(sid)
-        fp=fingerprint(r,f1,mp,v3,p2,p3,historical)
-        prev=done.get(sid)
-        if prev and prev.get("fingerprint")==fp:continue
-        z=evaluate(r,f1,mp,v3,p2,p3,historical)
-        z.update({"fingerprint":fp,"run":RUN,"at":now(),"era":historical})
+        # G0 is a real destination-byte verification, never inferred from legacy status.
+        # Read only when no matching V3 destination SHA evidence is available.
+        prior=done.get(sid)
+        cached_g0=(prior or {}).get("g0_readback_sha") == r["source_sha256"]
+        native=v3 if isinstance(v3,dict) else {}
+        if cached_g0 and native.get("g0") not in ("DEST_SHA_VERIFIED","DEST_SHA_VERIFIED_REUSED"):
+            native={**native,"sha":r["source_sha256"],"g0":"DEST_SHA_VERIFIED_REUSED","run":prior.get("run")}
+        fp=fingerprint(r,f1,mp,native,p2,p3,historical)
+        if prior and prior.get("fingerprint")==fp:continue
+        if native.get("g0") not in ("DEST_SHA_VERIFIED","DEST_SHA_VERIFIED_REUSED"):
+            try:
+                blob=call(lambda:api.files().get_media(fileId=r["destination_id"]))
+                if not blob:raise ValueError("EMPTY_DESTINATION")
+                received=hashlib.sha256(blob).hexdigest()
+                if received!=r["source_sha256"]:
+                    raise ValueError("DESTINATION_SHA_MISMATCH")
+                native={**native,"sha":r["source_sha256"],"g0":"DEST_SHA_VERIFIED",
+                        "run":RUN}
+            except Exception as exc:
+                z={"source_id":sid,"source":src,"sha":r["source_sha256"],
+                   "status":"PENDING","reason":"G0_READBACK_"+type(exc).__name__,
+                   "gates":{"G0":"PENDING","G1":"PENDING","G2":"PENDING","G3":"PENDING","G4":"PENDING"},
+                   "evidence":{},"version":VERSION,
+                   "fingerprint":fp,"run":RUN,"at":now(),"era":historical}
+                changes[sid]=z
+                if len(changes)>=BATCH:break
+                continue
+        fp=fingerprint(r,f1,mp,native,p2,p3,historical)
+        z=evaluate(r,f1,mp,native,p2,p3,historical)
+        z.update({"fingerprint":fp,"run":RUN,"at":now(),"era":historical,
+                  "g0_readback_sha":r["source_sha256"]})
         changes[sid]=z
         if len(changes)>=BATCH:break
     if changes:
