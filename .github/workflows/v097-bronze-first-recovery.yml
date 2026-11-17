@@ -1,42 +1,10 @@
-name: JARVIS v0.97 - Bronze first automatic failure recovery
+# Archived per user request on 2026-11-17; new format-only autopilot replaces old acceptance pipelines.
+# Original implementation recoverable in Git revisions. Existing Drive data untouched.
+name: "JARVIS v0.97 - Bronze first automatic failure recovery [ARCHIVED]"
 on:
-  workflow_run:
-    workflows:
-      - JARVIS v0.97 - BRONZE FIRST 12+6+6 verified-copy autopilot
-    types: [completed]
-  schedule:
-    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
-permissions:
-  contents: read
-  actions: write
-concurrency:
-  group: v097-bronze-first-recovery-guard
-  cancel-in-progress: false
 jobs:
-  recover-failed-cycle-only:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  archived:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install minimal Google Drive API client
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
-      - name: Syntax check of status and recovery
-        run: python -m py_compile scripts/v097_bronze_first_batch_v3.py scripts/v097_bronze_first_watchdog.py
-      - id: status
-        name: Read latest Drive checkpoints only; do not re-download any market originals
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          BF_MODE: status
-        run: PYTHONPATH=. python scripts/v097_bronze_first_batch_v3.py
-      - name: Self-dispatch only if durable pending and no active run; bounded failure recovery
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BF_PENDING: ${{ steps.status.outputs.pending }}
-        run: python scripts/v097_bronze_first_watchdog.py
+      - run: echo OLD_V097_FLOW_RETIRED_NO_DATA_WORK
