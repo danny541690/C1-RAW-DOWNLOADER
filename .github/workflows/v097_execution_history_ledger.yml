@@ -10,6 +10,7 @@ on:
     - cron: '3,13,23,33,43,53 * * * *'
   workflow_run:
     workflows:
+      - JARVIS v097 Q0-Q4 Combined Integrity and Schema Inventory
       - JARVIS v097 Bronze v2.1 Direct READY Release Only
       - JARVIS v097 Seven Native Historical Parsers V2 Continuous
       - JARVIS v097 TAIFEX Source-Native CSV Format Translation
