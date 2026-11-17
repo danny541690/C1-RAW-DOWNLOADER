@@ -12,9 +12,9 @@ from scripts.v097_g2g3_native_headers import HEADER_PREFIX,header_for,sha
 from scripts.v097_g2g3_full_native_validation import full_scan,MAX_BYTES as FULL_SCAN_MAX
 from scripts.v097_g2g3_tdcc_native_html import inspect as tdcc_full_native
 VERSION="v097_g2g3_typed_contract_audit_r1"
-FULL_VALIDATOR_VERSION="v097_g2g3_full_native_validation_r2_tdcc_html"
+FULL_VALIDATOR_VERSION="v097_g2g3_full_native_validation_r3_tdcc_16_17_layout"
 RUN=os.environ.get("GITHUB_RUN_ID","manual")
-BATCH=max(1,min(35,int(os.environ.get("G2G3_TYPED_BATCH","15"))))
+BATCH=max(1,min(90,int(os.environ.get("G2G3_TYPED_BATCH","45"))))
 CHECKPOINT="v097_G2G3_TYPED_AUDIT_CK_"
 LIMIT=65*1024*1024
 DATE_KEYS={"date","period"}
