@@ -56,7 +56,7 @@ def basic(blob,name):
                     types[fmt(p.filename,b)]+=1
                 return {"status":"SCHEMA_PROFILED_NEEDS_MAPPING","signature":"ZIP","member_types":dict(types),"members":len(members)}
         except Exception as e:return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"ZIP_"+type(e).__name__}
-    if re.search(r"\\.raw\\.receipt_[^/]*\\.json$",name,re.I):
+    if re.search(r"\.raw\.receipt_[^/]*\.json$",name,re.I):
         return {"status":"FORMAT_UNSUPPORTED","reason":"PROVENANCE_RECEIPT_NOT_MARKET_DATA"}
     if typ=="JSON":
         try:
@@ -73,7 +73,6 @@ def basic(blob,name):
                 header=next(reader,None)
                 if header is None:return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"EMPTY_CSV"}
                 if len(header)<2:continue
-                trailing=len(header)-len(list(reversed(list(__import__("itertools").dropwhile(lambda x:not str(x).strip(),reversed(header)))))
                 return {"status":"SCHEMA_PROFILED_NEEDS_MAPPING","signature":"CSV","encoding":enc,"header":header[:80],"header_has_optional_empty_tail":bool(header and not header[-1].strip())}
             except (UnicodeError,csv.Error):continue
         return {"status":"FORMAT_UNSUPPORTED","reason":"CSV_UNKNOWN_ENCODING_OR_LAYOUT"}
@@ -195,7 +194,7 @@ def selftest():
     assert basic(b'{"tables":[{"fields":["date","code"]}]}',"a.json")["signature"]=="JSON"
     assert basic("日期,代碼\n2026-11-17,2330".encode(),"a.csv")["signature"]=="CSV"
     assert basic(b"x","a.zip")["status"]=="FORMAT_UNSUPPORTED"
-    assert basic(b"{\\\"ok\\\":1}","a.raw.receipt_123.json")["reason"]=="PROVENANCE_RECEIPT_NOT_MARKET_DATA"
+    assert basic(b'{"ok":1}',"a.raw.receipt_123.json")["reason"]=="PROVENANCE_RECEIPT_NOT_MARKET_DATA"
     assert basic("交易日期,契約,成交量,\\n2026-11-17,TX,1,".encode(),"a.csv")["header_has_optional_empty_tail"] is True
     assert reusable({"bronze_sha256":"a"*64,"input_bytes_sha_checked":True,
                      "status":"CONTENT_PARSED","parser_detail":{"deep_content":{"signature":"JSON_CANDIDATE"}}},None,"a"*64)["status"]=="SCHEMA_PROFILED_NEEDS_MAPPING"
