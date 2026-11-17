@@ -26,7 +26,7 @@ if __name__=="__main__":
       },ensure_ascii=False),flush=True)
     assert data["metadata"]["code"].get("value")=="4609"
     assert data["metadata"]["date"].get("value")=="2025-11-28"
-    assert data.get("data_rows")==17
+    assert data.get("data_rows")==16 and data.get("source_layout")=="TDCC_NATIVE_16_NO_ADJUSTMENT"
     assert data["metadata"]["filename_consistent"] is True
     assert candidate["status"]=="COMPLETE_HEADER_CANDIDATE_UNCERTIFIED"
     assert not candidate["silver_schema_ready"] and not data["release"]
