@@ -1,5 +1,5 @@
 name: JARVIS V097 G2 G3 Typed Contract Evidence (No Conversion)
-# 2026-11-17: source-native full-file shape audit, strict negative tests, original bytes read-only
+# 2026-11-17: rerun corrected JSONL fixture, full-file shape and strict negative tests
 # Revalidate exact layout grouping and header fingerprint invalidation safety gates
 # HTML row safety correction verified in selftests
 on:
