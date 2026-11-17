@@ -1,35 +1,9 @@
-name: JARVIS v097 Silver Ready HOLD Evidence Triage
+# Archived on 2026-11-17, superseded by Schema Format Gate V2 Autopilot.
+name: "JARVIS v097 Silver Ready HOLD Evidence Triage [ARCHIVED]"
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - scripts/v097_silver_ready_hold_triage.py
-      - .github/workflows/v097_silver_ready_hold_triage.yml
-  workflow_run:
-    workflows:
-      - JARVIS v097 Bronze Autopilot 74750 Seven Sources
-    types: [completed]
-permissions:
-  contents: read
-concurrency:
-  group: v097-silver-ready-hold-triage
-  cancel-in-progress: false
 jobs:
-  evidence-queue:
+  archived:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Drive reader
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Gate self-test
-        run: PYTHONPATH=. python scripts/v097_silver_ready_hold_triage.py selftest
-      - name: Read latest seven signed source gates and publish immutable HOLD evidence queue
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: PYTHONPATH=. python scripts/v097_silver_ready_hold_triage.py
+      - run: echo OLD_V097_FLOW_RETIRED_NO_DATA_WORK
