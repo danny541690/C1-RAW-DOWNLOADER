@@ -67,7 +67,7 @@ NATIVE_VARIANTS={
    {"id":"IFRS_XBRL","format":"XBRL"},
    {"id":"IFRS_IXBRL","format":"IXBRL"}]},
  "TWSE":{"STOCK_DAILY_OHLCV":[
-   {"id":"A05_COMMERCIAL_NATIVE","format":"CSV_TXT","date_rule":"A05_OFFICIAL_EDITION"},
+   {"id":"A05_COMMERCIAL_NATIVE","format":"CSV_TXT","date_rule":"A05_OFFICIAL_EDITION","official_2025_04_28_change_url":"https://eshop.twse.com.tw/zh/news/detail/8a82e9e695212a73019622fe6fa00115","effective_date":"2025-04-28","source_specific_doc_required":True},
    {"id":"PUBLIC_DAILY_MIXED_TABLES","format":"HTML_CSV_JSON","date_rule":"SOURCE_PUBLIC_LAYOUT"}]}
 }
 def contract(source,dataset,era):
@@ -86,6 +86,8 @@ def contract(source,dataset,era):
        "required_fields":required or {},"native_units_candidate":UNITS.get(source,{}),
        "candidate_primary_key":list(keys or []),
        "source_native_variants":versions,
+       "dataset_era_official_proof_required":True,
+       "format_revision_warning":"Do not infer a dataset's complete format from broad era alone; source-specific dated editions must be attested.",
        "official_source_reference_candidates":official["reference"],
        "source_specific_open_holds":list(HISTORIC_HOLDS[source]),
        "promotion_state":"NOT_CERTIFIED",
