@@ -7,9 +7,10 @@ from scripts.v097_v3_preflight import SOURCES, read_baseline,assert_cohort,load_
 from scripts.v097_g2g3_contract_discovery import get_worker,analyse
 from scripts.v097_v3_contract_registry import infer,REGISTRY_VERSION,CONTRACTS,normalize
 from scripts.v097_v3_source_worker import fmt
+from scripts.v097_g2g3_tdcc_native_html import metadata as tdcc_page_metadata
 
 VERSION="v097_g2g3_native_header_recovery_20261117_r1"
-PARSER_REV="html_th_or_source_aliases_20261117_r3"
+PARSER_REV="tdcc_page_code_date_provenance_20261117_r4"
 RUN=os.environ.get("GITHUB_RUN_ID","manual")
 BATCH=max(1,min(65,int(os.environ.get("G2G3_HEADER_BATCH","30"))))
 MAX_RAW=65*1024*1024
@@ -56,6 +57,7 @@ def header_for(blob,name,src=None):
                          if len(r)>1 and (has_th or distinct_fields(r)>=2)]
                 if choices:return {"format":"HTML","header":max(choices,key=lambda r:(len(r),sum(len(x)>0 for x in r)))[:100],
                                    "tables_observed":len(h.tables),"encoding":enc,
+                                   "source_metadata":tdcc_page_metadata(blob,name) if src=="TDCC" else None,
                                    "status":"HEADER_OBSERVED_UNCERTIFIED"}
             except (UnicodeError,ValueError):pass
         return {"format":"HTML","header":[],"status":"HTML_TABLE_HEADER_PENDING"}
@@ -116,7 +118,7 @@ def inspect_native(blob,path,src,era):
                 evidence.append({"path":m.filename,"sha":sha(content),**header_for(content,m.filename,src)})
     for e in evidence:
         if e.get("header"):
-            c=infer(src,e["header"],era)
+            c=infer(src,e["header"],era,metadata=e.get("source_metadata"))
             e["contract_candidate"]={"dataset":c.get("dataset_candidate"),
                "era_registered":c.get("era_registered"),"missing":c.get("missing_required"),
                "status":c["status"],"contract_registry":REGISTRY_VERSION,
@@ -183,6 +185,12 @@ def selftest():
     assert not misleading["header"],"Data-only HTML cannot be classified as header"
     td_head="<table><tr><td>StockNo</td><td>持股分級</td><td>人數</td></tr></table>".encode()
     assert "StockNo" in header_for(td_head,"tdcc.html","TDCC")["header"]
+    tdcc_head=("<p>證券代號：4609</p><span>資料日期：114年11月28日</span>"+
+        "<table><tr><th>序</th><th>持股/單位數分級</th><th>人數</th><th>股數/單位數</th><th>占集保庫存數比例 (%)</th></tr></table>").encode()
+    tdcc_e=header_for(tdcc_head,"distribution_20251128_4609.html","TDCC")
+    assert tdcc_e["source_metadata"]["code"]["validated"]
+    assert tdcc_e["source_metadata"]["date"]["validated"]
+
     assert header_for(('{"date":"2026-11-17","stock_id":"2330"}' + chr(10)).encode(), "p.jsonl","FinMind")["header"]==["date","stock_id"]
     assert not header_for(b"<table><tr><td>2330</td><td>1</td><td>200</td></tr></table>","tdcc.html","TDCC")["header"]
     mem=io.BytesIO()
