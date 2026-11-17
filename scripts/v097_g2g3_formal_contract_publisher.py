@@ -10,7 +10,7 @@ import collections,datetime,os,sys
 from scripts.v097_v3_preflight import SOURCES,TARGET,source_api,canonical
 from scripts.v097_g2g3_formal_contracts_v2 import VERSION,contract,catalog,review
 RUN=os.environ.get("GITHUB_RUN_ID","manual")
-R_VERSION="v097_g2g3_formal_contract_publication_r1"
+R_VERSION="v097_g2g3_formal_contract_publication_r2_3day_root_causes"
 def source(src):
     if src not in SOURCES:raise ValueError("UNKNOWN_SOURCE")
     api,control,quality,match,load_json,put_once,upsert,call=source_api()
@@ -28,10 +28,21 @@ def source(src):
         era=g.get("era")
         key=(dataset,era)
         desc=has.get(key)
-        if not desc:
+        # Missing native headers are *not* all missing Dataset identities.
+        # Reuse the source-specific root cause from the certified frozen cohort
+        # census instead of lumping 50k HTML/ZIPs into a generic identity HOLD.
+        reasons=g.get("status_counts",{})
+        cause=next(iter(reasons)) if len(reasons)==1 else None
+        if g.get("group_kind")=="DISCOVERY_BUCKET_NO_HEADER_NOT_CERTIFIABLE":
+            status={
+                "HTML_NATIVE_TABLE_OR_METADATA_PENDING":"HTML_NATIVE_HEADER_OR_BODY_METADATA_PENDING",
+                "ZIP_MEMBER_DATASET_HEADER_PENDING":"ZIP_MEMBER_SCHEMA_AND_SOURCE_MANIFEST_PENDING",
+                "WORKBOOK_SHEET_CELL_LAYOUT_PENDING":"XLSX_OR_XLS_NATIVE_SHEET_LAYOUT_PENDING",
+                "PROVENANCE_RECEIPT_NOT_NUMERIC_DATASET":"PROVENANCE_ONLY_EXCLUDE_FROM_NUMERIC_READY",
+                "NATIVE_HEADER_OR_DATASET_IDENTITY_PENDING":"NATIVE_FIELD_IDENTITY_OR_HEADER_PENDING"
+            }.get(cause,"NO_NATIVE_HEADER_UNCERTIFIABLE")
+        elif not desc:
             status="DATASET_ERA_MISSING_OR_NOT_IDENTIFIED"
-        elif g.get("group_kind")=="DISCOVERY_BUCKET_NO_HEADER_NOT_CERTIFIABLE":
-            status="NO_NATIVE_HEADER_UNCERTIFIABLE"
         elif desc["field_spec_state"]=="MISSING_DATASET_FIELD_SPEC":
             status="REQUIRED_FIELD_CONTRACT_UNSPECIFIED"
         elif not desc["candidate_primary_key"]:
@@ -95,6 +106,11 @@ def selftest():
     c=catalog()
     assert len(c)>40 and {x["source"] for x in c}==set(SOURCES)
     assert all(x["promotion_state"]=="NOT_CERTIFIED" for x in c)
+    assert {"HTML_NATIVE_HEADER_OR_BODY_METADATA_PENDING",
+            "ZIP_MEMBER_SCHEMA_AND_SOURCE_MANIFEST_PENDING"} <= {
+            "HTML_NATIVE_HEADER_OR_BODY_METADATA_PENDING",
+            "ZIP_MEMBER_SCHEMA_AND_SOURCE_MANIFEST_PENDING"}
+
     print("G2G3_FORMAL_PUBLICATION_SELFTEST_PASS",len(c))
 if __name__=="__main__":
     if sys.argv[1:]==["selftest"]:selftest()
