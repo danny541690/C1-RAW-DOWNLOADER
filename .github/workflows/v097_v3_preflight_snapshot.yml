@@ -1,0 +1,30 @@
+name: JARVIS v097 V3 Frozen-Cohort Baseline Inventory
+# Safe preflight after GLOBAL FREEZE. No Bronze writes, no Silver or Gold conversions.
+on:
+  push:
+    paths:
+      - .github/workflows/v097_v3_preflight_snapshot.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive read/write-report dependencies only
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Preflight negative tests
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_v3_preflight.py selftest
+      - name: Reconcile source-index / old profile / mapping evidence; publish immutable snapshot
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_v3_preflight.py snapshot
