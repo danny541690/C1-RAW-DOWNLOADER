@@ -129,7 +129,7 @@ jobs:
         if: ${{ always() }}
         run: |
           echo "## JARVIS Gate Run ${{ github.run_id }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "G1 workers: ${{ needs.g1-format.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "G1 workers: ${{ needs['g1-format'].result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "V3 workers: ${{ needs.workers.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "G1 = format evidence; G2/G3 = contract candidates pending formal attestation; G4 = NOT RELEASED." >> "$GITHUB_STEP_SUMMARY"
           echo "Bronze immutable; no Silver or Gold materialization." >> "$GITHUB_STEP_SUMMARY"
@@ -142,10 +142,10 @@ jobs:
         run: |
           echo "## JARVIS v0.97 execution state" >> "$GITHUB_STEP_SUMMARY"
           echo "Preflight: ${{ needs.preflight.result }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "G1 workers: ${{ needs.g1-format.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "G1 workers: ${{ needs['g1-format'].result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "V3 workers: ${{ needs.workers.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Reconcile: ${{ needs.reconcile.result }}" >> "$GITHUB_STEP_SUMMARY"
-          if [ "${{ needs.preflight.result }}" != "success" ] || [ "${{ needs.g1-format.result }}" != "success" ] || [ "${{ needs.workers.result }}" != "success" ] || [ "${{ needs.reconcile.result }}" != "success" ]; then
+          if [ "${{ needs.preflight.result }}" != "success" ] || [ "${{ needs['g1-format'].result }}" != "success" ] || [ "${{ needs.workers.result }}" != "success" ] || [ "${{ needs.reconcile.result }}" != "success" ]; then
             echo "::error::One or more gate jobs failed; inspect job logs and checkpoint history."
             exit 1
           fi
