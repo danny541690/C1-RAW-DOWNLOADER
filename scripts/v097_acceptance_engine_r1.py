@@ -242,7 +242,26 @@ def aggregate():
         results.append({"source":src,"cohort":len(rows),"status":dict(counts),"gates":gate_counts})
     if total!=TARGET or len(ids)!=TARGET or sum(all_status.values())!=TARGET:
         raise RuntimeError("R1_74750_ACCOUNTING_DRIFT")
+    # Reuse the existing seven-source formal contract census; preserve its
+    # candidate/official-proof distinction instead of silently inventing certificates.
+    formal_file=match(api,control,"v097_G2G3_FORMAL_MASTER_LATEST.json")
+    formal=load_json(api,formal_file["id"]) if formal_file else None
+    formal_summary=None
+    if formal is not None:
+        if formal.get("cohort")!=TARGET or len(formal.get("sources",[]))!=len(COUNTS):
+            raise RuntimeError("R1_FORMAL_CONTRACT_COHORT_CONFLICT")
+        formal_names=[r.get("source") for r in formal["sources"]]
+        if set(formal_names)!=set(COUNTS) or len(set(formal_names))!=len(COUNTS):
+            raise RuntimeError("R1_FORMAL_SOURCE_ID_CONFLICT")
+        formal_summary={"run":formal.get("run"),"report_id":formal.get("report_id"),
+            "specs":formal.get("dataset_era_contract_count"),
+            "groups":formal.get("group_count"),
+            "blockers":formal.get("blocker_totals"),
+            "g2_census_verified":formal.get("g2_verified",0),
+            "g3_census_verified":formal.get("g3_verified",0),
+            "note":"Official contract census is a candidate registry, not a per-file G2/G3 certificate."}
     master={"schema":VERSION,"run":RUN,"cohort":TARGET,"created_at":now(),
+            "formal_contract_census":formal_summary,
             "status":dict(all_status),"sources":results,
             "evaluated":TARGET-all_status["NOT_EVALUATED"],
             "terminal_disposition":sum(all_status[t] for t in TERMINAL),
