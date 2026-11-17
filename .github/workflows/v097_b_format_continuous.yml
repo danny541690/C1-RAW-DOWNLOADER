@@ -1,89 +1,12 @@
-name: JARVIS v097 B Historical Format Continuous Forensics
+# ARCHIVED 2026-11-17: user requested retirement of old deep-content Bronze validation.
+# Original workflow retained in Git history. This stub has no schedule, push, or workflow_run triggers.
+# It deliberately performs no parsing, release, Silver, Gold, or recursive dispatch.
+name: "JARVIS v097 B Historical Format Continuous Forensics [ARCHIVED — no processing]"
 on:
   workflow_dispatch:
-    inputs:
-      depth:
-        description: "Continuation depth (bounded, watchdog resumes)"
-        default: "0"
-        required: false
-        type: string
-  push:
-    paths:
-      - scripts/v097_b_format_forensics.py
-      - .github/workflows/v097_b_format_continuous.yml
-  schedule:
-    - cron: '6,21,36,51 * * * *'
-permissions:
-  contents: read
-  actions: write
-concurrency:
-  group: v097-b-format-continuous
-  cancel-in-progress: false
 jobs:
-  format-audit:
+  archived-no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 110
-    strategy:
-      fail-fast: false
-      matrix:
-        source: [TWSE, TPEx]
-    outputs:
-      unused: 'no'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: B-format parser positive and negative selftests
-        run: PYTHONPATH=. python scripts/v097_b_format_forensics.py selftest
-      - name: Process one source from immutable Bronze checkpoint
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          FORENSIC_BATCH: '60'
-        run: PYTHONPATH=. python scripts/v097_b_format_forensics.py '${{ matrix.source }}'
-  resume:
-    needs: [format-audit]
-    if: always() && needs.format-audit.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Inspect both durable checkpoints and dispatch next batch when needed
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          DEPTH: ${{ inputs.depth || '0' }}
-        run: |
-          B_PENDING=$(python - <<'PY'
-          import os
-          from scripts.v097_bronze_autopilot import source_api
-          api,control,quality,match,load_json,*_=source_api()
-          remaining={}
-          for s in ("TWSE","TPEx"):
-              f=match(api,control,"v097_B_FORMAT_FORENSICS_CK_"+s+".json")
-              ck=load_json(api,f["id"]) if f else {"done":{}}
-              inp=match(api,quality,"v097_AP_INPUT_"+s+".json")
-              src=load_json(api,inp["id"])["rows"]
-              checkpoint=match(api,control,"v097_AP_CHECKPOINT_"+s+".json")
-              done=load_json(api,checkpoint["id"])["done"]
-              targeted=sum(done.get(r["source_id"],{}).get("status")=="ZIP_MEMBERS_AUDITED_ORIGIN_HOLD" for r in src)
-              remaining[s]=targeted-len(ck["done"])
-          print(sum(remaining.values()))
-          PY
-          )
-          echo "B_FORENSICS_REMAINING_TOTAL=$B_PENDING"
-          if ! [[ "$DEPTH" =~ ^[0-9]+$ ]]; then exit 1; fi
-          if [ "$B_PENDING" -eq 0 ]; then echo "B_FORENSICS_ALL_SCANNED; source evidence still required"; exit 0; fi
-          if [ "$DEPTH" -ge 60 ]; then echo "B_DEPTH_CAP_WATCHDOG_RESUMES"; exit 0; fi
-          gh workflow run v097_b_format_continuous.yml --ref main -f depth="$((DEPTH + 1))"
-          echo "B_NEXT_RUN_ACCEPTED_DEPTH=$((DEPTH + 1))"
+      - name: Confirm legacy workflow decommissioned
+        run: echo 'LEGACY_DEEP_CONTENT_WORKFLOW_DISABLED_NO_DATA_MUTATION'
