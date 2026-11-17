@@ -51,10 +51,11 @@ def candidates(row,profile,mapping,v3,native=None):
         for member in native.get('evidence',[]):
             hs=member.get('header') or []
             if hs:samples.append({'scope':member.get('path','native'),
-                'headers':hs,'member_sha':member.get('sha')})
+                'headers':hs,'member_sha':member.get('sha'),
+                'metadata':member.get('source_metadata')})
     result=[]
     for sample in samples:
-        c=infer(row["source"],sample["headers"],era,hint)
+        c=infer(row["source"],sample["headers"],era,hint,metadata=sample.get("metadata"))
         result.append({
             "scope":sample["scope"],"member_sha":sample["member_sha"],
             "dataset_candidate":c.get("dataset_candidate"),
@@ -63,6 +64,7 @@ def candidates(row,profile,mapping,v3,native=None):
             "observed_fields":c.get("observed_fields",{}),
             "observed_header":sample["headers"][:100],
             "source_native_typed_and_row_verified":False,
+            "source_body_metadata_proof_used":c.get("metadata_proof_used",False),
             "contract_registry":REGISTRY_VERSION})
     return result
 def analyse(row,profile,mapping,v3,native=None):
@@ -123,6 +125,20 @@ def selftest():
         "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None,recovered)
     assert without["g2g3_status"]=="HEADER_OR_ZIP_MEMBER_PENDING"
     assert with_native["g2g3_status"]=="G3_HEADER_COMPLETE_TYPED_PROOF_PENDING"
+    tdcc_row={"source_id":"TDCC-TEST","source":"TDCC","source_sha256":"d"*64,
+               "bronze_status":"BRONZE_INTEGRITY_READY"}
+    tdcc_era=OFFICIAL_VERSIONS["TDCC"]["periods"][-1]["id"]
+    tdcc_profile={"sha":"d"*64,"historical_version":tdcc_era,
+                  "signature":"HTML_XML","status":"SCHEMA_PROFILED_NEEDS_MAPPING"}
+    tdcc_native={"sha":"d"*64,"evidence":[{"path":"distribution.html",
+        "header":["序","持股/單位數分級","人數","股數/單位數","占集保庫存數比例 (%)"],
+        "source_metadata":{"source":"TDCC_HTML_BODY",
+            "code":{"value":"4609","validated":True},
+            "date":{"value":"2025-11-28","validated":True}}}]}
+    tdcc_a=analyse(tdcc_row,tdcc_profile,None,None,tdcc_native)
+    assert tdcc_a["g2g3_status"]=="G3_HEADER_COMPLETE_TYPED_PROOF_PENDING"
+    assert tdcc_a["schema_ready"] is False
+
     assert with_native["g3_verified"] is False and with_native["schema_ready"] is False
     assert without["group_kind"]=="DISCOVERY_BUCKET_NO_HEADER_NOT_CERTIFIABLE"
     assert with_native["group_kind"]=="HEADER_LAYOUT_CANDIDATE_UNCERTIFIED"
