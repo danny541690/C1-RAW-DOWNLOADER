@@ -20,13 +20,13 @@ class HeaderParser(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.tables=[];self.in_table=False;self.in_row=False;self.in_cell=False
-        self.rows=[];self.row=[];self.cell=[];self.cell_tag="";self.tags=[]
+        self.rows=[];self.row=[];self.row_had_th=False;self.table_row_types=[];self.cell=[];self.cell_tag="";self.tags=[]
     def handle_starttag(self,t,a):
         if t=="table" and not self.in_table and len(self.tables)<10:
-            self.in_table=True;self.rows=[]
-        elif t=="tr" and self.in_table and not self.in_row:self.in_row=True;self.row=[]
+            self.in_table=True;self.rows=[];self.table_row_types=[]
+        elif t=="tr" and self.in_table and not self.in_row:self.in_row=True;self.row=[];self.row_had_th=False
         elif t in ("th","td") and self.in_row and not self.in_cell:
-            self.in_cell=True;self.cell=[];self.cell_tag=t
+            self.in_cell=True;self.cell=[];self.cell_tag=t;self.row_had_th=self.row_had_th or t=="th"
     def handle_data(self,d):
         if self.in_cell:self.cell.append(d)
     def handle_endtag(self,t):
@@ -35,10 +35,11 @@ class HeaderParser(HTMLParser):
             self.row.append(x);self.tags.append(self.cell_tag)
             self.in_cell=False
         if t=="tr" and self.in_row:
-            if self.row and len(self.rows)<8:self.rows.append(self.row)
+            if self.row and len(self.rows)<8:
+                self.rows.append(self.row);self.table_row_types.append(self.row_had_th)
             self.in_row=False
         if t=="table" and self.in_table:
-            if self.rows:self.tables.append(self.rows)
+            if self.rows:self.tables.append((self.rows,self.table_row_types))
             self.in_table=False
 def header_for(blob,name):
     low=name.lower()
@@ -156,6 +157,8 @@ def selftest():
     b="<table><tr><th>證券代號</th><th>持股級距</th><th>人數</th></tr><tr><td>2330</td><td>1</td><td>200</td></tr></table>".encode()
     h=header_for(b,"tdcc.html")
     assert "證券代號" in h["header"] and "人數" in h["header"]
+    misleading=header_for(b"<table><tr><td>2330</td><td>1</td><td>200</td></tr></table>","data.html")
+    assert not misleading["header"],"Data-only HTML cannot be classified as header"
     mem=io.BytesIO()
     with zipfile.ZipFile(mem,"w") as z:z.writestr("a.html",b)
     p=inspect_native(mem.getvalue(),"a.zip","TDCC",None)
