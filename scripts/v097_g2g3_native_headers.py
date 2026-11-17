@@ -173,7 +173,7 @@ def selftest():
     assert "證券代號" in h["header"] and "人數" in h["header"]
     misleading=header_for(b"<table><tr><td>2330</td><td>1</td><td>200</td></tr></table>","data.html")
     assert not misleading["header"],"Data-only HTML cannot be classified as header"
-    td_head=b"<table><tr><td>StockNo</td><td>持股分級</td><td>人數</td></tr></table>"
+    td_head="<table><tr><td>StockNo</td><td>持股分級</td><td>人數</td></tr></table>".encode()
     assert "StockNo" in header_for(td_head,"tdcc.html","TDCC")["header"]
     assert not header_for(b"<table><tr><td>2330</td><td>1</td><td>200</td></tr></table>","tdcc.html","TDCC")["header"]
     mem=io.BytesIO()
