@@ -22,7 +22,7 @@ CK="v097_V3_SOURCE_SHARD_CK_"
 def now():return datetime.now(timezone.utc).isoformat()
 def digest(b):return hashlib.sha256(b).hexdigest()
 def shard_for(sid,src):return int(digest(sid.encode())[:12],16)%SHARDS[src]
-def zip_profile(blob):
+def zip_profile(blob,src='TWSE'):
     result={"format":"ZIP","member_sha_all_verified":False,"member_schemas_verified":False}
     try:
         with zipfile.ZipFile(io.BytesIO(blob)) as z:
@@ -50,7 +50,7 @@ def zip_profile(blob):
                 rec={"path":info.filename,"sha256":h.hexdigest(),"bytes":info.file_size,
                      "signature":signature,"crc32":format(info.CRC,"08x")}
                 if info.file_size<=MAX_PARSED_MEMBER and signature not in ("ZIP","XLSX"):
-                    parsed=inspect(bytes(sample),info.filename,"TWSE") if signature in ("JSON","CSV_CANDIDATE") else {}
+                    parsed=inspect(bytes(sample),info.filename,src) if signature in ("JSON","CSV_CANDIDATE") else {}
                     rec["observed_header"]=parsed.get("header")
                     rec["observed_keys"]=parsed.get("keys")
                     rec["format_status"]=parsed.get("status")
@@ -91,7 +91,7 @@ def inspect_one(row,fmt_evidence,map_evidence,api,call):
             return {**identity,**baseline,"g0":"EVIDENCE_PENDING","reason":"RAW_OVER_SIZE_LIMIT"}
         if digest(blob)!=row["source_sha256"]:
             return {**identity,**baseline,"g0":"BRONZE_HOLD","g4":"BRONZE_HOLD","reason":"DESTINATION_SHA_MISMATCH"}
-        observed=zip_profile(blob) if fmt(row["source_path"],blob)=="ZIP" else inspect(blob,row["source_path"],row["source"])
+        observed=zip_profile(blob,row["source"]) if fmt(row["source_path"],blob)=="ZIP" else inspect(blob,row["source_path"],row["source"])
         if observed.get("status")=="SCHEMA_HOLD" or observed.get("status")=="FORMAT_STRUCTURAL_HOLD":
             return {**identity,**baseline,"g0":"DEST_SHA_VERIFIED","g1":"SCHEMA_HOLD",
                     "g4":"SCHEMA_HOLD","reason":observed.get("reason"),"new_native_evidence":observed}
@@ -197,7 +197,7 @@ def selftest():
         z.writestr("day.csv","日期,證券代號,收盤價\n2026-11-16,2330,100\n")
     z=zip_profile(bio.getvalue())
     assert z["status"]=="MEMBERS_HASHED_SCHEMA_PENDING" and z["member_sha_all_verified"]
-    assert z["member_manifest"][0]["sha256"]==digest(b"日期,證券代號,收盤價\n2026-11-16,2330,100\n")
+    assert z["member_manifest"][0]["sha256"]==digest("日期,證券代號,收盤價\n2026-11-16,2330,100\n".encode())
     assert z["member_schemas_verified"] is False
     print("V3_SOURCE_WORKER_SAFETY_SELFTEST_PASS")
 if __name__=="__main__":
