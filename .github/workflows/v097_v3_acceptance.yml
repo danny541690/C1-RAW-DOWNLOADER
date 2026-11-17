@@ -89,6 +89,15 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: PYTHONPATH=. python scripts/v097_v3_source_worker.py final | tee /tmp/v3_master.log
+      - name: Reconcile all legacy + V3 Gate progress into one official Master
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_v3_unified_master.py selftest
+          PYTHONPATH=. python scripts/v097_v3_unified_master.py build | tee /tmp/v3_unified_board.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
