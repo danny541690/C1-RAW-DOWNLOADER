@@ -1,4 +1,5 @@
 name: JARVIS v097 V3 Source Worker Integration Safety Tests
+# Regression after adding ZIP per-member registry evidence
 # Rerun revised worker negative tests after fixing UTF-8 source literal
 on:
   push:
