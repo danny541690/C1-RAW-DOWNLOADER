@@ -1,0 +1,30 @@
+name: JARVIS v097 V3 Unified Master First Publication
+on:
+  push:
+    paths:
+      - .github/workflows/v097_v3_unified_board_first.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and test unified 74750-row accounting
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_v3_unified_master.py
+          PYTHONPATH=. python scripts/v097_v3_unified_master.py selftest
+          PYTHONPATH=. python scripts/v097_v3_preflight.py selftest
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Publish first unique single 74750-row board in Drive (only QA reports)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_v3_unified_master.py build
