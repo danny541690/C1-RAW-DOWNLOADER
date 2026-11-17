@@ -49,3 +49,11 @@ jobs:
           GOOGLE_REFRESH_TOKEN: \${{ secrets.GOOGLE_REFRESH_TOKEN }}
           HISTORY_BATCH: '25'
         run: PYTHONPATH=. python scripts/v097_execution_history_ledger.py
+      - name: Save fallback execution reports while Drive OAuth is unavailable
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS-v097-history-fallback-${{ github.run_id }}
+          path: history_export/
+          if-no-files-found: ignore
+          retention-days: 90
