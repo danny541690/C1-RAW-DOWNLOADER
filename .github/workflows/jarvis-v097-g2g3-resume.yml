@@ -30,6 +30,43 @@ jobs:
           python -m scripts.v097_v3_contract_registry selftest
           python -m scripts.v097_v3_source_worker selftest
           python -m scripts.v097_v3_unified_master selftest
+  g1-format:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 14
+      matrix:
+        include:
+          - {source: TWSE, shard: 0}
+          - {source: TWSE, shard: 1}
+          - {source: TPEx, shard: 0}
+          - {source: TPEx, shard: 1}
+          - {source: MOPS, shard: 0}
+          - {source: TDCC, shard: 0}
+          - {source: TDCC, shard: 1}
+          - {source: TDCC, shard: 2}
+          - {source: TDCC, shard: 3}
+          - {source: TDCC, shard: 4}
+          - {source: TDCC, shard: 5}
+          - {source: TAIFEX, shard: 0}
+          - {source: FinMind, shard: 0}
+          - {source: FinMind, shard: 1}
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      SCHEMA_BATCH: '100'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive readers
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: G1 format incremental check
+        run: PYTHONPATH=. python scripts/v097_schema_gate_v21.py "${{ matrix.source }}" "${{ matrix.shard }}"
   workers:
     needs: preflight
     runs-on: ubuntu-latest
@@ -65,7 +102,7 @@ jobs:
       - name: Incremental source-native evidence only; no Bronze mutation or Silver/Gold conversion
         run: PYTHONPATH=. python scripts/v097_v3_source_worker.py "${{ matrix.source }}" "${{ matrix.shard }}"
   reconcile:
-    needs: [preflight, workers]
+    needs: [preflight, g1-format, workers]
     # Always publish the current checkpoints even if a source shard fails.
     # A failed worker remains visible in Actions and does not become certified.
     if: ${{ always() && needs.preflight.result == 'success' }}
@@ -82,6 +119,8 @@ jobs:
           python-version: '3.12'
       - name: Install Google Drive read and checkpoint clients
         run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Publish G1 format gate official master
+        run: PYTHONPATH=. python scripts/v097_schema_gate_v21.py final
       - name: Publish V3 source-native master and error ledger
         run: PYTHONPATH=. python scripts/v097_v3_source_worker.py final
       - name: Publish unified authoritative evidence board
@@ -90,11 +129,12 @@ jobs:
         if: ${{ always() }}
         run: |
           echo "## JARVIS Gate Run ${{ github.run_id }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Workers: ${{ needs.workers.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "G1 workers: ${{ needs.g1-format.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "V3 workers: ${{ needs.workers.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "G1 = format evidence; G2/G3 = contract candidates pending formal attestation; G4 = NOT RELEASED." >> "$GITHUB_STEP_SUMMARY"
           echo "Bronze immutable; no Silver or Gold materialization." >> "$GITHUB_STEP_SUMMARY"
   gate-status:
-    needs: [preflight, workers, reconcile]
+    needs: [preflight, g1-format, workers, reconcile]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -102,9 +142,10 @@ jobs:
         run: |
           echo "## JARVIS v0.97 execution state" >> "$GITHUB_STEP_SUMMARY"
           echo "Preflight: ${{ needs.preflight.result }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Workers: ${{ needs.workers.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "G1 workers: ${{ needs.g1-format.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "V3 workers: ${{ needs.workers.result }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Reconcile: ${{ needs.reconcile.result }}" >> "$GITHUB_STEP_SUMMARY"
-          if [ "${{ needs.preflight.result }}" != "success" ] || [ "${{ needs.workers.result }}" != "success" ] || [ "${{ needs.reconcile.result }}" != "success" ]; then
+          if [ "${{ needs.preflight.result }}" != "success" ] || [ "${{ needs.g1-format.result }}" != "success" ] || [ "${{ needs.workers.result }}" != "success" ] || [ "${{ needs.reconcile.result }}" != "success" ]; then
             echo "::error::One or more gate jobs failed; inspect job logs and checkpoint history."
             exit 1
           fi
