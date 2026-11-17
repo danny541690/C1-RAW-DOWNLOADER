@@ -14,7 +14,8 @@ import re
 import sys
 from collections import Counter
 from datetime import datetime, timezone
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath, Path
+from google.auth.exceptions import RefreshError
 
 import requests
 from googleapiclient.http import MediaInMemoryUpload
@@ -370,10 +371,68 @@ def run():
         "silver_gold_executed": False
     }, ensure_ascii=False), flush=True)
 
+def github_artifact_fallback():
+    """Preserve per-run reports in workflow artifact if Drive OAuth is broken.
+
+    This is explicitly NOT a successful Drive archive; the job still fails
+    so the owner is alerted. Reports survive in Actions artifact retention.
+    """
+    output = Path(os.getenv("GITHUB_WORKSPACE", ".")) / "history_export"
+    output.mkdir(parents=True, exist_ok=True)
+    runs = [r for r in runs_page(1)
+            if r.get("status") == "completed" and r.get("conclusion")]
+    selected = runs[:LIMIT]
+    index = {}
+    saved = 0
+    errors = []
+    for r in selected:
+        try:
+            report = report_for(r)
+            filename = ("RUN_%s_ATTEMPT_%s.json" %
+                        (report["run_id"], report["run_attempt"]))
+            target = output / "REPORTS" / report["category"] / filename
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps(report, ensure_ascii=False, indent=2),
+                              encoding="utf-8")
+            key = str(report["run_id"]) + ":" + str(report["run_attempt"])
+            index[key] = master_row(
+                report, "GITHUB_ACTIONS_ARTIFACT_ONLY/" + str(target.relative_to(output)),
+                "DRIVE_OAUTH_UNAVAILABLE"
+            )
+            saved += 1
+        except Exception as exc:
+            errors.append({"run_id": r.get("id"), "error": type(exc).__name__})
+    (output / MASTER).write_text(
+        json.dumps({"schema": SCHEMA, "mode": "GITHUB_ARTIFACT_FALLBACK",
+                    "drive_synced": False, "records": index},
+                   ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+    (output / MASTER_CSV).write_bytes(to_csv(index))
+    (output / "SYNC_STATUS.json").write_text(
+        json.dumps({"state": "DRIVE_OAUTH_INVALID_CLIENT",
+                    "drive_synced": False,
+                    "report_count": saved,
+                    "failed_run_reports": errors,
+                    "github_run_id": os.getenv("GITHUB_RUN_ID"),
+                    "github_artifact_retention_days": 90},
+                   ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+    print("EXECUTION_HISTORY_GITHUB_FALLBACK=" +
+          json.dumps({"created": saved, "drive_synced": False,
+                      "report_errors": errors[:5],
+                      "output": str(output)}, ensure_ascii=False),
+          flush=True)
+
 if __name__ == "__main__":
     if sys.argv[1:] == ["selftest"]:
         selftest()
     elif not sys.argv[1:]:
-        run()
+        try:
+            run()
+        except RefreshError:
+            github_artifact_fallback()
+            raise
     else:
         raise SystemExit("usage: selftest | (no args)")
