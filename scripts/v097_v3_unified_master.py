@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+"""JARVIS v0.97 V3 unified acceptance board.
+Single source of truth: frozen 74,750 source IDs, legacy evidence and V3 checkpoint.
+Records are independently counted per gate; no previous scan is treated as a release.
+Never opens or modifies Bronze; never creates Silver/Gold datasets.
+"""
+import collections, json, os, sys
+from datetime import datetime,timezone
+from scripts.v097_v3_preflight import (
+  SOURCE_COUNTS,SOURCES,TARGET,assert_cohort,read_baseline,load_evidence,evidence_match,
+  FMT_RULE,MAP_RULE,canonical,source_api
+)
+from scripts.v097_v3_source_worker import CK,ENGINE,SHARDS,shard_for
+
+VERSION="v097_v3_unified_acceptance_board_20261117_r1"
+RUN=os.getenv("GITHUB_RUN_ID","manual")
+GATES=("g0","g1","g2","g3","g4")
+STAGES=("READY","BRONZE_BLOCKED","FORMAT_BLOCKED","DATASET_PENDING",
+        "SCHEMA_CONTRACT_PENDING","FORMAT_PENDING","NOT_SCANNED","EXCLUDED")
+def now():return datetime.now(timezone.utc).isoformat()
+def load_worker(api,control,match,load_json,src,rows):
+    idx={r["source_id"]:r for r in rows}; out={}
+    for shard in range(SHARDS[src]):
+        f=match(api,control,CK+src+"_"+str(shard)+".json")
+        if not f:continue
+        ck=load_json(api,f["id"])
+        if ck.get("schema")!=ENGINE or ck.get("shard")!=shard:
+            raise RuntimeError("V3_WORKER_SCHEMA_SHARD_CONFLICT_"+src)
+        for sid,rec in ck.get("done",{}).items():
+            if sid in out or sid not in idx or shard_for(sid,src)!=shard:
+                raise RuntimeError("V3_WORKER_DUP_OR_ORPHAN_"+src)
+            if rec.get("sha")!=idx[sid]["source_sha256"]:
+                raise RuntimeError("V3_WORKER_SHA_CONFLICT_"+src)
+            out[sid]=rec
+    return out
+def decision(row,fmt,mp,v3):
+    # All PASS and READY counters are conservative. This function is purely descriptive.
+    bronze=(row.get("bronze_status")=="BRONZE_INTEGRITY_READY")
+    fmt_valid=bool(fmt and evidence_match(row,fmt))
+    map_valid=bool(mp and mp.get("sha")==row["source_sha256"] and
+                   mp.get("contract_version")==MAP_RULE)
+    worker_valid=bool(v3 and v3.get("sha")==row["source_sha256"] and
+                      v3.get("engine")==ENGINE)
+    g0="LEGACY_READY_RECHECK_REQUIRED" if bronze else "BRONZE_HOLD"
+    if worker_valid:
+        g0=v3.get("g0") or g0
+    g1="FORMAT_PROFILE_REUSED_UNCERTIFIED" if fmt_valid else "FORMAT_NOT_PROFILED"
+    if worker_valid and v3.get("g1") in ("ZIP_MEMBERS_PROFILED","SOURCE_FORMAT_PROFILED"):
+        g1=v3["g1"]
+    g2="DATASET_IDENTITY_PENDING"
+    g3="SCHEMA_CONTRACT_PENDING"
+    if worker_valid:
+        g2=v3.get("g2") or g2
+        g3=v3.get("g3") or g3
+    mapping_status=mp.get("status") if map_valid else None
+    g4="EVIDENCE_PENDING"
+    if not bronze or worker_valid and v3.get("g4")=="BRONZE_HOLD":
+        stage="BRONZE_BLOCKED";g4="BRONZE_HOLD"
+    elif worker_valid and v3.get("g4")=="SCHEMA_HOLD":
+        stage="FORMAT_BLOCKED";g4="SCHEMA_HOLD"
+    elif fmt_valid and fmt.get("status") in ("FORMAT_UNSUPPORTED","FORMAT_RESOURCE_LIMIT",
+                                           "FORMAT_STRUCTURAL_HOLD","BLOCKED_BRONZE"):
+        stage="FORMAT_BLOCKED"
+    elif not fmt_valid:
+        stage="FORMAT_PENDING"
+    elif not map_valid:
+        stage="DATASET_PENDING"
+    elif mapping_status in ("MAPPING_DATASET_PENDING","MAPPING_MEMBERS_PENDING",
+                            "MAPPING_NEEDS_SOURCE_EVIDENCE","MAPPING_PROFILE_STALE"):
+        stage="DATASET_PENDING"
+    else:
+        stage="SCHEMA_CONTRACT_PENDING"
+    # Certified V3 Ready requires new G0 readback, dataset/era contract + typed validation,
+    # and an explicitly approved release record. No current legacy/worker evidence meets these.
+    return {"source_id":row["source_id"],"sha":row["source_sha256"],
+      "bronze_evidence":g0,"format_evidence":g1,"dataset_evidence":g2,
+      "schema_evidence":g3,"release":g4,"primary_stage":stage,
+      "format_legacy_reused":fmt_valid,"mapping_legacy_reused":map_valid,
+      "v3_increment_checked":worker_valid,"mapping_status":mapping_status,
+      "format_status":fmt.get("status") if fmt_valid else None,
+      "v3_run":v3.get("run") if worker_valid else None,
+      "v3_reason":v3.get("reason") if worker_valid else None}
+def summarize(records):
+    total=len(records);stage=collections.Counter(x["primary_stage"] for x in records)
+    assert sum(stage.values())==total
+    format_count=sum(x["format_legacy_reused"] for x in records)
+    mapping_count=sum(x["mapping_legacy_reused"] for x in records)
+    v3_count=sum(x["v3_increment_checked"] for x in records)
+    g0_legacy=sum(x["bronze_evidence"]!="BRONZE_HOLD" for x in records)
+    g0_dest_sha=sum(x["bronze_evidence"] in ("DEST_SHA_VERIFIED","DEST_SHA_VERIFIED_REUSED") for x in records)
+    g1_profiled=sum(x["format_evidence"]!="FORMAT_NOT_PROFILED" for x in records)
+    g2_verified=0;g3_verified=0
+    ready=sum(x["release"]=="SILVER_SCHEMA_READY" for x in records)
+    if ready:raise RuntimeError("NOT_AUTHORIZED_V3_READY_CERTIFICATE")
+    # stage = mutually exclusive; per gate is non-exclusive.
+    return {"cohort":total,
+       "primary_stage":dict(stage),"format_profile_evidence":format_count,
+       "mapping_evidence":mapping_count,"v3_checked":v3_count,
+       "g0_legacy_ready_evidence":g0_legacy,"g0_destination_sha_verified":g0_dest_sha,
+       "g1_format_profile_coverage":g1_profiled,
+       "g2_dataset_contract_verified":g2_verified,
+       "g3_schema_contract_verified":g3_verified,
+       "g4_silver_schema_ready_certified":ready,
+       "not_ready":total-ready,
+       "v3_scan_coverage_pct":round(v3_count*100/total,2) if total else 0,
+       "schema_ready_pct":round(ready*100/total,2) if total else 0}
+def selftest():
+    r={"source_id":"A","source_sha256":"x"*64,"bronze_status":"BRONZE_INTEGRITY_READY"}
+    fmt={"sha":"x"*64,"contract_version":FMT_RULE,"status":"SCHEMA_PROFILED_NEEDS_MAPPING"}
+    mp={"sha":"x"*64,"contract_version":MAP_RULE,"status":"HEADER_MATCHED_UNCERTIFIED"}
+    v={"sha":"x"*64,"engine":ENGINE,"g0":"DEST_SHA_VERIFIED",
+       "g1":"SOURCE_FORMAT_PROFILED","g4":"EVIDENCE_PENDING"}
+    a=decision(r,fmt,mp,v)
+    assert a["primary_stage"]=="SCHEMA_CONTRACT_PENDING"
+    assert summarize([a])["g4_silver_schema_ready_certified"]==0
+    assert decision(r,fmt,None,None)["primary_stage"]=="DATASET_PENDING"
+    assert decision(r,None,None,None)["primary_stage"]=="FORMAT_PENDING"
+    assert decision({**r,"bronze_status":"HOLD"},fmt,mp,None)["primary_stage"]=="BRONZE_BLOCKED"
+    assert summarize([a,decision(r,None,None,None)])["cohort"]==2
+    print("V3_UNIFIED_BOARD_SELFTEST_PASS")
+def build():
+    api,control,quality,match,load_json,put_once,upsert,call=source_api()
+    sources=[];all_rows=[];total=0
+    for src in SOURCES:
+        rows=read_baseline(api,quality,match,load_json,src);assert_cohort(rows,src)
+        pick,maps=load_evidence(api,control,match,load_json,src,rows)
+        workers=load_worker(api,control,match,load_json,src,rows)
+        rec=[decision(row,pick(row),maps.get(row["source_id"]),workers.get(row["source_id"])) for row in rows]
+        stats=summarize(rec)
+        stats["source"]=src
+        # Keep a per-source drilldown, do not bloat the top-level Master.
+        fn="v097_V3_UNIFIED_DETAIL_"+src+"_"+RUN+".json"
+        stats["detail_file_id"]=put_once(api,quality,fn,
+          {"schema":VERSION,"source":src,"run":RUN,"rows":rec})
+        sources.append(stats);all_rows.extend(rec);total+=len(rows)
+    if total!=TARGET or len({(r["source_id"]) for r in all_rows})!=TARGET:
+        raise RuntimeError("UNIFIED_74750_COHORT_OR_UNIQUENESS_FAIL")
+    summary=summarize(all_rows)
+    board={"schema":VERSION,"run":RUN,"created_at":now(),
+      "title":"JARVIS v0.97 唯一正式驗收進度總表（Bronze → Silver Schema Ready）",
+      "cohort":TARGET,"overall":summary,"sources":sources,
+      "interpretation":{"legacy_format":"已分類證據，非 G3 合格",
+          "legacy_mapping":"已檢查證據，非 G3 合格",
+          "v3_scan":"新增檢查覆蓋，非 G4 放行",
+          "main_progress":"以 G4 Silver Schema Ready 百分比作為正式通過率",
+          "pending":"HOLD/PENDING 是待辦或例外，不代表原件損毀"},
+      "silver_materialized":0,"gold_materialized":0,
+      "release_guard":"NO_SILVER_GOLD_CONVERSION; G4_CERTIFICATION_NOT_AVAILABLE_WITH_CURRENT_CONTRACTS"}
+    rid=put_once(api,quality,"v097_V3_UNIFIED_MASTER_"+RUN+".json",board)
+    board["report_id"]=rid
+    upsert(api,control,"v097_V3_UNIFIED_MASTER_LATEST.json",board)
+    f=match(api,control,"v097_V3_UNIFIED_MASTER_LATEST.json")
+    if not f or load_json(api,f["id"]).get("run")!=RUN:
+        raise RuntimeError("UNIFIED_MASTER_LATEST_READBACK_FAILED")
+    print("V3_UNIFIED_MASTER="+canonical({
+      "run":RUN,"report_id":rid,"cohort":TARGET,
+      "overall":summary,"sources":[{k:v for k,v in s.items() if k!="detail_file_id"} for s in sources],
+      "silver_materialized":0,"gold_materialized":0}),flush=True)
+if __name__=="__main__":
+    if sys.argv[1:]==["selftest"]:selftest()
+    elif sys.argv[1:]==["build"]:build()
+    else:raise SystemExit("selftest|build")
