@@ -1,0 +1,51 @@
+name: JARVIS v097 Schema V2.1 Independent Watchdog
+# Runs 15 minutes apart from primary workflow; never parses Bronze or invokes Silver/Gold.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '12,27,42,57 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-schema-v21-watchdog-only
+  cancel-in-progress: false
+jobs:
+  audit-and-wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Check GitHub activity and Drive terminal record
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          active=$(gh api "repos/$GH_REPO/actions/workflows/v097_schema_gate_v21.yml/runs?per_page=20" --jq '[.workflow_runs[] | select(.status=="queued" or .status=="in_progress" or .status=="waiting" or .status=="pending")] | length')
+          echo "SCHEMA_V21_ACTIVE_RUNS=$active"
+          if [ "$active" -gt 0 ]; then
+            echo "Another valid v21 workflow is already active; skip duplicate dispatch."
+            exit 0
+          fi
+          remaining=$(PYTHONPATH=. python - <<'PY'
+          from scripts.v097_bronze_autopilot import source_api
+          api,control,quality,match,load_json,put_once,upsert,call=source_api()
+          f=match(api,control,"v097_SCHEMA_V21_MASTER_LATEST.json")
+          print(load_json(api,f["id"]).get("remaining",74750) if f else 74750)
+          PY
+          )
+          echo "SCHEMA_V21_REMAINING=$remaining"
+          if [ "$remaining" -gt 0 ]; then
+            gh workflow run v097_schema_gate_v21.yml --ref main -f batch=100
+            echo "SCHEMA_V21_WATCHDOG_RESUME_DISPATCHED"
+          else
+            echo "SCHEMA_V21_ALL_TERMINAL_NO_WAKE_NEEDED"
+          fi
