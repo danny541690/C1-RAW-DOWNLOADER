@@ -32,8 +32,8 @@ CONTRACTS={
    "date":["資料日期","資料年月日","查詢日期","date"],
    "tier":["持股分級","持股級距","持股/單位數分級"],
    "holders":["人數","持有人數"],
-   "shares":["股數","持有股數"],
-   "percent":["占集保庫存數比例","比例","持股比例"]}},
+   "shares":["股數","持有股數","股數/單位數"],
+   "percent":["占集保庫存數比例","占集保庫存數比例 (%)","占集保庫存數比例(%)","比例","持股比例"]}},
  "TAIFEX":{"FUTURES_DAILY":{
    "date":["日期","交易日期","date"],
    "contract":["契約","契約名稱","商品代號"],
@@ -57,7 +57,7 @@ UNITS={
  "FinMind":{"close":"TWD","volume":"shares"}
 }
 def normalize(s):return re.sub(r"[\\s_\u3000（）()]+","",str(s)).lower()
-def infer(src,headers,era=None,dataset_hint=None):
+def infer(src,headers,era=None,dataset_hint=None,metadata=None):
     if src not in CONTRACTS:raise ValueError("INVALID_SOURCE")
     if not isinstance(headers,list) or not headers:
         return {"status":"HEADER_NOT_OBSERVED","registry":REGISTRY_VERSION}
@@ -67,6 +67,10 @@ def infer(src,headers,era=None,dataset_hint=None):
         fields={};missing=[]
         for key,aliases in required.items():
             value=next((observed[normalize(x)] for x in aliases if normalize(x) in observed),None)
+            if value is None and src=="TDCC" and key in ("code","date") and metadata and metadata.get("source")=="TDCC_HTML_BODY":
+                proof=metadata.get(key)
+                if isinstance(proof,dict) and proof.get("validated") is True and proof.get("value"):
+                    value="@PAGE_METADATA:"+key
             if value is None:missing.append(key)
             else:fields[key]=value
         if len(set(fields.values()))!=len(fields):missing.append("DUPLICATE_FIELD_CLAIM")
@@ -88,6 +92,7 @@ def infer(src,headers,era=None,dataset_hint=None):
             "registry":REGISTRY_VERSION,
             "official_references":OFFICIAL_VERSIONS[src]["reference"],
             "source_dataset_hint":dataset_hint,
+            "metadata_proof_used":bool(src=="TDCC" and metadata and any(str(v).startswith("@PAGE_METADATA:") for v in top["mapped"].values())),
             "source_native_typed_and_row_verified":False,
             "official_layout_attested_for_this_file":False,
             "silver_schema_ready":False}
@@ -101,6 +106,15 @@ def selftest():
     assert q["silver_schema_ready"] is False
     x=infer("TDCC",["StockNo","持股分級"],OFFICIAL_VERSIONS["TDCC"]["periods"][-1]["id"])
     assert x["missing_required"] and x["status"]=="INCOMPLETE_HEADER_CONTRACT"
+    row=["序","持股/單位數分級","人數","股數/單位數","占集保庫存數比例 (%)"]
+    meta={"source":"TDCC_HTML_BODY","code":{"value":"4609","validated":True},
+          "date":{"value":"2025-11-28","validated":True}}
+    era=OFFICIAL_VERSIONS["TDCC"]["periods"][-1]["id"]
+    valid=infer("TDCC",row,era,metadata=meta)
+    assert valid["status"]=="COMPLETE_HEADER_CANDIDATE_UNCERTIFIED"
+    assert valid["metadata_proof_used"] and valid["silver_schema_ready"] is False
+    assert infer("TDCC",row,era)["status"]=="INCOMPLETE_HEADER_CONTRACT"
+    assert infer("TDCC",row,era,metadata={**meta,"date":{"value":"2025-11-28","validated":False}})["status"]=="INCOMPLETE_HEADER_CONTRACT"
     print("V3_SEVEN_SOURCE_CONTRACT_REGISTRY_SELFTEST_PASS")
 if __name__=="__main__":
     if sys.argv[1:]==["selftest"]:selftest()
