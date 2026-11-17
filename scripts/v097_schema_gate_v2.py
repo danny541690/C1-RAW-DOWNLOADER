@@ -179,7 +179,7 @@ def source(src):
         sid=r["source_id"]
         d=done.get(sid)
         if d and d.get("sha")==r["source_sha256"] and (
-             d.get("status") in TERMINAL or
+             (d.get("status") in TERMINAL and d.get("contract_version")==SCHEMA_RULE_VERSION) or
              (d.get("status")=="RETRY_SOURCE_READ" and d.get("attempts",0)>=3)):
             continue
         batch.append(r)
@@ -191,6 +191,9 @@ def source(src):
             verdict={"status":"BLOCKED_BRONZE","reason":r["bronze_status"]}
         else:
             verdict=reusable(native.get(sid),deep.get(sid),sha)
+            # A known container signature is NOT a verified Silver field mapping.
+            # Reuse SHA-linked field evidence where possible, otherwise inspect once.
+            if verdict and verdict.get("status")=="SCHEMA_PROFILED_NEEDS_MAPPING": verdict=None
             if not verdict:
                 try:
                     blob=call(lambda:api.files().get_media(fileId=r["destination_id"]))
@@ -207,7 +210,7 @@ def source(src):
             version=period(src,mm.group(0))["id"] if mm else "HISTORICAL_VERSION_UNKNOWN"
         except Exception:version="HISTORICAL_VERSION_UNKNOWN"
         new[sid]={**verdict,"source_id":sid,"source":src,"sha":sha,"historical_version":version,
-                  "silver_gold_executed":False,"run":RUN,"checked_at":utc()}
+                  "silver_gold_executed":False,"run":RUN,"contract_version":SCHEMA_RULE_VERSION,"checked_at":utc()}
     # Atomic immutable delta before editable checkpoint: crash after delta is recoverable.
     if new:
         name="v097_SCHEMA_V2_DELTA_"+src+"_"+RUN+".json"
