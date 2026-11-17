@@ -48,7 +48,8 @@ def prepare(api,control,quality,match,load_json,src):
     if not inf:raise RuntimeError("MISSING_FROZEN_INPUT_"+src)
     rows=load_json(api,inf["id"])["rows"]
     ids=[r["source_id"] for r in rows]
-    if len(ids)!=len(set(ids)):raise RuntimeError("DUPLICATE_FROZEN_SOURCE_ID")
+    idset=set(ids)
+    if len(ids)!=len(idset):raise RuntimeError("DUPLICATE_FROZEN_SOURCE_ID")
     nf=match(api,control,"v097_SEVEN_FORMAT_V2_CK_"+src+".json")
     native=load_json(api,nf["id"]).get("done",{}) if nf else {}
     copies={}; qa={}
@@ -59,7 +60,7 @@ def prepare(api,control,quality,match,load_json,src):
         cc=load_json(api,c["id"]).get("done",{})
         qq=load_json(api,q["id"]).get("done",{})
         for sid,val in cc.items():
-            if sid not in ids:continue
+            if sid not in idset:continue
             if sid in copies:raise RuntimeError("DUPLICATE_COPY_ID_"+sid)
             copies[sid]=val;qa[sid]=qq.get(sid)
     return rows,native,copies,qa
