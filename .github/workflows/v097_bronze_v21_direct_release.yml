@@ -1,5 +1,6 @@
 name: JARVIS v097 Bronze v2.1 Direct READY Release Only
 # Explicitly NEVER starts Silver conversion or Gold, no raw mutations.
+# Resume from existing frozen Bronze/QA/V2 checkpoints: 2026-11-17.
 on:
   workflow_dispatch:
   push:
