@@ -1,0 +1,121 @@
+name: JARVIS v097 V3 Autonomous Bronze-to-Schema Evidence (No Conversion)
+# After 449 legacy workflows frozen. Seven independent sources, 11 shards.
+# No Silver/Gold materialization, Bronze originals never written.
+on:
+  push:
+    paths:
+      - .github/workflows/v097_v3_acceptance.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-v3-acceptance-single-round
+  cancel-in-progress: false
+jobs:
+  admission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      proceed: ${{ steps.gate.outputs.proceed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Selftest and read newest V3 checkpoint status
+        id: gate
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_v3_source_worker.py selftest
+          PYTHONPATH=. python scripts/v097_v3_preflight.py selftest
+          PYTHONPATH=. python scripts/v097_v3_source_worker.py check | tee /tmp/v3_status
+          flag=$(grep '^V3_WATCHDOG_STATE=' /tmp/v3_status | tail -1 | python -c "import sys,json;print(str(json.loads(sys.stdin.read().split('=',1)[1])['wake_needed']).lower())")
+          echo "proceed=$flag" >> "$GITHUB_OUTPUT"
+  source_workers:
+    needs: admission
+    if: needs.admission.outputs.proceed == 'true'
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - {source: TWSE, shard: 0}
+          - {source: TWSE, shard: 1}
+          - {source: TPEx, shard: 0}
+          - {source: TPEx, shard: 1}
+          - {source: MOPS, shard: 0}
+          - {source: TDCC, shard: 0}
+          - {source: TDCC, shard: 1}
+          - {source: TDCC, shard: 2}
+          - {source: TAIFEX, shard: 0}
+          - {source: NDC, shard: 0}
+          - {source: FinMind, shard: 0}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Google API clients
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Process new/changed evidence only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          V3_BATCH: '50'
+        run: PYTHONPATH=. python scripts/v097_v3_source_worker.py '${{ matrix.source }}' '${{ matrix.shard }}'
+  reconcile:
+    needs: [admission, source_workers]
+    if: always() && needs.admission.result == 'success' && needs.admission.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Publish authoritative per-source V3 Master + Error Ledger
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_v3_source_worker.py final | tee /tmp/v3_master.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v3-master-run-${{ github.run_id }}
+          path: /tmp/v3_master.log
+          if-no-files-found: ignore
+  continue:
+    needs: [admission, source_workers, reconcile]
+    if: always() && needs.reconcile.result == 'success' && needs.source_workers.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Immediately dispatch next V3 increment when work remains
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4 >/dev/null
+          PYTHONPATH=. python scripts/v097_v3_source_worker.py check | tee /tmp/continuation
+          flag=$(grep '^V3_WATCHDOG_STATE=' /tmp/continuation | tail -1 | python -c "import sys,json;print(str(json.loads(sys.stdin.read().split('=',1)[1])['wake_needed']).lower())")
+          if [ "$flag" = "true" ]; then
+            gh workflow run v097_v3_acceptance.yml --ref main
+            echo "V3_NEXT_INCREMENT_DISPATCHED"
+          else
+            echo "V3_NO_UNSCANNED_WORK_WAIT_FOR_NEW_CONTRACT_EVIDENCE"
+          fi
