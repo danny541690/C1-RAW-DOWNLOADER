@@ -149,6 +149,16 @@ def build():
         stats["g3_typed_sample_exception_members"]=sum(
             1 for v in checked for m in v.get("members",[])
             if m.get("type_evidence",{}).get("status")=="TYPED_SAMPLE_EXCEPTION")
+        stats["g3_full_native_shape_candidate_members"]=sum(
+            1 for v in checked for m in v.get("members",[])
+            if m.get("full_native_shape",{}).get("status")=="FULL_NATIVE_SHAPE_CANDIDATE_UNCERTIFIED")
+        stats["g3_full_native_shape_exception_members"]=sum(
+            1 for v in checked for m in v.get("members",[])
+            if m.get("full_native_shape",{}).get("status")=="FULL_NATIVE_SHAPE_EXCEPTIONS")
+        stats["g3_full_native_shape_rows_scanned"]=sum(
+            m.get("full_native_shape",{}).get("row_count",0) for v in checked for m in v.get("members",[])
+            if m.get("full_native_shape",{}).get("full_file_scanned") is True)
+
         # Keep a per-source drilldown, do not bloat the top-level Master.
         fn="v097_V3_UNIFIED_DETAIL_"+src+"_"+RUN+".json"
         stats["detail_file_id"]=put_once(api,quality,fn,
@@ -163,6 +173,10 @@ def build():
     summary["g3_typed_audit_checked"]=sum(t["g3_typed_audit_checked"] for t in sources)
     summary["g3_typed_sample_pass_members"]=sum(t["g3_typed_sample_pass_members"] for t in sources)
     summary["g3_typed_sample_exception_members"]=sum(t["g3_typed_sample_exception_members"] for t in sources)
+    summary["g3_full_native_shape_candidate_members"]=sum(t["g3_full_native_shape_candidate_members"] for t in sources)
+    summary["g3_full_native_shape_exception_members"]=sum(t["g3_full_native_shape_exception_members"] for t in sources)
+    summary["g3_full_native_shape_rows_scanned"]=sum(t["g3_full_native_shape_rows_scanned"] for t in sources)
+
     prior=match(api,control,"v097_G2G3_CONTRACT_MASTER_LATEST.json")
     census=load_json(api,prior["id"]) if prior else None
     board={"schema":VERSION,"run":RUN,"created_at":now(),
@@ -174,6 +188,7 @@ def build():
           "legacy_mapping":"已檢查證據，非 G3 合格",
           "v3_scan":"新增檢查覆蓋，非 G4 放行",
           "main_progress":"以 G4 Silver Schema Ready 百分比作為正式通過率",
+          "g3_full_native_shape":"全檔型別結構候選，仍欠官方契約與來源語意，不等於正式 G3 通過",
           "pending":"HOLD/PENDING 是待辦或例外，不代表原件損毀"},
       "silver_materialized":0,"gold_materialized":0,
       "release_guard":"NO_SILVER_GOLD_CONVERSION; G4_CERTIFICATION_NOT_AVAILABLE_WITH_CURRENT_CONTRACTS"}
