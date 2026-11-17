@@ -17,6 +17,14 @@ LIMIT=65*1024*1024
 DATE_KEYS={"date","period"}
 CODE_KEYS={"code","contract","expiration"}
 NUMERIC_KEYS={"open","high","low","close","volume","amount","revenue","holders","shares","percent","value"}
+def evidence_fp(header):
+    # Parser and contract revisions invalidate only affected source-ID records.
+    item={"sha":header.get("sha"),"parser_revision":header.get("parser_revision"),
+      "registry":REGISTRY_VERSION,
+      "headers":[{"path":e.get("path"),"sha":e.get("sha"),
+                  "header":e.get("header"),"status":e.get("status")}
+                 for e in header.get("evidence",[])]}
+    return hashlib.sha256(canonical(item).encode("utf-8")).hexdigest()
 def typecheck(key,val):
     if val is None or str(val).strip() in ("","--","-","N/A","NA","null","None"):
         return "NULL_NEEDS_NULL_POLICY"
@@ -105,9 +113,10 @@ def source(src):
     for sid,head in headers.items():
         row=idx[sid]
         if head.get("sha")!=row["source_sha256"] or not head.get("evidence"):continue
-        if sid in done and done[sid].get("sha")==row["source_sha256"]:continue
+        current_fp=evidence_fp(head)
+        if sid in done and done[sid].get("sha")==row["source_sha256"] and done[sid].get("header_evidence_fp")==current_fp and done[sid].get("registry")==REGISTRY_VERSION and done[sid].get("status")!="READ_OR_PARSE_PENDING":continue
         if len(new)>=BATCH:break
-        output={"source_id":sid,"sha":row["source_sha256"],"source":src,
+        output={"source_id":sid,"sha":row["source_sha256"],"header_evidence_fp":current_fp,"source":src,
           "run":RUN,"registry":REGISTRY_VERSION,"status":"EVIDENCE_PENDING",
           "silver_materialized":False,"gold_materialized":False,"g2_verified":False,"g3_verified":False}
         try:
@@ -160,6 +169,9 @@ def selftest():
     bad=validate_member(csvfile.replace(b",103,",b",bad,"),"test.csv",header,"FinMind",era,None)
     assert bad["status"]=="TYPED_SAMPLE_EXCEPTION"
     assert typecheck("value","--")=="NULL_NEEDS_NULL_POLICY"
+    h={"sha":"a"*64,"parser_revision":"r1","evidence":[{"path":"a.csv","sha":"b"*64,"header":["date"]}]}
+    assert evidence_fp(h)!=evidence_fp({**h,"parser_revision":"r2"})
+    assert evidence_fp(h)!=evidence_fp({**h,"evidence":[{"path":"a.csv","sha":"b"*64,"header":["date","stock_id"]}]})
     print("G2G3_TYPED_AUDIT_SAFETY_PASS")
 if __name__=="__main__":
     if sys.argv[1:]==["selftest"]:selftest()
