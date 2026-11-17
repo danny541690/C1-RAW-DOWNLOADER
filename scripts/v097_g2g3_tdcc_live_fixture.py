@@ -18,6 +18,12 @@ if __name__=="__main__":
     native=header_for(blob,FILENAME,"TDCC")
     era=OFFICIAL_VERSIONS["TDCC"]["periods"][-1]["id"]
     candidate=infer("TDCC",native.get("header",[]),era,metadata=native.get("source_metadata"))
+    print("TDCC_NATIVE_REAL_DIAGNOSTIC="+__import__("json").dumps({
+        "status":data.get("status"),"rows":data.get("data_rows"),
+        "header":data.get("observed_header"),"issues":data.get("issues"),
+        "candidate_status":candidate.get("status"),"candidate_missing":candidate.get("missing_required"),
+        "metadata":data.get("metadata")
+      },ensure_ascii=False),flush=True)
     assert data["metadata"]["code"].get("value")=="4609"
     assert data["metadata"]["date"].get("value")=="2025-11-28"
     assert data.get("data_rows")==17
