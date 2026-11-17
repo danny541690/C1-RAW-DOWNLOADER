@@ -166,7 +166,7 @@ def source(src,shard):
           "v21_processed":len(own),"new":len(new),"remaining":len(eligible)-len(new)},ensure_ascii=False),flush=True)
 def final():
     api,control,quality,match,load_json,put_once,upsert,call=source_api()
-    total=0;overall={};counts=collections.Counter();sources=[]
+    total=0;overall={};counts=collections.Counter();sources=[];error_rows=[]
     for src in SOURCES:
         rows=read_baseline(api,quality,match,load_json,src);total+=len(rows)
         old=existing_v2(api,control,match,load_json,src)
@@ -184,7 +184,12 @@ def final():
             sid=row["source_id"];s=row["source_sha256"]
             if sid in done and done[sid].get("sha")==s and done[sid].get("status") in END:
                 c[done[sid]["status"]]+=1;new_count+=1
-            elif reused(old.get(sid),row):c["V2_REUSED_"+old[sid]["status"]]+=1
+                if done[sid]["status"] not in ("SCHEMA_INPUT_READY","SCHEMA_PROFILED_NEEDS_MAPPING"):
+                    v=done[sid];error_rows.append({"source_id":sid,"source":src,"sha":s,"status":v["status"],"reason":v.get("reason"),"shard":v.get("shard"),"run":v.get("run")})
+            elif reused(old.get(sid),row):
+                c["V2_REUSED_"+old[sid]["status"]]+=1
+                if old[sid]["status"] not in ("SCHEMA_INPUT_READY","SCHEMA_PROFILED_NEEDS_MAPPING"):
+                    error_rows.append({"source_id":sid,"source":src,"sha":s,"status":"V2_REUSED_"+old[sid]["status"],"reason":old[sid].get("reason"),"run":old[sid].get("run")})
             else:c["PENDING"]+=1
         if sum(c.values())!=len(rows):raise RuntimeError("SOURCE_COUNT_DRIFT")
         counts.update(c);sources.append({"source":src,"cohort":len(rows),"v21_done":new_count,
@@ -195,6 +200,11 @@ def final():
             "finalized":total-outstanding,"remaining":outstanding,"statuses":dict(counts),
             "sources":sources,"silver_gold_executed":False,"silver_input_ready_certified":0,
             "note":"Format classification only; V2 archived SHA results reused unchanged. No numeric or PIT release."}
+    error_id=put_once(api,quality,"v097_SCHEMA_V21_ERROR_LEDGER_"+RUN+".json",
+         {"schema":VERSION,"run":RUN,"cohort":total,"count":len(error_rows),
+          "records":error_rows,"note":"Only terminal non-mapping exceptions. All per-file mapping-pending evidence lives in V2/V21 checkpoints and immutable deltas."})
+    result["error_ledger_id"]=error_id
+    result["mapping_pending"]=sum(v for k,v in counts.items() if "SCHEMA_PROFILED_NEEDS_MAPPING" in k)
     fid=put_once(api,quality,"v097_SCHEMA_V21_MASTER_"+RUN+".json",result)
     upsert(api,control,"v097_SCHEMA_V21_MASTER_LATEST.json",{**result,"report_id":fid})
     f=match(api,control,"v097_SCHEMA_V21_MASTER_LATEST.json")
