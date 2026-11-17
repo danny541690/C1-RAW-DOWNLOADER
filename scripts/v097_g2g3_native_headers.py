@@ -5,11 +5,11 @@ from html.parser import HTMLParser
 from datetime import datetime,timezone
 from scripts.v097_v3_preflight import SOURCES, read_baseline,assert_cohort,load_evidence,source_api,canonical
 from scripts.v097_g2g3_contract_discovery import get_worker,analyse
-from scripts.v097_v3_contract_registry import infer,REGISTRY_VERSION
+from scripts.v097_v3_contract_registry import infer,REGISTRY_VERSION,CONTRACTS,normalize
 from scripts.v097_v3_source_worker import fmt
 
 VERSION="v097_g2g3_native_header_recovery_20261117_r1"
-PARSER_REV="html_th_only_20261117_r2"
+PARSER_REV="html_th_or_source_aliases_20261117_r3"
 RUN=os.environ.get("GITHUB_RUN_ID","manual")
 BATCH=max(1,min(65,int(os.environ.get("G2G3_HEADER_BATCH","30"))))
 MAX_RAW=65*1024*1024
@@ -42,13 +42,18 @@ class HeaderParser(HTMLParser):
         if t=="table" and self.in_table:
             if self.rows:self.tables.append((self.rows,self.table_row_types))
             self.in_table=False
-def header_for(blob,name):
+def header_for(blob,name,src=None):
     low=name.lower()
     if low.endswith((".htm",".html",".xml")) or b"<table" in blob[:10000].lower():
         for enc in ("utf-8-sig","cp950","big5"):
             try:
                 h=HeaderParser();h.feed(blob[:3*1024*1024].decode(enc))
-                choices=[r for table,types in h.tables for r,has_th in list(zip(table,types))[:4] if len(r)>1 and has_th]
+                aliases={normalize(a):field for fields in CONTRACTS.get(src,{}).values()
+                    for field,values in fields.items() for a in values}
+                def distinct_fields(row):
+                    return len({aliases[normalize(x)] for x in row if normalize(x) in aliases})
+                choices=[r for table,types in h.tables for r,has_th in list(zip(table,types))[:4]
+                         if len(r)>1 and (has_th or distinct_fields(r)>=2)]
                 if choices:return {"format":"HTML","header":max(choices,key=lambda r:(len(r),sum(len(x)>0 for x in r)))[:100],
                                    "tables_observed":len(h.tables),"encoding":enc,
                                    "status":"HEADER_OBSERVED_UNCERTIFIED"}
@@ -86,7 +91,7 @@ def header_for(blob,name):
     return {"format":"OTHER","header":[],"status":"HEADER_UNRESOLVED"}
 def inspect_native(blob,path,src,era):
     if fmt(path,blob)!="ZIP":
-        evidence=[{"path":path,"sha":sha(blob),**header_for(blob,path)}]
+        evidence=[{"path":path,"sha":sha(blob),**header_for(blob,path,src)}]
     else:
         evidence=[]
         with zipfile.ZipFile(io.BytesIO(blob)) as z:
@@ -100,7 +105,7 @@ def inspect_native(blob,path,src,era):
                     evidence.append({"path":m.filename,"status":"MEMBER_OVER_SAMPLE_LIMIT","header":[]})
                     continue
                 content=z.read(m)
-                evidence.append({"path":m.filename,"sha":sha(content),**header_for(content,m.filename)})
+                evidence.append({"path":m.filename,"sha":sha(content),**header_for(content,m.filename,src)})
     for e in evidence:
         if e.get("header"):
             c=infer(src,e["header"],era)
@@ -168,6 +173,9 @@ def selftest():
     assert "證券代號" in h["header"] and "人數" in h["header"]
     misleading=header_for(b"<table><tr><td>2330</td><td>1</td><td>200</td></tr></table>","data.html")
     assert not misleading["header"],"Data-only HTML cannot be classified as header"
+    td_head=b"<table><tr><td>StockNo</td><td>持股分級</td><td>人數</td></tr></table>"
+    assert "StockNo" in header_for(td_head,"tdcc.html","TDCC")["header"]
+    assert not header_for(b"<table><tr><td>2330</td><td>1</td><td>200</td></tr></table>","tdcc.html","TDCC")["header"]
     mem=io.BytesIO()
     with zipfile.ZipFile(mem,"w") as z:z.writestr("a.html",b)
     p=inspect_native(mem.getvalue(),"a.zip","TDCC",None)
