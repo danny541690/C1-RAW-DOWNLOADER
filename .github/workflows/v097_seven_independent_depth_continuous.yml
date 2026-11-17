@@ -1,94 +1,12 @@
-name: JARVIS v097 Seven-Source Deep Independent Evidence Incremental
+# ARCHIVED 2026-11-17: user requested retirement of old deep-content Bronze validation.
+# Original workflow retained in Git history. This stub has no schedule, push, or workflow_run triggers.
+# It deliberately performs no parsing, release, Silver, Gold, or recursive dispatch.
+name: "JARVIS v097 Seven-Source Deep Independent Evidence Incremental [ARCHIVED — no processing]"
 on:
   workflow_dispatch:
-    inputs:
-      depth:
-        type: string
-        default: '0'
-        required: false
-  push:
-    paths:
-      - scripts/v097_seven_independent_depth.py
-      - .github/workflows/v097_seven_independent_depth_continuous.yml
-  schedule:
-    - cron: '12,42 * * * *'
-permissions:
-  contents: read
-  actions: write
-concurrency:
-  group: v097-seven-independent-depth
-  cancel-in-progress: false
 jobs:
-  per-source:
+  archived-no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 100
-    concurrency:
-      group: v097-independent-proof-${{ matrix.source }}
-      cancel-in-progress: false
-    strategy:
-      fail-fast: false
-      matrix:
-        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
-      - name: Deep original SHA, schema, PIT negative verification contracts
-        run: |
-          PYTHONPATH=. python scripts/v097_seven_independent_depth.py selftest
-          PYTHONPATH=. python scripts/v097_d_seven_source_gate.py selftest
-      - name: Verify and classify actual frozen Bronze HOLD files
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          EVIDENCE_DEPTH_BATCH: '12'
-        run: PYTHONPATH=. python scripts/v097_seven_independent_depth.py '${{ matrix.source }}'
-  resume:
-    needs: per-source
-    if: always() && needs.per-source.result != 'cancelled'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
-      - name: Compute evidence work queue and dispatch next checkpoint batch
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          DEPTH: ${{ inputs.depth || '0' }}
-        run: |
-          REMAINING=$(PYTHONPATH=. python - <<'PY'
-          from scripts.v097_bronze_autopilot import source_api,SOURCES,READY
-          from scripts.v097_seven_parser_triage import latest_complete
-          from scripts.v097_seven_independent_depth import retries
-          api,control,quality,match,load_json,*_=source_api()
-          _,formal=latest_complete(api,quality,match,load_json)
-          remain=0
-          for src in SOURCES:
-              n=match(api,control,"v097_SEVEN_FORMAT_V2_CK_"+src+".json")
-              f=match(api,control,"v097_SEVEN_INDEPENDENT_DEPTH_CK_"+src+".json")
-              if not n:continue
-              native=load_json(api,n["id"])["done"]
-              done=load_json(api,f["id"])["done"] if f else {}
-              accepted={r["source_id"] for r in formal[src]["records"] if r["status"]==READY}
-              target=set(native)-accepted
-              if not set(done).issubset(target):raise RuntimeError("PROOF_CK_ORPHANS_"+src)
-              remain+=len(target-set(done))+len(retries(done))
-          print(remain)
-          PY
-          )
-          echo "SEVEN_SOURCE_DEPTH_REMAINING=$REMAINING"
-          if ! [[ "$DEPTH" =~ ^[0-9]+$ ]]; then exit 1; fi
-          if [ "$REMAINING" -eq 0 ]; then echo "ALL_AVAILABLE_HOLDS_PROFILED_NOT_SILVER_READY"; exit 0; fi
-          if [ "$DEPTH" -ge 60 ]; then echo "CHAIN_LIMIT_BACKUP_CRON_30MIN"; exit 0; fi
-          gh workflow run v097_seven_independent_depth_continuous.yml --ref main -f depth="$((DEPTH+1))"
-          echo "EVIDENCE_NEXT_DISPATCH_DEPTH=$((DEPTH+1))"
+      - name: Confirm legacy workflow decommissioned
+        run: echo 'LEGACY_DEEP_CONTENT_WORKFLOW_DISABLED_NO_DATA_MUTATION'
