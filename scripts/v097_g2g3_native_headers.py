@@ -183,7 +183,7 @@ def selftest():
     assert not misleading["header"],"Data-only HTML cannot be classified as header"
     td_head="<table><tr><td>StockNo</td><td>持股分級</td><td>人數</td></tr></table>".encode()
     assert "StockNo" in header_for(td_head,"tdcc.html","TDCC")["header"]
-    assert header_for(b\'{"date":"2026-11-17","stock_id":"2330"}\\n\', "p.jsonl","FinMind")["header"]==["date","stock_id"]
+    assert header_for(('{"date":"2026-11-17","stock_id":"2330"}' + chr(10)).encode(), "p.jsonl","FinMind")["header"]==["date","stock_id"]
     assert not header_for(b"<table><tr><td>2330</td><td>1</td><td>200</td></tr></table>","tdcc.html","TDCC")["header"]
     mem=io.BytesIO()
     with zipfile.ZipFile(mem,"w") as z:z.writestr("a.html",b)
