@@ -67,6 +67,14 @@ def header_for(blob,name,src=None):
                 if rows:return {"format":"CSV","header":max(rows,key=len)[:100],
                     "encoding":enc,"status":"HEADER_OBSERVED_UNCERTIFIED"}
             except (UnicodeError,csv.Error):pass
+    if low.endswith(".jsonl"):
+        try:
+            found=[json.loads(line) for line in blob[:1024*1024].decode("utf-8-sig").splitlines()[:12] if line.strip()]
+            dicts=[r for r in found if isinstance(r,dict)]
+            if dicts:return {"format":"JSONL","header":list(dicts[0].keys())[:100],
+                             "status":"HEADER_OBSERVED_UNCERTIFIED","observed_rows":len(dicts)}
+        except (ValueError,UnicodeError):pass
+        return {"format":"JSONL","header":[],"status":"JSONL_HEADER_PENDING"}
     if low.endswith(".json"):
         try:
             p=json.loads(blob.decode("utf-8-sig"))
@@ -175,6 +183,7 @@ def selftest():
     assert not misleading["header"],"Data-only HTML cannot be classified as header"
     td_head="<table><tr><td>StockNo</td><td>持股分級</td><td>人數</td></tr></table>".encode()
     assert "StockNo" in header_for(td_head,"tdcc.html","TDCC")["header"]
+    assert header_for(b\'{"date":"2026-11-17","stock_id":"2330"}\\n\', "p.jsonl","FinMind")["header"]==["date","stock_id"]
     assert not header_for(b"<table><tr><td>2330</td><td>1</td><td>200</td></tr></table>","tdcc.html","TDCC")["header"]
     mem=io.BytesIO()
     with zipfile.ZipFile(mem,"w") as z:z.writestr("a.html",b)
