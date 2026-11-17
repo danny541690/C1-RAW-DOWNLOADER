@@ -1,0 +1,64 @@
+name: JARVIS V097 G2 G3 Contract Grouping Census (No Conversion)
+on:
+  push:
+    paths:
+      - .github/workflows/v097_g2g3_contract_census.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-g2g3-contract-census
+  cancel-in-progress: false
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate grouping and no unauthorized Ready
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_g2g3_contract_discovery.py
+          PYTHONPATH=. python scripts/v097_g2g3_contract_discovery.py selftest
+          PYTHONPATH=. python scripts/v097_v3_contract_registry.py selftest
+  sources:
+    needs: safety
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Use 74750 frozen source IDs and old evidence to group contracts (QA-only writes)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_g2g3_contract_discovery.py source '${{ matrix.source }}'
+  reconcile:
+    needs: [safety, sources]
+    if: always() && needs.safety.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Produce source isolated comprehensive 74750-row contract group master
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_g2g3_contract_discovery.py final
