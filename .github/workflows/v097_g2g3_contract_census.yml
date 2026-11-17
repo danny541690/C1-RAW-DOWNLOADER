@@ -1,4 +1,5 @@
 name: JARVIS V097 G2 G3 Contract Grouping Census (No Conversion)
+# 2026-11-18 three-day official-format QA: separate ZIP/HTML/XLSX missing headers and TPEx receipt data
 # Require exact ordered header-layout candidates; no-header groups not certifiable
 # Reconcile actual TDCC HTML 16-row body metadata and native ZIP 17-row separately
 on:
