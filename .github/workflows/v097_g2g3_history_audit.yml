@@ -1,0 +1,40 @@
+name: JARVIS v097 V3 G2G3 History and Schema Logic Audit
+# Independent post-processing QA receipt; never writes Bronze, Silver or Gold.
+on:
+  push:
+    paths:
+      - .github/workflows/v097_g2g3_history_audit.yml
+  schedule:
+    - cron: '53 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-g2g3-history-audit
+  cancel-in-progress: false
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate G0-G4 audit and check source/era negative tests
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_g2g3_history_rules_audit.py scripts/v097_g2g3_full_native_validation.py scripts/v097_g2g3_typed_contract_audit.py scripts/v097_g2g3_contract_discovery.py scripts/v097_g2g3_native_headers.py
+          PYTHONPATH=. python scripts/v097_g2g3_history_rules_audit.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_full_native_validation.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_native_headers.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_contract_discovery.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_typed_contract_audit.py selftest
+      - name: Install Google Drive read and QA receipt dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+      - name: Reconcile frozen 74750 baseline and separate source QA lineage
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_g2g3_history_rules_audit.py build
