@@ -238,8 +238,27 @@ def aggregate():
                 done[sid]=v
         counts=collections.Counter(done.get(r["source_id"],{}).get("status","NOT_EVALUATED") for r in rows)
         gate_counts={g:dict(collections.Counter(done.get(r["source_id"],{}).get("gates",{}).get(g,"NOT_EVALUATED") for r in rows)) for g in ("G0","G1","G2","G3","G4")}
+        reasons=collections.Counter(done[r["source_id"]].get("reason","UNKNOWN") for r in rows if r["source_id"] in done)
+        # Historical G2/G3 sample and full-file evidence is supplementary only;
+        # it is never silently promoted to a formal certificate.
+        native={}
+        for label,prefix in (("headers","v097_G2G3_HEADER_CK_"),
+                             ("typed","v097_G2G3_TYPED_AUDIT_CK_")):
+            proof_file=match(api,control,prefix+src+".json")
+            proof_data=load_json(api,proof_file["id"]).get("done",{}) if proof_file else {}
+            if set(proof_data)-set(idx):raise RuntimeError("R1_NATIVE_EVIDENCE_ORPHAN_"+src)
+            verified={sid:v for sid,v in proof_data.items() if v.get("sha")==idx[sid]["source_sha256"]}
+            native[label+"_checked"]=len(verified)
+            if label=="typed":
+                native["full_native_candidate_members"]=sum(1 for v in verified.values() for m in v.get("members",[])
+                    if m.get("full_native_shape",{}).get("status") in
+                    ("FULL_NATIVE_SHAPE_CANDIDATE_UNCERTIFIED","TDCC_FULL_NATIVE_LAYOUT_CANDIDATE_UNCERTIFIED"))
+                native["full_native_exception_members"]=sum(1 for v in verified.values() for m in v.get("members",[])
+                    if m.get("full_native_shape",{}).get("status") in
+                    ("FULL_NATIVE_SHAPE_EXCEPTIONS","TDCC_NATIVE_NUMERIC_OR_METADATA_HOLD"))
         all_status.update(counts)
-        results.append({"source":src,"cohort":len(rows),"status":dict(counts),"gates":gate_counts})
+        results.append({"source":src,"cohort":len(rows),"status":dict(counts),"gates":gate_counts,
+                        "reason_counts":dict(reasons),"native_evidence":native})
     if total!=TARGET or len(ids)!=TARGET or sum(all_status.values())!=TARGET:
         raise RuntimeError("R1_74750_ACCOUNTING_DRIFT")
     # Reuse the existing seven-source formal contract census; preserve its
