@@ -1,4 +1,5 @@
 name: JARVIS V097 G2 G3 Typed Contract Evidence (No Conversion)
+# HTML row safety correction verified in selftests
 on:
   push:
     paths:
