@@ -1,0 +1,53 @@
+name: JARVIS v097 V3 Fifteen-Minute Recovery Watchdog
+# Source worker checkpoints are independent; never writes Bronze/Silver/Gold.
+on:
+  push:
+    paths:
+      - .github/workflows/v097_v3_watchdog.yml
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v097-v3-watchdog-single
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check if autonomous 11-shard workflow already active
+        id: active
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          active=$(gh run list --repo "$GH_REPO" --workflow v097_v3_acceptance.yml --json status --limit 25 --jq '[.[] | select(.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "requested") ] | length')
+          echo "active=$active" >> "$GITHUB_OUTPUT"
+          echo "V3_ACTIVE_RUNS=$active"
+      - name: Inspect Drive Checkpoint for pending work and safely wake controller
+        if: steps.active.outputs.active == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4 >/dev/null
+          PYTHONPATH=. python scripts/v097_v3_source_worker.py check | tee /tmp/v3_watchdog
+          flag=$(grep '^V3_WATCHDOG_STATE=' /tmp/v3_watchdog | tail -1 | python -c "import json,sys;print(str(json.loads(sys.stdin.read().split('=',1)[1])['wake_needed']).lower())")
+          if [ "$flag" = "true" ]; then
+            gh workflow run v097_v3_acceptance.yml --repo "$GH_REPO" --ref main
+            echo "V3_WATCHDOG_RECOVERY_DISPATCHED"
+          else
+            echo "V3_NO_NEW_WORK_AFTER_ALL_CHECKED"
+          fi
