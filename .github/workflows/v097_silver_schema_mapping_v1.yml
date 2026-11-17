@@ -1,0 +1,89 @@
+name: JARVIS v097 Silver Schema Mapping V1 Seven Independent Sources
+# Pre-Silver only. Reads frozen Bronze index, V2/V21 format checkpoints; never writes Bronze, Silver or Gold.
+on:
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: 'Mapping records per source per pass (10-250)'
+        default: '150'
+        required: false
+        type: string
+  schedule:
+    - cron: '9,24,39,54 * * * *'
+  push:
+    paths:
+      - .github/workflows/v097_silver_schema_mapping_v1.yml
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-v097-schema-mapping-v1-single-round
+  cancel-in-progress: false
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check pre-Silver boundaries and historical mapping contracts
+        run: |
+          python -m py_compile scripts/v097_silver_schema_mapping_v1.py
+          PYTHONPATH=. python scripts/v097_silver_schema_mapping_v1.py selftest
+          PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
+          PYTHONPATH=. python scripts/v097_schema_gate_v21.py selftest
+  mapping:
+    needs: contracts
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Map observed format evidence to source/era contract candidates
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          MAPPING_BATCH: ${{ github.event.inputs.batch || '150' }}
+        run: PYTHONPATH=. python scripts/v097_silver_schema_mapping_v1.py '${{ matrix.source }}'
+  reconcile:
+    needs: [contracts, mapping]
+    if: always() && needs.contracts.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Produce seven-source immutable Mapping Master and Error Ledger
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_silver_schema_mapping_v1.py final | tee /tmp/schema-mapping.log
+      - name: Continue mapping incrementally
+        if: needs.mapping.result == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          left=$(grep '^SCHEMA_MAPPING_MASTER=' /tmp/schema-mapping.log | tail -1 | python -c "import json,sys;print(json.loads(sys.stdin.read().split('=',1)[1])['mapping_not_checked'])")
+          echo "SCHEMA_MAPPING_REMAINING=$left"
+          if [ "$left" -gt 0 ]; then
+            gh workflow run v097_silver_schema_mapping_v1.yml --ref main -f batch=150
+          else
+            echo "SCHEMA_MAPPING_ALL_FORMAT_PROFILES_ACCOUNTED"
+          fi
