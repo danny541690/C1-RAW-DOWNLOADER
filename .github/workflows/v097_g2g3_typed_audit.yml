@@ -1,0 +1,51 @@
+name: JARVIS V097 G2 G3 Typed Contract Evidence (No Conversion)
+on:
+  push:
+    paths:
+      - .github/workflows/v097_g2g3_typed_audit.yml
+  schedule:
+    - cron: '9,39 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v097-g2g3-typed-source-lanes
+  cancel-in-progress: false
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Negative and strict type-sample tests, no Drive writes
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_g2g3_typed_contract_audit.py scripts/v097_g2g3_native_headers.py scripts/v097_g2g3_contract_discovery.py
+          PYTHONPATH=. python scripts/v097_g2g3_native_headers.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_contract_discovery.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_typed_contract_audit.py selftest
+  type_audit:
+    needs: safety
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib openpyxl
+      - name: Incremental type evidence; no Silver or Gold outputs
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          G2G3_TYPED_BATCH: '15'
+        run: PYTHONPATH=. python scripts/v097_g2g3_typed_contract_audit.py source '${{ matrix.source }}'
