@@ -1,0 +1,51 @@
+name: JARVIS v097 Universal Execution Master Ledger and Reports
+# Records all GitHub Actions attempts, classified per run. Does not run Silver/Gold.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/v097_execution_history_ledger.py
+      - .github/workflows/v097_execution_history_ledger.yml
+  schedule:
+    - cron: '3,13,23,33,43,53 * * * *'
+  workflow_run:
+    workflows:
+      - JARVIS v097 Bronze v2.1 Direct READY Release Only
+      - JARVIS v097 Seven Native Historical Parsers V2 Continuous
+      - JARVIS v097 TAIFEX Source-Native CSV Format Translation
+      - JARVIS v097 Bronze Autopilot 74750 Seven Sources
+      - JARVIS v097 Silver Ready HOLD Evidence Triage
+      - JARVIS v0.97 - A1-A5 automatic TDCC recovery
+    types:
+      - completed
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: v097-execution-history-master-single-writer
+  cancel-in-progress: false
+jobs:
+  update-master-ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive and GitHub API clients
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
+      - name: Verify categories, safe CSV exports, and report schema
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_execution_history_ledger.py
+          PYTHONPATH=. python scripts/v097_execution_history_ledger.py selftest
+      - name: Index past and present workflow runs and publish Drive reports
+        env:
+          GH_TOKEN: \${{ github.token }}
+          GH_REPO: \${{ github.repository }}
+          GOOGLE_CLIENT_ID: \${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: \${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: \${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          HISTORY_BATCH: '25'
+        run: PYTHONPATH=. python scripts/v097_execution_history_ledger.py
