@@ -47,5 +47,5 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          G2G3_HEADER_BATCH: '30'
+          G2G3_HEADER_BATCH: '60'
         run: PYTHONPATH=. python scripts/v097_g2g3_native_headers.py source '${{ matrix.source }}'
