@@ -1,4 +1,5 @@
 name: JARVIS V097 G2 G3 Typed Contract Evidence (No Conversion)
+# 2026-11-17: 15-minute staggered G3 contract check; proper 16/17 TDCC and full-file JSON CSV checks, no conversion
 # TDCC real HTML body metadata and 17-tier full page native evidence gates added
 # 2026-11-17: full-file native QA and per-source unresolved-cause diagnostics
 # Revalidate exact layout grouping and header fingerprint invalidation safety gates
@@ -8,7 +9,7 @@ on:
     paths:
       - .github/workflows/v097_g2g3_typed_audit.yml
   schedule:
-    - cron: '9,39 * * * *'
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
@@ -54,5 +55,5 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          G2G3_TYPED_BATCH: '15'
+          G2G3_TYPED_BATCH: '45'
         run: PYTHONPATH=. python scripts/v097_g2g3_typed_contract_audit.py source '${{ matrix.source }}'
