@@ -12,7 +12,7 @@ from scripts.v097_g2g3_tdcc_native_html import metadata as tdcc_page_metadata
 VERSION="v097_g2g3_native_header_recovery_20261117_r1"
 PARSER_REV="tdcc_page_code_date_provenance_20261117_r4"
 RUN=os.environ.get("GITHUB_RUN_ID","manual")
-BATCH=max(1,min(65,int(os.environ.get("G2G3_HEADER_BATCH","30"))))
+BATCH=max(1,min(120,int(os.environ.get("G2G3_HEADER_BATCH","90"))))
 MAX_RAW=65*1024*1024
 MAX_MEMBERS=5000
 MAX_EXPAND=600*1024*1024
