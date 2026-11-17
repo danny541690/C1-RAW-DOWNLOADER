@@ -80,7 +80,20 @@ def analyse(row,profile,mapping,v3,native=None):
     elif profile.get("status") in ("FORMAT_UNSUPPORTED","FORMAT_STRUCTURAL_HOLD","FORMAT_RESOURCE_LIMIT"):
         status="FORMAT_EXCEPTION"
     elif not observed:
-        status="HEADER_OR_ZIP_MEMBER_PENDING"
+        # Root-cause triage only: a missing header must not be equated with
+        # an unknown official Dataset, nor interpreted as corrupted Bronze.
+        source_name=str(row.get("source_path") or "").lower()
+        fkind=str((profile or {}).get("signature") or "").upper()
+        if ".raw.receipt_" in source_name or source_name.endswith(".receipt.json"):
+            status="PROVENANCE_RECEIPT_NOT_NUMERIC_DATASET"
+        elif fkind=="ZIP" or source_name.endswith(".zip"):
+            status="ZIP_MEMBER_DATASET_HEADER_PENDING"
+        elif fkind in ("HTML","HTML_XML") or source_name.endswith((".htm",".html")):
+            status="HTML_NATIVE_TABLE_OR_METADATA_PENDING"
+        elif fkind in ("XLSX","XLS") or source_name.endswith((".xlsx",".xls")):
+            status="WORKBOOK_SHEET_CELL_LAYOUT_PENDING"
+        else:
+            status="NATIVE_HEADER_OR_DATASET_IDENTITY_PENDING"
     elif any(q["contract_status"]=="COMPLETE_HEADER_CANDIDATE_UNCERTIFIED" for q in observed):
         status="G3_HEADER_COMPLETE_TYPED_PROOF_PENDING"
     elif any(q["era_registered"] for q in observed):
@@ -96,7 +109,8 @@ def analyse(row,profile,mapping,v3,native=None):
     else:
         best=None;dataset="UNKNOWN";header_sig="NO_OBSERVED_HEADER"
     group_kind="HEADER_LAYOUT_CANDIDATE_UNCERTIFIED" if observed else "DISCOVERY_BUCKET_NO_HEADER_NOT_CERTIFIABLE"
-    group_key="|".join([row["source"],str(dataset),str(era),str(signature),header_sig])
+    group_key="|".join([row["source"],str(dataset),str(era),str(signature),header_sig,
+                         status if not observed else "OBSERVED_LAYOUT"])
     return {"source_id":row["source_id"],"source":row["source"],"sha":row["source_sha256"],
         "g2g3_status":status,"group_key":group_key,"group_kind":group_kind,"dataset_candidate":dataset,
         "era":era,"format_signature":signature,
@@ -123,7 +137,7 @@ def selftest():
         "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None)
     with_native=analyse(row,{"sha":"a"*64,"signature":"ZIP","historical_version":era,
         "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None,recovered)
-    assert without["g2g3_status"]=="HEADER_OR_ZIP_MEMBER_PENDING"
+    assert without["g2g3_status"]=="ZIP_MEMBER_DATASET_HEADER_PENDING"
     assert with_native["g2g3_status"]=="G3_HEADER_COMPLETE_TYPED_PROOF_PENDING"
     tdcc_row={"source_id":"TDCC-TEST","source":"TDCC","source_sha256":"d"*64,
                "bronze_status":"BRONZE_INTEGRITY_READY"}
@@ -141,10 +155,16 @@ def selftest():
 
     assert with_native["g3_verified"] is False and with_native["schema_ready"] is False
     assert without["group_kind"]=="DISCOVERY_BUCKET_NO_HEADER_NOT_CERTIFIABLE"
+    assert without["g2g3_status"]=="ZIP_MEMBER_DATASET_HEADER_PENDING"
+    receipt={**row,"source_path":"TPEx_BULK.raw.receipt_001.json"}
+    receipt_profile={**f,"header":[],"keys":[],"signature":"JSON"}
+    q=analyse(receipt,receipt_profile,None,None)
+    assert q["g2g3_status"]=="PROVENANCE_RECEIPT_NOT_NUMERIC_DATASET"
+
     assert with_native["group_kind"]=="HEADER_LAYOUT_CANDIDATE_UNCERTIFIED"
     wrong_sha={**recovered,"sha":"c"*64}
     assert analyse(row,{"sha":"a"*64,"signature":"ZIP","historical_version":era,
-        "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None,wrong_sha)["g2g3_status"]=="HEADER_OR_ZIP_MEMBER_PENDING"
+        "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None,wrong_sha)["g2g3_status"]=="ZIP_MEMBER_DATASET_HEADER_PENDING"
     print("G2G3_V3_CONSERVATIVE_DISCOVERY_SELFTEST_PASS")
 def source(src):
     if src not in SOURCES:raise ValueError("UNKNOWN_SOURCE")
