@@ -22,15 +22,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: R1 end-to-end gate regression tests
+      - name: Install Google Drive client before all regression imports
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: R1 complete gate and official-format regression tests
         run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_acceptance_engine_r1.py
           PYTHONPATH=. python scripts/v097_acceptance_engine_r1.py selftest
           PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
+          PYTHONPATH=. python scripts/v097_schema_gate_v21.py selftest
           PYTHONPATH=. python scripts/v097_v3_contract_registry.py selftest
           PYTHONPATH=. python scripts/v097_v3_source_worker.py selftest
           PYTHONPATH=. python scripts/v097_v3_unified_master.py selftest
-      - name: Install Google Drive client
-        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+          PYTHONPATH=. python scripts/v097_g2g3_formal_contracts_v2.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_formal_contract_publisher.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_full_native_validation.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_tdcc_native_html.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_typed_contract_audit.py selftest
+          PYTHONPATH=. python scripts/v097_g2g3_contract_discovery.py selftest
       - name: Check Google OAuth and Drive read authorization (fail closed)
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
