@@ -1,5 +1,6 @@
 name: JARVIS v097 V3 Autonomous Bronze-to-Schema Evidence (No Conversion)
 # After 449 legacy workflows frozen. Seven independent sources, 11 shards.
+# 2026-11-18 transient retry, failure-safe continuation and TDCC native-candidate Unified Master regression.
 # No Silver/Gold materialization, Bronze originals never written.
 on:
   push:
