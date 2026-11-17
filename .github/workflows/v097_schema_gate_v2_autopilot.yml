@@ -58,7 +58,7 @@ jobs:
         run: PYTHONPATH=. python scripts/v097_schema_gate_v2.py '${{ matrix.source }}'
   reconcile-and-resume:
     needs: [contracts, formats]
-    if: always()
+    if: always() && needs.contracts.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 100
     steps:
