@@ -179,9 +179,31 @@ def build():
 
     prior=match(api,control,"v097_G2G3_CONTRACT_MASTER_LATEST.json")
     census=load_json(api,prior["id"]) if prior else None
+    contract_file=match(api,control,"v097_G2G3_FORMAL_MASTER_LATEST.json")
+    contract_master=load_json(api,contract_file["id"]) if contract_file else None
+    if contract_master:
+        if contract_master.get("cohort")!=TARGET or len(contract_master.get("sources",[]))!=len(SOURCES):
+            raise RuntimeError("FORMAL_CONTRACT_MASTER_COHORT_CONFLICT")
+        contract_index={x["source"]:x for x in contract_master["sources"]}
+        if set(contract_index)!=set(SOURCES):
+            raise RuntimeError("FORMAL_CONTRACT_SOURCE_DUPLICATE_OR_MISSING")
+        for x in sources:
+            official=contract_index[x["source"]]
+            if official["cohort"]!=x["cohort"]:
+                raise RuntimeError("FORMAL_SOURCE_COHORT_CONFLICT_"+x["source"])
+            x["formal_g2g3_contract_candidates"]=official["contracts"]
+            x["formal_g2g3_current_blockers"]=official["blocker_counts"]
+        summary["formal_g2g3_contract_specs"]=contract_master["dataset_era_contract_count"]
+        summary["formal_g2g3_group_count"]=contract_master["group_count"]
+        summary["formal_g2g3_blocker_count"]=sum(contract_master.get("blocker_totals",{}).values())
     board={"schema":VERSION,"run":RUN,"created_at":now(),
       "title":"JARVIS v0.97 唯一正式驗收進度總表（Bronze → Silver Schema Ready）",
       "cohort":TARGET,"overall":summary,"sources":sources,
+      "g2g3_formal_contract_master":{"run":contract_master.get("run"),
+        "report_id":contract_master.get("report_id"),
+        "contract_specs":contract_master.get("dataset_era_contract_count"),
+        "groups":contract_master.get("group_count"),
+        "blocker_totals":contract_master.get("blocker_totals",{})} if contract_master else None,
       "g2g3_contract_census":{"run":census.get("run"),"groups":len(census.get("ranked_contract_groups",[])),
         "status_counts":census.get("overall_statuses",{}),"complete":census.get("complete_seven_source_census")} if census else None,
       "interpretation":{"legacy_format":"已分類證據，非 G3 合格",
