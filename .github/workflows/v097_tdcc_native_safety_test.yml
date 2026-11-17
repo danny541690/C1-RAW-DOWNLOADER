@@ -1,0 +1,24 @@
+name: JARVIS v097 TDCC Native HTML 17-Tier Safety Test
+on:
+  push:
+    paths:
+      - .github/workflows/v097_tdcc_native_safety_test.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  negative-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and test source-native TDCC real HTML structure
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_g2g3_tdcc_native_html.py scripts/v097_v3_contract_registry.py
+          PYTHONPATH=. python scripts/v097_g2g3_tdcc_native_html.py selftest
+          PYTHONPATH=. python scripts/v097_v3_contract_registry.py selftest
+          echo TDCC_TEST_NO_DRIVE_OR_BRONZE_OR_SILVER_OR_GOLD_WRITE
