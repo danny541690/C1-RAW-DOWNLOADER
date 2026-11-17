@@ -200,6 +200,34 @@ def final():
             "finalized":total-outstanding,"remaining":outstanding,"statuses":dict(counts),
             "sources":sources,"silver_gold_executed":False,"silver_input_ready_certified":0,
             "note":"Format classification only; V2 archived SHA results reused unchanged. No numeric or PIT release."}
+    # Silver PRE-CONVERSION Schema Gate: accounting only, no Silver materialization.
+    # Header-only V2 candidate statuses must not be interpreted as certified Ready.
+    silver_schema={
+        "cohort":total,
+        "format_classified":total-outstanding,
+        "format_pending":outstanding,
+        "format_profiled_mapping_pending":sum(v for k,v in counts.items() if "SCHEMA_PROFILED_NEEDS_MAPPING" in k),
+        "format_unsupported":sum(v for k,v in counts.items() if "FORMAT_UNSUPPORTED" in k),
+        "header_match_candidates_uncertified":sum(v for k,v in counts.items() if "SCHEMA_INPUT_READY" in k),
+        "schema_contract_verified":0,
+        "field_mapping_verified":0,
+        "silver_input_ready_certified":0,
+        "silver_materialized":0,
+        "gold_materialized":0,
+        "notes":"Format signature and generic header matching are not certified dataset/era schema contracts; no Silver or Gold conversions."
+    }
+    result["silver_schema_gate"]=silver_schema
+    for s in sources:
+        cc=s["status_counts"]
+        s["silver_schema_gate"]={
+            "format_classified":s["cohort"]-cc.get("PENDING",0),
+            "format_pending":cc.get("PENDING",0),
+            "mapping_pending":sum(v for k,v in cc.items() if "SCHEMA_PROFILED_NEEDS_MAPPING" in k),
+            "header_match_candidates_uncertified":sum(v for k,v in cc.items() if "SCHEMA_INPUT_READY" in k),
+            "format_unsupported":sum(v for k,v in cc.items() if "FORMAT_UNSUPPORTED" in k),
+            "field_mapping_verified":0,
+            "silver_input_ready_certified":0,
+        }
     error_id=put_once(api,quality,"v097_SCHEMA_V21_ERROR_LEDGER_"+RUN+".json",
          {"schema":VERSION,"run":RUN,"cohort":total,"count":len(error_rows),
           "records":error_rows,"note":"Only terminal non-mapping exceptions. All per-file mapping-pending evidence lives in V2/V21 checkpoints and immutable deltas."})
@@ -212,6 +240,7 @@ def final():
     print("SCHEMA_V21_MASTER="+json.dumps({**result,"sources":"seven","report_id":fid},ensure_ascii=False),flush=True)
 def selftest():
     assert sum(PLAN.values())==14
+    assert sum(1 for k in ("format_classified","mapping_pending","field_mapping_verified","silver_input_ready_certified"))==4
     assert all(0<=lane("x",n)<n for n in (1,2,6))
     assert len({lane(str(i),6) for i in range(500)})==6
     s=b"date,code,close\n2026-11-17,2330,1\n"
