@@ -9,6 +9,7 @@ from scripts.v097_v3_preflight import (VERSION, TARGET, SOURCE_COUNTS, SOURCES,
     assert_cohort, load_evidence, evidence_fp, classify, canonical)
 from scripts.v097_schema_gate_v21 import inspect, fmt
 from scripts.v097_bronze_autopilot import source_api
+from scripts.v097_v3_contract_registry import infer, REGISTRY_VERSION
 
 ENGINE="v097_v3_source_worker_20261117_r1"
 RUN=os.getenv("GITHUB_RUN_ID","manual")
@@ -63,22 +64,32 @@ def zip_profile(blob,src='TWSE'):
             return result
     except (OSError,ValueError,zipfile.BadZipFile,RuntimeError) as e:
         return {"status":"SCHEMA_HOLD","reason":"ZIP_"+type(e).__name__}
-def inspect_one(row,fmt_evidence,map_evidence,api,call):
+def inspect_one(row,fmt_evidence,map_evidence,api,call,prior=None):
     baseline=classify(row,fmt_evidence,map_evidence)
     identity={"source_id":row["source_id"],"source":row["source"],
               "sha":row["source_sha256"],"destination_id":row["destination_id"],
               "source_path":row.get("source_path"),
               "evidence_fingerprint":evidence_fp(row,fmt_evidence,map_evidence),
-              "engine":ENGINE,"run":RUN,"observed_at":now(),
+              "engine":ENGINE,"registry_version":REGISTRY_VERSION,"run":RUN,"observed_at":now(),
               "silver_materialized":False,"gold_materialized":False}
     if baseline["g4"] in ("BRONZE_HOLD","SCHEMA_HOLD"):
         return {**identity,**baseline}
+    era=fmt_evidence.get("historical_version") if fmt_evidence else None
+    observed_fields=(fmt_evidence.get("header") or fmt_evidence.get("keys") or []) if fmt_evidence else []
+    if not observed_fields and map_evidence and isinstance(map_evidence.get("mapping"),dict):
+        observed_fields=list(map_evidence["mapping"].values())
+    candidate=infer(row["source"],observed_fields,era,
+                    fmt_evidence.get("dataset_candidate") if fmt_evidence else None)
+    if prior and prior.get("evidence_fingerprint")==identity["evidence_fingerprint"] and prior.get("new_native_evidence"):
+        return {**identity,**{k:v for k,v in prior.items() if k not in identity},
+                "contract_candidate":candidate,"registry_version":REGISTRY_VERSION,
+                "run":RUN,"observed_at":now()}
     reason=baseline.get("reason")
     need_bytes=(fmt_evidence is None or
                 fmt_evidence.get("signature")=="ZIP" and
                 map_evidence and map_evidence.get("status")=="MAPPING_MEMBERS_PENDING")
     if not need_bytes:
-        return {**identity,**baseline,"reason":reason,
+        return {**identity,**baseline,"reason":reason,"contract_candidate":candidate,
                 "g0":"DEST_SHA_VERIFIED_REUSED" if fmt_evidence and
                 (fmt_evidence.get("input_sha_verified") is True or fmt_evidence.get("input_bytes_sha_checked") is True)
                 else baseline["g0"]}
@@ -96,7 +107,7 @@ def inspect_one(row,fmt_evidence,map_evidence,api,call):
             return {**identity,**baseline,"g0":"DEST_SHA_VERIFIED","g1":"SCHEMA_HOLD",
                     "g4":"SCHEMA_HOLD","reason":observed.get("reason"),"new_native_evidence":observed}
         return {**identity,**baseline,"g0":"DEST_SHA_VERIFIED",
-                "g1":"ZIP_MEMBERS_PROFILED" if observed.get("format")=="ZIP" else "SOURCE_FORMAT_PROFILED",
+                "contract_candidate":candidate,"g1":"ZIP_MEMBERS_PROFILED" if observed.get("format")=="ZIP" else "SOURCE_FORMAT_PROFILED",
                 "g2":"PENDING_SOURCE_DATASET_EDITION_CONTRACT","g3":"PENDING_TYPED_SCHEMA_CONTRACT",
                 "g4":"EVIDENCE_PENDING","reason":"CONTRACT_EVIDENCE_REQUIRED",
                 "new_native_evidence":observed}
@@ -123,14 +134,14 @@ def source(src,shard):
         if mp and mp.get("sha")!=r["source_sha256"]:mp=None
         current=evidence_fp(r,e,mp)
         prior=done.get(r["source_id"])
-        if prior and prior.get("evidence_fingerprint")==current and prior.get("engine")==ENGINE and prior.get("g4")!="RETRY_PENDING":
+        if prior and prior.get("evidence_fingerprint")==current and prior.get("engine")==ENGINE and prior.get("registry_version")==REGISTRY_VERSION and prior.get("g4")!="RETRY_PENDING":
             continue
         if prior and prior.get("g4")=="RETRY_PENDING" and prior.get("attempts",0)>=3:continue
         batch.append((r,e,mp))
         if len(batch)>=BATCH:break
     new={}
     for r,e,mp in batch:
-        rec=inspect_one(r,e,mp,api,call)
+        rec=inspect_one(r,e,mp,api,call,done.get(r["source_id"]))
         prior=done.get(r["source_id"],{})
         if rec["g4"]=="RETRY_PENDING":
             rec["attempts"]=prior.get("attempts",0)+1
