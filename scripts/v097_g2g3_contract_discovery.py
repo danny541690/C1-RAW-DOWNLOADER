@@ -34,7 +34,7 @@ def get_worker(api,control,match,load_json,source,rows):
             if rec.get("sha")!=ids[sid]["source_sha256"]:raise RuntimeError("G2G3_SHA_CONFLICT")
             result[sid]=rec
     return result
-def candidates(row,profile,mapping,v3):
+def candidates(row,profile,mapping,v3,native=None):
     era=(profile or {}).get("historical_version")
     hint=(profile or {}).get("dataset_candidate")
     headers=(profile or {}).get("header") or (profile or {}).get("keys") or []
@@ -47,6 +47,11 @@ def candidates(row,profile,mapping,v3):
         hs=member.get("observed_header") or member.get("observed_keys") or []
         if hs:samples.append({"scope":member.get("path"),"headers":hs,
                                "member_sha":member.get("sha256")})
+    if native and native.get('sha')==row['source_sha256']:
+        for member in native.get('evidence',[]):
+            hs=member.get('header') or []
+            if hs:samples.append({'scope':member.get('path','native'),
+                'headers':hs,'member_sha':member.get('sha')})
     result=[]
     for sample in samples:
         c=infer(row["source"],sample["headers"],era,hint)
@@ -59,12 +64,12 @@ def candidates(row,profile,mapping,v3):
             "source_native_typed_and_row_verified":False,
             "contract_registry":REGISTRY_VERSION})
     return result
-def analyse(row,profile,mapping,v3):
+def analyse(row,profile,mapping,v3,native=None):
     if profile and profile.get("sha")!=row["source_sha256"]:profile=None
     if mapping and (mapping.get("sha")!=row["source_sha256"] or
                     mapping.get("contract_version")!=MAP_RULE):mapping=None
     if v3 and (v3.get("sha")!=row["source_sha256"] or v3.get("engine")!=ENGINE):v3=None
-    observed=candidates(row,profile,mapping,v3)
+    observed=candidates(row,profile,mapping,v3,native)
     if row.get("bronze_status")!="BRONZE_INTEGRITY_READY":
         status="BRONZE_EVIDENCE_HOLD"
     elif not profile:
@@ -117,10 +122,14 @@ def source(src):
     assert_cohort(rows,src)
     pick,mappings=load_evidence(api,control,match,load_json,src,rows)
     workers=get_worker(api,control,match,load_json,src,rows)
+    hf=match(api,control,"v097_G2G3_HEADER_CK_"+src+".json")
+    recovered=load_json(api,hf["id"]).get("done",{}) if hf else {}
+    if set(recovered)-{r["source_id"] for r in rows}:
+        raise RuntimeError("NATIVE_HEADER_CHECKPOINT_ORPHAN_"+src)
     statuses=collections.Counter();groups={};records=[]
     for row in rows:
         sid=row["source_id"]
-        a=analyse(row,pick(row),mappings.get(sid),workers.get(sid))
+        a=analyse(row,pick(row),mappings.get(sid),workers.get(sid),recovered.get(sid))
         records.append(a);statuses[a["g2g3_status"]]+=1
         key=a["group_key"]
         if key not in groups:
