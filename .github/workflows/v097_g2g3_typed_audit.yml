@@ -1,5 +1,5 @@
 name: JARVIS V097 G2 G3 Typed Contract Evidence (No Conversion)
-# Revalidate corrected UTF-8 legacy header fixtures after safety gate failure
+# Revalidate exact layout grouping and header fingerprint invalidation safety gates
 # HTML row safety correction verified in selftests
 on:
   push:
