@@ -1,0 +1,25 @@
+name: JARVIS v097 V3 Source Worker Integration Safety Tests
+on:
+  push:
+    paths:
+      - .github/workflows/v097_v3_worker_test.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test source independence, SHA safeguards and ZIP member manifests
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_v3_source_worker.py
+          PYTHONPATH=. python scripts/v097_v3_source_worker.py selftest
+          PYTHONPATH=. python scripts/v097_v3_preflight.py selftest
+      - name: Confirm no Drive or raw conversion
+        run: echo 'V3_TEST_NO_DRIVE_BRONZE_SILVER_GOLD_WRITE'
