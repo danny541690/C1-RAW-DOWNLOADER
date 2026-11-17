@@ -10,8 +10,9 @@ from scripts.v097_v3_contract_registry import infer,REGISTRY_VERSION,CONTRACTS,n
 from scripts.v097_seven_historical_format_registry import OFFICIAL_VERSIONS
 from scripts.v097_g2g3_native_headers import HEADER_PREFIX,header_for,sha
 from scripts.v097_g2g3_full_native_validation import full_scan,MAX_BYTES as FULL_SCAN_MAX
+from scripts.v097_g2g3_tdcc_native_html import inspect as tdcc_full_native
 VERSION="v097_g2g3_typed_contract_audit_r1"
-FULL_VALIDATOR_VERSION="v097_g2g3_full_native_validation_r1"
+FULL_VALIDATOR_VERSION="v097_g2g3_full_native_validation_r2_tdcc_html"
 RUN=os.environ.get("GITHUB_RUN_ID","manual")
 BATCH=max(1,min(35,int(os.environ.get("G2G3_TYPED_BATCH","15"))))
 CHECKPOINT="v097_G2G3_TYPED_AUDIT_CK_"
@@ -25,7 +26,7 @@ def evidence_fp(header):
       "parser_revision":header.get("parser_revision"),
       "registry":REGISTRY_VERSION,
       "headers":[{"path":e.get("path"),"sha":e.get("sha"),
-                  "header":e.get("header"),"status":e.get("status")}
+                  "header":e.get("header"),"source_metadata":e.get("source_metadata"),"status":e.get("status")}
                  for e in header.get("evidence",[])]}
     return hashlib.sha256(canonical(item).encode("utf-8")).hexdigest()
 def typecheck(key,val):
@@ -57,8 +58,8 @@ def json_rows(blob):
         if isinstance(p,list):return [r for r in p[:50] if isinstance(r,dict)]
     except (ValueError,UnicodeError):pass
     return []
-def validate_member(blob,path,header,src,era,dataset_hint):
-    c=infer(src,header,era,dataset_hint)
+def validate_member(blob,path,header,src,era,dataset_hint,metadata=None):
+    c=infer(src,header,era,dataset_hint,metadata=metadata)
     status=c.get("status")
     result={"status":status,"dataset_candidate":c.get("dataset_candidate"),
       "era_registered":c.get("era_registered"),"missing":c.get("missing_required"),
@@ -136,13 +137,13 @@ def source(src):
                             if info.file_size>8*1024*1024:continue
                             blob=z.read(info)
                             if e.get("sha")!=sha(blob):continue
-                            samples.append({"member":e["path"],"type_evidence":validate_member(blob,e["path"],e["header"],src,head.get("historical_era"),None),
-                              "full_native_shape":full_scan(blob,e["path"],src,head.get("historical_era"),e["header"])})
+                            samples.append({"member":e["path"],"type_evidence":validate_member(blob,e["path"],e["header"],src,head.get("historical_era"),None,metadata=e.get("source_metadata")),
+                              "full_native_shape":tdcc_full_native(blob,e["path"]) if src=="TDCC" and e["path"].lower().endswith((".html",".htm")) else full_scan(blob,e["path"],src,head.get("historical_era"),e["header"])})
                 else:
                     for e in head["evidence"]:
                         if e.get("header"):
-                            samples.append({"member":e.get("path"),"type_evidence":validate_member(b,e.get("path",""),e["header"],src,head.get("historical_era"),None),
-                                "full_native_shape":full_scan(b,e.get("path",""),src,head.get("historical_era"),e["header"])})
+                            samples.append({"member":e.get("path"),"type_evidence":validate_member(b,e.get("path",""),e["header"],src,head.get("historical_era"),None,metadata=e.get("source_metadata")),
+                                "full_native_shape":tdcc_full_native(b,e.get("path","")) if src=="TDCC" and e.get("path","").lower().endswith((".html",".htm")) else full_scan(b,e.get("path",""),src,head.get("historical_era"),e["header"])})
                 output["status"]="TYPED_EVIDENCE_RECORDED" if samples else "TYPED_EVIDENCE_UNAVAILABLE"
                 output["members"]=samples
         except Exception as e:
@@ -159,9 +160,9 @@ def source(src):
             raise RuntimeError("TYPED_READBACK_MISMATCH")
     out={"source":src,"run":RUN,"new":len(new),"checked":len(done),
          "full_native_shape_candidate_members":sum(1 for rec in done.values() for m in rec.get("members",[])
-              if m.get("full_native_shape",{}).get("status")=="FULL_NATIVE_SHAPE_CANDIDATE_UNCERTIFIED"),
+              if m.get("full_native_shape",{}).get("status") in ("FULL_NATIVE_SHAPE_CANDIDATE_UNCERTIFIED","TDCC_FULL_NATIVE_LAYOUT_CANDIDATE_UNCERTIFIED")),
          "full_native_shape_exception_members":sum(1 for rec in done.values() for m in rec.get("members",[])
-              if m.get("full_native_shape",{}).get("status")=="FULL_NATIVE_SHAPE_EXCEPTIONS"),
+              if m.get("full_native_shape",{}).get("status") in ("FULL_NATIVE_SHAPE_EXCEPTIONS","TDCC_NATIVE_NUMERIC_OR_METADATA_HOLD")),
          "full_native_status_counts":dict(collections.Counter(
               m.get("full_native_shape",{}).get("status","NOT_RECORDED")
               for rec in done.values() for m in rec.get("members",[]))),
