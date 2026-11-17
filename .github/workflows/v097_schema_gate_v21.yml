@@ -1,0 +1,106 @@
+name: JARVIS v097 Schema Format Gate V2.1 14 Shards
+# Frozen 74750 source corpus; output only to QA Delta/Checkpoint/Master.
+# Never modifies Bronze originals; never executes Silver/Gold.
+on:
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: 'Per shard incremental batch size (10-250)'
+        default: '100'
+        required: false
+        type: string
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  push:
+    paths:
+      - .github/workflows/v097_schema_gate_v21.yml
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jarvis-v097-schema-v21-frozen-cohort
+  cancel-in-progress: false
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: V2.1 source compile and regression tests
+        run: |
+          python -m py_compile scripts/v097_schema_gate_v21.py
+          PYTHONPATH=. python scripts/v097_schema_gate_v21.py selftest
+          PYTHONPATH=. python scripts/v097_schema_gate_v2.py selftest
+  formats:
+    needs: selftest
+    if: needs.selftest.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 115
+    strategy:
+      fail-fast: false
+      max-parallel: 14
+      matrix:
+        include:
+          - {source: TWSE, shard: 0}
+          - {source: TWSE, shard: 1}
+          - {source: TPEx, shard: 0}
+          - {source: TPEx, shard: 1}
+          - {source: MOPS, shard: 0}
+          - {source: TDCC, shard: 0}
+          - {source: TDCC, shard: 1}
+          - {source: TDCC, shard: 2}
+          - {source: TDCC, shard: 3}
+          - {source: TDCC, shard: 4}
+          - {source: TDCC, shard: 5}
+          - {source: TAIFEX, shard: 0}
+          - {source: FinMind, shard: 0}
+          - {source: FinMind, shard: 1}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Read-only Bronze schema checkpoint from frozen Q0Q4 cohort
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SCHEMA_BATCH: ${{ github.event.inputs.batch || '100' }}
+        run: PYTHONPATH=. python scripts/v097_schema_gate_v21.py '${{ matrix.source }}' '${{ matrix.shard }}'
+  reconcile:
+    needs: [selftest, formats]
+    if: always() && needs.selftest.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Write immutable full cohort master and verify Drive readback
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_schema_gate_v21.py final | tee /tmp/v21-master.log
+      - name: Continue next checkpoint batch
+        if: needs.formats.result == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          remaining=$(grep '^SCHEMA_V21_MASTER=' /tmp/v21-master.log | tail -1 | python -c "import json,sys;print(json.loads(sys.stdin.read().split('=',1)[1])['remaining'])")
+          echo "SCHEMA_V21_REMAINING=$remaining"
+          if [ "$remaining" -gt 0 ]; then
+            gh workflow run v097_schema_gate_v21.yml --ref main -f batch=100
+          else
+            echo "SCHEMA_V21_FROZEN_COHORT_TERMINAL"
+          fi
