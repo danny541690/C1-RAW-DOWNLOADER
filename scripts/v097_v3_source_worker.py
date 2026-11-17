@@ -186,7 +186,24 @@ def final():
                   {"run":RUN,"schema":ENGINE,"count":len(errors),"records":errors})
     out["error_ledger_id"]=eid
     rid=put_once(api,quality,"v097_V3_MASTER_"+RUN+".json",out)
+    upsert(api,control,"v097_V3_MASTER_LATEST.json",{**out,"report_id":rid})
+    latest=match(api,control,"v097_V3_MASTER_LATEST.json")
+    if not latest or load_json(api,latest["id"]).get("run")!=RUN:
+        raise RuntimeError("V3_MASTER_LATEST_READBACK_FAILED")
     print("V3_MASTER="+canonical({**out,"report_id":rid}),flush=True)
+def check():
+    api,control,quality,match,load_json,put_once,upsert,call=source_api()
+    f=match(api,control,"v097_V3_MASTER_LATEST.json")
+    if not f:
+        state={"wake_needed":True,"reason":"NO_V3_MASTER"}
+    else:
+        o=load_json(api,f["id"])
+        pending=o.get("not_checked",TARGET)
+        retriable=o.get("statuses",{}).get("RETRY_PENDING",0)
+        state={"wake_needed":bool(pending or retriable),"not_checked":pending,
+              "retriable":retriable,"run":o.get("run"),
+              "reason":"WORK_REMAINING" if pending or retriable else "WORK_SCANNED_WAIT_NEW_CONTRACTS"}
+    print("V3_WATCHDOG_STATE="+canonical(state),flush=True)
 def selftest():
     from scripts.v097_v3_preflight import fingerprint
     assert sum(SHARDS.values())==11
@@ -203,5 +220,6 @@ def selftest():
 if __name__=="__main__":
     if sys.argv[1:]==["selftest"]:selftest()
     elif len(sys.argv)==2 and sys.argv[1]=="final":final()
+    elif len(sys.argv)==2 and sys.argv[1]=="check":check()
     elif len(sys.argv)==3:source(sys.argv[1],int(sys.argv[2]))
     else:raise SystemExit("selftest|SOURCE SHARD|final")
