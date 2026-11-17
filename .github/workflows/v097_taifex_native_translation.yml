@@ -1,60 +1,10 @@
-name: JARVIS v097 TAIFEX Source-Native CSV Format Translation
-# Reparse ONLY unresolved TAIFEX originals. No mutation of 0.93/0.97 Bronze.
+# ARCHIVED 2026-11-17 by user: old mixed Bronze/content validation removed from execution.
+# Restore only from Git history if explicitly authorized; this workflow does no data work.
+name: "JARVIS v097 TAIFEX Source-Native CSV Format Translation [ARCHIVED — no processing]"
 on:
   workflow_dispatch:
-    inputs:
-      depth:
-        default: '0'
-        required: false
-        type: string
-  push:
-    paths:
-      - scripts/v097_taifex_translation_v1.py
-      - .github/workflows/v097_taifex_native_translation.yml
-  schedule:
-    - cron: '6,21,36,51 * * * *'
-permissions:
-  contents: read
-  actions: write
-concurrency:
-  group: v097-taifex-format-translation
-  cancel-in-progress: false
 jobs:
-  original-csv-format-translation:
+  archived-no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
-      - name: Original format translator positive and negative tests
-        run: |
-          set -euo pipefail
-          python -m py_compile scripts/v097_taifex_translation_v1.py scripts/v097_bronze_autopilot.py
-          PYTHONPATH=. python scripts/v097_taifex_translation_v1.py selftest
-          PYTHONPATH=. python scripts/v097_bronze_direct_release_v21.py selftest
-      - name: Recheck only frozen TAIFEX CSV translation holds and write SHA-backed evidence
-        id: format
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          TRANSLATION_BATCH: '300'
-        run: PYTHONPATH=. python scripts/v097_taifex_translation_v1.py
-      - name: Immediately recheck Bronze eligibility and continue unresolved format-only records
-        env:
-          GH_TOKEN: ${{ github.token }}
-          DEPTH: ${{ inputs.depth || '0' }}
-          PENDING: ${{ steps.format.outputs.pending }}
-        run: |
-          set -euo pipefail
-          if ! [[ "$DEPTH" =~ ^[0-9]+$ ]]; then exit 1; fi
-          if ! [[ "$PENDING" =~ ^[0-9]+$ ]]; then exit 1; fi
-          gh workflow run v097_bronze_v21_direct_release.yml --ref main
-          echo "BRONZE_V21_DIRECT_FORMAT_GATE_REQUESTED"
-          if [ "$PENDING" -gt 0 ] && [ "$DEPTH" -lt 12 ]; then
-            gh workflow run v097_taifex_native_translation.yml --ref main -f depth="$((DEPTH+1))"
-            echo "TAIFEX_TRANSLATION_CONTINUATION_REQUESTED pending=$PENDING depth=$DEPTH"
-          fi
+      - run: echo 'LEGACY_DEEP_CONTENT_WORKFLOW_DISABLED_NO_DATA_MUTATION'
