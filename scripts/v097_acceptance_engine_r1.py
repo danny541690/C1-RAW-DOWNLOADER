@@ -67,10 +67,10 @@ def evaluate(row,fmt,mp,v3,g2,g3,era=None):
                 "gates":dict.fromkeys(("G0","G1","G2","G3","G4"),"BLOCKED"),"source_id":sid}
     g0="PENDING";g1="PENDING";g2state="PENDING";g3state="PENDING";g4="PENDING"
     reason="G0_READBACK_PENDING"
-    if isinstance(v3,dict) and v3.get("sha")==sha and v3.get("g0") in ("DEST_SHA_VERIFIED","DEST_SHA_VERIFIED_REUSED"):
+    if row.get("bronze_status")!="BRONZE_INTEGRITY_READY":
+        g0="HOLD";reason="BRONZE_BASELINE_LINEAGE_NOT_CERTIFIED"
+    elif isinstance(v3,dict) and v3.get("sha")==sha and v3.get("g0") in ("DEST_SHA_VERIFIED","DEST_SHA_VERIFIED_REUSED"):
         g0="PASS";evidence["G0"]=v3.get("run")
-    elif row.get("bronze_status") not in ("BRONZE_INTEGRITY_READY",None):
-        g0="HOLD";reason="BRONZE_LEGACY_HOLD"
     if g0=="PASS":
         if (isinstance(fmt,dict) and fmt.get("sha")==sha and fmt.get("status") in GOOD_G1 and
             not (isinstance(v3,dict) and v3.get("sha")==sha and
@@ -281,6 +281,7 @@ def selftest():
     assert evaluate(row,fmt,None,v3,g2,{**g3,"full_file_scanned":False},"ERA")["status"]=="PENDING"
     assert evaluate(row,fmt,None,v3,{**g2,"sha":"x"*64},g3,"ERA")["gates"]["G2"]!="PASS"
     assert evaluate(row,fmt,None,{},g2,g3,"ERA")["status"]!="READY"
+    assert evaluate({**row,"bronze_status":"BRONZE_INTEGRITY_HOLD"},fmt,None,v3,g2,g3,"ERA")["status"]!="READY"
     assert evaluate(row,fmt,None,v3,g2,g3,"OTHER_ERA")["status"]!="READY"
     assert evaluate({**row,"stock_scope":"STOCK_SCOPE_EXCLUDED"},fmt,None,v3,g2,g3,"ERA")["status"]=="EXCLUDED"
     zip_native={**v3,"new_native_evidence":{"format":"ZIP","member_schemas_verified":False}}
