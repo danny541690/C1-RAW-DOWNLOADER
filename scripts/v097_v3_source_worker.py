@@ -3,7 +3,8 @@
 Reads raw destinations only. No Bronze writes and no Silver/Gold conversion.
 A scanned ZIP does not imply a certified source-native schema.
 """
-import collections, hashlib, io, json, os, sys, zipfile
+import collections, hashlib, io, json, os, sys, zipfile, time
+from http.client import IncompleteRead, RemoteDisconnected
 from datetime import datetime, timezone
 from scripts.v097_v3_preflight import (VERSION, TARGET, SOURCE_COUNTS, SOURCES,
     assert_cohort, load_evidence, evidence_fp, classify, canonical)
@@ -21,6 +22,16 @@ MAX_EXPANDED=600*1024*1024
 MAX_MEMBERS=5000
 MAX_PARSED_MEMBER=6*1024*1024
 CK="v097_V3_SOURCE_SHARD_CK_"
+def retry_read(fn, label="source_read", sleep=time.sleep):
+    # Retry only read operations. Never auto-repeat a Drive write (duplicate risk).
+    for attempt in range(3):
+        try:return fn()
+        except (IncompleteRead,RemoteDisconnected,ConnectionResetError,
+                ConnectionAbortedError,TimeoutError,BrokenPipeError) as exc:
+            if attempt==2:raise
+            print("V3_TRANSIENT_RETRY="+canonical({"label":label,"attempt":attempt+1,
+                  "error":type(exc).__name__}),flush=True)
+            sleep(2**attempt)
 def now():return datetime.now(timezone.utc).isoformat()
 def digest(b):return hashlib.sha256(b).hexdigest()
 def shard_for(sid,src):return int(digest(sid.encode())[:12],16)%SHARDS[src]
@@ -139,13 +150,13 @@ def source(src,shard):
     if src not in SHARDS or not 0<=shard<SHARDS[src]:raise ValueError("BAD_SOURCE_SHARD")
     api,control,quality,match,load_json,put_once,upsert,call=source_api()
     from scripts.v097_v3_preflight import read_baseline
-    rows=read_baseline(api,quality,match,load_json,src)
+    rows=retry_read(lambda:read_baseline(api,quality,match,load_json,src),"baseline_"+src)
     assert_cohort(rows,src)
-    pick,maps=load_evidence(api,control,match,load_json,src,rows)
+    pick,maps=retry_read(lambda:load_evidence(api,control,match,load_json,src,rows),"evidence_"+src)
     queue=[r for r in rows if shard_for(r["source_id"],src)==shard]
     ckname=CK+src+"_"+str(shard)+".json"
-    cf=match(api,control,ckname)
-    ck=load_json(api,cf["id"]) if cf else {"schema":ENGINE,"source":src,"shard":shard,"done":{}}
+    cf=retry_read(lambda:match(api,control,ckname),"ck_match_"+src)
+    ck=retry_read(lambda:load_json(api,cf["id"]),"ck_load_"+src) if cf else {"schema":ENGINE,"source":src,"shard":shard,"done":{}}
     if ck.get("schema")!=ENGINE or ck.get("shard")!=shard:raise RuntimeError("CK_VERSION_OR_SHARD_CONFLICT")
     done=ck["done"]
     allowed={r["source_id"] for r in queue}
@@ -239,6 +250,13 @@ def check():
     print("V3_WATCHDOG_STATE="+canonical(state),flush=True)
 def selftest():
     from scripts.v097_v3_preflight import fingerprint
+    from http.client import IncompleteRead as _IncompleteRead
+    n={"calls":0}
+    def flaky():
+        n["calls"]+=1
+        if n["calls"]==1:raise _IncompleteRead(b"partial")
+        return "OK"
+    assert retry_read(flaky,sleep=lambda sec:None)=="OK" and n["calls"]==2
     assert sum(SHARDS.values())==11
     assert all(shard_for("a"+str(i),src)<SHARDS[src] for src in SOURCES for i in range(20))
     assert zip_profile(b"bad")["status"]=="SCHEMA_HOLD"
