@@ -153,7 +153,9 @@ def build():
     census=load_json(api,prior["id"]) if prior else None
     board={"schema":VERSION,"run":RUN,"created_at":now(),
       "title":"JARVIS v0.97 唯一正式驗收進度總表（Bronze → Silver Schema Ready）",
-      "cohort":TARGET,"overall":summary,"sources":sources,\n      "g2g3_contract_census":{"run":census.get("run"),"groups":len(census.get("ranked_contract_groups",[])),\n        "status_counts":census.get("overall_statuses",{}),"complete":census.get("complete_seven_source_census")} if census else None,
+      "cohort":TARGET,"overall":summary,"sources":sources,
+      "g2g3_contract_census":{"run":census.get("run"),"groups":len(census.get("ranked_contract_groups",[])),
+        "status_counts":census.get("overall_statuses",{}),"complete":census.get("complete_seven_source_census")} if census else None,
       "interpretation":{"legacy_format":"已分類證據，非 G3 合格",
           "legacy_mapping":"已檢查證據，非 G3 合格",
           "v3_scan":"新增檢查覆蓋，非 G4 放行",
