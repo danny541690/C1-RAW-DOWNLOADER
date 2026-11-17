@@ -42,8 +42,8 @@ def candidates(row,profile,mapping,v3,native=None):
         headers=list(mapping["mapping"].values())
     samples=[]
     if headers:samples.append({"scope":"original","headers":headers,"member_sha":None})
-    native=(v3 or {}).get("new_native_evidence",{})
-    for member in (native.get("member_manifest") or []):
+    old_worker_native=(v3 or {}).get("new_native_evidence",{})
+    for member in (old_worker_native.get("member_manifest") or []):
         hs=member.get("observed_header") or member.get("observed_keys") or []
         if hs:samples.append({"scope":member.get("path"),"headers":hs,
                                "member_sha":member.get("sha256")})
@@ -114,6 +114,18 @@ def selftest():
     assert analyse(row,None,None,None)["g2g3_status"]=="FORMAT_PROFILE_PENDING"
     assert analyse(row,{**f,"sha":"b"*64},None,None)["g2g3_status"]=="FORMAT_PROFILE_PENDING"
     assert a["group_key"]==analyse(row,f,None,None)["group_key"]
+    recovered={"sha":"a"*64,"evidence":[{"path":"raw.csv","sha":"b"*64,
+       "header":["date","stock_id","open","max","min","close","Trading_Volume","Trading_money"]}]}
+    without=analyse(row,{"sha":"a"*64,"signature":"ZIP","historical_version":era,
+        "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None)
+    with_native=analyse(row,{"sha":"a"*64,"signature":"ZIP","historical_version":era,
+        "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None,recovered)
+    assert without["g2g3_status"]=="HEADER_OR_ZIP_MEMBER_PENDING"
+    assert with_native["g2g3_status"]=="G3_HEADER_COMPLETE_TYPED_PROOF_PENDING"
+    assert with_native["g3_verified"] is False and with_native["schema_ready"] is False
+    wrong_sha={**recovered,"sha":"c"*64}
+    assert analyse(row,{"sha":"a"*64,"signature":"ZIP","historical_version":era,
+        "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None,wrong_sha)["g2g3_status"]=="HEADER_OR_ZIP_MEMBER_PENDING"
     print("G2G3_V3_CONSERVATIVE_DISCOVERY_SELFTEST_PASS")
 def source(src):
     if src not in SOURCES:raise ValueError("UNKNOWN_SOURCE")
