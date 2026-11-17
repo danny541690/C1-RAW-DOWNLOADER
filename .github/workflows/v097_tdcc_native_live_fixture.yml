@@ -1,5 +1,5 @@
 name: JARVIS v097 TDCC Native Live Historical Fixture QA
-# Repeat with real raw HTML table diagnostics before acceptance
+# Retest actual 16-row TDCC HTML vs distinct 17-row ZIP archive schema
 on:
   push:
     paths:
