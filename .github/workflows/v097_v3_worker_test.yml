@@ -1,4 +1,5 @@
 name: JARVIS v097 V3 Source Worker Integration Safety Tests
+# Rerun revised worker negative tests after fixing UTF-8 source literal
 on:
   push:
     paths:
