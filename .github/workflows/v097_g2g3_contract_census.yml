@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - .github/workflows/v097_g2g3_contract_census.yml
+  schedule:
+    - cron: '17,47 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
