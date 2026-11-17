@@ -70,6 +70,9 @@ def decision(row,fmt,mp,v3):
         stage="DATASET_PENDING"
     else:
         stage="SCHEMA_CONTRACT_PENDING"
+    # A source-native header match is a candidate, never a formal G2/G3 certificate.
+    candidate = v3.get("contract_candidate", {}) if worker_valid else {}
+    if not isinstance(candidate, dict): candidate = {}
     # Certified V3 Ready requires new G0 readback, dataset/era contract + typed validation,
     # and an explicitly approved release record. No current legacy/worker evidence meets these.
     return {"source_id":row["source_id"],"sha":row["source_sha256"],
@@ -79,7 +82,10 @@ def decision(row,fmt,mp,v3):
       "v3_increment_checked":worker_valid,"mapping_status":mapping_status,
       "format_status":fmt.get("status") if fmt_valid else None,
       "v3_run":v3.get("run") if worker_valid else None,
-      "v3_reason":v3.get("reason") if worker_valid else None}
+      "v3_reason":v3.get("reason") if worker_valid else None,
+      "g2_candidate_status":candidate.get("status"),
+      "g2_candidate_dataset":candidate.get("dataset_candidate"),
+      "g2_candidate_registry":candidate.get("registry") }
 def summarize(records):
     total=len(records);stage=collections.Counter(x["primary_stage"] for x in records)
     assert sum(stage.values())==total
@@ -90,6 +96,7 @@ def summarize(records):
     g0_dest_sha=sum(x["bronze_evidence"] in ("DEST_SHA_VERIFIED","DEST_SHA_VERIFIED_REUSED") for x in records)
     g1_profiled=sum(x["format_evidence"]!="FORMAT_NOT_PROFILED" for x in records)
     g2_verified=0;g3_verified=0
+    g2_candidate=collections.Counter(x.get("g2_candidate_status") or "NO_CANDIDATE_EVIDENCE" for x in records)
     ready=sum(x["release"]=="SILVER_SCHEMA_READY" for x in records)
     if ready:raise RuntimeError("NOT_AUTHORIZED_V3_READY_CERTIFICATE")
     # stage = mutually exclusive; per gate is non-exclusive.
@@ -100,6 +107,7 @@ def summarize(records):
        "g1_format_profile_coverage":g1_profiled,
        "g2_dataset_contract_verified":g2_verified,
        "g3_schema_contract_verified":g3_verified,
+       "g2_header_candidate_statuses":dict(g2_candidate),
        "g4_silver_schema_ready_certified":ready,
        "not_ready":total-ready,
        "v3_scan_coverage_pct":round(v3_count*100/total,2) if total else 0,
@@ -113,6 +121,8 @@ def selftest():
     a=decision(r,fmt,mp,v)
     assert a["primary_stage"]=="SCHEMA_CONTRACT_PENDING"
     assert summarize([a])["g4_silver_schema_ready_certified"]==0
+    assert a["g2_candidate_status"] is None
+    assert summarize([a])["g2_header_candidate_statuses"]["NO_CANDIDATE_EVIDENCE"]==1
     assert decision(r,fmt,None,None)["primary_stage"]=="DATASET_PENDING"
     assert decision(r,None,None,None)["primary_stage"]=="FORMAT_PENDING"
     assert decision({**r,"bronze_status":"HOLD"},fmt,mp,None)["primary_stage"]=="BRONZE_BLOCKED"
