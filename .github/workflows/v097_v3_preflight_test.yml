@@ -1,0 +1,26 @@
+name: JARVIS v097 V3 Preflight Safety Tests (No Data Conversion)
+on:
+  push:
+    paths:
+      - .github/workflows/v097_v3_preflight_test.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight-negative-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and test strict no-premature-Ready release rules
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_v3_preflight.py
+          PYTHONPATH=. python scripts/v097_v3_preflight.py selftest
+          PYTHONPATH=. python scripts/v097_silver_schema_mapping_v1.py selftest
+          PYTHONPATH=. python scripts/v097_schema_gate_v21.py selftest
+      - name: Declare no Drive or Bronze writes in test
+        run: echo 'TEST_ONLY_NO_DRIVE_OR_BRONZE_OR_SILVER_OR_GOLD_WRITE'
