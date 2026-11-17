@@ -42,11 +42,11 @@ jobs:
           PYTHONPATH=. python scripts/v097_execution_history_ledger.py selftest
       - name: Index past and present workflow runs and publish Drive reports
         env:
-          GH_TOKEN: \${{ github.token }}
-          GH_REPO: \${{ github.repository }}
-          GOOGLE_CLIENT_ID: \${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: \${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: \${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           HISTORY_BATCH: '25'
         run: PYTHONPATH=. python scripts/v097_execution_history_ledger.py
       - name: Save fallback execution reports while Drive OAuth is unavailable
