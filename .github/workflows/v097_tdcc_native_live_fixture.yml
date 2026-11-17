@@ -1,4 +1,5 @@
 name: JARVIS v097 TDCC Native Live Historical Fixture QA
+# Repeat with real raw HTML table diagnostics before acceptance
 on:
   push:
     paths:
