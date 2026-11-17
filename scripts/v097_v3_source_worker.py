@@ -10,6 +10,7 @@ from scripts.v097_v3_preflight import (VERSION, TARGET, SOURCE_COUNTS, SOURCES,
 from scripts.v097_schema_gate_v21 import inspect, fmt
 from scripts.v097_bronze_autopilot import source_api
 from scripts.v097_v3_contract_registry import infer, REGISTRY_VERSION
+from scripts.v097_schema_gate_v2 import headers_from_json
 
 ENGINE="v097_v3_source_worker_20261117_r1"
 RUN=os.getenv("GITHUB_RUN_ID","manual")
@@ -23,7 +24,7 @@ CK="v097_V3_SOURCE_SHARD_CK_"
 def now():return datetime.now(timezone.utc).isoformat()
 def digest(b):return hashlib.sha256(b).hexdigest()
 def shard_for(sid,src):return int(digest(sid.encode())[:12],16)%SHARDS[src]
-def zip_profile(blob,src='TWSE'):
+def zip_profile(blob,src='TWSE',era=None):
     result={"format":"ZIP","member_sha_all_verified":False,"member_schemas_verified":False}
     try:
         with zipfile.ZipFile(io.BytesIO(blob)) as z:
@@ -55,8 +56,22 @@ def zip_profile(blob,src='TWSE'):
                     rec["observed_header"]=parsed.get("header")
                     rec["observed_keys"]=parsed.get("keys")
                     rec["format_status"]=parsed.get("status")
+                    if signature=="JSON":
+                        try:
+                            payload=json.loads(bytes(sample).decode("utf-8-sig"))
+                            heads=headers_from_json(payload)
+                            if heads:
+                                heads.sort(key=lambda hd:len(hd),reverse=True)
+                                rec["observed_header"]=heads[0][:100]
+                        except (UnicodeError,ValueError):
+                            rec["format_status"]="JSON_MEMBER_PARSE_PENDING"
                 else:
                     rec["format_status"]="HEADER_PENDING"
+                hfields=rec.get("observed_header") or rec.get("observed_keys") or []
+                if hfields:
+                    c=infer(src,hfields,era)
+                    rec["contract_candidate"]={"status":c["status"],"dataset":c.get("dataset_candidate"),
+                                                "missing":c.get("missing_required"),"registry":REGISTRY_VERSION}
                 proofs.append(rec)
             result.update({"status":"MEMBERS_HASHED_SCHEMA_PENDING","members":len(members),
                            "member_signatures":dict(kinds),"member_manifest":proofs,
@@ -81,9 +96,16 @@ def inspect_one(row,fmt_evidence,map_evidence,api,call,prior=None):
     candidate=infer(row["source"],observed_fields,era,
                     fmt_evidence.get("dataset_candidate") if fmt_evidence else None)
     if prior and prior.get("evidence_fingerprint")==identity["evidence_fingerprint"] and prior.get("new_native_evidence"):
+        native=prior["new_native_evidence"]
+        for member in native.get("member_manifest",[]):
+            hfields=member.get("observed_header") or member.get("observed_keys") or []
+            if hfields:
+                c=infer(row["source"],hfields,era)
+                member["contract_candidate"]={"status":c["status"],"dataset":c.get("dataset_candidate"),
+                                              "missing":c.get("missing_required"),"registry":REGISTRY_VERSION}
         return {**identity,**{k:v for k,v in prior.items() if k not in identity},
-                "contract_candidate":candidate,"registry_version":REGISTRY_VERSION,
-                "run":RUN,"observed_at":now()}
+                "contract_candidate":candidate,"new_native_evidence":native,
+                "registry_version":REGISTRY_VERSION,"run":RUN,"observed_at":now()}
     reason=baseline.get("reason")
     need_bytes=(fmt_evidence is None or
                 fmt_evidence.get("signature")=="ZIP" and
@@ -102,7 +124,7 @@ def inspect_one(row,fmt_evidence,map_evidence,api,call,prior=None):
             return {**identity,**baseline,"g0":"EVIDENCE_PENDING","reason":"RAW_OVER_SIZE_LIMIT"}
         if digest(blob)!=row["source_sha256"]:
             return {**identity,**baseline,"g0":"BRONZE_HOLD","g4":"BRONZE_HOLD","reason":"DESTINATION_SHA_MISMATCH"}
-        observed=zip_profile(blob,row["source"]) if fmt(row["source_path"],blob)=="ZIP" else inspect(blob,row["source_path"],row["source"])
+        observed=zip_profile(blob,row["source"],era) if fmt(row["source_path"],blob)=="ZIP" else inspect(blob,row["source_path"],row["source"])
         if observed.get("status")=="SCHEMA_HOLD" or observed.get("status")=="FORMAT_STRUCTURAL_HOLD":
             return {**identity,**baseline,"g0":"DEST_SHA_VERIFIED","g1":"SCHEMA_HOLD",
                     "g4":"SCHEMA_HOLD","reason":observed.get("reason"),"new_native_evidence":observed}
