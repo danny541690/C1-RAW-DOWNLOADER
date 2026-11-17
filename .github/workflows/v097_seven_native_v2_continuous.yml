@@ -86,6 +86,7 @@ jobs:
               eligible={x["source_id"] for x in inp if old.get(x["source_id"],{}).get("status") not in SKIP_READY_PARSER[src]}
               if not set(ck).issubset(eligible):raise RuntimeError("CHECKPOINT_SCOPE_INVALID_"+src)
               total+=len(eligible)-len(ck)
+              # Checkpoint resume requested 2026-11-17; do not reset completed IDs.
               # Third-party numeric attestation belongs to optional research QA,
               # not the source-native Bronze format verification backlog.
               from scripts.v097_seven_native_v2_probe import retry_ids
