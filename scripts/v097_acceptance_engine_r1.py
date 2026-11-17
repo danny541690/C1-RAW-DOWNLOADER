@@ -11,6 +11,7 @@ import sys
 from datetime import datetime, timezone
 
 VERSION = "v097_acceptance_r1_20261118_01"
+RULE_VERSION = "r1_semantic_gate_20261118_r2"  # schema stays stable; only changed decisions re-evaluated
 TARGET = 74750
 COUNTS = {"TWSE":12071,"TPEx":13200,"MOPS":1935,"TDCC":40384,
           "TAIFEX":3140,"NDC":320,"FinMind":3700}
@@ -113,11 +114,11 @@ def evaluate(row,fmt,mp,v3,g2,g3,era=None):
             "CONFIRMED_EXCEPTION" if g0=="HOLD" or g1=="HOLD" else "PENDING")
     return {"source_id":sid,"source":src,"sha":sha,"status":status,"reason":reason,
             "gates":{"G0":g0,"G1":g1,"G2":g2state,"G3":g3state,"G4":g4},
-            "evidence":evidence,"version":VERSION}
+            "evidence":evidence,"version":VERSION,"rule_revision":RULE_VERSION}
 def fingerprint(row,fmt,mp,v3,g2,g3,era):
     return digest({"sha":row.get("source_sha256"),"destination_id":row.get("destination_id"),
                    "fmt":fmt,"map":mp,"v3":v3,"g2":g2,"g3":g3,"era":era,
-                   "scope":scope(row),"engine":VERSION})
+                   "scope":scope(row),"engine":VERSION,"rule_revision":RULE_VERSION})
 def get_contracts(api,control,match,load_json,name,src):
     f=match(api,control,name+src+".json")
     if not f:return {}
