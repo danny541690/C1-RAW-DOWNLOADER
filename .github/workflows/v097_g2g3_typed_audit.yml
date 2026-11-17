@@ -1,4 +1,5 @@
 name: JARVIS V097 G2 G3 Typed Contract Evidence (No Conversion)
+# Revalidate legacy TD-only headers after source alias safeguards
 # HTML row safety correction verified in selftests
 on:
   push:
