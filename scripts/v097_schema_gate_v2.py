@@ -256,7 +256,7 @@ def selftest():
     assert basic(b"x","a.zip")["status"]=="FORMAT_UNSUPPORTED"
     assert contract_for("TWSE",["證券代號","日期","收盤價"])["status"]=="SCHEMA_INPUT_READY"
     assert contract_for("TPEx",["代號","日期","成交金額"]) is None
-    assert basic(b'{"fields":["證券代號","日期","收盤價"],"data":[]}',"a.json","TWSE")["status"]=="SCHEMA_INPUT_READY"
+    assert basic('{"fields":["證券代號","日期","收盤價"],"data":[]}'.encode("utf-8"),"a.json","TWSE")["status"]=="SCHEMA_INPUT_READY"
     assert basic(b'{"ok":1}',"a.raw.receipt_123.json")["reason"]=="PROVENANCE_RECEIPT_NOT_MARKET_DATA"
     assert basic("交易日期,契約,成交量,\\n2026-11-17,TX,1,".encode(),"a.csv")["header_has_optional_empty_tail"] is True
     assert reusable({"bronze_sha256":"a"*64,"input_bytes_sha_checked":True,
