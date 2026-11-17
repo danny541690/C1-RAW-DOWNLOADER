@@ -1,4 +1,5 @@
 name: JARVIS V097 G2 G3 Native Header Recovery (No Conversion)
+# 2026-11-17: distinguish TDCC HTML 16-tier total from separate ZIP 17-tier archive; native page metadata and stronger safety
 # Independent 7-source incremental lanes; original Bronze always read-only.
 on:
   push:
@@ -24,13 +25,15 @@ jobs:
       - name: Strict header-only safety tests
         run: |
           set -euo pipefail
-          python -m py_compile scripts/v097_g2g3_native_headers.py
+          python -m py_compile scripts/v097_g2g3_native_headers.py scripts/v097_g2g3_tdcc_native_html.py scripts/v097_v3_contract_registry.py
+          PYTHONPATH=. python scripts/v097_g2g3_tdcc_native_html.py selftest
+          PYTHONPATH=. python scripts/v097_v3_contract_registry.py selftest
           PYTHONPATH=. python scripts/v097_g2g3_native_headers.py selftest
   source_headers:
     needs: safety
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 5
       matrix:
         source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
     runs-on: ubuntu-latest
@@ -47,5 +50,5 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          G2G3_HEADER_BATCH: '60'
+          G2G3_HEADER_BATCH: '90'
         run: PYTHONPATH=. python scripts/v097_g2g3_native_headers.py source '${{ matrix.source }}'
