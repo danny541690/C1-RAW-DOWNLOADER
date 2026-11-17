@@ -56,7 +56,7 @@ UNITS={
  "NDC":{"value":"series_specific"},
  "FinMind":{"close":"TWD","volume":"shares"}
 }
-def normalize(s):return re.sub(r"[\\s_\u3000（）()]+","",str(s)).lower()
+def normalize(s):return re.sub(r"[\s_\u3000（）()]+","",str(s)).lower()
 def infer(src,headers,era=None,dataset_hint=None,metadata=None):
     if src not in CONTRACTS:raise ValueError("INVALID_SOURCE")
     if not isinstance(headers,list) or not headers:
@@ -98,6 +98,9 @@ def infer(src,headers,era=None,dataset_hint=None,metadata=None):
             "silver_schema_ready":False}
 def selftest():
     assert len(CONTRACTS)==7
+    assert normalize("交易 日期") == normalize("交易日期")
+    assert normalize("Trading Volume") == normalize("Trading_Volume")
+    assert normalize("證券\t代號") == normalize("證券代號")
     for src in CONTRACTS:
         assert len(OFFICIAL_VERSIONS[src]["reference"])>=1
     q=infer("FinMind",["date","stock_id","open","max","min","close","Trading_Volume","Trading_money"],
