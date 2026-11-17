@@ -138,6 +138,17 @@ def build():
         stats["g2g3_native_remediation_checked"]=len(valid)
         stats["g2g3_native_headers_recovered"]=sum(v.get("header_members",0)>0 for v in valid)
         stats["g2g3_native_recovery_errors"]=sum(v.get("status") in ("READ_OR_PARSE_PENDING","SOURCE_SHA_MISMATCH","RAW_EMPTY_OR_SIZE_LIMIT") for v in valid)
+        tf=match(api,control,"v097_G2G3_TYPED_AUDIT_CK_"+src+".json")
+        tdone=load_json(api,tf["id"]).get("done",{}) if tf else {}
+        if set(tdone)-set(idx):raise RuntimeError("G3_TYPED_ORPHAN_"+src)
+        checked=[v for sid,v in tdone.items() if v.get("sha")==idx[sid]["source_sha256"]]
+        stats["g3_typed_audit_checked"]=len(checked)
+        stats["g3_typed_sample_pass_members"]=sum(
+            1 for v in checked for m in v.get("members",[])
+            if m.get("type_evidence",{}).get("status")=="TYPED_SAMPLE_PASS_NOT_FULL_VALIDATION")
+        stats["g3_typed_sample_exception_members"]=sum(
+            1 for v in checked for m in v.get("members",[])
+            if m.get("type_evidence",{}).get("status")=="TYPED_SAMPLE_EXCEPTION")
         # Keep a per-source drilldown, do not bloat the top-level Master.
         fn="v097_V3_UNIFIED_DETAIL_"+src+"_"+RUN+".json"
         stats["detail_file_id"]=put_once(api,quality,fn,
@@ -149,6 +160,9 @@ def build():
     summary["g2g3_native_remediation_checked"]=sum(t["g2g3_native_remediation_checked"] for t in sources)
     summary["g2g3_native_headers_recovered"]=sum(t["g2g3_native_headers_recovered"] for t in sources)
     summary["g2g3_native_recovery_errors"]=sum(t["g2g3_native_recovery_errors"] for t in sources)
+    summary["g3_typed_audit_checked"]=sum(t["g3_typed_audit_checked"] for t in sources)
+    summary["g3_typed_sample_pass_members"]=sum(t["g3_typed_sample_pass_members"] for t in sources)
+    summary["g3_typed_sample_exception_members"]=sum(t["g3_typed_sample_exception_members"] for t in sources)
     prior=match(api,control,"v097_G2G3_CONTRACT_MASTER_LATEST.json")
     census=load_json(api,prior["id"]) if prior else None
     board={"schema":VERSION,"run":RUN,"created_at":now(),
