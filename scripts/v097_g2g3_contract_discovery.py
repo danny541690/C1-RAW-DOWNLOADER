@@ -14,7 +14,7 @@ from scripts.v097_v3_preflight import (
     source_api, MAP_RULE
 )
 from scripts.v097_v3_source_worker import CK, SHARDS, ENGINE, shard_for
-from scripts.v097_v3_contract_registry import infer, REGISTRY_VERSION
+from scripts.v097_v3_contract_registry import infer, REGISTRY_VERSION, normalize
 from scripts.v097_seven_historical_format_registry import OFFICIAL_VERSIONS
 
 VERSION="v097_g2g3_contract_discovery_20261117_r1"
@@ -61,6 +61,7 @@ def candidates(row,profile,mapping,v3,native=None):
             "era":era,"era_registered":c.get("era_registered",False),
             "contract_status":c["status"],"missing":c.get("missing_required",[]),
             "observed_fields":c.get("observed_fields",{}),
+            "observed_header":sample["headers"][:100],
             "source_native_typed_and_row_verified":False,
             "contract_registry":REGISTRY_VERSION})
     return result
@@ -89,13 +90,13 @@ def analyse(row,profile,mapping,v3,native=None):
     if observed:
         best=sorted(observed,key=lambda x:(len(x["missing"]),not x["era_registered"]))[0]
         dataset=best.get("dataset_candidate") or "UNKNOWN"
-        aliases=tuple(sorted(best["observed_fields"].keys()))
-        header_sig=hashlib.sha256(canonical(aliases).encode()).hexdigest()[:16]
+        header_sig=hashlib.sha256(canonical([normalize(x) for x in best["observed_header"]]).encode()).hexdigest()[:16]
     else:
         best=None;dataset="UNKNOWN";header_sig="NO_OBSERVED_HEADER"
+    group_kind="HEADER_LAYOUT_CANDIDATE_UNCERTIFIED" if observed else "DISCOVERY_BUCKET_NO_HEADER_NOT_CERTIFIABLE"
     group_key="|".join([row["source"],str(dataset),str(era),str(signature),header_sig])
     return {"source_id":row["source_id"],"source":row["source"],"sha":row["source_sha256"],
-        "g2g3_status":status,"group_key":group_key,"dataset_candidate":dataset,
+        "g2g3_status":status,"group_key":group_key,"group_kind":group_kind,"dataset_candidate":dataset,
         "era":era,"format_signature":signature,
         "candidate_observations":observed,
         "g2_verified":False,"g3_verified":False,"schema_ready":False,
@@ -123,6 +124,8 @@ def selftest():
     assert without["g2g3_status"]=="HEADER_OR_ZIP_MEMBER_PENDING"
     assert with_native["g2g3_status"]=="G3_HEADER_COMPLETE_TYPED_PROOF_PENDING"
     assert with_native["g3_verified"] is False and with_native["schema_ready"] is False
+    assert without["group_kind"]=="DISCOVERY_BUCKET_NO_HEADER_NOT_CERTIFIABLE"
+    assert with_native["group_kind"]=="HEADER_LAYOUT_CANDIDATE_UNCERTIFIED"
     wrong_sha={**recovered,"sha":"c"*64}
     assert analyse(row,{"sha":"a"*64,"signature":"ZIP","historical_version":era,
         "status":"SCHEMA_PROFILED_NEEDS_MAPPING"},None,None,wrong_sha)["g2g3_status"]=="HEADER_OR_ZIP_MEMBER_PENDING"
@@ -147,7 +150,7 @@ def source(src):
         if key not in groups:
             groups[key]={"group_key":key,"source":src,"dataset_candidate":a["dataset_candidate"],
                "era":a["era"],"signature":a["format_signature"],"files":0,
-               "status_counts":collections.Counter(),"examples":[]}
+               "status_counts":collections.Counter(),"examples":[], "group_kind":a["group_kind"]}
         g=groups[key];g["files"]+=1;g["status_counts"][a["g2g3_status"]]+=1
         if len(g["examples"])<3:g["examples"].append(sid)
     if sum(statuses.values())!=len(rows):raise RuntimeError("SOURCE_ACCOUNTING_DRIFT")
