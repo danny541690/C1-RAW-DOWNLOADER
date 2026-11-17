@@ -9,6 +9,7 @@ from scripts.v097_v3_contract_registry import infer,REGISTRY_VERSION
 from scripts.v097_v3_source_worker import fmt
 
 VERSION="v097_g2g3_native_header_recovery_20261117_r1"
+PARSER_REV="html_th_only_20261117_r2"
 RUN=os.environ.get("GITHUB_RUN_ID","manual")
 BATCH=max(1,min(65,int(os.environ.get("G2G3_HEADER_BATCH","30"))))
 MAX_RAW=65*1024*1024
@@ -127,9 +128,14 @@ def source(src):
         if a["g2g3_status"]!="HEADER_OR_ZIP_MEMBER_PENDING":continue
         prior=done.get(sid)
         if prior and prior.get("sha")==row["source_sha256"] and prior.get("schema")==VERSION:
-            continue
+            # Previously identified TH-based headers and all non-HTML evidence remain reusable.
+            # Only results touched by the corrected HTML parser require invalidation.
+            affected=any(e.get("format")=="HTML" for e in prior.get("evidence",[]))
+            retry=prior.get("status")=="READ_OR_PARSE_PENDING" and prior.get("attempts",0)<3
+            if (not affected or prior.get("parser_revision")==PARSER_REV) and not retry:
+                continue
         if len(new)>=BATCH:break
-        rec={"schema":VERSION,"source_id":sid,"source":src,"sha":row["source_sha256"],
+        rec={"schema":VERSION,"parser_revision":PARSER_REV,"source_id":sid,"source":src,"sha":row["source_sha256"],
              "run":RUN,"historical_era":p.get("historical_version"),
              "silver_gold_executed":False,"g2_verified":False,"g3_verified":False}
         try:
@@ -139,6 +145,9 @@ def source(src):
             else:rec.update(inspect_native(raw,row["source_path"],src,p.get("historical_version")))
         except Exception as e:
             rec["status"]="READ_OR_PARSE_PENDING";rec["error_type"]=type(e).__name__
+        if rec.get("status")=="READ_OR_PARSE_PENDING":
+            rec["attempts"]=prior.get("attempts",0)+1 if prior else 1
+            if rec["attempts"]>=3:rec["status"]="CONFIRMED_EXCEPTION_READ_FAILED"
         new[sid]=rec
     if new:
         rid=put_once(api,quality,"v097_G2G3_HEADER_DELTA_"+src+"_"+RUN+".json",
