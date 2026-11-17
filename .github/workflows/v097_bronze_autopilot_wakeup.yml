@@ -1,76 +1,12 @@
-name: JARVIS v097 Bronze Autopilot Independent Wakeup
+# ARCHIVED 2026-11-17: user requested retirement of old deep-content Bronze validation.
+# Original workflow retained in Git history. This stub has no schedule, push, or workflow_run triggers.
+# It deliberately performs no parsing, release, Silver, Gold, or recursive dispatch.
+name: "JARVIS v097 Bronze Autopilot Independent Wakeup [ARCHIVED — no processing]"
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/v097_bronze_autopilot_wakeup.yml
-      - scripts/v097_ap_continuation.py
-  schedule:
-    - cron: '4,19,34,49 * * * *'
-  workflow_run:
-    workflows:
-      - 'JARVIS v0.97 - Live 7489 exception accounting'
-      - 'JARVIS v0.97 - Full Dataset Release Gate Audit'
-      - 'JARVIS v0.97 - Merged original Bronze QA and conditional admission'
-      - 'JARVIS v0.97 - V4 6358 exception evidence into 097'
-      - 'JARVIS v0.97 - MOPS accounting numeric QA'
-    types: [completed]
-permissions:
-  contents: read
-  actions: write
-concurrency:
-  group: v097-bronze-wakeup-probe
-  cancel-in-progress: false
 jobs:
-  check-and-wake:
+  archived-no-op:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Avoid duplicate or competing Autopilot run
-        id: active
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          gh run list --workflow v097_bronze_autopilot.yml --limit 30 --json status > /tmp/bronze_runs.json
-          python - <<'PY'
-          import json,os
-          data=json.load(open('/tmp/bronze_runs.json'))
-          active=sum(x['status']!='completed' for x in data)
-          print('RUNNING_OR_PENDING_AUTOPILOT_COUNT',active)
-          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
-              f.write('idle='+('true' if active==0 else 'false')+'\n')
-          PY
-      - name: Inspect durable checkpoint when idle
-        if: steps.active.outputs.idle == 'true'
-        id: pending
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: PYTHONPATH=. python scripts/v097_ap_continuation.py watchdog
-      - name: Re-dispatch Bronze from checkpoint only if pending
-        if: steps.active.outputs.idle == 'true' && steps.pending.outputs.continue == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          # Recheck immediately before dispatch: main postrun self-dispatch
-          # might have started while this watchdog read Drive checkpoints.
-          gh run list --workflow v097_bronze_autopilot.yml --limit 30 --json status > /tmp/bronze_recheck.json
-          if python - <<'PY'
-          import json,sys
-          runs=json.load(open('/tmp/bronze_recheck.json'))
-          sys.exit(0 if any(r['status'] != 'completed' for r in runs) else 1)
-          PY
-          then
-            echo "WATCHDOG_SKIPPED_ALREADY_QUEUED_OR_RUNNING"
-            exit 0
-          fi
-          gh workflow run v097_bronze_autopilot.yml --ref main -f chain_depth=0
-          echo "WATCHDOG_NEXT_RUN_ACCEPTED source_run=${GITHUB_RUN_ID}"
+      - name: Confirm legacy workflow decommissioned
+        run: echo 'LEGACY_DEEP_CONTENT_WORKFLOW_DISABLED_NO_DATA_MUTATION'
