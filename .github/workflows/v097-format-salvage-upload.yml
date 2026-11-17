@@ -1,92 +1,10 @@
-name: JARVIS v0.97 - Format salvage upload into 097 quarantine
+# Archived per user request on 2026-11-17; new format-only autopilot replaces old acceptance pipelines.
+# Original implementation recoverable in Git revisions. Existing Drive data untouched.
+name: "JARVIS v0.97 - Format salvage upload into 097 quarantine [ARCHIVED]"
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097-format-salvage-upload.yml'
-      - 'scripts/v097_format_salvage_to_drive.py'
   workflow_dispatch:
-  schedule:
-    - cron: '23 * * * *'
-permissions:
-  contents: read
-concurrency:
-  group: v097-format-salvage-upload-single
-  cancel-in-progress: false
 jobs:
-  selftest:
-    if: github.repository == 'danny541690/C1-RAW-DOWNLOADER'
+  archived:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - run: |
-          python -m py_compile scripts/v097_format_salvage_to_drive.py
-          PYTHONPATH=. python scripts/v097_format_salvage_to_drive.py
-  bootstrap-single-writer:
-    needs: selftest
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Create exactly one 097 quarantine root and six lane roots before parallel upload
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          SALVAGE_MODE: bootstrap
-        run: PYTHONPATH=. python scripts/v097_format_salvage_to_drive.py
-  copy-into-097-format-quarantine:
-    needs: bootstrap-single-writer
-    runs-on: ubuntu-latest
-    timeout-minutes: 110
-    strategy:
-      fail-fast: false
-      max-parallel: 6
-      matrix:
-        lane: [0,1,2,3,4,5]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Immutable source->097 quarantine copy and independent byte SHA readback
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          SALVAGE_MODE: lane
-          STAGE_LANE: ${{ matrix.lane }}
-          STAGE_BATCH: '25'
-        run: |
-          for round in 1 2 3 4 5 6 7 8 9 10 11 12; do
-            echo "SALVAGE_ROUND=$round"
-            PYTHONPATH=. python scripts/v097_format_salvage_to_drive.py
-          done
-  ledger:
-    needs: copy-into-097-format-quarantine
-    if: always() && needs.copy-into-097-format-quarantine.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests
-      - name: Publish 097 upload counts, blocked reasons and remaining to Drive
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          SALVAGE_MODE: summary
-        run: PYTHONPATH=. python scripts/v097_format_salvage_to_drive.py
+      - run: echo OLD_V097_FLOW_RETIRED_NO_DATA_WORK
