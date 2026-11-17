@@ -72,7 +72,10 @@ def evaluate(row,fmt,mp,v3,g2,g3,era=None):
     elif row.get("bronze_status") not in ("BRONZE_INTEGRITY_READY",None):
         g0="HOLD";reason="BRONZE_LEGACY_HOLD"
     if g0=="PASS":
-        if isinstance(fmt,dict) and fmt.get("sha")==sha and fmt.get("status") in GOOD_G1:
+        if (isinstance(fmt,dict) and fmt.get("sha")==sha and fmt.get("status") in GOOD_G1 and
+            not (isinstance(v3,dict) and v3.get("sha")==sha and
+                 v3.get("new_native_evidence",{}).get("format")=="ZIP" and
+                 v3["new_native_evidence"].get("member_schemas_verified") is False)):
             g1="PASS";evidence["G1"]=fmt.get("contract_version")
         elif isinstance(v3,dict) and v3.get("sha")==sha and v3.get("g1") in ("SOURCE_FORMAT_PROFILED","ZIP_MEMBERS_PROFILED"):
             # ZIP member hashing/profile is useful, not complete member-level schema certification.
@@ -168,7 +171,8 @@ def source(src,shard):
         if cached_g0 and native.get("g0") not in ("DEST_SHA_VERIFIED","DEST_SHA_VERIFIED_REUSED"):
             native={**native,"sha":r["source_sha256"],"g0":"DEST_SHA_VERIFIED_REUSED","run":prior.get("run")}
         fp=fingerprint(r,f1,mp,native,p2,p3,historical)
-        if prior and prior.get("fingerprint")==fp:continue
+        if prior and prior.get("fingerprint")==fp and prior.get("status")!="RETRY_PENDING":continue
+        if prior and prior.get("status")=="RETRY_PENDING" and prior.get("attempts",0)>=3:continue
         if native.get("g0") not in ("DEST_SHA_VERIFIED","DEST_SHA_VERIFIED_REUSED"):
             try:
                 blob=call(lambda:api.files().get_media(fileId=r["destination_id"]))
@@ -179,10 +183,14 @@ def source(src,shard):
                 native={**native,"sha":r["source_sha256"],"g0":"DEST_SHA_VERIFIED",
                         "run":RUN}
             except Exception as exc:
+                hard_error=isinstance(exc,ValueError)
+                attempts=(prior or {}).get("attempts",0)+1
+                state="CONFIRMED_EXCEPTION" if hard_error or attempts>=3 else "RETRY_PENDING"
                 z={"source_id":sid,"source":src,"sha":r["source_sha256"],
-                   "status":"PENDING","reason":"G0_READBACK_"+type(exc).__name__,
-                   "gates":{"G0":"PENDING","G1":"PENDING","G2":"PENDING","G3":"PENDING","G4":"PENDING"},
-                   "evidence":{},"version":VERSION,
+                   "status":state,"reason":"G0_READBACK_"+type(exc).__name__,
+                   "gates":{"G0":"HOLD" if hard_error else "PENDING","G1":"PENDING",
+                            "G2":"PENDING","G3":"PENDING","G4":"PENDING"},
+                   "attempts":attempts,"evidence":{},"version":VERSION,
                    "fingerprint":fp,"run":RUN,"at":now(),"era":historical}
                 changes[sid]=z
                 if len(changes)>=BATCH:break
@@ -275,6 +283,8 @@ def selftest():
     assert evaluate(row,fmt,None,{},g2,g3,"ERA")["status"]!="READY"
     assert evaluate(row,fmt,None,v3,g2,g3,"OTHER_ERA")["status"]!="READY"
     assert evaluate({**row,"stock_scope":"STOCK_SCOPE_EXCLUDED"},fmt,None,v3,g2,g3,"ERA")["status"]=="EXCLUDED"
+    zip_native={**v3,"new_native_evidence":{"format":"ZIP","member_schemas_verified":False}}
+    assert evaluate(row,fmt,None,zip_native,g2,g3,"ERA")["status"]!="READY"
     assert all(0<=lane(str(i),src)<SHARDS[src] for src in SHARDS for i in range(10))
     print("R1_FAIL_CLOSED_E2E_SELFTEST_PASS")
 if __name__=="__main__":
