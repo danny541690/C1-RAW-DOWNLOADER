@@ -1,4 +1,5 @@
 name: JARVIS V097 G2 G3 Typed Contract Evidence (No Conversion)
+# TDCC real HTML body metadata and 17-tier full page native evidence gates added
 # 2026-11-17: full-file native QA and per-source unresolved-cause diagnostics
 # Revalidate exact layout grouping and header fingerprint invalidation safety gates
 # HTML row safety correction verified in selftests
@@ -26,7 +27,9 @@ jobs:
       - name: Negative and strict type-sample tests, no Drive writes
         run: |
           set -euo pipefail
-          python -m py_compile scripts/v097_g2g3_typed_contract_audit.py scripts/v097_g2g3_full_native_validation.py scripts/v097_g2g3_native_headers.py scripts/v097_g2g3_contract_discovery.py
+          python -m py_compile scripts/v097_g2g3_typed_contract_audit.py scripts/v097_g2g3_full_native_validation.py scripts/v097_g2g3_tdcc_native_html.py scripts/v097_g2g3_native_headers.py scripts/v097_g2g3_contract_discovery.py scripts/v097_v3_contract_registry.py
+          PYTHONPATH=. python scripts/v097_g2g3_tdcc_native_html.py selftest
+          PYTHONPATH=. python scripts/v097_v3_contract_registry.py selftest
           PYTHONPATH=. python scripts/v097_g2g3_native_headers.py selftest
           PYTHONPATH=. python scripts/v097_g2g3_contract_discovery.py selftest
           PYTHONPATH=. python scripts/v097_g2g3_full_native_validation.py selftest
