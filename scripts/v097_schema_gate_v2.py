@@ -28,7 +28,61 @@ def fmt(name,blob):
     if hd.startswith((b"<!doctype",b"<html",b"<?xml")):return "HTML_XML"
     if ext in ("csv","txt","raw") or b"," in hd:return "CSV_CANDIDATE"
     return "UNKNOWN"
-def basic(blob,name):
+
+# Explicit pre-Silver header contracts. Only header identity, never numeric values.
+SCHEMA_RULE_VERSION="20261117-header-contract-1"
+ALIASES={
+ "code":("證券代號","股票代號","股票代碼","公司代號","代號","stock_id","stockid","code"),
+ "date":("日期","交易日期","資料日期","date","trade_date","datetime"),
+ "close":("收盤價","收盤","close","closing_price"),
+ "contract":("契約","契約名稱","契約代號","商品代號","contract","product_id"),
+ "volume":("成交量","成交口數","成交股數","volume","trade_volume"),
+ "period":("年月","資料年月","營收月份","month","period"),
+ "revenue":("營業收入","當月營收","營收","revenue")
+}
+def normalize_header(x):
+    return re.sub(r"[\s_\u3000（）()]+","",str(x)).lower()
+def contract_for(src,headers):
+    norm={normalize_header(v):str(v) for v in headers if v is not None}
+    def find(key):
+        return next((norm[normalize_header(v)] for v in ALIASES[key] if normalize_header(v) in norm),None)
+    if src in ("TWSE","TPEx","FinMind"):
+        keys=("code","date","close")
+        if all(find(k) for k in keys):
+            return {"status":"SCHEMA_INPUT_READY","dataset":"STOCK_DAILY_OHLCV",
+                    "contract":SCHEMA_RULE_VERSION,
+                    "mapping":{k:find(k) for k in keys}}
+    if src=="TAIFEX":
+        keys=("date","contract","volume")
+        if all(find(k) for k in keys):
+            return {"status":"SCHEMA_INPUT_READY","dataset":"FUTURES_OPTIONS_DAILY",
+                    "contract":SCHEMA_RULE_VERSION,
+                    "mapping":{k:find(k) for k in keys}}
+    if src=="MOPS":
+        keys=("code","period","revenue")
+        if all(find(k) for k in keys):
+            return {"status":"SCHEMA_INPUT_READY","dataset":"MONTHLY_REVENUE",
+                    "contract":SCHEMA_RULE_VERSION,
+                    "mapping":{k:find(k) for k in keys}}
+    return None
+def headers_from_json(obj):
+    heads=[]
+    if isinstance(obj,dict):
+        for k in ("fields","columns","headers"):
+            if isinstance(obj.get(k),list):
+                heads.append([x.get("name","") if isinstance(x,dict) else x for x in obj[k]])
+        for t in (obj.get("tables") or [])[:30]:
+            if isinstance(t,dict):
+                heads+=headers_from_json(t)
+        if isinstance(obj.get("data"),list) and obj["data"] and isinstance(obj["data"][0],dict):
+            heads.append(list(obj["data"][0].keys()))
+        if isinstance(obj.get("data"),dict):heads.append(list(obj["data"].keys()))
+        heads.append(list(obj.keys()))
+    elif isinstance(obj,list) and obj and isinstance(obj[0],dict):
+        heads.append(list(obj[0].keys()))
+    return heads
+
+def basic(blob,name,source=None):
     """Prove structural readability only; never inspect financial numeric correctness."""
     typ=fmt(name,blob)
     if typ=="XLSX":
@@ -73,7 +127,8 @@ def basic(blob,name):
                 header=next(reader,None)
                 if header is None:return {"status":"FORMAT_STRUCTURAL_HOLD","reason":"EMPTY_CSV"}
                 if len(header)<2:continue
-                return {"status":"SCHEMA_PROFILED_NEEDS_MAPPING","signature":"CSV","encoding":enc,"header":header[:80],"header_has_optional_empty_tail":bool(header and not header[-1].strip())}
+                mapped=contract_for(source,header) if source else None
+                return {**(mapped or {"status":"SCHEMA_PROFILED_NEEDS_MAPPING"}),"signature":"CSV","encoding":enc,"header":header[:80],"header_has_optional_empty_tail":bool(header and not header[-1].strip())}
             except (UnicodeError,csv.Error):continue
         return {"status":"FORMAT_UNSUPPORTED","reason":"CSV_UNKNOWN_ENCODING_OR_LAYOUT"}
     if typ=="HTML_XML":
@@ -139,7 +194,7 @@ def source(src):
                     blob=call(lambda:api.files().get_media(fileId=r["destination_id"]))
                     if len(blob)>LIMIT_BYTES:verdict={"status":"FORMAT_UNSUPPORTED","reason":"FILE_TOO_LARGE"}
                     elif h(blob)!=sha:verdict={"status":"FORMAT_STRUCTURAL_HOLD","reason":"DRIVE_SHA_MISMATCH"}
-                    else:verdict=basic(blob,r["source_path"])
+                    else:verdict=basic(blob,r["source_path"],src)
                     verdict["input_bytes_sha_checked"]=h(blob)==sha
                 except Exception as e:
                     attempts=done.get(sid,{}).get("attempts",0)+1
@@ -194,6 +249,9 @@ def selftest():
     assert basic(b'{"tables":[{"fields":["date","code"]}]}',"a.json")["signature"]=="JSON"
     assert basic("日期,代碼\n2026-11-17,2330".encode(),"a.csv")["signature"]=="CSV"
     assert basic(b"x","a.zip")["status"]=="FORMAT_UNSUPPORTED"
+    assert contract_for("TWSE",["證券代號","日期","收盤價"])["status"]=="SCHEMA_INPUT_READY"
+    assert contract_for("TPEx",["代號","日期","成交金額"]) is None
+    assert basic(b'{"fields":["證券代號","日期","收盤價"],"data":[]}',"a.json","TWSE")["status"]=="SCHEMA_INPUT_READY"
     assert basic(b'{"ok":1}',"a.raw.receipt_123.json")["reason"]=="PROVENANCE_RECEIPT_NOT_MARKET_DATA"
     assert basic("交易日期,契約,成交量,\\n2026-11-17,TX,1,".encode(),"a.csv")["header_has_optional_empty_tail"] is True
     assert reusable({"bronze_sha256":"a"*64,"input_bytes_sha_checked":True,
