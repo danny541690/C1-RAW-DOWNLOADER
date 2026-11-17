@@ -162,6 +162,12 @@ def source(src):
               if m.get("full_native_shape",{}).get("status")=="FULL_NATIVE_SHAPE_CANDIDATE_UNCERTIFIED"),
          "full_native_shape_exception_members":sum(1 for rec in done.values() for m in rec.get("members",[])
               if m.get("full_native_shape",{}).get("status")=="FULL_NATIVE_SHAPE_EXCEPTIONS"),
+         "full_native_status_counts":dict(collections.Counter(
+              m.get("full_native_shape",{}).get("status","NOT_RECORDED")
+              for rec in done.values() for m in rec.get("members",[]))),
+         "source_native_sample_status_counts":dict(collections.Counter(
+              m.get("type_evidence",{}).get("status","NOT_RECORDED")
+              for rec in done.values() for m in rec.get("members",[]))),
          "typed_sample_pass_members":sum(1 for rec in done.values() for m in rec.get("members",[])
               if m["type_evidence"]["status"]=="TYPED_SAMPLE_PASS_NOT_FULL_VALIDATION"),
          "statuses":dict(collections.Counter(v["status"] for v in done.values())),
