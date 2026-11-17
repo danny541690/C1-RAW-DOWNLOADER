@@ -128,6 +128,16 @@ def build():
         rec=[decision(row,pick(row),maps.get(row["source_id"]),workers.get(row["source_id"])) for row in rows]
         stats=summarize(rec)
         stats["source"]=src
+        # G2/G3 remediation is a separate, SHA-guarded evidence lane.
+        # Count new recovered headers without upgrading any dataset or schema cert.
+        hf=match(api,control,"v097_G2G3_HEADER_CK_"+src+".json")
+        hdone=load_json(api,hf["id"]).get("done",{}) if hf else {}
+        idx={row["source_id"]:row for row in rows}
+        if set(hdone)-set(idx):raise RuntimeError("HEADER_RECOVERY_ORPHAN_"+src)
+        valid=[v for sid,v in hdone.items() if v.get("sha")==idx[sid]["source_sha256"]]
+        stats["g2g3_native_remediation_checked"]=len(valid)
+        stats["g2g3_native_headers_recovered"]=sum(v.get("header_members",0)>0 for v in valid)
+        stats["g2g3_native_recovery_errors"]=sum(v.get("status") in ("READ_OR_PARSE_PENDING","SOURCE_SHA_MISMATCH","RAW_EMPTY_OR_SIZE_LIMIT") for v in valid)
         # Keep a per-source drilldown, do not bloat the top-level Master.
         fn="v097_V3_UNIFIED_DETAIL_"+src+"_"+RUN+".json"
         stats["detail_file_id"]=put_once(api,quality,fn,
@@ -136,9 +146,14 @@ def build():
     if total!=TARGET or len({(r["source_id"]) for r in all_rows})!=TARGET:
         raise RuntimeError("UNIFIED_74750_COHORT_OR_UNIQUENESS_FAIL")
     summary=summarize(all_rows)
+    summary["g2g3_native_remediation_checked"]=sum(t["g2g3_native_remediation_checked"] for t in sources)
+    summary["g2g3_native_headers_recovered"]=sum(t["g2g3_native_headers_recovered"] for t in sources)
+    summary["g2g3_native_recovery_errors"]=sum(t["g2g3_native_recovery_errors"] for t in sources)
+    prior=match(api,control,"v097_G2G3_CONTRACT_MASTER_LATEST.json")
+    census=load_json(api,prior["id"]) if prior else None
     board={"schema":VERSION,"run":RUN,"created_at":now(),
       "title":"JARVIS v0.97 唯一正式驗收進度總表（Bronze → Silver Schema Ready）",
-      "cohort":TARGET,"overall":summary,"sources":sources,
+      "cohort":TARGET,"overall":summary,"sources":sources,\n      "g2g3_contract_census":{"run":census.get("run"),"groups":len(census.get("ranked_contract_groups",[])),\n        "status_counts":census.get("overall_statuses",{}),"complete":census.get("complete_seven_source_census")} if census else None,
       "interpretation":{"legacy_format":"已分類證據，非 G3 合格",
           "legacy_mapping":"已檢查證據，非 G3 合格",
           "v3_scan":"新增檢查覆蓋，非 G4 放行",
