@@ -1,70 +1,10 @@
-name: JARVIS v097 Q0-Q4 Combined Integrity and Schema Inventory
-# One workflow, seven source jobs, one formal ledger; no Silver/Gold execution.
-# 15-minute watchdog reawakens incomplete/failed batches; source checkpoints
-# and immutable source reports are persisted in Google Drive.
+# Retired 2026-11-17: Q0-Q4 evidence-only snapshot replaced by Schema V2 Autopilot.
+# Original report, logs, and code retained in Git history and Drive.
+name: JARVIS v097 Q0-Q4 Combined Integrity and Schema Inventory [ARCHIVED]
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - scripts/v097_q0_q4_integrity_schema.py
-      - .github/workflows/v097_q0_q4_combined.yml
-  schedule:
-    - cron: '1,16,31,46 * * * *'
-permissions:
-  contents: read
-  actions: read
-concurrency:
-  group: v097-q0q4-integrity-schema
-  cancel-in-progress: false
 jobs:
-  contracts:
+  archived-noop:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
-      - name: Validate no-content and no-conversion contracts
-        run: |
-          python -m py_compile scripts/v097_q0_q4_integrity_schema.py
-          PYTHONPATH=. python scripts/v097_q0_q4_integrity_schema.py selftest
-  per-source:
-    needs: contracts
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
-      - name: Read only stored evidence and archive source result on Google Drive
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: PYTHONPATH=. python scripts/v097_q0_q4_integrity_schema.py '${{ matrix.source }}'
-  final-master:
-    needs: [contracts, per-source]
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
-      - name: Reconcile 74750 and archive master on Google Drive
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-        run: PYTHONPATH=. python scripts/v097_q0_q4_integrity_schema.py final
+      - run: echo 'OLD_Q0Q4_SCHEDULE_DISABLED_NO_DATA_MUTATION'
