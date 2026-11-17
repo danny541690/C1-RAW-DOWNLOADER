@@ -48,3 +48,13 @@ TAIFEX: https://www.taifex.com.tw/
 NDC: https://www.ndc.gov.tw/
 FinMind: https://finmindtrade.com/
 Public source-wide links are discovery evidence only; they do NOT certify a historical Dataset/Era contract.
+
+## Real source proof and 11/14–11/17 historical-format correction
+- 2026-11-17 actual raw TDCC Drive HTML file ID 1--oAGav1QBgijxyNgkM3NVR5JiJ5oAgC, name distribution_20251128_4609_*.html, was independently read in GitHub Run 44117824116 (QA receipt Drive ID 1l8x470kSiq8y5ooumtkOOzYxG4vUgXD_).
+- HTML page body carries code 4609 and date ROC 114/11/28; these are **page metadata**, not ordinary table columns. It has **16 physical rows**: distribution tiers 1–15 and total ordinal row 16. Its header uses source-native aliases 股數/單位數 and 占集保庫存數比例 (%). Native SHA/page/field and internally consistent amount/ratio shape were verified, but official PIT and historical security identity remain uncertified, so no G2/G3/G4 release.
+- Prior supplementary TDCC JSONL ZIP samples have a distinct **17-row native layout**: tiers 1–15, difference adjustment 16, total row 17. Do NOT impose 17 rows on HTML; nor infer 16-row HTML approval for either ZIP. The historical two ZIPs retain 429 share-count and 20 percent anomalies and production_approved=false.
+- TDCC native parser now distinguishes 16-row HTML vs 17-row adjustment archives via **labeled total row**. It validates data date/code against the filename, all native row numeric types, subtotal vs total and ratio sum. File mismatch remains HOLD; it never silently edits bytes.
+- 11/16 74,750 original-record census: READY 35,467 and HOLD 39,283 in the **historical Silver input** gate, not V3 G2/G3/G4 Ready. 6,358 migration exceptions were classified, not all repaired. Legacy A/B/C/DEEP/D overlap and must not be added to V3 counts.
+- This release also adds bounded complete CSV/JSON/JSONL shape scans (date calendar validity, numeric types, provisional key duplicates), with oversized/unsupported formats explicitly pending. None of these alone certifies historical source edition, source-native unit policy, publication PIT or downstream Silver output.
+- Independent source QA historical-reference index: docs.google.com/document/d/1pqunt5SJedVyePk0OFjeHJO90BmUmSuYa2d_-ppJZIg/edit
+- Official source links for verification: https://www.tdcc.com.tw/portal/zh/smWeb/qryStock ; https://schema.nat.gov.tw/lists/75 ; https://eshop.twse.com.tw/zh/product/detail/cfec9a1470e448ec91bfde006db361e8 ; https://www.taifex.com.tw/cht/3/dailyFutures
