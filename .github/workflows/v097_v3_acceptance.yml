@@ -107,8 +107,10 @@ jobs:
           path: /tmp/v3_master.log
           if-no-files-found: ignore
   continue:
+    # Re-dispatch after a transient worker failure when reconciliation succeeded.
+    # The next run uses source-specific checkpoints; no other source is reset.
     needs: [admission, source_workers, reconcile]
-    if: always() && needs.reconcile.result == 'success' && needs.source_workers.result == 'success'
+    if: always() && needs.admission.result == 'success' && needs.reconcile.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
