@@ -34,6 +34,8 @@ jobs:
           set -euo pipefail
           PYTHONPATH=. python scripts/v097_v3_source_worker.py selftest
           PYTHONPATH=. python scripts/v097_v3_preflight.py selftest
+          python -m py_compile scripts/v097_v3_unified_master.py
+          PYTHONPATH=. python scripts/v097_v3_unified_master.py selftest
           PYTHONPATH=. python scripts/v097_v3_source_worker.py check | tee /tmp/v3_status
           flag=$(grep '^V3_WATCHDOG_STATE=' /tmp/v3_status | tail -1 | python -c "import sys,json;print(str(json.loads(sys.stdin.read().split('=',1)[1])['wake_needed']).lower())")
           echo "proceed=$flag" >> "$GITHUB_OUTPUT"
