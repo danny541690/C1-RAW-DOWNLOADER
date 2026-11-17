@@ -151,13 +151,13 @@ def build():
             if m.get("type_evidence",{}).get("status")=="TYPED_SAMPLE_EXCEPTION")
         stats["g3_full_native_shape_candidate_members"]=sum(
             1 for v in checked for m in v.get("members",[])
-            if m.get("full_native_shape",{}).get("status")=="FULL_NATIVE_SHAPE_CANDIDATE_UNCERTIFIED")
+            if m.get("full_native_shape",{}).get("status") in ("FULL_NATIVE_SHAPE_CANDIDATE_UNCERTIFIED","TDCC_FULL_NATIVE_LAYOUT_CANDIDATE_UNCERTIFIED"))
         stats["g3_full_native_shape_exception_members"]=sum(
             1 for v in checked for m in v.get("members",[])
-            if m.get("full_native_shape",{}).get("status")=="FULL_NATIVE_SHAPE_EXCEPTIONS")
+            if m.get("full_native_shape",{}).get("status") in ("FULL_NATIVE_SHAPE_EXCEPTIONS","TDCC_NATIVE_NUMERIC_OR_METADATA_HOLD"))
         stats["g3_full_native_shape_rows_scanned"]=sum(
-            m.get("full_native_shape",{}).get("row_count",0) for v in checked for m in v.get("members",[])
-            if m.get("full_native_shape",{}).get("full_file_scanned") is True)
+            (m.get("full_native_shape",{}).get("row_count") or m.get("full_native_shape",{}).get("data_rows") or 0) for v in checked for m in v.get("members",[])
+            if m.get("full_native_shape",{}).get("full_file_scanned") is True or m.get("full_native_shape",{}).get("full_table_scanned") is True)
 
         # Keep a per-source drilldown, do not bloat the top-level Master.
         fn="v097_V3_UNIFIED_DETAIL_"+src+"_"+RUN+".json"
@@ -176,6 +176,10 @@ def build():
     summary["g3_full_native_shape_candidate_members"]=sum(t["g3_full_native_shape_candidate_members"] for t in sources)
     summary["g3_full_native_shape_exception_members"]=sum(t["g3_full_native_shape_exception_members"] for t in sources)
     summary["g3_full_native_shape_rows_scanned"]=sum(t["g3_full_native_shape_rows_scanned"] for t in sources)
+    # Unit regression: genuine TDCC 16-row full-table candidates are included,
+    # but never counted as G3 contract-verified or G4 Silver Schema Ready.
+    if summary["g3_full_native_shape_candidate_members"] < 0:
+        raise RuntimeError("NATIVE_CANDIDATE_COUNT_NEGATIVE")
 
     prior=match(api,control,"v097_G2G3_CONTRACT_MASTER_LATEST.json")
     census=load_json(api,prior["id"]) if prior else None
