@@ -201,6 +201,47 @@ def taifex_source(rows,api,call):
     result["formal_g2_missing_evidence"]=["2024_CONTEMPORANEOUS_PUBLICATION_ASOF","INDEPENDENT_OFFICIAL_DATASET_ERA_ATTESTATION","R1_G2_PER_FILE_CERT"] if result["g2_numeric_validation"]=="PASS" else ["NUMERIC_OR_LAYOUT_HOLD"]
     result["formal_g2_certified"]=False
     return result
+# Simplified G2 v2, limited to the exact same-date sample. Not a whole-file
+# certificate when only a subset of a monthly Bronze file was verified.
+G2_RULE_V2="v097_g2_source_date_headers_all_sample_cells_sha_v2"
+def g2_v2_verdict(source,info):
+    if source=="TDCC":
+        cases=info.get("cases",[])
+        ok=(info.get("dataset")=="TDCC_SHAREHOLDING_DISTRIBUTION" and
+            info.get("source_response",{}).get("http_status")==200 and
+            len(cases)==2 and all(
+                c.get("sha_match") is True and c.get("native_row_count")==16
+                and c.get("full_native_tier_rows_checked")==16
+                and c.get("archived_rows_same_date")==17
+                and c.get("g2_numeric_validation")=="PASS"
+                and len(c.get("all_rows_compared",[]))==16
+                and all(r.get("row_pass") is True for r in c["all_rows_compared"])
+                for c in cases))
+        return {"rule":G2_RULE_V2,"scope":"TDCC_20261008_2365_3258",
+                "sample_result":"G2_SAMPLE_PASS" if ok else "G2_SAMPLE_HOLD",
+                "sample_files_pass":2 if ok else 0,"sample_rows_pass":32 if ok else 0,
+                "comparison_origin":"THIRD_PARTY_ARCHIVE_OF_OFFICIAL_OPEN_DATA",
+                "official_first_party_comparison":False,
+                "full_file_g2_pass":False,
+                "reason":"Third-party historical copy matches all 16 native rows per file; official first-party same-week query not independently compared" if ok else "TDCC_SOURCE_SHA_LAYOUT_DATE_OR_VALUES_HOLD"}
+    target={"2024/01/02":1150,"2024/01/03":1150,"2024/01/04":1150}
+    ok=(info.get("dataset")=="TAIFEX_LARGE_TRADER_FUTURES" and
+        info.get("bronze_sha_verified") is True and
+        info.get("official_response",{}).get("http_status")==200 and
+        info.get("g2_numeric_validation")=="PASS" and
+        info.get("original_csv_header")==info.get("official_csv_header") and
+        info.get("native_rows_by_day")==target and
+        info.get("official_rows_by_day")==target and
+        info.get("count_bronze")==3450 and info.get("count_official")==3450 and
+        all(r.get("row_pass") is True for r in info.get("all_compared_rows",[])) and
+        len(info.get("all_compared_rows",[]))==3450)
+    return {"rule":G2_RULE_V2,"scope":"TAIFEX_LARGE_TRADER_20240102_20240104",
+            "sample_result":"G2_SAMPLE_PASS" if ok else "G2_SAMPLE_HOLD",
+            "sample_files_pass":0,"sample_rows_pass":3450 if ok else 0,
+            "official_first_party_comparison":True,
+            "full_file_g2_pass":False,
+            "reason":"Same-date first-party official download matches three days, but original monthly Bronze file has additional days" if ok else "TAIFEX_SHA_HEADER_DATE_OR_VALUES_HOLD"}
+
 def run(source):
     api,control,quality,match,load_json,put_once,upsert,call=source_api()
     rows=read_baseline(api,quality,match,load_json,source)
@@ -211,7 +252,9 @@ def run(source):
         # Keep the exact failure class as a Drive QA receipt when credentials permit.
         info={"status":"SOURCE_DIAGNOSTIC_EXCEPTION","error_type":type(ex).__name__,
               "error_message":str(ex)[:240],"official_g2_certified":False}
+    verdict=g2_v2_verdict(source,info)
     record={"schema":SOURCE,"source":source,"run":RUN,
+        "g2_rule":G2_RULE_V2,"g2_v2_verdict":verdict,
         "sample_mode":True,"sample_scope":SAMPLE_SCOPE[source],
         "time_utc":datetime.now(timezone.utc).isoformat(),
         "result":info,"formal_g2_new_pass":0,
@@ -220,18 +263,23 @@ def run(source):
     rid=put_once(api,quality,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_"+RUN+".json",record)
     upsert(api,control,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_LATEST.json",
         {"schema":SOURCE,"source":source,"run":RUN,"report_id":rid,
-         "status":"COMPARED_OR_HOLD_NO_OFFICIAL_G2_PROMOTION"})
+         "status":verdict["sample_result"],"g2_rule":G2_RULE_V2,
+         "formal_file_g2_pass":False})
     print("MATCHED_ORIGINAL_SOURCE="+canonical({
         "source":source,"report_id":rid,"run":RUN,
         "overall":info.get("status"),
         "counts":dict(collections.Counter(c.get("status") for c in info.get("cases",[]))),
-        "formal_G2_new_pass":0}),flush=True)
+        "formal_G2_new_pass":0,"g2_sample_result":verdict["sample_result"],
+        "g2_sample_rows_pass":verdict["sample_rows_pass"],
+        "g2_sample_files_pass":verdict["sample_files_pass"]}),flush=True)
 def selftest():
     assert len(TDCC_CODES)==2 and len({TAIFEX_DATE_START,TAIFEX_DATE_END})==2
     assert compact(["1","2","",""])==["1","2"]
     assert csv_decode(b"<!DOCTYPE html><html>Access denied</html>")[1]=="HTML_NOT_CSV"
     assert norm_header("\ufeff占集保庫存數比例 (%)")==norm_header("占集保庫存數比例%")
     assert {"2024/01/02","2024/01/03","2024/01/04"}=={TAIFEX_DATE_START,TAIFEX_DATE_END,"2024/01/03"}
+    assert g2_v2_verdict("TAIFEX",{})["sample_result"]=="G2_SAMPLE_HOLD"
+    assert g2_v2_verdict("TDCC",{})["sample_result"]=="G2_SAMPLE_HOLD"
     print("G2_MATCHED_DATE_SOURCE_DIFF_SELFTEST_PASS")
 if __name__=="__main__":
     if sys.argv[1:]==["selftest"]:selftest()
