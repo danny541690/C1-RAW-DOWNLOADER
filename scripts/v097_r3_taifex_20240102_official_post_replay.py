@@ -36,7 +36,9 @@ def main():
  source_rows,source_encoding=normalized(native)
  if not source_rows or len(source_rows)<3:raise RuntimeError("UNREADABLE_NATIVE_TAIFEX")
  date_values={r[0] for r in source_rows[1:] if r}
- if not date_values or any(not d.startswith("2024/01/") for d in date_values):\n  raise RuntimeError("BRONZE_CONTAINS_NON_JANUARY_DATE")\n first_day,last_day=min(date_values),max(date_values)
+ if not date_values or any(not d.startswith("2024/01/") for d in date_values):
+  raise RuntimeError("BRONZE_CONTAINS_NON_JANUARY_DATE")
+ first_day,last_day=min(date_values),max(date_values)
  outcome={"schema":"R3_TAIFEX_OFFICIAL_HISTORICAL_POST_NATIVE_COMPARE_V1",
   "run":RUN,"source":SRC,"source_id":SID,
   "frozen_source_sha256":row["source_sha256"],
