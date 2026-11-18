@@ -56,10 +56,10 @@ jobs:
             echo 'ready=false' >> "$GITHUB_OUTPUT"
           fi
       - name: Gated TDCC incremental native-format batch
-        if: steps.tdcc.outputs.ready == 'true' && steps.taifex.outputs.ready == 'true'
+        if: steps.tdcc.outputs.ready == 'true'
         run: PYTHONPATH=. python scripts/v097_two_source_pilot_g2.py batch TDCC
       - name: Gated TAIFEX incremental native-format batch
-        if: steps.tdcc.outputs.ready == 'true' && steps.taifex.outputs.ready == 'true'
+        if: steps.taifex.outputs.ready == 'true'
         run: PYTHONPATH=. python scripts/v097_two_source_pilot_g2.py batch TAIFEX
       - name: Summary and strict certification boundary
         if: always()
@@ -67,5 +67,5 @@ jobs:
           echo "## TDCC/TAIFEX sample-first format QA" >> "$GITHUB_STEP_SUMMARY"
           echo "TDCC sample format gate: ${{ steps.tdcc.outputs.ready }}" >> "$GITHUB_STEP_SUMMARY"
           echo "TAIFEX sample format gate: ${{ steps.taifex.outputs.ready }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Batch requires BOTH representative pilots clean. Reports/CK saved to Google Drive." >> "$GITHUB_STEP_SUMMARY"
+          echo "Each batch requires its own era-format samples clean; only approved buckets. Reports/CK saved to Google Drive." >> "$GITHUB_STEP_SUMMARY"
           echo "All decisions are FORMAT_CANDIDATE only. No official G2 certificate, no Bronze writes, no Silver/Gold." >> "$GITHUB_STEP_SUMMARY"
