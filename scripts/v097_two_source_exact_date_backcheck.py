@@ -41,7 +41,21 @@ def fetch_official(url,method="get",data=None):
         kw=dict(timeout=(10,60),allow_redirects=True)
         origin="https://www.tdcc.com.tw" if "tdcc.com.tw" in url else "https://www.taifex.com.tw"
         referer="https://www.tdcc.com.tw/portal/zh/smWeb/qryStock" if "tdcc.com.tw" in url else TAIFEX_LANDING
-        response=session.get(url,**kw) if method=="get" else session.post(url,data=data,headers={
+        if method=="post" and "tdcc.com.tw" in url:
+            # Current first-party portal may require session cookies, hidden
+            # form state, or a CSRF field established by the initial GET.
+            initial=session.get(referer,**kw)
+            initial.raise_for_status()
+            from bs4 import BeautifulSoup
+            page=BeautifulSoup(initial.text,"html.parser")
+            form=page.find("form")
+            hidden={i.get("name"):i.get("value","") for i in
+                    (form.find_all("input",type="hidden") if form else [])
+                    if i.get("name")}
+            payload={**hidden,**(data or {})}
+        else:
+            payload=data
+        response=session.get(url,**kw) if method=="get" else session.post(url,data=payload,headers={
            "Referer":referer,"Origin":origin,
            "User-Agent":"Mozilla/5.0 JARVIS-v097-source-audit"},**kw)
         response.raise_for_status()
