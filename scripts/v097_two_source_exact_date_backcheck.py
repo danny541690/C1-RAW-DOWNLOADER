@@ -140,25 +140,36 @@ def tdcc_source(rows,api,call):
             proof["status"]="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" if len(subset)>=16 and len(all_compared_rows)==16 and not diffs else "SAME_DATE_NUMERIC_OR_TEMPLATE_HOLD"
         proof["g2_numeric_validation"]="PASS" if proof.get("status")=="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" else "HOLD"
         if FULL_MODE and proof["g2_numeric_validation"]=="PASS":
-            official_result=None
-            for endpoint in ("https://www.tdcc.com.tw/portal/zh/smWeb/qryStock",
-                             "https://www.tdcc.com.tw/smWeb/QryStockAjax.do"):
-                payload={"scaDates":TDCC_WEEK,"scaDate":TDCC_WEEK,"SqlMethod":"StockNo",
-                         "StockNo":code,"radioStockNo":code,"REQ_OPR":"SELECT",
-                         "clkStockNo":code,"StockName":"","clkStockName":""}
-                remote1,body1=fetch_official(endpoint,"post",payload)
-                if body1 and b"<table" in body1.lower():
-                    candidate=tdcc_native(body1)
-                    if (candidate.get("layout")==native.get("layout") and
-                        candidate.get("all_rows")==native.get("all_rows") and
-                        candidate.get("total_shares")==native.get("total_shares") and
-                        candidate.get("total_holders")==native.get("total_holders")):
-                        official_result={"verified":True,"url":endpoint,
-                                         "response_sha":sha(body1),
-                                         "native_rows":len(candidate["all_rows"])}
-                        break
-                official_result={"verified":False,"last_source_http":remote1,
-                                 "candidate_layout":candidate.get("layout") if body1 and b"<table" in body1.lower() else None}
+            official_result={"verified":False,"attempts":[]}
+            payload={"scaDates":TDCC_WEEK,"scaDate":TDCC_WEEK,"SqlMethod":"StockNo",
+                     "StockNo":code,"radioStockNo":code,"REQ_OPR":"SELECT",
+                     "clkStockNo":code,"StockName":"","clkStockName":""}
+            for endpoint in ("https://s.tdcc.com.tw/portal/zh/smWeb/qryStock",
+                             "https://www.tdcc.com.tw/portal/zh/smWeb/qryStock",
+                             "https://original-www.tdcc.com.tw/portal/zh/smWeb/qryStock"):
+                for method in ("post","get"):
+                    if method=="post":
+                        remote1,body1=fetch_official(endpoint,"post",payload)
+                    else:
+                        # First-party portal commonly renders a normal HTML form;
+                        # GET is diagnostic, not proof if it returns blank query fields.
+                        remote1,body1=fetch_official(endpoint,"get")
+                    attempt={"url":endpoint,"method":method,"http":remote1,"layout":None}
+                    if body1 and b"<table" in body1.lower():
+                        candidate=tdcc_native(body1)
+                        attempt["layout"]=candidate.get("layout")
+                        attempt["native_row_count"]=len(candidate.get("all_rows",[]))
+                        if (candidate.get("layout")==native.get("layout") and
+                            candidate.get("all_rows")==native.get("all_rows") and
+                            candidate.get("total_shares")==native.get("total_shares") and
+                            candidate.get("total_holders")==native.get("total_holders")):
+                            official_result={"verified":True,"url":endpoint,
+                                "method":method,"response_sha":sha(body1),
+                                "native_rows":len(candidate["all_rows"]),
+                                "attempts":official_result["attempts"]+[attempt]}
+                            break
+                    official_result["attempts"].append(attempt)
+                if official_result.get("verified"):break
             proof["first_party_historical_check"]=official_result
             proof["g2_file_result"]="G2_FILE_PASS" if official_result.get("verified") else "G2_FILE_HOLD_FIRST_PARTY"
         else:
