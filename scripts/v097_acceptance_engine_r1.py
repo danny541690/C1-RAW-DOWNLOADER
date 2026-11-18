@@ -158,7 +158,11 @@ def source(src,shard):
     if ck.get("schema")!=VERSION or ck.get("source")!=src or ck.get("shard")!=shard:
         raise RuntimeError("R1_CHECKPOINT_CONFLICT")
     done=ck["done"]
-    queue=[r for r in rows if lane(r["source_id"],src)==shard]
+    # Newly issued SHA-bound G2 certificates must be considered first,
+    # otherwise a 200-record incremental cap can postpone a verified file
+    # behind thousands of unrelated legacy fingerprint changes.
+    queue=sorted((r for r in rows if lane(r["source_id"],src)==shard),
+                 key=lambda r:(0 if r["source_id"] in c2 else 1,r["source_id"]))
     if set(done)-{r["source_id"] for r in queue}:raise RuntimeError("R1_CHECKPOINT_ORPHAN")
     changes={}
     for r in queue:
