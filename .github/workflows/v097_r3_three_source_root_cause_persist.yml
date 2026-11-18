@@ -1,0 +1,32 @@
+name: JARVIS R3 G2 three-source official schema root cause permanent QA SOP
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_three_source_root_cause_persist.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-three-source-root-cause-immutable-sop
+  cancel-in-progress: false
+jobs:
+  freeze-verified-three-source-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Cross-check every existing root-cause receipt and save reusable G2 remediation rules
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_g2_three_source_root_cause_persist.py
+          PYTHONPATH=. python scripts/v097_r3_g2_three_source_root_cause_persist.py
+      - if: always()
+        run: echo 'Immutable QA documentation, not G2 official certification. Old 324 source-vintage G2 preserved, Bronze read-only no Silver/Gold.' >> "$GITHUB_STEP_SUMMARY"
