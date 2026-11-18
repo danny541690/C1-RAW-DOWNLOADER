@@ -1,4 +1,5 @@
 name: JARVIS R3 MOPS first full native official monthly revenue G2 certification
+# Expand immutable source diff to actual all 11 fields for four new and two amended issuer rows.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
