@@ -6,8 +6,6 @@ on:
       - '.github/workflows/v097_tdcc_taifex_pilot_g2.yml'
       - 'scripts/v097_two_source_pilot_g2.py'
   workflow_dispatch:
-  schedule:
-    - cron: '7,37 * * * *'
 permissions:
   contents: read
 concurrency:
