@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/v097_acceptance_r1.yml'
       - 'scripts/v097_acceptance_engine_r1.py'
+      - 'scripts/v097_seven_source_release_standard_v2.py'
   workflow_dispatch:
   schedule:
     - cron: '9,24,39,54 * * * *'
@@ -29,6 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m py_compile scripts/v097_acceptance_engine_r1.py
+          PYTHONPATH=. python scripts/v097_seven_source_release_standard_v2.py selftest
           PYTHONPATH=. python scripts/v097_acceptance_engine_r1.py selftest
           PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
           PYTHONPATH=. python scripts/v097_schema_gate_v21.py selftest
