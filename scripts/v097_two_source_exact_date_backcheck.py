@@ -46,6 +46,9 @@ def fetch_official(url,method="get",data=None):
                 "error":str(ex)[:200],"requested_url":url},None
 def csv_decode(blob,prefer=("utf-8-sig","cp950","big5")):
     if not blob:return None,None
+    # A successful HTTP 200 can still return a login/anti-bot HTML page.
+    if blob[:4096].lstrip().lower().startswith((b"<!doctype html",b"<html",b"<?xml")):
+        return None,"HTML_NOT_CSV"
     for enc in prefer:
         try:return list(csv.reader(io.StringIO(blob.decode(enc)))),enc
         except (UnicodeError,csv.Error):continue
@@ -131,6 +134,8 @@ def taifex_source(rows,api,call):
     remote,official_bytes=fetch_official(TAIFEX_OFFICIAL,"post",{
         "queryStartDate":TAIFEX_DATE_START,"queryEndDate":TAIFEX_DATE_END})
     other,official_enc=csv_decode(official_bytes,("cp950","utf-8-sig","big5"))
+    if official_enc=="HTML_NOT_CSV":
+        remote["status"]="OFFICIAL_HTTP_HTML_NOT_CSV"
     result={"dataset":"TAIFEX_LARGE_TRADER_FUTURES","source_id":TAIFEX_SID,
         "bronze_sha_verified":sha_ok,"bronze_encoding":base_enc,
         "bronze_rows_including_notes":len(baseline or []),
@@ -150,6 +155,9 @@ def taifex_source(rows,api,call):
         result["status"]="OFFICIAL_SAME_DATE_DOWNLOAD_HOLD"
         return result
     their_date=[compact(x) for x in other if x and norm_cell(x[0]) in target]
+    if not their_date:
+        result["status"]="OFFICIAL_RESPONSE_NO_MATCHED_DATE_ROWS"
+        return result
     their_counts=collections.Counter(tuple(v) for v in their_date)
     our_counts=collections.Counter(tuple(v) for v in native_date)
     first_only=list((our_counts-their_counts).elements())
@@ -166,7 +174,12 @@ def run(source):
     api,control,quality,match,load_json,put_once,upsert,call=source_api()
     rows=read_baseline(api,quality,match,load_json,source)
     assert_cohort(rows,source)
-    info=tdcc_source(rows,api,call) if source=="TDCC" else taifex_source(rows,api,call)
+    try:
+        info=tdcc_source(rows,api,call) if source=="TDCC" else taifex_source(rows,api,call)
+    except Exception as ex:
+        # Keep the exact failure class as a Drive QA receipt when credentials permit.
+        info={"status":"SOURCE_DIAGNOSTIC_EXCEPTION","error_type":type(ex).__name__,
+              "error_message":str(ex)[:240],"official_g2_certified":False}
     record={"schema":SOURCE,"source":source,"run":RUN,
         "time_utc":datetime.now(timezone.utc).isoformat(),
         "result":info,"formal_g2_new_pass":0,
@@ -183,6 +196,7 @@ def run(source):
 def selftest():
     assert len(TDCC_CODES)==2 and len({TAIFEX_DATE_START,TAIFEX_DATE_END})==2
     assert compact(["1","2","",""])==["1","2"]
+    assert csv_decode(b"<!DOCTYPE html><html>Access denied</html>")[1]=="HTML_NOT_CSV"
     assert norm_header("\ufeff占集保庫存數比例 (%)")==norm_header("占集保庫存數比例%")
     assert {"2024/01/02","2024/01/03","2024/01/04"}=={TAIFEX_DATE_START,TAIFEX_DATE_END,"2024/01/03"}
     print("G2_MATCHED_DATE_SOURCE_DIFF_SELFTEST_PASS")
