@@ -56,6 +56,7 @@ def census():
             "sources":report,"formal_r3_ready":0,
             "warning":"Existing cert entries are only SHAPE checks, not independently verified R3 official template, G4 mapping or G5 PASS."}
     print("R3_LIVE_G2_G4_SUMMARY="+json.dumps(output,sort_keys=True),flush=True)
+    return output
 if __name__=="__main__":
     if sys.argv[1:]!=["read-only"]:raise SystemExit("usage: read-only")
     census()
