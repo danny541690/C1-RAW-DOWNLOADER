@@ -293,6 +293,28 @@ def aggregate():
     if not witness or load_json(api,witness["id"]).get("run")!=RUN:
         raise RuntimeError("R1_MASTER_READBACK_FAILED")
     print("R1_ACCEPTANCE_MASTER="+canon({**master,"report_id":report_id}),flush=True)
+def watchdog():
+    """Run-scoped checkpoint continuation. Stop rapid loops when all files evaluated."""
+    from scripts.v097_bronze_autopilot import source_api
+    api,control,quality,match,load_json,put_once,upsert,call=source_api()
+    f=match(api,control,"v097_R1_ACCEPTANCE_MASTER_LATEST.json")
+    if not f:raise RuntimeError("R1_MASTER_MISSING")
+    master=load_json(api,f["id"])
+    if master.get("cohort")!=TARGET:
+        raise RuntimeError("R1_WATCHDOG_COHORT_MISMATCH")
+    if master.get("run")!=RUN:
+        raise RuntimeError("R1_WATCHDOG_STALE_MASTER")
+    n=master.get("evaluated")
+    if not isinstance(n,int) or not 0<=n<=TARGET:
+        raise RuntimeError("R1_WATCHDOG_INVALID_PROGRESS")
+    pending=TARGET-n
+    trigger=pending>0
+    print("R1_CONTINUE="+canon({"run":RUN,"evaluated":n,"remaining":pending,
+                                "trigger":trigger,"reason":"UNEXAMINED_ROWS" if trigger else "ALL_ROWS_EVALUATED_CONTRACT_GAPS_REMAIN"}),flush=True)
+    path=os.getenv("GITHUB_OUTPUT")
+    if path:
+        with open(path,"a",encoding="utf-8") as handle:
+            handle.write("continue="+str(trigger).lower()+"\n")
 def preflight():
     from scripts.v097_bronze_autopilot import source_api
     api,control,quality,match,load_json,put_once,upsert,call=source_api()
@@ -331,5 +353,6 @@ if __name__=="__main__":
     if sys.argv[1:]==["selftest"]:selftest()
     elif sys.argv[1:]==["preflight"]:preflight()
     elif sys.argv[1:]==["aggregate"]:aggregate()
+    elif sys.argv[1:]==["watchdog"]:watchdog()
     elif len(sys.argv)==3:source(sys.argv[1],int(sys.argv[2]))
     else:raise SystemExit("selftest|preflight|SOURCE SHARD|aggregate")
