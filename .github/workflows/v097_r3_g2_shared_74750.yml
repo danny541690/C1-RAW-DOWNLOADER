@@ -1,4 +1,5 @@
 name: JARVIS R3 G2 SHARED TEMPLATE FULL 74750 REAL RECONCILIATION
+# Explicit rerun after frozen manifest revealed no date; require native date proof.
 on:
   push:
     branches:
