@@ -71,7 +71,7 @@ def main():
    outcome["exact_bytes_sha_match"]=hashlib.sha256(r.content).hexdigest()==row["source_sha256"]
    outcome["all_normalized_rows_match"]=(response_rows==source_rows)
    outcome["header_match"]=response_rows[:1]==source_rows[:1]
-   outcome["first_two_official_rows"]=response_rows[:2]
+   outcome["first_two_official_rows"]=[list(v) for v in response_rows[:2]]
    outcome["status"]="OFFICIAL_COMPLETE_NATIVE_RESPONSE_VERIFIED" if response_rows==source_rows else "HOLD_OFFICIAL_RAW_RESPONSE_DIFFERS"
  except requests.RequestException as e:outcome["status"]="HOLD_OFFICIAL_HTTP_"+type(e).__name__
  folder=match(api,quality,DEST)
