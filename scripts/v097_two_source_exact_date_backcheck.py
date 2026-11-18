@@ -100,12 +100,15 @@ def tdcc_source(rows,api,call):
                 norm_cell(r[col["證券代號"]]).upper()==code]
             official_by_tier={norm_cell(r[col["持股分級"]]):r for r in subset}
             diffs=[]
+            all_compared_rows=[]
             for native_row in native.get("all_rows",[]):
                 seq=native_row[0]
                 source_seq="17" if seq=="16" and native.get("layout")=="HTML_15_TIERS_TOTAL" else seq
                 official_row=official_by_tier.get(source_seq)
                 if not official_row:
-                    diffs.append({"tier":seq,"status":"OFFICIAL_ARCHIVE_TIER_MISSING"});continue
+                    diffs.append({"tier":seq,"status":"OFFICIAL_ARCHIVE_TIER_MISSING"})
+                    all_compared_rows.append({"tier":seq,"bronze":native_row,"official":None,"row_pass":False})
+                    continue
                 fields={
                     "人數":(native_row[2],official_row[col["人數"]]),
                     "股數":(native_row[3],official_row[col["股數"]]),
@@ -118,11 +121,20 @@ def tdcc_source(rows,api,call):
                         except ValueError:equal=False
                     else:equal=a.replace(",","").strip()==bv.replace(",","").strip()
                     if not equal:mismatches[field]={"bronze":a,"historical_official_archive":bv}
+                all_compared_rows.append({"tier":seq,"archive_tier":source_seq,
+                                          "bronze":native_row,
+                                          "official_archive":[official_row[col[z]] for z in
+                                               ["持股分級","人數","股數","占集保庫存數比例%"]],
+                                          "row_pass":not mismatches,"mismatches":mismatches})
                 if mismatches:diffs.append({"tier":seq,"mismatches":mismatches})
+            proof["all_rows_compared"]=all_compared_rows
+            proof["archive_columns"]=["持股分級","人數","股數","占集保庫存數比例%"]
             proof["archived_rows_same_date"]=len(subset)
             proof["row_differences"]=diffs[:30]
             proof["full_native_tier_rows_checked"]=len(native.get("all_rows",[]))
-            proof["status"]="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" if len(subset)>=16 and not diffs else "SAME_DATE_NUMERIC_OR_TEMPLATE_HOLD"
+            proof["status"]="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" if len(subset)>=16 and len(all_compared_rows)==16 and not diffs else "SAME_DATE_NUMERIC_OR_TEMPLATE_HOLD"
+        proof["g2_numeric_validation"]="PASS" if proof.get("status")=="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" else "HOLD"
+        proof["formal_g2_missing_evidence"]=["FIRST_PARTY_20261008_OFFICIAL_PUBLICATION_SHA","HISTORICAL_ASOF_ATTESTATION","R1_G2_PER_FILE_CERT"] if proof["g2_numeric_validation"]=="PASS" else ["NUMERIC_OR_LAYOUT_HOLD"]
         result.append(proof)
     return {"dataset":"TDCC_SHAREHOLDING_DISTRIBUTION",
         "historical_origin_kind":"THIRD_PARTY_ARCHIVE_OF_OFFICIAL_OPEN_DATA",
@@ -167,12 +179,26 @@ def taifex_source(rows,api,call):
     our_counts=collections.Counter(tuple(v) for v in native_date)
     first_only=list((our_counts-their_counts).elements())
     second_only=list((their_counts-our_counts).elements())
+    # Full row-level comparison is kept in immutable Drive QA, not reduced to sample snippets.
+    all_pairs=[]
+    for v in sorted(our_counts):
+        copies=our_counts[v]
+        count_other=their_counts.get(v,0)
+        all_pairs.append({"columns":v,"bronze_count":copies,"official_count":count_other,
+                          "row_pass":copies==count_other})
+    for v in sorted(their_counts.keys()-our_counts.keys()):
+        all_pairs.append({"columns":v,"bronze_count":0,"official_count":their_counts[v],
+                          "row_pass":False})
+    result["all_compared_rows"]=all_pairs
+    result["unique_row_patterns_compared"]=len(all_pairs)
     result.update({"official_csv_header":compact(other[0]),"official_rows_by_day":
        dict(collections.Counter(v[0] for v in their_date)),
        "count_bronze":len(native_date),"count_official":len(their_date),
        "bronze_only_rows_first5":first_only[:5],"official_only_rows_first5":second_only[:5],
        "normalized_multiset_equal":our_counts==their_counts})
     result["status"]="SAME_DATE_ALL_NATIVE_ROWS_MATCH" if our_counts==their_counts and bool(our_counts) else "OFFICIAL_NATIVE_DIFFERENCES"
+    result["g2_numeric_validation"]="PASS" if result["status"]=="SAME_DATE_ALL_NATIVE_ROWS_MATCH" else "HOLD"
+    result["formal_g2_missing_evidence"]=["2024_CONTEMPORANEOUS_PUBLICATION_ASOF","INDEPENDENT_OFFICIAL_DATASET_ERA_ATTESTATION","R1_G2_PER_FILE_CERT"] if result["g2_numeric_validation"]=="PASS" else ["NUMERIC_OR_LAYOUT_HOLD"]
     result["formal_g2_certified"]=False
     return result
 def run(source):
@@ -189,6 +215,7 @@ def run(source):
         "sample_mode":True,"sample_scope":SAMPLE_SCOPE[source],
         "time_utc":datetime.now(timezone.utc).isoformat(),
         "result":info,"formal_g2_new_pass":0,
+        "certification_boundary":"NUMERIC_PASS_IS_NOT_FORMAL_G2_PASS; requires official provenance and historical publication-asof attestation",
         "bronze_modified":False,"silver_gold_materialized":False}
     rid=put_once(api,quality,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_"+RUN+".json",record)
     upsert(api,control,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_LATEST.json",
