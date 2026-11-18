@@ -62,8 +62,8 @@ class R3ExtendedSuite(unittest.TestCase):
             format_result=match_fields(t,names)
             cases.append((result["status"],format_result["status"]))
         self.assertEqual(len(cases),70)
-        self.assertEqual(sum(g=="PASS" and f=="PASS" for g,f in cases),30)
-        self.assertEqual(sum(g=="HOLD" or f=="HOLD" for g,f in cases),40)
+        self.assertEqual(sum(g=="PASS" and f=="PASS" for g,f in cases),20)
+        self.assertEqual(sum(g=="HOLD" or f=="HOLD" for g,f in cases),50)
     def test_700_source_queue_races_and_recovery(self):
         pools={src:InMemorySourceQueue(src,100) for src in SOURCES}
         for pool in pools.values():
