@@ -47,6 +47,7 @@ def inspect():
     print("R3_G0_LIVE_AUDIT="+json.dumps(result,ensure_ascii=False,sort_keys=True),flush=True)
     if decision["status"]=="PASS":
         raise RuntimeError("UNEXPECTED_RELEASE_BY_AUDIT_ONLY")
+    return result
 if __name__=="__main__":
     if sys.argv[1:]!=["audit"]:raise SystemExit("usage: audit")
     inspect()
