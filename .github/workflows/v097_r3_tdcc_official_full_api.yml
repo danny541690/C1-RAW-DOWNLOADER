@@ -1,4 +1,5 @@
 name: JARVIS R3 TDCC true official 1-5 2365 weekly 20261008 query
+# Include full 17 current tier rows to resolve 202610 native 15+total and 202611 current schema difference.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
