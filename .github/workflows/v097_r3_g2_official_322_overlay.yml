@@ -1,4 +1,5 @@
 name: JARVIS R3 G2 seven-source QA official 322 immutable cert overlay
+# TWSE exact immutable certificate artifact basename resolved; full QA replay.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
