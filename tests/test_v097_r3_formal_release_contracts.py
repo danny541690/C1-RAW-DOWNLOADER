@@ -17,10 +17,12 @@ G3={"source_id":ROW["source_id"],"content_sha256":SHA,"dataset":G2["dataset"],
     "g2_contract_version":"g2-period-1","full_file_scanned":True,
     "native_units_verified":True,"types_and_keys_verified":True,"row_count":30,
     "validation_errors":0,"observed_fields":["security_id","holders"],
+    "g2_required_fields":["security_id","holders"],
     "parser_version":"g3-1","independent_evidence_id":"immutable-g3"}
 G4={"source_id":ROW["source_id"],"content_sha256":SHA,"dataset":G2["dataset"],
     "g2_contract_version":"g2-period-1","g3_parser_version":"g3-1",
     "mapping_version":"g4-1","target_fields":{"security_id":"stock_id","holders":"holder_count"},
+    "g3_observed_fields":["security_id","holders"],
     "units_verified":True,"time_basis_verified":True,"security_identity_asof_verified":True,
     "numeric_semantics_verified":True,"independent_evidence_id":"immutable-g4","materialized":False}
 GATES={"G1":"PASS","G2":"PASS","G3":"PASS","G4":"PASS"}
@@ -55,6 +57,13 @@ class R3FormalReleaseTests(unittest.TestCase):
         self.assertEqual(validate_g3(p,ROW,g2)["status"],"HOLD")
         p=deepcopy(G3);p["g2_contract_version"]="old"
         self.assertEqual(validate_g3(p,ROW,g2)["status"],"HOLD")
+    def test_g3_and_g4_reject_missing_source_semantics(self):
+        g2=certified_contract(G2,ROW)
+        g3_bad=deepcopy(G3);g3_bad["g2_required_fields"]=["not_found"]
+        self.assertEqual(validate_g3(g3_bad,ROW,g2)["status"],"HOLD")
+        g3=validate_g3(G3,ROW,g2)
+        g4_bad=deepcopy(G4);g4_bad["g3_observed_fields"]=["holders"]
+        self.assertEqual(validate_g4(g4_bad,ROW,g2,g3)["status"],"HOLD")
     def test_g4_requires_real_units_pit_and_no_silver(self):
         g2=certified_contract(G2,ROW);g3=validate_g3(G3,ROW,g2)
         for key in ("units_verified","time_basis_verified","security_identity_asof_verified",
@@ -85,6 +94,7 @@ class R3FormalReleaseTests(unittest.TestCase):
                          for i in range(n))
         self.assertEqual(len(items),COHORT)
         self.assertTrue(full_reconcile(items)["all_terminal"])
+        with self.assertRaises(ValueError):full_reconcile(items,require_baseline=True)
         items[0]["status"]="SILVER_READY"
         with self.assertRaises(ValueError): full_reconcile(items)
         items[0]["g5_durable_readback"]=True
