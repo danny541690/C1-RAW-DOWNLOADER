@@ -1,5 +1,5 @@
 name: JARVIS R3 G2 MOPS TDCC TAIFEX 30 native header value deep forensic
-# Canonical both HTML and CSV width histogram JSON keys for exact remote evidence readback.
+# Canonicalize complete source report with JSON roundtrip before remote readback; all 3 sources replay.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
