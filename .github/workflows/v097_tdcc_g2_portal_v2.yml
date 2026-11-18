@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v097_tdcc_g2_portal_v2.yml'
+      - 'scripts/v097_two_source_exact_date_backcheck.py'
   workflow_dispatch:
   schedule:
     - cron: '17 * * * *'
