@@ -100,10 +100,13 @@ def run(source):
             native["contract_registry"]=REGISTRY_VERSION
             fresh[sid]=native;reused_existing+=1
         if reused_existing>=BATCH:break
-    # Bounded fresh raw readback, skipping exact SHA-matched existing evidence.
+    # Bounded fresh raw readback: finish representative variants first,
+    # then continue through every untouched member of the frozen source cohort.
     newly_read=0
+    representative_ids={r["source_id"] for r in representatives}
+    pending_order=representatives+[r for r in rows if r["source_id"] not in representative_ids]
     if source!="NDC":
-        for row in representatives:
+        for row in pending_order:
             sid=row["source_id"]
             if sid in done and done[sid].get("sha")==row["source_sha256"] and done[sid].get("contract_registry")==REGISTRY_VERSION:continue
             if sid in fresh or sid in sampled_ids:continue
