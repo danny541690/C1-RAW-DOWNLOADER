@@ -180,6 +180,7 @@ def main():
    "result_counts":dict(counts),"formal_g2_issued":0,"g2_hold":10,
    "source_format_candidates_not_certified_as_official_era":True,
    "bronze_modified":False,"silver_gold_materialized":False}
+  report=json.loads(json.dumps(report,ensure_ascii=False,allow_nan=False))
   name=f"r3_g2_30_source_forensic_{src}_run_{RUN}.json"
   rid=put_once(api,output["id"],name,report)
   if load(api,rid)!=report:raise RuntimeError("GOOGLE_DRIVE_SOURCE_FORENSIC_READBACK_FAIL")
