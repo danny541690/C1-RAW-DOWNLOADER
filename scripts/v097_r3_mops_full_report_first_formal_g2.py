@@ -88,6 +88,14 @@ def main():
   "only_in_archive":list(oldrows.keys()-freshrows.keys())[:10],
   "only_in_official":list(freshrows.keys()-oldrows.keys())[:10],
   "different_issuer_rows":[k for k in oldrows.keys()&freshrows.keys() if oldrows[k]!=freshrows[k]][:10],
+  "different_issuer_values":{k:[{"column":i,"field":n,
+     "archive_value":oldrows[k][i],"official_now_value":freshrows[k][i]}
+     for i,n in enumerate(["公司代號","公司名稱","當月營收","上月營收","去年當月營收",
+      "MoM_pct","YoY_pct","當月累計營收","去年累計營收","累計YoY_pct","備註"])
+     if oldrows[k][i]!=freshrows[k][i]]
+     for k in sorted(oldrows.keys()&freshrows.keys()) if oldrows[k]!=freshrows[k]},
+  "new_official_issuer_full_rows":{k:freshrows[k] for k in sorted(freshrows.keys()-oldrows.keys())},
+  "unchanged_issuer_count":sum(oldrows[k]==freshrows[k] for k in oldrows.keys()&freshrows.keys()),
   "member_count":len(z.namelist()) if False else 2,
   "report_month_verified_from_official_URL":"2025-02",
   "source_publication_asof":ASOF,"historical_2025_publication_PIT_not_verified":True,
