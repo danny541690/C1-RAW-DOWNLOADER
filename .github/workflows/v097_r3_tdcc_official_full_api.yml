@@ -1,0 +1,32 @@
+name: JARVIS R3 TDCC true official 1-5 2365 weekly 20261008 query
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_tdcc_official_full_api.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-tdcc-official-1-5-2365-week-20261008
+  cancel-in-progress: false
+jobs:
+  official-data-by-stock-week:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Official TDCC 1-5 full schema versus 20261008 stock2365 original 15 tiers and total
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_tdcc_official_full_api_2365_week.py
+          PYTHONPATH=. python scripts/v097_r3_tdcc_official_full_api_2365_week.py
+      - if: always()
+        run: echo 'Only identical historical week/security/15 tiers can certify G2; a current-only API does not prove old source versions. Bronze read-only.' >> "$GITHUB_STEP_SUMMARY"
