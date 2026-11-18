@@ -29,6 +29,8 @@ def check_migration(*, source_sha: str | None, destination_sha: str | None,
                     direct_download_sha: str | None = None) -> dict:
     """A path's byte integrity is independent of official historical provenance."""
     reference = source_sha or direct_download_sha
+    if source_sha and direct_download_sha and source_sha.lower()!=direct_download_sha.lower():
+        return {"status": "HOLD", "reason": "INCONSISTENT_SOURCE_PROVENANCE"}
     if not reference or not destination_sha:
         return {"status": "HOLD", "reason": "MISSING_SOURCE_OR_DEST_SHA"}
     if any(len(x) != 64 or any(c not in "0123456789abcdefABCDEF" for c in x) for x in (reference, destination_sha)):
