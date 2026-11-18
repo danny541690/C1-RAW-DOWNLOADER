@@ -183,7 +183,7 @@ def taifex_source(rows,api,call):
     if FULL_MODE and baseline:
         from datetime import datetime as _datetime
         dates=sorted({norm_cell(x[0]) for x in baseline[1:] if x and
-                     re.fullmatch(r"2024/01/\\d{2}",norm_cell(x[0]))})
+                     re.fullmatch(r"2024/01/\d{2}",norm_cell(x[0]))})
         chunks=[dates[i:i+3] for i in range(0,len(dates),3)]
         other=None
         remote={"status":"FETCHED","chunks":[],"official_endpoint":TAIFEX_OFFICIAL}
@@ -227,7 +227,7 @@ def taifex_source(rows,api,call):
     if not sha_ok or not baseline:
         result["status"]="BRONZE_READ_OR_SHA_HOLD";return result
     original_days={norm_cell(x[0]) for x in baseline[1:]
-                   if x and re.fullmatch(r"2024/01/\\d{2}",norm_cell(x[0]))}
+                   if x and re.fullmatch(r"2024/01/\d{2}",norm_cell(x[0]))}
     target=(original_days if FULL_MODE else {"2024/01/02","2024/01/03","2024/01/04"})
     result["whole_file_target_dates"]=sorted(original_days)
     result["whole_file_target_date_count"]=len(original_days)
@@ -272,7 +272,7 @@ def taifex_source(rows,api,call):
         # All dated lines in the monthly Bronze CSV must be covered by the
         # first-party response; header and trailing documentation are excluded.
         non_date=[x for x in baseline[1:] if x and norm_cell(x[0]) and
-                  not re.fullmatch(r"\\d{4}/\\d{2}/\\d{2}",norm_cell(x[0]))]
+                  not re.fullmatch(r"\d{4}/\d{2}/\d{2}",norm_cell(x[0]))]
         full_ok=(result["g2_numeric_validation"]=="PASS" and sha_ok and
             result.get("original_csv_header")==result.get("official_csv_header") and
             len(native_date)==sum(bool(x and norm_cell(x[0]) in original_days) for x in baseline) and
@@ -348,16 +348,16 @@ def run(source):
         verdict["r1_master_promoted"]=False
     record={"schema":SOURCE,"source":source,"run":RUN,
         "g2_rule":G2_RULE_V2,"g2_v2_verdict":verdict,"full_file_mode":FULL_MODE,
-        "sample_mode":True,"sample_scope":SAMPLE_SCOPE[source],
+        "sample_mode":not FULL_MODE,"sample_scope":SAMPLE_SCOPE[source],
         "time_utc":datetime.now(timezone.utc).isoformat(),
         "result":info,"formal_g2_new_pass":0,
-        "certification_boundary":"NUMERIC_PASS_IS_NOT_FORMAL_G2_PASS; requires official provenance and historical publication-asof attestation",
+        "certification_boundary":"FULL_FILE_G2_REQUIRES_VERIFIED_FIRST_PARTY_DATE_HEADER_VALUES_AND_BRONZE_SHA; release independent of PIT time metadata",
         "bronze_modified":False,"silver_gold_materialized":False}
     rid=put_once(api,quality,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_"+RUN+".json",record)
     upsert(api,control,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_LATEST.json",
         {"schema":SOURCE,"source":source,"run":RUN,"report_id":rid,
          "status":verdict["sample_result"],"g2_rule":G2_RULE_V2,
-         "formal_file_g2_pass":False})
+         "formal_file_g2_pass":verdict.get("full_file_result")=="G2_FILE_PASS"})
     print("MATCHED_ORIGINAL_SOURCE="+canonical({
         "source":source,"report_id":rid,"run":RUN,
         "overall":info.get("status"),
@@ -373,7 +373,7 @@ def selftest():
     assert compact(["1","2","",""])==["1","2"]
     assert csv_decode(b"<!DOCTYPE html><html>Access denied</html>")[1]=="HTML_NOT_CSV"
     assert norm_header("\ufeff占集保庫存數比例 (%)")==norm_header("占集保庫存數比例%")
-    assert {"2024/01/02","2024/01/03","2024/01/04"}=={TAIFEX_DATE_START,TAIFEX_DATE_END,"2024/01/03"}
+    assert TAIFEX_DATE_START=="2024/01/02" and TAIFEX_DATE_END in ("2024/01/04","2024/01/31")
     assert g2_v2_verdict("TAIFEX",{})["sample_result"]=="G2_SAMPLE_HOLD"
     assert g2_v2_verdict("TDCC",{})["sample_result"]=="G2_SAMPLE_HOLD"
     print("G2_MATCHED_DATE_SOURCE_DIFF_SELFTEST_PASS")
