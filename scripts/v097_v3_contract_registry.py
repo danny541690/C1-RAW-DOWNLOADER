@@ -38,7 +38,18 @@ CONTRACTS={
    "date":["日期","交易日期","date"],
    "contract":["契約","契約名稱","商品代號"],
    "expiration":["到期月份(週別)","到期月份","契約月份"],
-   "volume":["成交量","成交口數"]}},
+   "volume":["成交量","成交口數"]},
+  "LARGE_TRADER":{
+   "date":["日期","交易日期"],
+   "contract":["商品(契約)"],
+   "contract_name":["商品名稱(契約名稱)"],
+   "expiration":["到期月份(週別)"],
+   "trader_class":["交易人類別"],
+   "top5_buy":["前五大交易人買方"],
+   "top5_sell":["前五大交易人賣方"],
+   "top10_buy":["前十大交易人買方"],
+   "top10_sell":["前十大交易人賣方"],
+   "market_open_interest":["全市場未沖銷部位數"]}},
  "NDC":{"BUSINESS_SIGNAL":{
    "period":["年月","月份","資料年月","month","period"],
    "value":["景氣對策信號","景氣對策信號綜合判斷分數","分數","value"]}},
@@ -118,6 +129,13 @@ def selftest():
     assert valid["metadata_proof_used"] and valid["silver_schema_ready"] is False
     assert infer("TDCC",row,era)["status"]=="INCOMPLETE_HEADER_CONTRACT"
     assert infer("TDCC",row,era,metadata={**meta,"date":{"value":"2025-11-28","validated":False}})["status"]=="INCOMPLETE_HEADER_CONTRACT"
+    large=["日期","商品(契約)","商品名稱(契約名稱)","到期月份(週別)","交易人類別",
+           "前五大交易人買方","前五大交易人賣方","前十大交易人買方","前十大交易人賣方",
+           "全市場未沖銷部位數"]
+    large_era=OFFICIAL_VERSIONS["TAIFEX"]["periods"][-1]["id"]
+    z=infer("TAIFEX",large,large_era)
+    assert z["dataset_candidate"]=="LARGE_TRADER" and z["missing_required"]==[]
+    assert z["status"]=="COMPLETE_HEADER_CANDIDATE_UNCERTIFIED"
     print("V3_SEVEN_SOURCE_CONTRACT_REGISTRY_SELFTEST_PASS")
 if __name__=="__main__":
     if sys.argv[1:]==["selftest"]:selftest()
