@@ -36,16 +36,19 @@ def main():
  source_rows,source_encoding=normalized(native)
  if not source_rows or len(source_rows)<3:raise RuntimeError("UNREADABLE_NATIVE_TAIFEX")
  date_values={r[0] for r in source_rows[1:] if r}
- if not date_values or any(not d.startswith("2024/01/") for d in date_values):
-  raise RuntimeError("BRONZE_CONTAINS_NON_JANUARY_DATE")
- first_day,last_day=min(date_values),max(date_values)
+ import re
+ valid={d for d in date_values if re.fullmatch("2024/01/[0-9]{2}",d)}
+ if not valid:raise RuntimeError("NO_VALID_JANUARY_DATE_IN_ORIGINAL")
+ first_day,last_day=min(valid),max(valid)
+ non_date_tokens=sorted(date_values-valid)[:20]
  outcome={"schema":"R3_TAIFEX_OFFICIAL_HISTORICAL_POST_NATIVE_COMPARE_V1",
   "run":RUN,"source":SRC,"source_id":SID,
   "frozen_source_sha256":row["source_sha256"],
   "official_api":API,"query_start":first_day,"query_end":last_day,
   "native_rows_including_header":len(source_rows),
   "native_encoding":source_encoding,
-  "original_frozen_date_values":sorted(date_values),
+  "original_frozen_date_values":sorted(valid),
+  "native_non_date_first_column_tokens":non_date_tokens,
   "official_response_raw_sha256":None,
   "exact_bytes_sha_match":False,"all_normalized_rows_match":False,
   "native_historical_version_attested":False,
