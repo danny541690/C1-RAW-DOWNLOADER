@@ -6,8 +6,6 @@ on:
       - '.github/workflows/v097_two_source_native_date_diff.yml'
       - 'scripts/v097_two_source_native_date_diff.py'
   workflow_dispatch:
-  schedule:
-    - cron: '17,47 * * * *'
 permissions:
   contents: read
 concurrency:
