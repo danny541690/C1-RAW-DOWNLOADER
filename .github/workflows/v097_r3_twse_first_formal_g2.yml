@@ -1,4 +1,5 @@
 name: JARVIS R3 first real TWSE source vintage G2 margin pilot
+# TWSE historic archive manifest has optional source/month fields; native URL SHA and date remain mandatory.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
