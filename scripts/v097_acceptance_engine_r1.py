@@ -358,6 +358,12 @@ def selftest():
     assert evaluate(row,fmt,None,v3,v2,None,"ERA")["gates"]["G2"]=="PASS"
     assert evaluate(row,fmt,None,v3,{**v2,"full_bronze_file_verified":False},None,"ERA")["gates"]["G2"]!="PASS"
     assert evaluate(row,fmt,None,v3,{**v2,"official_attested":False},None,"ERA")["gates"]["G2"]!="PASS"
+    # Same G2 contract used for TDCC HTML shareholding-distribution certificates.
+    tdcc_row={**row,"source":"TDCC"}
+    tdcc_cert={**v2,"source":"TDCC","dataset":"SHAREHOLDING_DISTRIBUTION",
+               "official_reference":"https://www.tdcc.com.tw/portal/zh/smWeb/qryStock"}
+    assert evaluate(tdcc_row,fmt,None,v3,tdcc_cert,None,"ERA")["gates"]["G2"]=="PASS"
+    assert evaluate(tdcc_row,fmt,None,v3,{**tdcc_cert,"source":"TAIFEX"},None,"ERA")["gates"]["G2"]!="PASS"
     assert evaluate(row,fmt,None,v3,g2,{**g3,"full_file_scanned":False},"ERA")["status"]=="PENDING"
     assert evaluate(row,fmt,None,v3,g2,{**g3,"historical_scope_verified":False},"ERA")["status"]!="READY"
     assert evaluate(row,fmt,None,v3,{**g2,"sha":"x"*64},g3,"ERA")["gates"]["G2"]!="PASS"
