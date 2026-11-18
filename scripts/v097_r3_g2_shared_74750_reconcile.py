@@ -101,7 +101,8 @@ def main():
         assert_cohort(rows,src)
         n+=len(rows)
         # V2 NDC is additive, immutable and preserves the original first-ten cert proofs.
-        bfile=(match(api,control,BINDING_PREFIX+src+"_V2.json") if src=="NDC" else None)
+        bfile=(match(api,control,BINDING_PREFIX+src+"_V3.json") if src=="NDC" else None)
+        if not bfile and src=="NDC":bfile=match(api,control,BINDING_PREFIX+src+"_V2.json")
         if not bfile:bfile=match(api,control,BINDING_PREFIX+src+".json")
         bdata=load_json(api,bfile["id"]) if bfile else {}
         if bdata and (not isinstance(bdata,dict)
