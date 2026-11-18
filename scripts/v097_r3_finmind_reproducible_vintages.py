@@ -94,6 +94,15 @@ def probe(row):
     out["missing_keys"]=len(missing);out["extra_keys"]=len(extra);out["different_values_or_multiplicity"]=len(changed)
     out["first_diff_examples"]=changed[:3]
     out["missing_examples"]=missing[:3];out["extra_examples"]=extra[:3]
+    out["missing_full_examples"]=[{"key":str(k),"rows":expected[k][:1]} for k in sorted(expected.keys()-actual.keys())[:3]]
+    out["extra_full_examples"]=[{"key":str(k),"rows":actual[k][:1]} for k in sorted(actual.keys()-expected.keys())[:3]]
+    if ds=="TaiwanStockFinancialStatements":
+     historical={(z["date"],z["stock_id"],z["origin_name"]):z["value"] for z in rows}
+     today={(z["date"],z["stock_id"],z["origin_name"]):z["value"] for z in got}
+     out["same_origin_name_values_exact"]=historical==today
+     out["historical_and_current_accounting_labels_count"]=len(historical)
+     out["alias_candidate_only_not_officially_approved"]=(len(missing)==1 and len(extra)==1 and historical==today)
+
     out["row_values_equal"]=(len(missing)==0 and len(extra)==0 and len(changed)==0)
     out["status"]="LIVE_ALL_NATIVE_ROWS_EQUAL_SOURCE_VINTAGE_ONLY" if out["row_values_equal"] else "HOLD_LIVE_ROW_REVISION_OR_QUERY_MISMATCH"
  except requests.RequestException as exc:
