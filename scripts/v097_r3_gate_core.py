@@ -36,7 +36,7 @@ def check_migration(*, source_sha: str | None, destination_sha: str | None,
     if reference.lower() != destination_sha.lower():
         return {"status": "HOLD", "reason": "BYTE_MISMATCH"}
     return {"status": "PASS", "reason": "MATCHED_SHA256",
-            "provenance": "SEPARATELY_ATTESTED"}
+            "provenance": "REQUIRES_SEPARATE_OFFICIAL_ATTESTATION"}
 
 @dataclass(frozen=True)
 class Template:
