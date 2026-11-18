@@ -219,7 +219,7 @@ def main():
   sums.append(result)
   print("R3_G2_FOUR_SOURCE_FIRST_SOURCE="+json.dumps(result,ensure_ascii=False,sort_keys=True),flush=True)
  out={"schema":"R3_G2_FOUR_SOURCE_FIRST_FORMAL_QA_MASTER_V1","run":RUN,
-    "frozen_sources":SOURCES,"real_sample_total":40,
+    "frozen_sources":list(SOURCES),"real_sample_total":40,
     "new_formal_PASS":0,"HOLD":40,"NDC_TWSE_TPEx_322_prior_unmodified":True,
     "sources":sums,"Bronze_modified":False,"Silver_or_Gold_materialized":False,
     "not_G5_production_master":True}
