@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/v097_exact_date_g2_backcheck.yml'
       - 'scripts/v097_two_source_exact_date_backcheck.py'
+      - 'scripts/v097_v3_contract_registry.py'
   workflow_dispatch:
   schedule:
     - cron: '13 * * * *'
@@ -40,6 +41,7 @@ jobs:
         run: |
           set -o pipefail
           python -m py_compile scripts/v097_two_source_exact_date_backcheck.py scripts/v097_two_source_native_date_diff.py scripts/v097_two_source_pilot_g2.py
+          PYTHONPATH=. python scripts/v097_v3_contract_registry.py selftest 2>&1 | tee -a selftest_${{ matrix.source }}.log
           PYTHONPATH=. python scripts/v097_two_source_exact_date_backcheck.py selftest 2>&1 | tee selftest_${{ matrix.source }}.log
           PYTHONPATH=. python scripts/v097_two_source_native_date_diff.py selftest 2>&1 | tee -a selftest_${{ matrix.source }}.log
           PYTHONPATH=. python scripts/v097_two_source_pilot_g2.py selftest 2>&1 | tee -a selftest_${{ matrix.source }}.log
