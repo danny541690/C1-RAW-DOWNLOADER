@@ -55,8 +55,24 @@ jobs:
       - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
       - name: Real frozen cohort and seven destination SHAs (read-only)
         run: PYTHONPATH=. python scripts/v097_r3_real_bronze_canary.py read-only
-  drive-staging-readback:
+  real-70-sample:
     needs: real-bronze-read
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Seventy real Bronze stratified SHA samples, 10 per source
+        run: PYTHONPATH=. python scripts/v097_r3_real_70_canary.py read-only
+  drive-staging-readback:
+    needs: real-70-sample
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -72,7 +88,7 @@ jobs:
       - name: R3 staging namespace receipt commit and readback
         run: PYTHONPATH=. python scripts/v097_r3_drive_staging_commit_probe.py staging-readback
   final:
-    needs: [gates-and-synthetic,real-bronze-read,drive-staging-readback]
+    needs: [gates-and-synthetic,real-bronze-read,real-70-sample,drive-staging-readback]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -80,11 +96,13 @@ jobs:
         env:
           GATES: ${{ needs.gates-and-synthetic.result }}
           REAL: ${{ needs.real-bronze-read.result }}
+          REAL70: ${{ needs.real-70-sample.result }}
           DRIVE: ${{ needs.drive-staging-readback.result }}
         run: |
           echo "## R3 one-click PRELAUNCH" >> "$GITHUB_STEP_SUMMARY"
           echo "Synthetic/G0: $GATES" >> "$GITHUB_STEP_SUMMARY"
           echo "Real Bronze SHA: $REAL" >> "$GITHUB_STEP_SUMMARY"
+          echo "Stratified real 70: $REAL70" >> "$GITHUB_STEP_SUMMARY"
           echo "Isolated Drive receipt: $DRIVE" >> "$GITHUB_STEP_SUMMARY"
           echo '**PRODUCTION RELEASE BLOCKED** until old writer cutover, official G2/G3/G4 certificates and production G5 have been independently verified.' >> "$GITHUB_STEP_SUMMARY"
-          if [ "$GATES" != success ] || [ "$REAL" != success ] || [ "$DRIVE" != success ]; then exit 1; fi
+          if [ "$GATES" != success ] || [ "$REAL" != success ] || [ "$REAL70" != success ] || [ "$DRIVE" != success ]; then exit 1; fi
