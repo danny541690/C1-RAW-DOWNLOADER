@@ -1,4 +1,5 @@
 name: JARVIS R3 MOPS actual first G2 with 2025 historical listing universe
+# Source 857 numeric values matched, four 2026 IPOs excluded; normalize reviewer alias JSON tuple for Drive readback.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
