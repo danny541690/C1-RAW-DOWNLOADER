@@ -1,0 +1,32 @@
+name: JARVIS R3 TAIFEX TRUE historical official native CSV 20240102 G2 pilot
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_taifex_historical_native_post.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-taifex-historical-csv-original-post
+  cancel-in-progress: false
+jobs:
+  official-taifex-20240102:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Official historical CSV POST re-download and whole frozen file match
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_taifex_20240102_official_post_replay.py
+          PYTHONPATH=. python scripts/v097_r3_taifex_20240102_official_post_replay.py
+      - if: always()
+        run: echo 'All native rows must agree with official historical response. Source vintage date and independent review required before issuing formal G2.' >> "$GITHUB_STEP_SUMMARY"
