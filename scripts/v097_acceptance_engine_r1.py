@@ -11,7 +11,7 @@ import sys
 from datetime import datetime, timezone
 
 VERSION = "v097_acceptance_r1_20261118_01"
-RULE_VERSION = "r1_semantic_gate_20261118_r2"  # schema stays stable; only changed decisions re-evaluated
+RULE_VERSION = "r1_g2_first_party_full_file_v2_20261118"  # schema stays stable; only changed decisions re-evaluated
 TARGET = 74750
 COUNTS = {"TWSE":12071,"TPEx":13200,"MOPS":1935,"TDCC":40384,
           "TAIFEX":3140,"NDC":320,"FinMind":3700}
@@ -39,7 +39,7 @@ def scope(row):
     # A scope decision is independent of the file's integrity or source identity.
     return row.get("scope_status") or row.get("stock_scope") or "UNKNOWN"
 def valid_proof(proof,row,kind,era=None,dataset=None):
-    if not isinstance(proof,dict) or proof.get("schema") != kind:
+    if not isinstance(proof,dict) or proof.get("schema") not in ((kind,"R1_G2_DATASET_CERT_V2") if kind=="R1_G2_DATASET_CERT_V1" else (kind,)):
         return False
     if proof.get("source_id")!=row.get("source_id") or proof.get("source")!=row.get("source"):
         return False
@@ -88,7 +88,13 @@ def evaluate(row,fmt,mp,v3,g2,g3,era=None):
     if g0=="PASS" and g1=="PASS":
         dataset=g2.get("dataset") if isinstance(g2,dict) else None
         if valid_proof(g2,row,"R1_G2_DATASET_CERT_V1",era):
-            if dataset and g2.get("dataset_origin_verified") is True and g2.get("publication_asof_verified") is True:
+            v2=(g2.get("schema")=="R1_G2_DATASET_CERT_V2" and
+                g2.get("same_date_header_rows_verified") is True and
+                g2.get("official_attested") is True and
+                g2.get("full_bronze_file_verified") is True)
+            v1=(g2.get("schema")=="R1_G2_DATASET_CERT_V1" and
+                g2.get("publication_asof_verified") is True)
+            if dataset and g2.get("dataset_origin_verified") is True and (v1 or v2):
                 g2state="PASS";evidence["G2"]=g2["contract_version"]
             else:reason="G2_DATASET_OR_PIT_ATTESTATION_MISSING"
         else:reason="G2_OFFICIAL_DATASET_CONTRACT_PENDING"
@@ -125,7 +131,7 @@ def get_contracts(api,control,match,load_json,name,src):
     f=match(api,control,name+src+".json")
     if not f:return {}
     data=load_json(api,f["id"])
-    if data.get("schema") not in ("R1_G2_DATASET_CERT_V1","R1_G3_SCHEMA_CERT_V1"):
+    if data.get("schema") not in ("R1_G2_DATASET_CERT_V1","R1_G2_DATASET_CERT_V2","R1_G3_SCHEMA_CERT_V1"):
         raise RuntimeError("CERTIFICATE_REGISTRY_SCHEMA_INVALID_"+src)
     done=data.get("done",{})
     if not isinstance(done,dict):raise RuntimeError("CERTIFICATE_REGISTRY_NOT_DICT_"+src)
