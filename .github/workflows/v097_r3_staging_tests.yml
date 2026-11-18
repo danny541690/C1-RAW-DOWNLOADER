@@ -1,0 +1,32 @@
+name: JARVIS R3 isolated staging dry-run (NO DRIVE WRITES)
+on:
+  push:
+    branches:
+      - r3-bronze-silver-ready-staging-20261118
+    paths:
+      - 'scripts/v097_r3_gate_core.py'
+      - 'tests/test_v097_r3_gate_core.py'
+      - '.github/workflows/v097_r3_staging_tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-staging
+  cancel-in-progress: false
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile R3 gate core (no network / secrets)
+        run: python -m py_compile scripts/v097_r3_gate_core.py
+      - name: Execute isolated synthetic 70 / 700 / 1000 checks
+        run: PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_gate_core.py' -v
+      - name: Safety summary
+        if: always()
+        run: |
+          echo 'R3 staging only: NO Google credentials, NO Drive mutation, NO Bronze mutation, NO Silver/Gold.' >> "$GITHUB_STEP_SUMMARY"
