@@ -1,0 +1,55 @@
+name: JARVIS R3 isolated staging dry-run (NO DRIVE WRITES)
+on:
+  push:
+    branches:
+      - r3-bronze-silver-ready-staging-20261118
+    paths:
+      - 'scripts/v097_r3_gate_core.py'
+      - 'tests/test_v097_r3_gate_core.py'
+      - 'tests/test_v097_r3_extended_bundle.py'
+      - 'tests/test_v097_r3_full_cohort.py'
+      - 'scripts/v097_r3_snapshot_audit.py'
+      - 'tests/test_v097_r3_snapshot_audit.py'
+      - 'scripts/v097_r3_workflow_collision_audit.py'
+      - 'scripts/v097_r3_prelaunch_readiness.py'
+      - 'tests/test_v097_r3_prelaunch_readiness.py'
+      - '.github/workflows/v097_r3_staging_tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-staging
+  cancel-in-progress: false
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile R3 gate core (no network / secrets)
+        run: python -m py_compile scripts/v097_r3_gate_core.py
+      - name: Execute isolated functional and extended stress tests
+        run: |
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_gate_core.py' -v
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_extended_bundle.py' -v
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_full_cohort.py' -v
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_snapshot_audit.py' -v
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_prelaunch_readiness.py' -v
+      - name: Check legacy workflow triggers and confirm staging stays isolated
+        run: PYTHONPATH=. python scripts/v097_r3_workflow_collision_audit.py --assert-blocked
+      - name: Create combined prelaunch verdict (synthetic pass never releases production)
+        run: PYTHONPATH=. python scripts/v097_r3_prelaunch_readiness.py --output /tmp/r3-prelaunch-verdict.json
+      - name: Preserve combined test verdict
+        uses: actions/upload-artifact@v4
+        with:
+          name: r3-prelaunch-g0-g5-verdict
+          path: /tmp/r3-prelaunch-verdict.json
+          if-no-files-found: error
+      - name: Safety summary
+        if: always()
+        run: |
+          echo 'R3 staging only: NO Google credentials, NO Drive mutation, NO Bronze mutation, NO Silver/Gold.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Synthetic CI success != production Silver Ready. Read prelaunch verdict artifact; production remains blocked while real integration is absent.' >> "$GITHUB_STEP_SUMMARY"

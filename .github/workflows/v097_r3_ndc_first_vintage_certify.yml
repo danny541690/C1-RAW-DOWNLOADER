@@ -1,0 +1,36 @@
+name: JARVIS R3 FIRST FORMAL G2 NDC 2026 revised vintage
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_ndc_first_vintage_certify.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-ndc-first-formal-vintage-single-writer
+  cancel-in-progress: false
+jobs:
+  independent-native-vintage-promotion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: All formal G2 and source-vintage safety regressions
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_ndc_first_formal_vintage_certify.py scripts/v097_r3_g2_shared_contract_engine.py
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_g2_source_vintage.py' -v
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_g2_shared_contract_engine.py' -v
+      - name: Independent official source proof / archive cell audit / conservative publication vintage G2
+        run: PYTHONPATH=. python scripts/v097_r3_ndc_first_formal_vintage_certify.py
+      - name: Do not overstate historical PIT
+        if: always()
+        run: echo 'NDC 2026 revised snapshot must NEVER be backdated to contemporaneous historical years. It is first verifiable as of 2026-10-23, and does not release Silver or Gold.' >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,45 @@
+name: JARVIS R3 G2 SHARED TEMPLATE FULL 74750 REAL RECONCILIATION
+# Final native marker-certified NDC V3 full census, source-vintage only.
+# Run complete G2 after verified NDC V2 309 additional native matches; do not backdate revised source.
+on:
+  push:
+    branches:
+      - r3-bronze-silver-ready-staging-20261118
+    paths:
+      - '.github/workflows/v097_r3_g2_shared_74750.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-g2-shared-74750-single-writer
+  cancel-in-progress: false
+jobs:
+  full-g2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install real Drive connector
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Compile and test real shared G2 proof binding
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_g2_shared_contract_engine.py scripts/v097_r3_g2_shared_74750_reconcile.py
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_g2_shared_contract_engine.py' -v
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_g2_shared_74750_reconcile.py' -v
+      - name: Official-approved shared templates to 74750 frozen records, no false PASS
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/v097_r3_g2_shared_74750_reconcile.py run
+      - name: Policy acknowledgement
+        if: always()
+        run: |
+          echo 'G2 shared-template immutable receipts per source and Master only in R3_G2_COMMON_TEMPLATE_RECONCILE_ISOLATED.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No new official approval inferred from website link, no Bronze writes, no Silver or Gold.' >> "$GITHUB_STEP_SUMMARY"

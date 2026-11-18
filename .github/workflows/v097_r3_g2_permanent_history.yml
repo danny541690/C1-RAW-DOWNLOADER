@@ -1,0 +1,36 @@
+name: JARVIS R3 G2 seven source immutable permanent history Drive archive
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_g2_permanent_history.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-seven-source-G2-permanent-evidence-snapshot
+  cancel-in-progress: false
+jobs:
+  preserve-seven-source-g2-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive archive client
+        run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Verify required prior source artifacts and publish permanent immutable seven-source G2 history
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_g2_persist_permanent_history.py
+          PYTHONPATH=. python scripts/v097_r3_g2_persist_permanent_history.py
+      - name: Provenance and safe handover
+        if: always()
+        run: |
+          echo 'All seven versioned source templates, official/native evidence, test history and QA PASS/HOLD are preserved as immutable Drive receipts.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Snapshot is an evidence ledger; does not replace production G5 Master or certify earlier historical PIT. Bronze read-only; no Silver/Gold.' >> "$GITHUB_STEP_SUMMARY"

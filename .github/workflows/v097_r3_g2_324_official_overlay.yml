@@ -1,0 +1,32 @@
+name: JARVIS R3 G2 324 seven-source source-vintage QA ledger
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_g2_324_official_overlay.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-g2-seven-source-324-immutable-qa
+  cancel-in-progress: false
+jobs:
+  verify-324-source-vintage-G2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Immutable source-vintage G2 full 74750 seven-source SHA evidence overlay
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_g2_324_official_overlay.py
+          PYTHONPATH=. python scripts/v097_r3_g2_324_official_overlay.py
+      - if: always()
+        run: echo 'Never overwrite prior 322 source QA or G5 production Master. Bronze read-only, no Silver/Gold and no historical PIT claim.' >> "$GITHUB_STEP_SUMMARY"

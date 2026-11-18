@@ -1,0 +1,36 @@
+name: JARVIS R3 G2 SIX SOURCE REAL 60 NATIVE PILOT
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_g2_six_source_60.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-g2-six-source-real-sixty-single-writer
+  cancel-in-progress: false
+jobs:
+  six-source-real-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install authenticated Google Drive client
+        run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Six sources x 10 actual frozen Bronze with SHA ZIP member CRC native fields and immutable Drive receipts
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_g2_six_source_60_real_pilot.py
+          PYTHONPATH=. python scripts/v097_r3_g2_six_source_60_real_pilot.py
+      - name: Release safety notice
+        if: always()
+        run: |
+          echo 'Real 60 files checked. PASS only when independent official native dataset-era evidence and source provenance fully validated.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No candidate promotion, Bronze mutations, Silver/Gold materialization or production G5.' >> "$GITHUB_STEP_SUMMARY"

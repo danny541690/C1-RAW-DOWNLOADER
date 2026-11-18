@@ -1,0 +1,31 @@
+name: JARVIS R3 G2 official TWSE TPEx exact original source SHA pilot
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_g2_official_http_sha.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-official-archive-native-response-sha-pilot
+  cancel-in-progress: false
+jobs:
+  original-official-api-byte-match:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Actual official historical API re-download vs archived native member SHA
+        run: |
+          python -m py_compile scripts/v097_r3_g2_official_api_exact_sha_pilot.py
+          PYTHONPATH=. python scripts/v097_r3_g2_official_api_exact_sha_pilot.py
+      - if: always()
+        run: echo 'Original official API response SHA never replaces era-specific native format approval, per-file date and PIT evidence. No G2 PASS without full proof.' >> "$GITHUB_STEP_SUMMARY"

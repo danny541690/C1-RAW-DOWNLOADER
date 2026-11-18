@@ -1,0 +1,37 @@
+name: JARVIS R3 G2 real native official-contract candidate harvest
+on:
+  push:
+    branches:
+      - r3-bronze-silver-ready-staging-20261118
+    paths:
+      - '.github/workflows/v097_r3_g2_native_candidate_harvest.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-g2-70-native-candidate
+  cancel-in-progress: false
+jobs:
+  seven-source-real-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install required Drive client
+        run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Bounded real native file evidence audit (seven sources x 10)
+        run: |
+          python -m py_compile scripts/v097_r3_g2_native_candidate_harvest.py
+          PYTHONPATH=. python scripts/v097_r3_g2_native_candidate_harvest.py run
+      - name: Evidence policy
+        if: always()
+        run: |
+          echo 'Native evidence candidates only. No official approval or formal G2 PASS is inferred.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No Bronze writes; no Silver or Gold; immutable real Drive receipts only.' >> "$GITHUB_STEP_SUMMARY"
