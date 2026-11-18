@@ -325,6 +325,77 @@ def g2_v2_verdict(source,info):
             "full_file_g2_pass":False,
             "reason":"Same-date first-party official download matches three days, but original monthly Bronze file has additional days" if ok else "TAIFEX_SHA_HEADER_DATE_OR_VALUES_HOLD"}
 
+def publish_g2_v2_full_file_certificates(source,rows,info,verdict,rid,
+                                         api,control,match,load_json,upsert):
+    """Only independently verified first-party full Bronze files are certified.
+
+    No sample promotion. All certificates are bound to source_id, frozen SHA,
+    official report ID, dataset and historically valid dataset era.
+    """
+    if verdict.get("full_file_result")!="G2_FILE_PASS" or not verdict.get("official_first_party_comparison"):
+        return []
+    from scripts.v097_seven_historical_format_registry import period
+    candidates=info.get("cases",[]) if source=="TDCC" else [info]
+    registry="v097_R1_G2_CERT_"+source+".json"
+    found=match(api,control,registry)
+    old=load_json(api,found["id"]) if found else {"schema":"R1_G2_DATASET_CERT_V2","source":source,"done":{}}
+    if old.get("schema") not in ("R1_G2_DATASET_CERT_V1","R1_G2_DATASET_CERT_V2"):
+        raise RuntimeError("G2_REGISTRY_SCHEMA_CONFLICT")
+    done=dict(old.get("done",{}))
+    index={r["source_id"]:r for r in rows}
+    published=[]
+    for c in candidates:
+        if c.get("g2_file_result")!="G2_FILE_PASS":continue
+        sid=c["source_id"]
+        raw=index.get(sid)
+        if not raw or not raw.get("source_sha256"):raise RuntimeError("G2_FROZEN_SOURCE_NOT_FOUND")
+        if source=="TDCC":
+            if c.get("sha_match") is not True or c.get("first_party_historical_check",{}).get("verified") is not True:
+                raise RuntimeError("G2_TDCC_FIRST_PARTY_NOT_VERIFIED")
+            url=c["first_party_historical_check"]["url"]
+            era_date="2026-10"
+            ds="SHAREHOLDING_DISTRIBUTION"
+        else:
+            if not c.get("bronze_sha_verified") or not c.get("normalized_multiset_equal"):
+                raise RuntimeError("G2_TAIFEX_FULL_FILE_CONTENT_NOT_VERIFIED")
+            if c.get("full_file_sha")!=raw["source_sha256"]:
+                raise RuntimeError("G2_TAIFEX_SHA_NOT_EQUAL")
+            if c.get("official_response",{}).get("status")!="FETCHED":
+                raise RuntimeError("G2_TAIFEX_OFFICIAL_NOT_FETCHED")
+            if c.get("whole_file_target_date_count",0)<15:
+                raise RuntimeError("G2_TAIFEX_DAY_COUNT_HOLD")
+            url=TAIFEX_OFFICIAL
+            era_date="2024-01"
+            ds="LARGE_TRADER"
+        edition=period(source,era_date)["id"]
+        evidence_sha=sha(json.dumps({"report_id":rid,"source_id":sid,"official":url,
+            "bronze_sha":raw["source_sha256"],"matched_file":c.get("g2_file_result")},
+            ensure_ascii=False,sort_keys=True).encode())
+        cert={"schema":"R1_G2_DATASET_CERT_V2","source":source,
+              "source_id":sid,"sha":raw["source_sha256"],"dataset":ds,
+              "era":edition,"contract_version":"v097_g2_official_native_full_v2",
+              "evidence_sha256":evidence_sha,"official_reference":url,
+              "official_evidence_id":rid,"official_attested":True,
+              "dataset_origin_verified":True,"same_date_header_rows_verified":True,
+              "full_bronze_file_verified":True,"source_lineage_verified":True,
+              "publication_asof_verified":False,
+              "publication_asof_status":"INDEPENDENT_PIT_GATE_NOT_G2",
+              "run":RUN}
+        if sid in done and done[sid]!=cert:
+            if done[sid].get("sha")!=cert["sha"]:
+                raise RuntimeError("G2_CERT_IMMUTABLE_SHA_CONFLICT")
+        done[sid]=cert
+        published.append(sid)
+    if published:
+        upsert(api,control,registry,{"schema":"R1_G2_DATASET_CERT_V2",
+                 "source":source,"done":done,"updated_at":datetime.now(timezone.utc).isoformat(),
+                 "last_run":RUN})
+        witness=match(api,control,registry)
+        actual=load_json(api,witness["id"]) if witness else {}
+        if any(actual.get("done",{}).get(sid)!=done[sid] for sid in published):
+            raise RuntimeError("G2_CERT_REGISTRY_READBACK_MISMATCH")
+    return published
+
 def run(source):
     api,control,quality,match,load_json,put_once,upsert,call=source_api()
     rows=read_baseline(api,quality,match,load_json,source)
@@ -354,15 +425,17 @@ def run(source):
         "certification_boundary":"FULL_FILE_G2_REQUIRES_VERIFIED_FIRST_PARTY_DATE_HEADER_VALUES_AND_BRONZE_SHA; release independent of PIT time metadata",
         "bronze_modified":False,"silver_gold_materialized":False}
     rid=put_once(api,quality,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_"+RUN+".json",record)
+    certificates=publish_g2_v2_full_file_certificates(
+        source,rows,info,verdict,rid,api,control,match,load_json,upsert)
     upsert(api,control,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_LATEST.json",
         {"schema":SOURCE,"source":source,"run":RUN,"report_id":rid,
          "status":verdict["sample_result"],"g2_rule":G2_RULE_V2,
-         "formal_file_g2_pass":verdict.get("full_file_result")=="G2_FILE_PASS"})
+         "formal_file_g2_pass":bool(certificates),"formal_g2_certified_file_ids":certificates})
     print("MATCHED_ORIGINAL_SOURCE="+canonical({
         "source":source,"report_id":rid,"run":RUN,
         "overall":info.get("status"),
         "counts":dict(collections.Counter(c.get("status") for c in info.get("cases",[]))),
-        "formal_G2_new_pass":0,
+        "formal_G2_new_pass":len(certificates),
         "g2_file_result":verdict.get("full_file_result","NOT_RUN"),
         "g2_file_pass_count":verdict.get("full_file_pass_count",0),
         "g2_sample_result":verdict["sample_result"],
