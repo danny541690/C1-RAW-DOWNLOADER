@@ -77,13 +77,20 @@ def run(source):
     # Six representative records prove the audit engine is reading real 0.97 sources.
     # NDC 320 source-vintage QA proofs are already separately recorded in R3; never re-certify.
     for row in representatives[:SAMPLE]:
-        record=evaluate(row)
+        if source=="NDC":
+            record={"source_id":row["source_id"],"source":"NDC",
+                    "sha":row["source_sha256"],
+                    "status":"R3_PREVIOUSLY_VERIFIED_SOURCE_VINTAGE_REUSED",
+                    "r3_master_id":R3_QA_REFERENCE["master_id"],
+                    "reused":True,"g2_official_verified":False}
+        else:
+            record=evaluate(row)
         samples.append(record);sampled_ids.add(row["source_id"])
-        if not record.get("reused_checkpoint") and record["source_id"] not in done:
+        if source!="NDC" and not record.get("reused_checkpoint") and record["source_id"] not in done:
             fresh[record["source_id"]]=record
     # Reuse existing header/typed QA before reading any additional Bronze bytes.
     reused_existing=0
-    for row in rows:
+    for row in ([] if source=="NDC" else rows):
         sid=row["source_id"]
         if sid in done and done[sid].get("sha")==row["source_sha256"] and done[sid].get("contract_registry")==REGISTRY_VERSION:
             continue
