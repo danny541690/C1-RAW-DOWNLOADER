@@ -10,6 +10,11 @@ from scripts.v097_v3_preflight import read_baseline,assert_cohort,source_api,can
 from scripts.v097_two_source_native_date_diff import tdcc_native
 SOURCE="v097_two_source_exact_date_backcheck_r1"
 RUN=os.getenv("GITHUB_RUN_ID","manual")
+# 2026-11-18 small-sample rerun: only 2 TDCC codes + 3 TAIFEX dates;
+# never expand to a full-cohort certification, Silver, or Gold in this workflow.
+SAMPLE_SCOPE={"TDCC":{"week":"20261008","codes":["2365","3258"]},
+              "TAIFEX":{"start":"2024/01/02","end":"2024/01/04","days":3}}
+
 TDCC_WEEK="20261008"
 TDCC_CODES=("2365","3258")
 TDCC_ARCHIVE_URL="https://raw.githubusercontent.com/wirelessr/tdcc-opendata-archive/main/snapshots/2026/2026-10-08.csv"
@@ -181,6 +186,7 @@ def run(source):
         info={"status":"SOURCE_DIAGNOSTIC_EXCEPTION","error_type":type(ex).__name__,
               "error_message":str(ex)[:240],"official_g2_certified":False}
     record={"schema":SOURCE,"source":source,"run":RUN,
+        "sample_mode":True,"sample_scope":SAMPLE_SCOPE[source],
         "time_utc":datetime.now(timezone.utc).isoformat(),
         "result":info,"formal_g2_new_pass":0,
         "bronze_modified":False,"silver_gold_materialized":False}
