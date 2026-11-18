@@ -36,7 +36,8 @@ def ordered(rows,src):
     for key in buckets:
         buckets[key].sort(key=lambda r:(str(r.get("data_date","")),str(r["source_id"])))
     # Representative early/middle/late files per available era and native extension
-    keys=sorted(buckets,key=lambda x:(x.split("|")[0]=="ERA_UNKNOWN",x))
+    keys=sorted(buckets,key=lambda x:(("PRE_PUBLIC" in x or "ERA_UNKNOWN" in x),
+                                       0 if x.endswith((".csv",".html",".htm")) else 1,x))
     selected=[];seen=set()
     for key in keys:
         group=buckets[key]
