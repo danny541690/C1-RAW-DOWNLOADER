@@ -108,13 +108,25 @@ def file_decision(row,approved_templates,native_binding):
     baseline_date=row.get("data_date") or row.get("date")
     if baseline_date and real_day(baseline_date)!=day:
         return {"status":"HOLD","reason":"G2_DATE_CONFLICT_WITH_BASELINE"}
-    matched=[t for t in approved_templates if
-             native_binding["dataset"]==t["dataset"] and
-             native_binding["historical_era"]==t["historical_era"] and
-             native_binding["native_format"]==t["native_format"] and
-             native_binding["native_layout_id"]==t["native_layout_id"] and
-             real_day(t["official_dataset_start_date"])<=day and
-             real_day(t["effective_start_day"])<=day<=real_day(t["effective_end_day"])]
+    # Important: a 2026 official snapshot may contain revised values for 2015.
+    # Its edition is selected by the independently verified SOURCE VINTAGE date,
+    # never by 2015 observation date. Never leak revised data into a 2015 backtest.
+    def edition_matches(t):
+        if (native_binding["dataset"]!=t["dataset"] or
+            native_binding["historical_era"]!=t["historical_era"] or
+            native_binding["native_format"]!=t["native_format"] or
+            native_binding["native_layout_id"]!=t["native_layout_id"]):
+            return False
+        if t.get("era_basis")=="source_publication_vintage":
+            asof=real_day(native_binding.get("source_publication_asof"))
+            if (native_binding.get("source_publication_asof_verified") is not True
+                or asof is None or asof<day):
+                return False
+            return (real_day(t["official_dataset_start_date"])<=asof and
+                    real_day(t["effective_start_day"])<=asof<=real_day(t["effective_end_day"]))
+        return (real_day(t["official_dataset_start_date"])<=day and
+                real_day(t["effective_start_day"])<=day<=real_day(t["effective_end_day"]))
+    matched=[t for t in approved_templates if edition_matches(t)]
     if len(matched)!=1:
         return {"status":"HOLD","reason":"G2_NO_UNIQUE_NATIVE_EDITION" if not matched else "G2_OVERLAPPING_APPROVED_EDITION"}
     t=matched[0]
@@ -124,7 +136,11 @@ def file_decision(row,approved_templates,native_binding):
            "contract_version":t["contract_version"],"official_spec_sha256":t["official_document_sha256"],
            "official_review_sha256":t["independent_review_sha256"],
            "file_binding_sha256":digest(native_binding),
-           "publication_asof_verified":True,"status":"G2_PASS_CANDIDATE_NOT_COMMITTED"}
+           "publication_asof_verified":True,
+           "source_publication_asof":native_binding.get("source_publication_asof") if t.get("era_basis")=="source_publication_vintage" else None,
+           "historical_backtest_eligible_before_source_publication":False,
+           "source_vintage_revised_archive":t.get("era_basis")=="source_publication_vintage",
+           "status":"G2_PASS_CANDIDATE_NOT_COMMITTED"}
     return {"status":"CANDIDATE","reason":"G2_COMMIT_AND_REMOTE_READBACK_REQUIRED",
             "certificate":proof,"certificate_sha256":digest(proof)}
 
