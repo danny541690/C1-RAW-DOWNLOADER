@@ -1,5 +1,5 @@
 name: JARVIS R3 G2 SHARED TEMPLATE FULL 74750 REAL RECONCILIATION
-# Explicit rerun after frozen manifest revealed no date; require native date proof.
+# Certified NDC revised-vintage 10 first G2 receipts; rerun all 74750 with independent review and no lookahead.
 on:
   push:
     branches:
