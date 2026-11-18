@@ -171,7 +171,7 @@ def tdcc_source(rows,api,call):
         "official_original_publication_sha_certified":False,
         "source_response":remote,"csv_encoding":enc,"cases":result,
         "formal_g2_certified":False}
-def taifex_source(rows,api,call):
+def taifex_source(rows,api,call,quality=None,match=None,load_json=None,put_once=None):
     source=next((r for r in rows if r["source_id"]==TAIFEX_SID),None)
     if not source:return {"status":"FROZEN_SOURCE_ID_MISSING"}
     raw=call(lambda:api.files().get_media(fileId=source["destination_id"]))
@@ -189,11 +189,37 @@ def taifex_source(rows,api,call):
         remote={"status":"FETCHED","chunks":[],"official_endpoint":TAIFEX_OFFICIAL}
         official_enc=None
         for c in chunks:
-            response,blob=fetch_official(TAIFEX_OFFICIAL,"post",{
-                "queryStartDate":c[0],"queryEndDate":c[-1]})
-            parsed,enc=csv_decode(blob,("cp950","utf-8-sig","big5"))
+            receipt_name="v097_G2_TAIFEX_OFFICIAL_LARGE_TRADER_202401_"+c[0].replace("/","")+ "_" + c[-1].replace("/","")+"_V1.json"
+            cached=match(api,quality,receipt_name) if quality and match else None
+            if cached:
+                saved=load_json(api,cached["id"])
+                if saved.get("dates")!=c or not saved.get("rows") or not saved.get("source_url"):
+                    raise RuntimeError("TAIFEX_CHUNK_CK_INVALID")
+                response=saved["response"]
+                parsed=[saved["header"]]+saved["rows"]
+                enc=saved["encoding"]
+                from_cache=True
+            else:
+                from_cache=False
+                parsed=None
+                enc=None
+                import time
+                for attempt in range(3):
+                    response,blob=fetch_official(TAIFEX_OFFICIAL,"post",{
+                        "queryStartDate":c[0],"queryEndDate":c[-1]})
+                    parsed,enc=csv_decode(blob,("cp950","utf-8-sig","big5"))
+                    if parsed and len(parsed)>1:break
+                    if attempt<2:time.sleep(3*(attempt+1))
+                if parsed and len(parsed)>1 and quality and put_once:
+                    wanted=set(c)
+                    receipt={"schema":"v097_taifex_official_chunk_v1","dates":c,
+                             "source_url":TAIFEX_OFFICIAL,"response":response,
+                             "header":parsed[0],"encoding":enc,
+                             "rows":[x for x in parsed[1:] if x and norm_cell(x[0]) in wanted]}
+                    put_once(api,quality,receipt_name,receipt)
+            
             step={"start":c[0],"end":c[-1],"response":response,
-                  "csv_encoding":enc,"rows":len(parsed or [])}
+                  "csv_encoding":enc,"rows":len(parsed or []),"reused_checkpoint":from_cache}
             remote["chunks"].append(step)
             if not parsed or len(parsed)<2:
                 remote["status"]="OFFICIAL_CHUNK_DOWNLOAD_HOLD"
@@ -401,7 +427,7 @@ def run(source):
     rows=read_baseline(api,quality,match,load_json,source)
     assert_cohort(rows,source)
     try:
-        info=tdcc_source(rows,api,call) if source=="TDCC" else taifex_source(rows,api,call)
+        info=tdcc_source(rows,api,call) if source=="TDCC" else taifex_source(rows,api,call,quality,match,load_json,put_once)
     except Exception as ex:
         # Keep the exact failure class as a Drive QA receipt when credentials permit.
         info={"status":"SOURCE_DIAGNOSTIC_EXCEPTION","error_type":type(ex).__name__,
