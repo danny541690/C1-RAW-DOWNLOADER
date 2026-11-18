@@ -155,8 +155,10 @@ def tdcc_source(rows,api,call):
         proof["g2_numeric_validation"]="PASS" if proof.get("status")=="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" else "HOLD"
         if FULL_MODE and proof["g2_numeric_validation"]=="PASS":
             official_result={"verified":False,"attempts":[]}
-            for endpoint in ("https://s.tdcc.com.tw/portal/zh/smWeb/qryStock",
-                             "https://www.tdcc.com.tw/portal/zh/smWeb/qryStock"):
+            # Historical error receipts: s.tdcc.com.tw served a stale single
+            # option (20260709), while www.tdcc.com.tw exposed the requested
+            # 20261008 and returned all 16 exact native rows.
+            for endpoint in ("https://www.tdcc.com.tw/portal/zh/smWeb/qryStock",):
                 # Portal-v2: preserve cookies + hidden CSRF token, submit
                 # method=submit with lowercase sqlMethod / stockNo.
                 import requests
@@ -173,7 +175,12 @@ def tdcc_source(rows,api,call):
                             page.select("#scaDate option, #firDate option, #scaDates option")]
                         date_options=[v for v in options if v]
                         known=[TDCC_WEEK,TDCC_WEEK[:4]+"/"+TDCC_WEEK[4:6]+"/"+TDCC_WEEK[6:]]
-                        selected=next((v for v in known if v in date_options),TDCC_WEEK)
+                        selected=next((v for v in known if v in date_options),None)
+                        if selected is None:
+                            official_result["attempts"].append({"url":endpoint,
+                                "status":"REQUESTED_DATE_NOT_OFFERED_BY_FIRST_PARTY",
+                                "available_dates_first10":date_options[:10]})
+                            continue
                         payload={**hidden,"SYNCHRONIZER_URI":"/portal/zh/smWeb/qryStock",
                                  "method":"submit","firDate":selected,"scaDate":selected,
                                  "sqlMethod":"StockNo","stockNo":code,"stockName":""}
