@@ -169,6 +169,7 @@ def main():
    "source_vintage_asof":ASOF,"historical_backtest_before_asof_not_allowed":True,
    "source_period_company_names_retained_in_frozen_zip":True,
    "market_membership_asof_2025_02_not_2026_company_list":True}
+ review=json.loads(json.dumps(review,ensure_ascii=False))
  rid=put_once(api,folder["id"],"r3_mops_independent_whole_report_review_"+RUN+".json",review)
  if load(api,rid)!=review:raise RuntimeError("REVIEW_REMOTE_READBACK_FAILED")
  review_sha=hashlib.sha256(call(lambda:api.files().get_media(fileId=rid))).hexdigest()
