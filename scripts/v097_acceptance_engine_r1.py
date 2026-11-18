@@ -348,6 +348,12 @@ def selftest():
         "row_count":5,"validation_errors":0,"official_numeric_verified":True,"pit_verified":True,
         "historical_scope_verified":True,"stock_scope":"IN_SCOPE"}
     assert evaluate(row,fmt,None,v3,g2,g3,"ERA")["status"]=="READY"
+    v2={**base,"schema":"R1_G2_DATASET_CERT_V2","dataset_origin_verified":True,
+        "same_date_header_rows_verified":True,"full_bronze_file_verified":True,
+        "publication_asof_verified":False,"source_lineage_verified":True}
+    assert evaluate(row,fmt,None,v3,v2,None,"ERA")["gates"]["G2"]=="PASS"
+    assert evaluate(row,fmt,None,v3,{**v2,"full_bronze_file_verified":False},None,"ERA")["gates"]["G2"]!="PASS"
+    assert evaluate(row,fmt,None,v3,{**v2,"official_attested":False},None,"ERA")["gates"]["G2"]!="PASS"
     assert evaluate(row,fmt,None,v3,g2,{**g3,"full_file_scanned":False},"ERA")["status"]=="PENDING"
     assert evaluate(row,fmt,None,v3,g2,{**g3,"historical_scope_verified":False},"ERA")["status"]!="READY"
     assert evaluate(row,fmt,None,v3,{**g2,"sha":"x"*64},g3,"ERA")["gates"]["G2"]!="PASS"
