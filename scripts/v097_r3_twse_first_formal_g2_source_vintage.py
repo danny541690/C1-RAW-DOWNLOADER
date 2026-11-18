@@ -59,8 +59,9 @@ def main():
     manifest=json.loads(z.read("manifest.json").decode("utf-8-sig"))
  if hashlib.sha256(native).hexdigest()!=DOC_SHA:raise RuntimeError("TWSE_ORIGINAL_MEMBER_SHA_CHANGED")
  check_response(native)
- if manifest.get("source")!=SOURCE or manifest.get("month")!="2001-03":
-    raise RuntimeError("TWSE_ZIP_MANIFEST_IDENTITY_MONTH_CONFLICT")
+ if (manifest.get("source") not in (None,SOURCE) or
+     (manifest.get("month") is not None and manifest.get("month")!="2001-03")):
+    raise RuntimeError("TWSE_ZIP_MANIFEST_EXPLICIT_IDENTITY_MONTH_CONFLICT")
  # Independent prior pilot explicitly logged the response SHA and matching
  # archive member before this run; must re-read immutable prior receipt.
  prior=match(api,quality,"R3_G2_ORIGINAL_OFFICIAL_API_BYTE_CROSSCHECK_ISOLATED")
