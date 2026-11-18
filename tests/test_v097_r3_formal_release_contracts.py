@@ -59,10 +59,10 @@ class R3FormalReleaseTests(unittest.TestCase):
         self.assertEqual(validate_g3(p,ROW,g2)["status"],"HOLD")
     def test_g3_and_g4_reject_missing_source_semantics(self):
         g2=certified_contract(G2,ROW)
-        g3_bad=deepcopy(G3);g3_bad["g2_required_fields"]=["not_found"]
+        g3_bad=deepcopy(G3);g3_bad["observed_fields"]=["security_id","not_found"]
         self.assertEqual(validate_g3(g3_bad,ROW,g2)["status"],"HOLD")
         g3=validate_g3(G3,ROW,g2)
-        g4_bad=deepcopy(G4);g4_bad["g3_observed_fields"]=["holders"]
+        g4_bad=deepcopy(G4);g4_bad["target_fields"]["not_verified"]="unrelated_target"
         self.assertEqual(validate_g4(g4_bad,ROW,g2,g3)["status"],"HOLD")
     def test_g4_requires_real_units_pit_and_no_silver(self):
         g2=certified_contract(G2,ROW);g3=validate_g3(G3,ROW,g2)
