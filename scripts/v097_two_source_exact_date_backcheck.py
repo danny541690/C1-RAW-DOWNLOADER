@@ -155,34 +155,58 @@ def tdcc_source(rows,api,call):
         proof["g2_numeric_validation"]="PASS" if proof.get("status")=="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" else "HOLD"
         if FULL_MODE and proof["g2_numeric_validation"]=="PASS":
             official_result={"verified":False,"attempts":[]}
-            payload={"scaDates":TDCC_WEEK,"scaDate":TDCC_WEEK,"SqlMethod":"StockNo",
-                     "StockNo":code,"radioStockNo":code,"REQ_OPR":"SELECT",
-                     "clkStockNo":code,"StockName":"","clkStockName":""}
             for endpoint in ("https://s.tdcc.com.tw/portal/zh/smWeb/qryStock",
-                             "https://www.tdcc.com.tw/portal/zh/smWeb/qryStock",
-                             "https://original-www.tdcc.com.tw/portal/zh/smWeb/qryStock"):
-                for method in ("post","get"):
-                    if method=="post":
-                        remote1,body1=fetch_official(endpoint,"post",payload)
-                    else:
-                        # First-party portal commonly renders a normal HTML form;
-                        # GET is diagnostic, not proof if it returns blank query fields.
-                        remote1,body1=fetch_official(endpoint,"get")
-                    attempt={"url":endpoint,"method":method,"http":remote1,"layout":None}
-                    if body1 and b"<table" in body1.lower():
-                        candidate=tdcc_native(body1)
-                        attempt["layout"]=candidate.get("layout")
-                        attempt["native_row_count"]=len(candidate.get("all_rows",[]))
+                             "https://www.tdcc.com.tw/portal/zh/smWeb/qryStock"):
+                # Portal-v2: preserve cookies + hidden CSRF token, submit
+                # method=submit with lowercase sqlMethod / stockNo.
+                import requests
+                from bs4 import BeautifulSoup
+                with requests.Session() as session:
+                    try:
+                        landing=session.get(endpoint,timeout=(10,40),
+                            headers={"User-Agent":"Mozilla/5.0 JARVIS-v097-TDCC-G2"})
+                        landing.raise_for_status()
+                        page=BeautifulSoup(landing.content,"html.parser")
+                        hidden={v.get("name"):v.get("value","") for v in
+                            page.select('input[type="hidden"][name]')}
+                        options=[o.get("value","").strip() for o in
+                            page.select("#scaDate option, #firDate option, #scaDates option")]
+                        date_options=[v for v in options if v]
+                        known=[TDCC_WEEK,TDCC_WEEK[:4]+"/"+TDCC_WEEK[4:6]+"/"+TDCC_WEEK[6:]]
+                        selected=next((v for v in known if v in date_options),TDCC_WEEK)
+                        payload={**hidden,"SYNCHRONIZER_URI":"/portal/zh/smWeb/qryStock",
+                                 "method":"submit","firDate":selected,"scaDate":selected,
+                                 "sqlMethod":"StockNo","stockNo":code,"stockName":""}
+                        response=session.post(endpoint,data=payload,timeout=(10,45),
+                            headers={"Referer":endpoint,"User-Agent":"Mozilla/5.0 JARVIS-v097-TDCC-G2"})
+                        response.raise_for_status()
+                        body1=response.content
+                        candidate=tdcc_native(body1) if b"<table" in body1.lower() else {}
+                        attempt={"url":endpoint,"method":"PORTAL_V2_SESSION_POST",
+                                 "http_status":response.status_code,
+                                 "response_sha":sha(body1),"response_bytes":len(body1),
+                                 "token_present":bool(hidden.get("SYNCHRONIZER_TOKEN")),
+                                 "target_date_in_options":selected in date_options,
+                                 "date_selected":selected,"available_dates_first10":date_options[:10],
+                                 "form_keys":sorted(payload.keys()),
+                                 "parser_status":candidate.get("status"),
+                                 "layout":candidate.get("layout"),
+                                 "native_row_count":len(candidate.get("all_rows",[])),
+                                 "official_header":candidate.get("header",[])[:8]}
+                        official_result["attempts"].append(attempt)
                         if (candidate.get("layout")==native.get("layout") and
                             candidate.get("all_rows")==native.get("all_rows") and
                             candidate.get("total_shares")==native.get("total_shares") and
                             candidate.get("total_holders")==native.get("total_holders")):
-                            official_result={"verified":True,"url":endpoint,
-                                "method":method,"response_sha":sha(body1),
+                            official_result.update({"verified":True,"url":endpoint,
+                                "method":"PORTAL_V2_SESSION_POST","response_sha":sha(body1),
                                 "native_rows":len(candidate["all_rows"]),
-                                "attempts":official_result["attempts"]+[attempt]}
-                            break
-                    official_result["attempts"].append(attempt)
+                                "official_header":candidate.get("header")})
+                    except Exception as ex:
+                        official_result["attempts"].append({"url":endpoint,
+                            "method":"PORTAL_V2_SESSION_POST",
+                            "status":"HTTP_OR_PARSER_HOLD","error_type":type(ex).__name__,
+                            "error":str(ex)[:200]})
                 if official_result.get("verified"):break
             proof["first_party_historical_check"]=official_result
             proof["g2_file_result"]="G2_FILE_PASS" if official_result.get("verified") else "G2_FILE_HOLD_FIRST_PARTY"
