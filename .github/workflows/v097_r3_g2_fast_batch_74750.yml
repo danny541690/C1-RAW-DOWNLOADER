@@ -1,0 +1,33 @@
+name: JARVIS R3 G2 74750 fast 320 per-file official cert shard
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_g2_fast_batch_74750.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-g2-fast-certified-batch
+  cancel-in-progress: false
+jobs:
+  exact-320-per-file-native-cert-shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Verify 320 individual G2 certs within immutable batch and whole 74750 cohort
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_g2_fast_batch_74750.py
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_g2_source_vintage.py' -v
+          PYTHONPATH=. python scripts/v097_r3_g2_fast_batch_74750.py
+      - if: always()
+        run: echo 'Immutable individual G2 certificates within source shard, independent Drive readback and full cohort reconciled. No Silver, Gold, production G5 or earlier-year PIT promotion.' >> "$GITHUB_STEP_SUMMARY"
