@@ -122,6 +122,19 @@ def main():
         checked.append({**candidates[len(checked)],
                         "official_approval_verdict":reason,
                         "approved":reason=="APPROVAL_EVIDENCE_VERIFIED"})
+    # Seven-source official documentation/field-spec repair queue.
+    source_gaps=[]
+    for src in SOURCES:
+        source_candidates=[v for v in checked if v["source"]==src]
+        kinds=collections.Counter()
+        for v in source_candidates:
+            for reason in v["missing_evidence"]: kinds[reason]+=1
+            if v["official_approval_verdict"]!="APPROVAL_EVIDENCE_VERIFIED":
+                kinds["NO_VERIFIED_INDEPENDENT_APPROVAL"]+=1
+        source_gaps.append({"source":src,"candidate_templates":len(source_candidates),
+                            "verified_templates":sum(v["approved"] for v in source_candidates),
+                            "unapproved":sum(not v["approved"] for v in source_candidates),
+                            "missing_by_reason":dict(kinds)})
     # The frozen file cohort must be read exactly, but cannot be promoted
     # using era guess alone; dataset/native-format must also be proven.
     baseline=0
@@ -142,6 +155,7 @@ def main():
             "official_registry_entries":len(aidx),
             "per_file_g2_certificates_issued":0,
             "candidate_evidence_gaps":dict(missing),
+            "source_template_repair_queue":source_gaps,
             "sources":source_rows,"candidates":checked,
             "release":"BLOCKED_UNTIL_OFFICIAL_TEMPLATE_AND_NATIVE_FILE_BINDING",
             "bronze_modified":False,"silver_materialized":False,
@@ -160,7 +174,7 @@ def main():
         "run":result["run"],"cohort":COHORT,"candidate_count":143,
         "approved_template_count":len(good),"approval_registry_entries":len(aidx),
         "per_file_certificates_issued":0,"source_counts":source_rows,
-        "evidence_gaps":dict(missing),"drive_report":name,
+        "evidence_gaps":dict(missing),"source_template_repair_queue":source_gaps,"drive_report":name,
         "readback_sha256":digest(read),"readback_verified":True,
         "release":result["release"]
     },ensure_ascii=False,sort_keys=True),flush=True)
