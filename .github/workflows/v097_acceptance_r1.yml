@@ -10,6 +10,7 @@ on:
     - cron: '9,24,39,54 * * * *'
 permissions:
   contents: read
+  actions: write
 concurrency:
   group: jarvis-v097-r1-acceptance-single-writer
   cancel-in-progress: false
@@ -121,3 +122,34 @@ jobs:
             echo "::error::R1 run incomplete: inspect individual gate jobs and repair auth/evidence before certification"
             exit 1
           fi
+
+  continue:
+    needs: [status, reconcile]
+    if: ${{ needs.status.result == 'success' && needs.reconcile.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive API dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Decide from checkpoint/master whether another R1 batch is required
+        id: state
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: PYTHONPATH=. python scripts/v097_acceptance_engine_r1.py watchdog
+      - name: Dispatch the next R1 batch automatically, no user prompt
+        if: ${{ steps.state.outputs.continue == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh workflow run v097_acceptance_r1.yml --repo "$GH_REPO" --ref main
+          echo "NEXT_R1_BATCH_DISPATCHED" >> "$GITHUB_STEP_SUMMARY"
