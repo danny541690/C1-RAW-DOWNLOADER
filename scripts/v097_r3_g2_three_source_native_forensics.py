@@ -39,7 +39,7 @@ def parse_table(text):
    vals=[field_clean(e.get_text(" ",strip=True))[:110] for e in tr.find_all(["th","td"],recursive=False)]
    if vals:rows.append(vals[:22])
   if rows:tables.append({"headers_candidates":rows[:3],"first_rows":rows[3:6],
-                          "table_row_count":len(t.find_all("tr")),"table_column_counts":dict(collections.Counter(map(len,rows)))})
+                          "table_row_count":len(t.find_all("tr")),"table_column_counts":{str(k):v for k,v in collections.Counter(map(len,rows)).items()}})
  return soup,tables
 def profile_html(src,data,name):
  text,codec=decode(data)
