@@ -18,7 +18,7 @@ def digest(value) -> str:
 def evidence_key(record_id: str, content_sha256: str, gate: str,
                  rule_version: str, *, template_version: str = "",
                  parser_version: str = "", dependency_digest: str = "") -> str:
-    if gate not in GATES or len(content_sha256) != 64:
+    if gate not in GATES or len(content_sha256) != 64 or any(c not in "0123456789abcdefABCDEF" for c in content_sha256):
         raise ValueError("Invalid gate or content SHA")
     return digest([record_id, content_sha256.lower(), gate, rule_version,
                    template_version if gate != "G1" else "",
@@ -31,7 +31,7 @@ def check_migration(*, source_sha: str | None, destination_sha: str | None,
     reference = source_sha or direct_download_sha
     if not reference or not destination_sha:
         return {"status": "HOLD", "reason": "MISSING_SOURCE_OR_DEST_SHA"}
-    if len(reference) != 64 or len(destination_sha) != 64:
+    if any(len(x) != 64 or any(c not in "0123456789abcdefABCDEF" for c in x) for x in (reference, destination_sha)):
         return {"status": "HOLD", "reason": "INVALID_SHA"}
     if reference.lower() != destination_sha.lower():
         return {"status": "HOLD", "reason": "BYTE_MISMATCH"}
@@ -61,7 +61,10 @@ def template_for(templates: Sequence[Template], source: str,
 
 def match_fields(template: Template, observed: Sequence[str]) -> dict:
     """Fuzzy discovery only: all mandatory semantics must be verified."""
-    mapped = {template.aliases.get(x, x) for x in observed}
+    mapped_list = [template.aliases.get(x, x) for x in observed]
+    mapped = set(mapped_list)
+    if len(mapped_list) != len(mapped):
+        return {"status": "HOLD", "reason": "DUPLICATE_SEMANTIC_FIELDS", "missing": [], "unknown": []}
     missing = sorted(template.required_fields - mapped)
     unknown = sorted(mapped - template.required_fields - template.optional_fields)
     if missing:
@@ -93,7 +96,7 @@ def disposition(results: Mapping[str, str], *, in_scope: bool = True,
         return "NOT_APPLICABLE"
     if any(v == "HOLD" for v in results.values()):
         return "HOLD"
-    if all(results.get(g) in ("PASS", "REUSED_PASS", "NOT_APPLICABLE") for g in GATES):
+    if all(results.get(g) in ("PASS", "REUSED_PASS") for g in GATES):
         return "SILVER_READY" if durable_release else "PENDING"
     return "PENDING"
 
