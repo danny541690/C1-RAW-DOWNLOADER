@@ -23,7 +23,8 @@ jobs:
       - name: Compile and prove fail-closed contract logic
         run: |
           set -euo pipefail
-          python -m py_compile scripts/v097_r3_g234_repair_worker.py scripts/v097_r3_formal_release_contracts.py
+          python -m py_compile scripts/v097_r3_g234_repair_worker.py scripts/v097_r3_formal_release_contracts.py scripts/v097_r3_g4_seven_source_candidates.py
+          PYTHONPATH=. python scripts/v097_r3_g4_seven_source_candidates.py selftest
           PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_formal_release_contracts.py' -v
   real-repair:
     needs: preflight
