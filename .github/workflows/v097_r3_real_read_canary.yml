@@ -1,0 +1,39 @@
+name: JARVIS R3 REAL DRIVE READ-ONLY PRELAUNCH CANARY
+on:
+  push:
+    branches:
+      - r3-bronze-silver-ready-staging-20261118
+    paths:
+      - 'scripts/v097_r3_real_bronze_canary.py'
+      - '.github/workflows/v097_r3_real_read_canary.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-real-readonly
+  cancel-in-progress: false
+jobs:
+  real-source-sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing read API packages
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Read-only frozen manifest and bounded byte sample from all seven sources
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_real_bronze_canary.py
+          PYTHONPATH=. python scripts/v097_r3_real_bronze_canary.py read-only
+      - name: Hard release rule
+        if: always()
+        run: |
+          echo 'R3 REAL CANARY: read-only; verifies at most one small destination per source against frozen SHA. It never approves G2/G3/G4/G5 and never writes to Google Drive.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'BRONZE IMMUTABLE / SILVER GOLD DISABLED / PRODUCTION RELEASE BLOCKED' >> "$GITHUB_STEP_SUMMARY"
