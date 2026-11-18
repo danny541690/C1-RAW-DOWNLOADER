@@ -120,7 +120,8 @@ def certificate(row, gates, proofs, *, writer_fence, durable_readback, schema="R
         "writer_fence":writer_fence,"status":"SILVER_READY","silver_materialized":False,
         "gold_materialized":False
     }
-    # This is only the PRE-COMMIT candidate. Actual PASS requires Drive readback.\n    return {"status":"CANDIDATE","certificate":attestation,"certificate_sha256":digest(attestation)}
+    # This is only the PRE-COMMIT candidate. Actual PASS requires Drive readback.
+    return {"status":"CANDIDATE","certificate":attestation,"certificate_sha256":digest(attestation)}
 
 def confirm_g5_readback(candidate, actual):
     """Only an independently fetched exact Drive document promotes a candidate."""
