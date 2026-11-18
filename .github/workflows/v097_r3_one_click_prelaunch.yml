@@ -1,5 +1,5 @@
 name: JARVIS R3 ONE-CLICK PRELAUNCH ALL-IN-ONE (BLOCK RELEASE)
-# 2026-11-18 revalidate corrected cross-gate G2/G3/G4 semantics; staging only.
+# 2026-11-18 final revalidate G1 official lineage and G2/G3/G4 strict binding; staging only.
 # This test is not the missing official per-dataset contract or production G5 release.
 on:
   push:
