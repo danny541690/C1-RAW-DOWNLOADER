@@ -28,6 +28,7 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
       PYTHONUNBUFFERED: '1'
+      G2_FULL_FILE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -62,7 +63,7 @@ jobs:
             echo "Selftest: ${{ steps.selftest.outcome }}"
             echo "Bronze/source compare: ${{ steps.compare.outcome }}"
             echo "If comparison failed, see compare_${{ matrix.source }}.log in the uploaded artifact and Actions logs."
-            echo "No official G2 PASS or Silver/Gold authorized from this job."
+            echo "Full-file G2 result must be read from Drive QA and cannot be inferred from the green Job status. No Silver/Gold authorized."
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
