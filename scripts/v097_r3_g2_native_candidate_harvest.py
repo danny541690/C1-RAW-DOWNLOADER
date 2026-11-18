@@ -21,21 +21,27 @@ def candid(blob,path,src):
             "native_date_candidate":None,"date_verified":False,
             "official_dataset_era_attested":False,"native_layout_verified":False,
             "source_format_candidates_only":True}
-    profile=inspect(blob,path,src)
-    result["signature"]=profile.get("signature") or profile.get("status","UNKNOWN")
-    result["dataset_candidate"]=profile.get("dataset_candidate") or profile.get("dataset")
-    rawkeys=profile.get("header") or profile.get("keys") or []
-    if isinstance(rawkeys,list):
-        result["native_header"]=[str(s)[:96] for s in rawkeys[:35]]
     if zipfile.is_zipfile(io.BytesIO(blob)):
         with zipfile.ZipFile(io.BytesIO(blob)) as z:
             infos=[i for i in z.infolist() if not i.is_dir()]
             result["signature"]="ZIP"
             result["zip_members"]=len(infos)
             result["zip_member_names_redacted"]=True
-            result["zip_crc_verified"]=z.testzip() is None
-            result["zip_total_decompressed_bytes"]=sum(i.file_size for i in infos)
-    elif isinstance(blob,bytes) and blob.lstrip()[:1] in (b"{",b"["):
+            expanded=sum(i.file_size for i in infos)
+            result["zip_total_decompressed_bytes"]=expanded
+            result["zip_crc_verified"]=z.testzip() is None if len(infos)<=100 and expanded<=16*1024*1024 else None
+            result["zip_member_schema_attested"]=False
+    else:
+        try:
+            profile=inspect(blob,path,src)
+            result["signature"]=profile.get("signature") or profile.get("status","UNKNOWN")
+            result["dataset_candidate"]=profile.get("dataset_candidate") or profile.get("dataset")
+            rawkeys=profile.get("header") or profile.get("keys") or []
+            if isinstance(rawkeys,list):
+                result["native_header"]=[str(v)[:96] for v in rawkeys[:35]]
+        except Exception:
+            result["signature"]="FORMAT_PROFILE_EXCEPTION"
+    if not zipfile.is_zipfile(io.BytesIO(blob)) and isinstance(blob,bytes) and blob.lstrip()[:1] in (b"{",b"["):
         try:
             obj=json.loads(blob.decode("utf-8-sig"))
             if isinstance(obj,dict):
