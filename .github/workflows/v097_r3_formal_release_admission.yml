@@ -1,0 +1,37 @@
+name: JARVIS R3 FORMAL RELEASE ADMISSION - fail closed until safe
+on:
+  push:
+    branches:
+      - r3-bronze-silver-ready-staging-20261118
+    paths:
+      - '.github/workflows/v097_r3_formal_release_admission.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: jarvis-r3-formal-admission
+  cancel-in-progress: false
+jobs:
+  verify-existing-official-evidence-and-old-writer-quiescence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive and GitHub read-only dependency
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Formal live Go No-Go gate
+        run: PYTHONPATH=. python scripts/v097_r3_formal_launch_admission.py check
+      - name: Explain release refusal
+        if: failure()
+        run: |
+          echo 'R3 FORMAL RELEASE BLOCKED by verified live preflight.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No legacy cron disabled, no original Bronze mutated, no Silver/Gold conversion and no R3 production Master published.' >> "$GITHUB_STEP_SUMMARY"
