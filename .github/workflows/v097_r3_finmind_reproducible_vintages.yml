@@ -1,4 +1,5 @@
 name: JARVIS R3 FinMind 2000 2009 2022 reproducible native API G2 investigation
+# Rerun with full historical 2009 native accounting key alias and value-by-origin validation.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
