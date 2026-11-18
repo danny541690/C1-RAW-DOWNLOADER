@@ -94,8 +94,24 @@ jobs:
       - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
       - name: Read existing official G2 G3 certificate registries and G4 mapping candidates
         run: PYTHONPATH=. python scripts/v097_r3_live_contract_census.py read-only
-  drive-staging-readback:
+  real-formal-70:
     needs: real-contract-census
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Actual frozen 70 through formal G2 G3 G4 (no false promotion)
+        run: PYTHONPATH=. python scripts/v097_r3_real_formal_70_pilot.py read-only
+  drive-staging-readback:
+    needs: real-formal-70
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -111,7 +127,7 @@ jobs:
       - name: R3 staging namespace receipt commit and readback
         run: PYTHONPATH=. python scripts/v097_r3_drive_staging_commit_probe.py staging-readback
   final:
-    needs: [gates-and-synthetic,real-bronze-read,real-70-sample,real-contract-census,drive-staging-readback]
+    needs: [gates-and-synthetic,real-bronze-read,real-70-sample,real-contract-census,real-formal-70,drive-staging-readback]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -121,6 +137,7 @@ jobs:
           REAL: ${{ needs.real-bronze-read.result }}
           REAL70: ${{ needs.real-70-sample.result }}
           CONTRACTS: ${{ needs.real-contract-census.result }}
+          FORMAL70: ${{ needs.real-formal-70.result }}
           DRIVE: ${{ needs.drive-staging-readback.result }}
         run: |
           echo "## R3 one-click PRELAUNCH" >> "$GITHUB_STEP_SUMMARY"
@@ -128,6 +145,7 @@ jobs:
           echo "Real Bronze SHA: $REAL" >> "$GITHUB_STEP_SUMMARY"
           echo "Stratified real 70: $REAL70" >> "$GITHUB_STEP_SUMMARY"
           echo "Live G2/G3/G4 contract census: $CONTRACTS" >> "$GITHUB_STEP_SUMMARY"
+          echo "70 real R3 G2/G3/G4 formal assessments: $FORMAL70" >> "$GITHUB_STEP_SUMMARY"
           echo "Isolated Drive receipt: $DRIVE" >> "$GITHUB_STEP_SUMMARY"
           echo '**PRODUCTION RELEASE BLOCKED** until old writer cutover, official G2/G3/G4 certificates and production G5 have been independently verified.' >> "$GITHUB_STEP_SUMMARY"
-          if [ "$GATES" != success ] || [ "$REAL" != success ] || [ "$REAL70" != success ] || [ "$CONTRACTS" != success ] || [ "$DRIVE" != success ]; then exit 1; fi
+          if [ "$GATES" != success ] || [ "$REAL" != success ] || [ "$REAL70" != success ] || [ "$CONTRACTS" != success ] || [ "$FORMAL70" != success ] || [ "$DRIVE" != success ]; then exit 1; fi
