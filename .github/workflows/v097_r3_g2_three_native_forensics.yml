@@ -1,4 +1,5 @@
 name: JARVIS R3 G2 MOPS TDCC TAIFEX 30 native header value deep forensic
+# Canonical native table column-width JSON keys for remote receipt verification.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
