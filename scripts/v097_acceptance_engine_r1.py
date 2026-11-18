@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import sys
+from scripts.v097_seven_source_release_standard_v2 import STANDARD_VERSION,may_release
 from datetime import datetime, timezone
 
 VERSION = "v097_acceptance_r1_20261118_01"
@@ -113,7 +114,13 @@ def evaluate(row,fmt,mp,v3,g2,g3,era=None):
                     g3.get("historical_scope_verified") is True and
                     g2.get("source_lineage_verified") is True and
                     g3.get("official_numeric_verified") is True and g3.get("pit_verified") is True):
-                    g4="READY";reason="FULL_CHAIN_CERTIFIED"
+                    # V2 dashboard is the mandatory release contract. Older
+                    # R3 source-vintage QA or unversioned G3 cannot release.
+                    candidate={"G0":g0,"G1":g1,"G2":g2state,"G3":g3state,"G4":"READY"}
+                    if may_release(candidate,g2,g3,sid,src,sha):
+                        g4="READY";reason="FULL_CHAIN_CERTIFIED"
+                    else:
+                        reason="G4_SEVEN_SOURCE_STANDARD_V2_NOT_ATTESTED"
                 elif scope(row) in ("EXCLUDED_CONTROL","SCOPE_EXCLUDED_NONSTOCK","STOCK_SCOPE_EXCLUDED"):
                     g4="EXCLUDED";reason="OUTSIDE_STOCK_SCOPE"
                 else:reason="G4_RELEASE_PROOF_OR_SCOPE_PENDING"
@@ -122,7 +129,8 @@ def evaluate(row,fmt,mp,v3,g2,g3,era=None):
             "CONFIRMED_EXCEPTION" if g0=="HOLD" or g1=="HOLD" else "PENDING")
     return {"source_id":sid,"source":src,"sha":sha,"status":status,"reason":reason,
             "gates":{"G0":g0,"G1":g1,"G2":g2state,"G3":g3state,"G4":g4},
-            "evidence":evidence,"version":VERSION,"rule_revision":RULE_VERSION}
+            "evidence":evidence,"version":VERSION,"rule_revision":RULE_VERSION,
+            "release_standard_version":STANDARD_VERSION if g4=="READY" else None}
 def fingerprint(row,fmt,mp,v3,g2,g3,era):
     return digest({"sha":row.get("source_sha256"),"destination_id":row.get("destination_id"),
                    "fmt":fmt,"map":mp,"v3":v3,"g2":g2,"g3":g3,"era":era,
@@ -249,6 +257,12 @@ def aggregate():
                 if sid not in idx or sid in done or lane(sid,src)!=shard or v.get("sha")!=idx[sid]["source_sha256"]:
                     raise RuntimeError("R1_CHECKPOINT_SHA_OR_ID_CONFLICT")
                 done[sid]=v
+        for sid,entry in done.items():
+            if entry.get("status")=="READY":
+                if entry.get("release_standard_version")!=STANDARD_VERSION or any(
+                    entry.get("gates",{}).get(g)!=( "READY" if g=="G4" else "PASS")
+                    for g in ("G0","G1","G2","G3","G4")):
+                    raise RuntimeError("G5_READY_WITHOUT_SEVEN_SOURCE_STANDARD_V2_"+src)
         counts=collections.Counter(done.get(r["source_id"],{}).get("status","NOT_EVALUATED") for r in rows)
         gate_counts={g:dict(collections.Counter(done.get(r["source_id"],{}).get("gates",{}).get(g,"NOT_EVALUATED") for r in rows)) for g in ("G0","G1","G2","G3","G4")}
         reasons=collections.Counter(done[r["source_id"]].get("reason","UNKNOWN") for r in rows if r["source_id"] in done)
@@ -297,7 +311,8 @@ def aggregate():
             "status":dict(all_status),"sources":results,
             "evaluated":TARGET-all_status["NOT_EVALUATED"],
             "terminal_disposition":sum(all_status[t] for t in TERMINAL),
-            "ready":all_status["READY"],"silver_materialized":0,"gold_materialized":0,
+            "ready":all_status["READY"],"release_standard_version":STANDARD_VERSION,
+            "silver_materialized":0,"gold_materialized":0,
             "note":"Pending is not certified; historical READY is never promoted without G0-G4 full formal proof."}
     report_id=put_once(api,quality,"v097_R1_ACCEPTANCE_MASTER_"+RUN+".json",master)
     upsert(api,control,"v097_R1_ACCEPTANCE_MASTER_LATEST.json",{**master,"report_id":report_id})
@@ -350,8 +365,10 @@ def selftest():
     g3={**base,"schema":"R1_G3_SCHEMA_CERT_V1","dataset_contract_version":"dataset-v1",
         "full_file_scanned":True,"native_units_verified":True,"types_and_keys_verified":True,
         "row_count":5,"validation_errors":0,"official_numeric_verified":True,"pit_verified":True,
-        "historical_scope_verified":True,"stock_scope":"IN_SCOPE"}
+        "historical_scope_verified":True,"stock_scope":"IN_SCOPE",
+        "seven_source_standard_version":STANDARD_VERSION}
     assert evaluate(row,fmt,None,v3,g2,g3,"ERA")["status"]=="READY"
+    assert evaluate(row,fmt,None,v3,g2,{**g3,"seven_source_standard_version":"OBSOLETE"},"ERA")["status"]!="READY"
     v2={**base,"schema":"R1_G2_DATASET_CERT_V2","dataset_origin_verified":True,
         "same_date_header_rows_verified":True,"full_bronze_file_verified":True,
         "publication_asof_verified":False,"source_lineage_verified":True}
