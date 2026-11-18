@@ -1,4 +1,5 @@
 name: JARVIS R3 G2 SEVEN SOURCE HISTORICAL SHARED TEMPLATES 74750
+# Validated date-hint regex repair; rerun all seven source libraries and frozen cohort.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
