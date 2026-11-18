@@ -1,4 +1,6 @@
 name: JARVIS R3 ONE-CLICK PRELAUNCH ALL-IN-ONE (BLOCK RELEASE)
+# 2026-11-18 explicit user-authorized combined prelaunch rerun; staging only.
+# This test is not the missing official per-dataset contract or production G5 release.
 on:
   push:
     branches:
