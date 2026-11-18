@@ -32,7 +32,7 @@ def era(row,src):
     tokens=[str(row.get("data_date") or ""),str(row.get("date") or ""),
             str(row.get("source_path") or "")]
     for token in tokens:
-        for matched in re.findall(r"(?<!\\d)(20\\d{2})[-_/]?(0[1-9]|1[0-2])(?:[-_/]?([0-3]\\d))?(?!\\d)",token):
+        for matched in re.findall(r"(?<!\d)(20\d{2})[-_/]?(0[1-9]|1[0-2])(?:[-_/]?([0-3]\d))?(?!\d)",token):
             y,m,_=matched
             try:return period(src,y+"-"+m)["id"]
             except (ValueError,KeyError,TypeError):continue
