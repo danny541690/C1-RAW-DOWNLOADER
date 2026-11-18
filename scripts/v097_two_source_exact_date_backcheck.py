@@ -10,6 +10,7 @@ from scripts.v097_v3_preflight import read_baseline,assert_cohort,source_api,can
 from scripts.v097_two_source_native_date_diff import tdcc_native
 SOURCE="v097_two_source_exact_date_backcheck_r1"
 RUN=os.getenv("GITHUB_RUN_ID","manual")
+FULL_MODE=os.getenv("G2_FULL_FILE","0")=="1"
 # 2026-11-18 small-sample rerun: only 2 TDCC codes + 3 TAIFEX dates;
 # never expand to a full-cohort certification, Silver, or Gold in this workflow.
 SAMPLE_SCOPE={"TDCC":{"week":"20261008","codes":["2365","3258"]},
@@ -20,7 +21,7 @@ TDCC_CODES=("2365","3258")
 TDCC_ARCHIVE_URL="https://raw.githubusercontent.com/wirelessr/tdcc-opendata-archive/main/snapshots/2026/2026-10-08.csv"
 TDCC_ORIGINAL_ISSUER="https://openapi.tdcc.com.tw/v1/opendata/1-5"
 TAIFEX_DATE_START="2024/01/02"
-TAIFEX_DATE_END="2024/01/04"
+TAIFEX_DATE_END="2024/01/31" if FULL_MODE else "2024/01/04"
 TAIFEX_OFFICIAL="https://www.taifex.com.tw/cht/3/largeTraderFutDown"
 TAIFEX_LANDING="https://www.taifex.com.tw/cht/3/largeTraderFutView"
 TAIFEX_SID="1V3tY6CRlSB6JjOYld8sFPxmv2vDdg3tu"
@@ -76,6 +77,8 @@ def tdcc_source(rows,api,call):
     else:
         remote["status"]=remote["status"] if remote["status"]!="FETCHED" else "ARCHIVED_CSV_DECODE_HOLD"
     result=[]
+    # Seek independent first-party TDCC historical HTML for the same date and code.
+    # No guess-based certification on historical archive alone.
     for code in TDCC_CODES:
         original=next((r for r in rows if "distribution_"+TDCC_WEEK+"_"+code+"_" in str(r.get("source_path",""))),None)
         if not original:
@@ -134,6 +137,30 @@ def tdcc_source(rows,api,call):
             proof["full_native_tier_rows_checked"]=len(native.get("all_rows",[]))
             proof["status"]="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" if len(subset)>=16 and len(all_compared_rows)==16 and not diffs else "SAME_DATE_NUMERIC_OR_TEMPLATE_HOLD"
         proof["g2_numeric_validation"]="PASS" if proof.get("status")=="ARCHIVED_OFFICIAL_DATASET_SAME_DATE_NUMERIC_MATCH" else "HOLD"
+        if FULL_MODE and proof["g2_numeric_validation"]=="PASS":
+            official_result=None
+            for endpoint in ("https://www.tdcc.com.tw/portal/zh/smWeb/qryStock",
+                             "https://www.tdcc.com.tw/smWeb/QryStockAjax.do"):
+                payload={"scaDates":TDCC_WEEK,"scaDate":TDCC_WEEK,"SqlMethod":"StockNo",
+                         "StockNo":code,"radioStockNo":code,"REQ_OPR":"SELECT",
+                         "clkStockNo":code,"StockName":"","clkStockName":""}
+                remote1,body1=fetch_official(endpoint,"post",payload)
+                if body1 and b"<table" in body1.lower():
+                    candidate=tdcc_native(body1)
+                    if (candidate.get("layout")==native.get("layout") and
+                        candidate.get("all_rows")==native.get("all_rows") and
+                        candidate.get("total_shares")==native.get("total_shares") and
+                        candidate.get("total_holders")==native.get("total_holders")):
+                        official_result={"verified":True,"url":endpoint,
+                                         "response_sha":sha(body1),
+                                         "native_rows":len(candidate["all_rows"])}
+                        break
+                official_result={"verified":False,"last_source_http":remote1,
+                                 "candidate_layout":candidate.get("layout") if body1 and b"<table" in body1.lower() else None}
+            proof["first_party_historical_check"]=official_result
+            proof["g2_file_result"]="G2_FILE_PASS" if official_result.get("verified") else "G2_FILE_HOLD_FIRST_PARTY"
+        else:
+            proof["g2_file_result"]="G2_SAMPLE_PASS" if proof["g2_numeric_validation"]=="PASS" else "G2_HOLD"
         proof["formal_g2_missing_evidence"]=["FIRST_PARTY_20261008_OFFICIAL_PUBLICATION_SHA","HISTORICAL_ASOF_ATTESTATION","R1_G2_PER_FILE_CERT"] if proof["g2_numeric_validation"]=="PASS" else ["NUMERIC_OR_LAYOUT_HOLD"]
         result.append(proof)
     return {"dataset":"TDCC_SHAREHOLDING_DISTRIBUTION",
@@ -161,7 +188,11 @@ def taifex_source(rows,api,call):
         "historical_2024_contemporaneous_PIT_proven":False}
     if not sha_ok or not baseline:
         result["status"]="BRONZE_READ_OR_SHA_HOLD";return result
-    target={"2024/01/02","2024/01/03","2024/01/04"}
+    original_days={norm_cell(x[0]) for x in baseline[1:]
+                   if x and re.fullmatch(r"2024/01/\\d{2}",norm_cell(x[0]))}
+    target=(original_days if FULL_MODE else {"2024/01/02","2024/01/03","2024/01/04"})
+    result["whole_file_target_dates"]=sorted(original_days)
+    result["whole_file_target_date_count"]=len(original_days)
     native_date=[compact(x) for x in baseline if x and norm_cell(x[0]) in target]
     result["original_csv_header"]=compact(baseline[0])
     result["native_rows_by_day"]=dict(collections.Counter(v[0] for v in native_date))
@@ -199,6 +230,20 @@ def taifex_source(rows,api,call):
     result["status"]="SAME_DATE_ALL_NATIVE_ROWS_MATCH" if our_counts==their_counts and bool(our_counts) else "OFFICIAL_NATIVE_DIFFERENCES"
     result["g2_numeric_validation"]="PASS" if result["status"]=="SAME_DATE_ALL_NATIVE_ROWS_MATCH" else "HOLD"
     result["formal_g2_missing_evidence"]=["2024_CONTEMPORANEOUS_PUBLICATION_ASOF","INDEPENDENT_OFFICIAL_DATASET_ERA_ATTESTATION","R1_G2_PER_FILE_CERT"] if result["g2_numeric_validation"]=="PASS" else ["NUMERIC_OR_LAYOUT_HOLD"]
+    if FULL_MODE:
+        # All dated lines in the monthly Bronze CSV must be covered by the
+        # first-party response; header and trailing documentation are excluded.
+        non_date=[x for x in baseline[1:] if x and norm_cell(x[0]) and
+                  not re.fullmatch(r"\\d{4}/\\d{2}/\\d{2}",norm_cell(x[0]))]
+        full_ok=(result["g2_numeric_validation"]=="PASS" and sha_ok and
+            result.get("original_csv_header")==result.get("official_csv_header") and
+            len(native_date)==sum(bool(x and norm_cell(x[0]) in original_days) for x in baseline) and
+            not any(x[0] not in target for x in native_date) and
+            len(target)>=15 and len(non_date)<=6)
+        result["g2_file_result"]="G2_FILE_PASS" if full_ok else "G2_FILE_HOLD"
+        result["full_month_compared_rows"]=len(native_date)
+        result["trailing_note_rows_excluded"]=len(non_date)
+        result["full_file_sha"]=sha(raw)
     result["formal_g2_certified"]=False
     return result
 # Simplified G2 v2, limited to the exact same-date sample. Not a whole-file
@@ -253,8 +298,18 @@ def run(source):
         info={"status":"SOURCE_DIAGNOSTIC_EXCEPTION","error_type":type(ex).__name__,
               "error_message":str(ex)[:240],"official_g2_certified":False}
     verdict=g2_v2_verdict(source,info)
+    if FULL_MODE:
+        file_cases=(info.get("cases",[]) if source=="TDCC" else [info])
+        passing=[v for v in file_cases if v.get("g2_file_result")=="G2_FILE_PASS"]
+        verdict["full_file_result"]="G2_FILE_PASS" if len(passing)==len(file_cases) and bool(file_cases) else "G2_FILE_HOLD"
+        verdict["full_file_pass_count"]=len(passing)
+        verdict["full_file_verified_ids"]=[v.get("source_id") for v in passing]
+        verdict["official_first_party_comparison"]=bool(passing) and (
+            source=="TAIFEX" or all(v.get("first_party_historical_check",{}).get("verified") for v in passing))
+        # Full-file result is NOT a seven-source R1 Master certificate.
+        verdict["r1_master_promoted"]=False
     record={"schema":SOURCE,"source":source,"run":RUN,
-        "g2_rule":G2_RULE_V2,"g2_v2_verdict":verdict,
+        "g2_rule":G2_RULE_V2,"g2_v2_verdict":verdict,"full_file_mode":FULL_MODE,
         "sample_mode":True,"sample_scope":SAMPLE_SCOPE[source],
         "time_utc":datetime.now(timezone.utc).isoformat(),
         "result":info,"formal_g2_new_pass":0,
@@ -269,7 +324,10 @@ def run(source):
         "source":source,"report_id":rid,"run":RUN,
         "overall":info.get("status"),
         "counts":dict(collections.Counter(c.get("status") for c in info.get("cases",[]))),
-        "formal_G2_new_pass":0,"g2_sample_result":verdict["sample_result"],
+        "formal_G2_new_pass":0,
+        "g2_file_result":verdict.get("full_file_result","NOT_RUN"),
+        "g2_file_pass_count":verdict.get("full_file_pass_count",0),
+        "g2_sample_result":verdict["sample_result"],
         "g2_sample_rows_pass":verdict["sample_rows_pass"],
         "g2_sample_files_pass":verdict["sample_files_pass"]}),flush=True)
 def selftest():
