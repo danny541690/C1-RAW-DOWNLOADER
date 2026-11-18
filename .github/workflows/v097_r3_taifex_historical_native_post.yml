@@ -1,5 +1,5 @@
 name: JARVIS R3 TAIFEX TRUE historical official native CSV 20240102 G2 pilot
-# Frozen original is a monthly CSV; official POST request covers full observed January date interval.
+# Distinguish real dates from native footer tokens; official historical POST must reproduce complete original CSV.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
