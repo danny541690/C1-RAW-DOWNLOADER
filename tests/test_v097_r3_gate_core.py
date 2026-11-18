@@ -14,6 +14,7 @@ class R3GateTests(unittest.TestCase):
         self.assertEqual(check_migration(source_sha=None,destination_sha=SHA_A,direct_download_sha=SHA_A)["status"],"PASS")
         self.assertEqual(check_migration(source_sha=SHA_A,destination_sha=SHA_B)["status"],"HOLD")
         self.assertEqual(check_migration(source_sha=None,destination_sha=SHA_A)["status"],"HOLD")
+        self.assertEqual(check_migration(source_sha=SHA_A,destination_sha=SHA_A,direct_download_sha=SHA_B)["reason"],"INCONSISTENT_SOURCE_PROVENANCE")
     def test_historical_template_alias_and_critical_field(self):
         t=Template("TWSE","quotes","twse-v1","2000-01-01","2010-12-31",
                    frozenset({"date","volume","amount"}),frozenset({"memo"}),
