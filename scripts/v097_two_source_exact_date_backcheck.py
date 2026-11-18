@@ -450,6 +450,9 @@ def run(source):
         "result":info,"formal_g2_new_pass":0,
         "certification_boundary":"FULL_FILE_G2_REQUIRES_VERIFIED_FIRST_PARTY_DATE_HEADER_VALUES_AND_BRONZE_SHA; release independent of PIT time metadata",
         "bronze_modified":False,"silver_gold_materialized":False}
+    # Large resumable Drive receipts use JSON readback equality.
+    # Normalize tuple-like collections to their on-disk JSON representation.
+    record=json.loads(json.dumps(record,ensure_ascii=False,separators=(",",":")))
     rid=put_once(api,quality,"v097_EXACT_DATE_ORIGINAL_SOURCE_COMPARE_"+source+"_"+RUN+".json",record)
     certificates=publish_g2_v2_full_file_certificates(
         source,rows,info,verdict,rid,api,control,match,load_json,upsert)
