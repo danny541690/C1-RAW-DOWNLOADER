@@ -100,7 +100,9 @@ def main():
         rows=read_baseline(api,quality,match,load_json,src)
         assert_cohort(rows,src)
         n+=len(rows)
-        bfile=match(api,control,BINDING_PREFIX+src+".json")
+        # V2 NDC is additive, immutable and preserves the original first-ten cert proofs.
+        bfile=(match(api,control,BINDING_PREFIX+src+"_V2.json") if src=="NDC" else None)
+        if not bfile:bfile=match(api,control,BINDING_PREFIX+src+".json")
         bdata=load_json(api,bfile["id"]) if bfile else {}
         if bdata and (not isinstance(bdata,dict)
                       or bdata.get("schema")!="R3_G2_NATIVE_BINDINGS_V1"
