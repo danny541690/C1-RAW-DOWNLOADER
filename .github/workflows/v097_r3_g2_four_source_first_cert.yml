@@ -1,4 +1,5 @@
 name: JARVIS R3 G2 FOUR SOURCE REAL FIRST FORMAL NATIVE CERT TEST
+# Rerun after ensuring immutable JSON Master list serialization is canonical.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
