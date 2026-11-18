@@ -1,4 +1,5 @@
 name: JARVIS R3 G2 SHARED TEMPLATE FULL 74750 REAL RECONCILIATION
+# Final native marker-certified NDC V3 full census, source-vintage only.
 # Run complete G2 after verified NDC V2 309 additional native matches; do not backdate revised source.
 on:
   push:
