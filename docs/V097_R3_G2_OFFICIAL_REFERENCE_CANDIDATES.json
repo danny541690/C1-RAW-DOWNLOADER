@@ -1,0 +1,56 @@
+{
+  "schema": "R3_G2_OFFICIAL_REFERENCE_SEED_V1",
+  "status": "CANDIDATE_NOT_ATTESTED",
+  "rules": [
+    "Official pages are source candidates, not certified dataset-era native schemas.",
+    "Do not promote until official document SHA, version effective-date, member native layout, full-file semantic mapping, and preserved original path are independently verified.",
+    "FinMind is provider documentation, not an official Taiwan market regulator."
+  ],
+  "sources": [
+    {
+      "source": "TWSE",
+      "dataset": "STOCK_DAILY_OHLCV",
+      "reference": "https://www.twse.com.tw/zh/trading/historical/mi-index.html",
+      "alternate": "https://eshop.twse.com.tw/zh/product/detail/cfec9a1470e448ec91bfde006db361e8",
+      "status": "DATASET_ERA_PROOF_PENDING"
+    },
+    {
+      "source": "TPEx",
+      "dataset": "STOCK_DAILY_OHLCV",
+      "reference": "https://www.tpex.org.tw/zh-tw/mainboard/trading/info/mi-pricing/historical.html",
+      "status": "DATASET_ERA_PROOF_PENDING"
+    },
+    {
+      "source": "MOPS",
+      "dataset": "MONTHLY_REVENUE",
+      "reference": "https://mops.twse.com.tw/",
+      "status": "EXACT_DATASET_SPEC_AND_REVISION_PIT_PENDING"
+    },
+    {
+      "source": "TDCC",
+      "dataset": "SHAREHOLDING_DISTRIBUTION",
+      "reference": "https://s.tdcc.com.tw/portal/zh/smWeb/qryStock",
+      "status": "HISTORICAL_NATIVE_16_17_TIER_PROOF_PENDING"
+    },
+    {
+      "source": "TAIFEX",
+      "dataset": "FUTURES_DAILY",
+      "reference": "https://www.taifex.com.tw/cht/3/futDailyMarketView",
+      "alternate": "https://www.taifex.com.tw/cht/3/futDailyMarketReport",
+      "status": "SESSION_ERA_FIELD_EDITION_PROOF_PENDING"
+    },
+    {
+      "source": "NDC",
+      "dataset": "BUSINESS_SIGNAL",
+      "reference": "https://www.ndc.gov.tw/nc_335_2236",
+      "alternate": "https://www.ndc.gov.tw/nc_336_2245",
+      "status": "SERIES_METHOD_REVISION_AND_NATIVE_EXCEL_PROOF_PENDING"
+    },
+    {
+      "source": "FinMind",
+      "dataset": "TaiwanStockPrice",
+      "reference": "https://finmind.github.io/v3/tutor/TaiwanMarket/Technical/",
+      "status": "PROVIDER_DATASET_SCHEMA_REVISION_PIT_PENDING"
+    }
+  ]
+}
