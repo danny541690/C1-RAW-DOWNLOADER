@@ -1,5 +1,5 @@
 name: JARVIS R3 G2 SHARED TEMPLATE FULL 74750 REAL RECONCILIATION
-# Certified NDC revised-vintage 10 first G2 receipts; rerun all 74750 with independent review and no lookahead.
+# Run complete G2 after verified NDC V2 309 additional native matches; do not backdate revised source.
 on:
   push:
     branches:
