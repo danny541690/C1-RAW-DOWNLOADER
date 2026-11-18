@@ -18,7 +18,7 @@ from scripts.v097_seven_historical_format_registry import OFFICIAL_VERSIONS, per
 from scripts.v097_r3_gate_core import SOURCES, COHORT
 
 MAX_BYTES = 2 * 1024 * 1024
-MAX_CANDIDATES_PER_SOURCE = 35
+MAX_CANDIDATES_PER_SOURCE = 90
 PASS = {"BYTE_SHA_MATCH"}
 def check():
     api, control, quality, match, load_json, _, _, call = source_api()
@@ -47,8 +47,11 @@ def check():
                     break
                 result["file_bytes_verified"]+=1
                 path=str(row.get("source_path") or "")
-                observed=inspect(blob,path,source)
-                result["signature_status"]=observed.get("status")
+                if blob[:4]==b"PK\\x03\\x04":
+                    result["signature_status"]="ZIP_CANDIDATE_NOT_DECOMPRESSED"
+                else:
+                    observed=inspect(blob,path,source)
+                    result["signature_status"]=observed.get("status")
                 result["format_candidates"]+=1
                 ym=str(row.get("data_date") or row.get("date") or "")[:7]
                 if len(ym)==7:
