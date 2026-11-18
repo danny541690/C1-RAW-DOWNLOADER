@@ -112,7 +112,7 @@ def main():
  if load(api,reviewfile)!=reviewdoc:raise RuntimeError("REVIEW_NOT_DURABLE")
  raw_review=call(lambda:api.files().get_media(fileId=reviewfile))
  review_sha=hashlib.sha256(raw_review).hexdigest()
- t={"source":SOURCE,"dataset":"MARGIN_FINANCING","historical_era":"TWSE_MODERN_QUOTE_DATASETS",
+ t={"source":SOURCE,"dataset":"MARGIN_FINANCING","historical_era":"TWSE_EARLY_MARKET_SUMMARY_NOT_STOCK_DAILY",
    "template_id":TEMPLATE_ID,"contract_version":"R3_TWSE_RECHECKED_VINTAGE_V1",
    "native_format":"ZIP_JSON","native_layout_id":"TWSE_MARGIN_FINANCING_NATIVE_JSON_PLUS_ARCHIVE_MANIFEST",
    "era_basis":"source_publication_vintage",
@@ -130,13 +130,13 @@ def main():
    "publication_asof_verified":True,"approval_status":"APPROVED",
    "historical_backtest_eligible_before_asof":False}
  approved,why=approved_template({"schema":"R3_G2_APPROVED_SHARED_TEMPLATES_V1","templates":[t]},
-   group_candidates()[(SOURCE,"MARGIN_FINANCING","TWSE_MODERN_QUOTE_DATASETS")],
+   group_candidates()[(SOURCE,"MARGIN_FINANCING","TWSE_EARLY_MARKET_SUMMARY_NOT_STOCK_DAILY")],
    verify_document_factory(api,call,load))
  if not approved:raise RuntimeError("FAILED_REMOTE_PROOF_TEMPLATE_APPROVAL:"+why)
  binding={"source_id":ID,"source":SOURCE,"source_sha256":row["source_sha256"],
    "source_document_sha256":row["source_sha256"],
    "source_path":row["source_path"],
-   "dataset":"MARGIN_FINANCING","historical_era":"TWSE_MODERN_QUOTE_DATASETS",
+   "dataset":"MARGIN_FINANCING","historical_era":"TWSE_EARLY_MARKET_SUMMARY_NOT_STOCK_DAILY",
    "native_format":"ZIP_JSON","native_layout_id":"TWSE_MARGIN_FINANCING_NATIVE_JSON_PLUS_ARCHIVE_MANIFEST",
    "source_data_date":"2001-03-20","source_data_date_verified":True,
    "native_date_evidence_sha256":DOC_SHA,
