@@ -8,6 +8,8 @@ on:
       - 'tests/test_v097_r3_gate_core.py'
       - 'tests/test_v097_r3_extended_bundle.py'
       - 'tests/test_v097_r3_full_cohort.py'
+      - 'scripts/v097_r3_snapshot_audit.py'
+      - 'tests/test_v097_r3_snapshot_audit.py'
       - '.github/workflows/v097_r3_staging_tests.yml'
   workflow_dispatch:
 permissions:
@@ -31,6 +33,7 @@ jobs:
           PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_gate_core.py' -v
           PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_extended_bundle.py' -v
           PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_full_cohort.py' -v
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_snapshot_audit.py' -v
       - name: Safety summary
         if: always()
         run: |
