@@ -177,11 +177,47 @@ def taifex_source(rows,api,call):
     raw=call(lambda:api.files().get_media(fileId=source["destination_id"]))
     sha_ok=sha(raw)==source["source_sha256"]
     baseline,base_enc=csv_decode(raw,("cp950","utf-8-sig","big5"))
-    remote,official_bytes=fetch_official(TAIFEX_OFFICIAL,"post",{
-        "queryStartDate":TAIFEX_DATE_START,"queryEndDate":TAIFEX_DATE_END})
-    other,official_enc=csv_decode(official_bytes,("cp950","utf-8-sig","big5"))
-    if official_enc=="HTML_NOT_CSV":
-        remote["status"]="OFFICIAL_HTTP_HTML_NOT_CSV"
+    # Historical endpoint may decline a full month per request.
+    # Fetch in bounded 3-trading-date windows; aggregate only successfully
+    # decoded official responses with the same 10-column header.
+    if FULL_MODE and baseline:
+        from datetime import datetime as _datetime
+        dates=sorted({norm_cell(x[0]) for x in baseline[1:] if x and
+                     re.fullmatch(r"2024/01/\\d{2}",norm_cell(x[0]))})
+        chunks=[dates[i:i+3] for i in range(0,len(dates),3)]
+        other=None
+        remote={"status":"FETCHED","chunks":[],"official_endpoint":TAIFEX_OFFICIAL}
+        official_enc=None
+        for c in chunks:
+            response,blob=fetch_official(TAIFEX_OFFICIAL,"post",{
+                "queryStartDate":c[0],"queryEndDate":c[-1]})
+            parsed,enc=csv_decode(blob,("cp950","utf-8-sig","big5"))
+            step={"start":c[0],"end":c[-1],"response":response,
+                  "csv_encoding":enc,"rows":len(parsed or [])}
+            remote["chunks"].append(step)
+            if not parsed or len(parsed)<2:
+                remote["status"]="OFFICIAL_CHUNK_DOWNLOAD_HOLD"
+                other=None
+                break
+            if other is None:
+                other=[parsed[0]]
+                official_enc=enc
+            elif compact(parsed[0])!=compact(other[0]):
+                remote["status"]="OFFICIAL_CHUNK_HEADER_CONFLICT"
+                other=None
+                break
+            wanted=set(c)
+            other.extend(x for x in parsed[1:] if x and norm_cell(x[0]) in wanted)
+        remote["chunk_total"]=len(chunks)
+        remote["chunk_success"]=sum(z["response"].get("status")=="FETCHED" and z["rows"]>1
+                                    for z in remote["chunks"])
+        remote["http_status"]=200 if remote["status"]=="FETCHED" else None
+    else:
+        remote,official_bytes=fetch_official(TAIFEX_OFFICIAL,"post",{
+            "queryStartDate":TAIFEX_DATE_START,"queryEndDate":TAIFEX_DATE_END})
+        other,official_enc=csv_decode(official_bytes,("cp950","utf-8-sig","big5"))
+        if official_enc=="HTML_NOT_CSV":
+            remote["status"]="OFFICIAL_HTTP_HTML_NOT_CSV"
     result={"dataset":"TAIFEX_LARGE_TRADER_FUTURES","source_id":TAIFEX_SID,
         "bronze_sha_verified":sha_ok,"bronze_encoding":base_enc,
         "bronze_rows_including_notes":len(baseline or []),
