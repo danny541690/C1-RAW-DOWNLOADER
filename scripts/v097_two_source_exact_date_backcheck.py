@@ -2,7 +2,7 @@
 """JARVIS v0.97: matched-date Bronze versus sourced historical native dataset.
 TDCC: official dataset 1-5 archived weekly CSV (third-party preservation).
 TAIFEX: official historical LargeTraderFut POST for exact existing Bronze dates.
-This is source QA only. Official G2 certificate remains pending independent issuer/PIT proof.
+Full-file audit does not imply entire 74,750-file corpus or R1 Master release.
 """
 import collections,csv,hashlib,io,json,os,re,sys
 from datetime import datetime,timezone
@@ -39,8 +39,10 @@ def fetch_official(url,method="get",data=None):
     try:
         session=requests.Session()
         kw=dict(timeout=(10,60),allow_redirects=True)
+        origin="https://www.tdcc.com.tw" if "tdcc.com.tw" in url else "https://www.taifex.com.tw"
+        referer="https://www.tdcc.com.tw/portal/zh/smWeb/qryStock" if "tdcc.com.tw" in url else TAIFEX_LANDING
         response=session.get(url,**kw) if method=="get" else session.post(url,data=data,headers={
-           "Referer":TAIFEX_LANDING,"Origin":"https://www.taifex.com.tw",
+           "Referer":referer,"Origin":origin,
            "User-Agent":"Mozilla/5.0 JARVIS-v097-source-audit"},**kw)
         response.raise_for_status()
         if len(response.content)>CAP:raise ValueError("HTTP_RESPONSE_OVER_CAP")
