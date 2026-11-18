@@ -1,0 +1,33 @@
+name: JARVIS R3 NDC 320 incremental official native proof
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_ndc_expand_320.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-ndc-320-native-proof-single-writer
+  cancel-in-progress: false
+jobs:
+  ndc-native-incremental:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Prove all 320 NDC native files against true official XLSX
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_ndc_expand_native_320.py
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_g2_source_vintage.py' -v
+          PYTHONPATH=. python scripts/v097_r3_ndc_expand_native_320.py
+      - if: always()
+        run: echo 'Additive immutable V2 Native proof only. Historic values of 2001-2025 are revised 2026 snapshot, not backtest PIT.' >> "$GITHUB_STEP_SUMMARY"
