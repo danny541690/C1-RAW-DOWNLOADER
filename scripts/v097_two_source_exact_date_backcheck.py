@@ -279,10 +279,10 @@ def taifex_source(rows,api,call,quality=None,match=None,load_json=None,put_once=
     for v in sorted(our_counts):
         copies=our_counts[v]
         count_other=their_counts.get(v,0)
-        all_pairs.append({"columns":v,"bronze_count":copies,"official_count":count_other,
+        all_pairs.append({"columns":list(v),"bronze_count":copies,"official_count":count_other,
                           "row_pass":copies==count_other})
     for v in sorted(their_counts.keys()-our_counts.keys()):
-        all_pairs.append({"columns":v,"bronze_count":0,"official_count":their_counts[v],
+        all_pairs.append({"columns":list(v),"bronze_count":0,"official_count":their_counts[v],
                           "row_pass":False})
     result["all_compared_rows"]=all_pairs
     result["unique_row_patterns_compared"]=len(all_pairs)
