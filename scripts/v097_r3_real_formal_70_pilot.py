@@ -48,6 +48,7 @@ def run():
          "sample":70,"sources":all_reports,"r3_g5_issued":0,"production_ready":False,
          "note":"Live registries evaluated against formal R3 contract; existing R1 candidates are not automatically promoted."}
     print("R3_REAL_FORMAL_70_MASTER="+json.dumps(doc,sort_keys=True),flush=True)
+    return doc
 if __name__=="__main__":
     if sys.argv[1:]!=["read-only"]:raise SystemExit("usage: read-only")
     run()
