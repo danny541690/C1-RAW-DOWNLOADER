@@ -43,7 +43,7 @@ def xml_workbook(raw):
     return data
 
 def check_one(doc,sheets):
-    mismatches=[];count=0;blanks=0
+    mismatches=[];count=0;blanks=0;markers=0
     for table in doc["tables"]:
         sheet=sheets.get(table["table"])
         if not sheet:
@@ -65,8 +65,17 @@ def check_one(doc,sheets):
                 mismatches.append("NATIVE_HEADER_NOT_UNIQUE");continue
             native=row.get(cols[0]);trans=cell.get("native_value")
             if cell.get("status")!="VALUE_PRESENT":
-                if native is None and trans is None:blanks+=1
-                else:mismatches.append("DOCUMENTED_GAP_NOT_NATIVE")
+                if native is None and trans is None:
+                    blanks+=1
+                elif (cell.get("status")=="SOURCE_MISSING_VALUE"
+                      and str(native).strip()==str(trans).strip()=="…"
+                      and {"table":table["table"],"field":cell["field"],
+                           "status":"SOURCE_MISSING_VALUE"} in doc.get("gaps",[])):
+                    # Excel itself contains the literal missing-value marker.
+                    # This is not a missing sheet column nor numeric zero.
+                    markers+=1
+                else:
+                    mismatches.append("DOCUMENTED_GAP_NOT_NATIVE")
             elif native is None:
                 mismatches.append("MISSING_ORIGINAL_VALUE")
             else:
@@ -75,6 +84,7 @@ def check_one(doc,sheets):
                 if equal:count+=1
                 else:mismatches.append("NATIVE_CELL_VALUE_MISMATCH")
     return {"verified_cells":count,"documented_native_blanks":blanks,
+            "native_source_missing_markers":markers,
             "mismatch_count":len(mismatches),"mismatches":dict(collections.Counter(mismatches)),
             "source_month":doc.get("month"),"table_count":len(doc.get("tables",[]))}
 
