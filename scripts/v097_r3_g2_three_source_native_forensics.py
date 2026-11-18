@@ -85,7 +85,7 @@ def profile_csv(data,name):
  fields=[field_clean(c) for c in header]
  info.update({"native_header":fields,"native_column_count":cols,"native_nonempty_rows":len(nonempty),
   "actual_trade_rows":len(dat),"footer_note_count":len(foot),
-  "footer_original":foot[:4],"data_width_distribution":dict(collections.Counter(map(len,dat))),
+  "footer_original":foot[:4],"data_width_distribution":{str(k):v for k,v in collections.Counter(map(len,dat)).items()},
   "first_two_data_rows":dat[:2],"last_two_data_rows":dat[-2:],
   "date_count":len({r[0] for r in dat}),
   "date_min":min((r[0] for r in dat),default=None),
