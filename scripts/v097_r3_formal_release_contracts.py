@@ -73,6 +73,11 @@ def validate_g3(proof,row,g2):
         return {"status":"HOLD","reason":"G3_DUPLICATE_OR_MISSING_FIELDS"}
     if not proof["independent_evidence_id"] or not proof["parser_version"]:
         return {"status":"HOLD","reason":"G3_EVIDENCE_MISSING"}
+    # The FULL native proof must cover every dataset-era required semantic,
+    # not merely report an arbitrary well-formed header.
+    required=proof.get("g2_required_fields")
+    if not isinstance(required,list) or not required or not set(required).issubset(set(fields)):
+        return {"status":"HOLD","reason":"G3_G2_REQUIRED_SEMANTICS_UNATTESTED"}
     return {"status":"PASS","parser_version":proof["parser_version"],"proof_digest":digest(proof)}
 
 def validate_g4(mapping,row,g2,g3):
@@ -94,6 +99,9 @@ def validate_g4(mapping,row,g2,g3):
         return {"status":"HOLD","reason":"G4_TARGET_FIELDS_MISSING"}
     if len(set(mapping["target_fields"].values()))!=len(mapping["target_fields"]):
         return {"status":"HOLD","reason":"G4_DUPLICATE_TARGET_FIELDS"}
+    if not isinstance(mapping.get("g3_observed_fields"),list) or not set(mapping["target_fields"]).issubset(
+            set(mapping["g3_observed_fields"])):
+        return {"status":"HOLD","reason":"G4_SOURCE_FIELDS_NOT_IN_G3_PROOF"}
     if any(mapping[k] is not True for k in ("units_verified","time_basis_verified",
                                            "security_identity_asof_verified","numeric_semantics_verified")):
         return {"status":"HOLD","reason":"G4_SEMANTICS_OR_PIT_UNVERIFIED"}
@@ -131,10 +139,21 @@ def confirm_g5_readback(candidate, actual):
         return {"status":"HOLD","reason":"G5_REMOTE_READBACK_MISMATCH"}
     return {"status":"PASS","certificate_sha256":candidate["certificate_sha256"]}
 
-def full_reconcile(records,expected_counts=COUNTS):
+def full_reconcile(records,expected_counts=COUNTS,*,baseline=None,require_baseline=False):
     """Reject missing, duplicate, cross-source, invalid or premature READY records."""
     if len(records)!=COHORT:raise ValueError("FROZEN_74750_MISSING_OR_EXTRA")
     if len({r["source_id"] for r in records})!=COHORT:raise ValueError("DUPLICATE_SOURCE_ID")
+    if require_baseline and not isinstance(baseline,dict):
+        raise ValueError("FROZEN_BASELINE_REQUIRED")
+    if baseline is not None:
+        if len(baseline)!=COHORT or set(baseline)!={r["source_id"] for r in records}:
+            raise ValueError("FROZEN_BASELINE_ID_DRIFT")
+        for rec in records:
+            expected=baseline.get(rec["source_id"])
+            if (not isinstance(expected,dict) or
+                expected.get("source")!=rec["source"] or
+                expected.get("source_sha256")!=rec.get("source_sha256")):
+                raise ValueError("FROZEN_BASELINE_CONTENT_DRIFT")
     actual=Counter(r["source"] for r in records)
     if dict(actual)!=expected_counts:raise ValueError("SEVEN_SOURCE_CENSUS_DRIFT")
     statuses=Counter()
