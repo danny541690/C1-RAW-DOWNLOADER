@@ -3,7 +3,7 @@ from copy import deepcopy
 from hashlib import sha256
 from scripts.v097_r3_formal_release_contracts import (
     certified_contract,validate_g3,validate_g4,certificate,
-    handover_decision,full_reconcile,COUNTS,COHORT)
+    handover_decision,full_reconcile,confirm_g5_readback,COUNTS,COHORT)
 SHA=sha256(b"frozen-bronze").hexdigest()
 PROOF_SHA=sha256(b"independent-proof").hexdigest()
 ROW={"source":"TDCC","source_id":"TDCC-FROZEN-01","source_sha256":SHA,"data_date":"2017-06-30"}
@@ -36,7 +36,9 @@ class R3FormalReleaseTests(unittest.TestCase):
         c=validate_g4(G4,ROW,a,b)
         self.assertEqual(c["status"],"PASS")
         g5=certificate(ROW,GATES,PROOFS,writer_fence="nonempty-real-token",durable_readback=True)
-        self.assertEqual(g5["status"],"PASS")
+        self.assertEqual(g5["status"],"CANDIDATE")
+        self.assertEqual(confirm_g5_readback(g5,g5["certificate"])["status"],"PASS")
+        self.assertEqual(confirm_g5_readback(g5,{**g5["certificate"],"source_id":"tampered"})["status"],"HOLD")
         self.assertFalse(g5["certificate"]["silver_materialized"])
     def test_g2_rejects_guess_and_wrong_era(self):
         p=deepcopy(G2);p["official_attested"]=False
@@ -86,7 +88,11 @@ class R3FormalReleaseTests(unittest.TestCase):
         items[0]["status"]="SILVER_READY"
         with self.assertRaises(ValueError): full_reconcile(items)
         items[0]["g5_durable_readback"]=True
-        items[0]["g5_certificate_sha256"]=PROOF_SHA
+        att={"source_id":items[0]["source_id"],"source":items[0]["source"],"source_sha256":SHA,"status":"SILVER_READY"}
+        from scripts.v097_r3_gate_core import digest
+        items[0]["source_sha256"]=SHA
+        items[0]["g5_certificate"]=att
+        items[0]["g5_certificate_sha256"]=digest(att)
         self.assertEqual(full_reconcile(items)["silver_ready"],1)
         items[0]["source_id"]=items[1]["source_id"]
         with self.assertRaises(ValueError):full_reconcile(items)
