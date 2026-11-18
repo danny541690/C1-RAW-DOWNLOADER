@@ -1,0 +1,32 @@
+name: JARVIS R3 MOPS first full native official monthly revenue G2 certification
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_mops_full_report_first_g2.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-mops-first-full-original-official-g2
+  cancel-in-progress: false
+jobs:
+  verify-all-monthly-revenue-native-cells:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Match complete original OTC monthly revenue official HTML and frozen ZIP
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_mops_full_report_first_formal_g2.py
+          PYTHONPATH=. python scripts/v097_r3_mops_full_report_first_formal_g2.py
+      - if: always()
+        run: echo 'Approve exact verified 2026-vintage 2025-02 MOPS native format only if full source report and every issuer value agree. No Bronze, Silver Gold or production G5.' >> "$GITHUB_STEP_SUMMARY"
