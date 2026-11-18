@@ -135,10 +135,18 @@ def pilot(src):
     cases=[audit(row,src,api,call) for row in select[:PILOT_PER_SOURCE]]
     passed=[c for c in cases if c.get("format_candidate")]
     reasons=dict(collections.Counter(c["status"] for c in cases))
-    # Batch only with a clean representative pilot; no official-G2 promotion.
-    allow_bulk=len(cases)==PILOT_PER_SOURCE and len(passed)==len(cases)
+    # Approve only individual era+format buckets with >=2 clean examples.
+    # Unseen or mixed-format buckets NEVER enter batch even if other samples pass.
+    group_cases=collections.defaultdict(list)
+    for c in cases:
+        key=c["era"]+"|"+kind(c.get("path",""))
+        group_cases[key].append(c)
+    approved=sorted(k for k,v in group_cases.items()
+                    if len(v)>=2 and all(x.get("format_candidate") for x in v))
+    allow_bulk=bool(approved)
     summary={"sampled":len(cases),"candidate":len(passed),"hold":len(cases)-len(passed),
              "status_counts":reasons,"buckets_available":len(buckets),
+             "approved_era_format_buckets":approved,
              "allow_incremental_format_batch":allow_bulk,
              "formal_g2_pass":0}
     report={"schema":VERSION,"source":src,"mode":"PILOT","run":RUN,
@@ -154,13 +162,16 @@ def batch(src):
     pilot_index=load_json(api,index["id"])
     if pilot_index.get("schema")!=VERSION or not pilot_index.get("summary",{}).get("allow_incremental_format_batch"):
         raise RuntimeError("PILOT_NOT_CLEAR_NO_BATCH")
+    approved=set(pilot_index["summary"].get("approved_era_format_buckets",[]))
+    if not approved:raise RuntimeError("NO_APPROVED_ERA_FORMAT_BUCKET")
     rows=read_baseline(api,quality,match,load_json,src);assert_cohort(rows,src)
+    eligible=[r for r in rows if era(r,src)+"|"+kind(r.get("source_path","")) in approved]
     ck_name=CK_PREFIX+src+".json"
     f=match(api,control,ck_name)
     ck=load_json(api,f["id"]) if f else {"schema":VERSION,"source":src,"done":{}}
     if ck.get("schema")!=VERSION:raise RuntimeError("CHECKPOINT_VERSION_CONFLICT")
     done=ck["done"];new={}
-    for row in rows:
+    for row in eligible:
         sid=row["source_id"]
         if sid in done and done[sid].get("sha")==row["source_sha256"]:continue
         new[sid]=audit(row,src,api,call)
@@ -174,7 +185,10 @@ def batch(src):
         back=match(api,control,ck_name)
         if not back or len(load_json(api,back["id"]).get("done",{}))!=len(done):
             raise RuntimeError("BATCH_CHECKPOINT_READBACK_FAILED")
-    summary={"batch_new":len(new),"checked_total":len(done),"remaining":len(rows)-len(done),
+    summary={"batch_new":len(new),"checked_total":len(done),"eligible_total":len(eligible),
+             "remaining_eligible":sum(r["source_id"] not in done for r in eligible),
+             "excluded_unapproved_buckets":len(rows)-len(eligible),
+             "approved_era_format_buckets":sorted(approved),
              "statuses":dict(collections.Counter(x["status"] for x in done.values())),
              "formal_g2_pass":0}
     report={"schema":VERSION,"source":src,"mode":"BATCH","run":RUN,
