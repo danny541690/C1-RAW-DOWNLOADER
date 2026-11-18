@@ -1,0 +1,39 @@
+name: JARVIS R3 G2 SEVEN SOURCE HISTORICAL SHARED TEMPLATES 74750
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_g2_seven_source_templates.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-seven-source-template-and-frozen-compare
+  cancel-in-progress: false
+jobs:
+  seven-source-periodic-format-compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive evidence client
+        run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Validate seven nested official-source template version libraries
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_g2_seven_source_periodic_templates.py scripts/v097_r3_g2_seven_source_template_compare.py
+          PYTHONPATH=. python -m unittest discover -s tests -p 'test_v097_r3_g2_seven_source_periodic_templates.py' -v
+          PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
+      - name: Create seven shared source templates and compare 74750 frozen files
+        run: PYTHONPATH=. python scripts/v097_r3_g2_seven_source_template_compare.py
+      - if: always()
+        run: |
+          echo 'Seven source-level version libraries; each retains dataset and historically effective edition candidates.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Source path YYYY-MM only candidate. Official schema evidence and native dates required for G2 PASS.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No Bronze mutation or Silver Gold transformation, no production Master writes.' >> "$GITHUB_STEP_SUMMARY"
