@@ -21,7 +21,9 @@ B={"source":"TAIFEX","source_id":ROW["source_id"],"source_sha256":SHA,
    "source_document_sha256":SHA,"dataset":"FUTURES_DAILY",
    "historical_era":"TAIFEX_DAY_AND_AFTER_HOURS",
    "native_format":"CSV_ZIP","native_layout_id":"TAIFEX_AFTER_HOURS_DAILY",
-   "source_path":"original/archive.zip","publication_asof_verified":True,
+   "source_path":"original/archive.zip","source_data_date":"2017-05-16",
+   "source_data_date_verified":True,"native_date_evidence_sha256":SHA,
+   "publication_asof_verified":True,
    "native_layout_verified":True,"dataset_origin_verified":True,
    "independent_evidence_id":"fixture-proof","binding_version":"v1"}
 class Tests(unittest.TestCase):
@@ -42,8 +44,8 @@ class Tests(unittest.TestCase):
   self.assertEqual(confirm_g2_readback(candidate,{**candidate["certificate"],"source_id":"tamper"})["status"],"HOLD")
  def test_midmonth_era_and_sha(self):
   approved,_=approved_template(P,T,lambda p:True)
-  bad={**ROW,"data_date":"2017-05-14"}
-  self.assertEqual(file_decision(bad,approved,B)["reason"],"G2_NO_UNIQUE_NATIVE_EDITION")
+  bad={**B,"source_data_date":"2017-05-14"}
+  self.assertEqual(file_decision({**ROW,"data_date":"2017-05-14"},approved,bad)["reason"],"G2_NO_UNIQUE_NATIVE_EDITION")
   bad_bind={**B,"source_sha256":"b"*64}
   self.assertEqual(file_decision(ROW,approved,bad_bind)["reason"],"G2_FROZEN_ID_OR_SHA_MISMATCH")
  def test_coverage_never_claims_official_start(self):
