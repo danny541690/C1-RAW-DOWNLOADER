@@ -1,0 +1,39 @@
+name: JARVIS R3 G2 143 FORMAL OFFICIAL TEMPLATE APPROVAL AUDIT
+on:
+  push:
+    branches:
+      - r3-bronze-silver-ready-staging-20261118
+    paths:
+      - '.github/workflows/v097_r3_g2_143_approval_audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-g2-143-approval-audit
+  cancel-in-progress: false
+jobs:
+  official-evidence-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate reviewed G2 143 template certification code
+        run: |
+          python -m py_compile scripts/v097_r3_g2_143_template_approval_audit.py
+          PYTHONPATH=. python scripts/v097_g2g3_formal_contracts_v2.py selftest
+      - name: Install authenticated Drive readback dependencies
+        run: python -m pip install --disable-pip-version-check google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Audit 143 historical candidate templates and read full frozen cohort
+        run: PYTHONPATH=. python scripts/v097_r3_g2_143_template_approval_audit.py audit
+      - name: Formal G2 release policy
+        if: always()
+        run: |
+          echo 'Independent official evidence and native per-file matching required before a G2 PASS; missing proof is HOLD.' >> "$GITHUB_STEP_SUMMARY"
+          echo '143 templates audited; only immutable QA report in R3_G2_TEMPLATE_APPROVAL_ISOLATED. No Bronze mutation, no Silver Gold.' >> "$GITHUB_STEP_SUMMARY"
