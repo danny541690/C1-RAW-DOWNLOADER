@@ -66,7 +66,9 @@ def main():
                "1151008" in v.replace("/","").replace("-","") for v in date_keys(rr))]
      result["exact_week_2365_records"]=len(exact)
      result["exact_week_sample_rows"]=exact[:4]
-     result["official_stock_2365_sample"]=in_stock[:2]
+     result["official_stock_2365_all_native_tiers"]=in_stock[:25]
+     result["official_current_tier_code_values"]=[r.get("持股分級") for r in in_stock]
+     result["current_tier_count_including_total_or_reserved"]=len(in_stock)
      result["status"]="HOLD_DATASET_FORMAT_NATIVE_MAPPED_BUT_EXACT_WEEK_CONTENT_NOT_VALIDATED"
  except requests.RequestException as e:
   result["status"]="OFFICIAL_OPENAPI_REQUEST_"+type(e).__name__
