@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 100
     env:
-      GOOGLE_CLIENT_ID: \${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: \${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REFRESH_TOKEN: \${{ secrets.GOOGLE_REFRESH_TOKEN }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
       G2_TWO_SOURCE_BATCH: '50'
     steps:
       - uses: actions/checkout@v4
@@ -65,7 +65,7 @@ jobs:
         if: always()
         run: |
           echo "## TDCC/TAIFEX sample-first format QA" >> "$GITHUB_STEP_SUMMARY"
-          echo "TDCC sample format gate: \${{ steps.tdcc.outputs.ready }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "TAIFEX sample format gate: \${{ steps.taifex.outputs.ready }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "TDCC sample format gate: ${{ steps.tdcc.outputs.ready }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "TAIFEX sample format gate: ${{ steps.taifex.outputs.ready }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Batch requires BOTH representative pilots clean. Reports/CK saved to Google Drive." >> "$GITHUB_STEP_SUMMARY"
           echo "All decisions are FORMAT_CANDIDATE only. No official G2 certificate, no Bronze writes, no Silver/Gold." >> "$GITHUB_STEP_SUMMARY"
