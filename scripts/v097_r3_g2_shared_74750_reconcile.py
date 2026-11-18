@@ -110,6 +110,7 @@ def main():
         if set(binds)-set(r["source_id"] for r in rows):
             raise RuntimeError("NATIVE_BINDING_ORPHAN_"+src)
         state=Counter();records=[];certified=0
+        source_review_cache={}
         for row in rows:
             native=binds.get(row["source_id"])
             if isinstance(native,dict):
@@ -118,6 +119,24 @@ def main():
                 decision=file_decision(row,candidates,native)
             else:
                 decision={"status":"HOLD","reason":"G2_NATIVE_BINDING_MISSING" if approved else "G2_SHARED_TEMPLATE_NOT_YET_APPROVED"}
+            if decision["status"]=="CANDIDATE":
+                # Cross-check each approved source-vintage file against an
+                # independently committed proof, not merely binding flags.
+                if any(t.get("era_basis")=="source_publication_vintage" for t in candidates):
+                    eid=native.get("independent_evidence_id")
+                    if eid not in source_review_cache:
+                        source_review_cache[eid]=load_json(api,eid) if eid else None
+                    review=source_review_cache[eid]
+                    matched=([x for x in review.get("records",[]) if
+                              x.get("source_id")==row["source_id"] and
+                              x.get("source_sha256")==row["source_sha256"]]
+                             if isinstance(review,dict) else [])
+                    if (len(matched)!=1 or matched[0].get("mismatch_count")!=0 or
+                        matched[0].get("source_month")+"-01"!=native.get("source_data_date") or
+                        matched[0].get("archive_sha256")!=native.get("native_date_evidence_sha256") or
+                        review.get("published_archive_sha256")!=native.get("native_date_evidence_sha256") or
+                        native.get("historical_backtest_eligible_before_source_publication") is not False):
+                        decision={"status":"HOLD","reason":"G2_INDEPENDENT_VINTAGE_NATIVE_REVIEW_MISSING_OR_CONFLICT"}
             if decision["status"]=="CANDIDATE":
                 # A certificate is immutable, individually uploaded and independently
                 # fetched before it can be counted as PASS.
