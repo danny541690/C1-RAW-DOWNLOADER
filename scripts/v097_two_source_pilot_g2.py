@@ -25,9 +25,18 @@ def kind(path):
         if p.endswith(ext):return ext
     return "OTHER"
 def era(row,src):
-    date=str(row.get("data_date") or row.get("date") or "")
-    try:return period(src,date[:7])["id"]
-    except (ValueError,KeyError,TypeError):return "ERA_UNKNOWN"
+    # Date is a candidate for selecting the correct historical parser,
+    # NOT proof of a publication date or original official availability.
+    from datetime import datetime
+    import re
+    tokens=[str(row.get("data_date") or ""),str(row.get("date") or ""),
+            str(row.get("source_path") or "")]
+    for token in tokens:
+        for matched in re.findall(r"(?<!\\d)(20\\d{2})[-_/]?(0[1-9]|1[0-2])(?:[-_/]?([0-3]\\d))?(?!\\d)",token):
+            y,m,_=matched
+            try:return period(src,y+"-"+m)["id"]
+            except (ValueError,KeyError,TypeError):continue
+    return "ERA_UNKNOWN"
 def ordered(rows,src):
     buckets={}
     for row in rows:
@@ -204,6 +213,9 @@ def selftest():
     b=csv_evidence(b"date,contract,expiration,volume\n2026-11-18,TX,202612,5,unexpected\n",
       "a.csv","TAIFEX","TAIFEX_DAY_AND_AFTER_HOURS")
     assert not b["candidate"]
+    assert era({"source_path":"distribution_20251031_YHT8.html"},"TDCC")=="TDCC_WEEKLY_DISTRIBUTION"
+    assert era({"source_path":"largeTraderFut_20160401.csv"},"TAIFEX")=="TAIFEX_DAY_SESSION_HISTORICAL"
+    assert era({"source_path":"largeTraderFut_20240102.csv"},"TAIFEX")=="TAIFEX_DAY_AND_AFTER_HOURS"
     print("TWO_SOURCE_PILOT_SELFTEST_PASS")
 if __name__=="__main__":
     if len(sys.argv)==2 and sys.argv[1]=="selftest":selftest()
