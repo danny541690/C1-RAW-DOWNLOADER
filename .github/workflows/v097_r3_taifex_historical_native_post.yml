@@ -1,5 +1,5 @@
 name: JARVIS R3 TAIFEX TRUE historical official native CSV 20240102 G2 pilot
-# Distinguish real dates from native footer tokens; official historical POST must reproduce complete original CSV.
+# Official POST now reached native compare; fix JSON receipt shape for reliable remote readback.
 on:
   push:
     branches: [r3-bronze-silver-ready-staging-20261118]
