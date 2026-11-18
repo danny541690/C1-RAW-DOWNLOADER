@@ -120,7 +120,15 @@ def certificate(row, gates, proofs, *, writer_fence, durable_readback, schema="R
         "writer_fence":writer_fence,"status":"SILVER_READY","silver_materialized":False,
         "gold_materialized":False
     }
-    return {"status":"PASS","certificate":attestation,"certificate_sha256":digest(attestation)}
+    # This is only the PRE-COMMIT candidate. Actual PASS requires Drive readback.\n    return {"status":"CANDIDATE","certificate":attestation,"certificate_sha256":digest(attestation)}
+
+def confirm_g5_readback(candidate, actual):
+    """Only an independently fetched exact Drive document promotes a candidate."""
+    if not isinstance(candidate,dict) or candidate.get("status")!="CANDIDATE":
+        return {"status":"HOLD","reason":"G5_NO_VALID_CANDIDATE"}
+    if not isinstance(actual,dict) or digest(actual)!=candidate.get("certificate_sha256") or actual!=candidate.get("certificate"):
+        return {"status":"HOLD","reason":"G5_REMOTE_READBACK_MISMATCH"}
+    return {"status":"PASS","certificate_sha256":candidate["certificate_sha256"]}
 
 def full_reconcile(records,expected_counts=COUNTS):
     """Reject missing, duplicate, cross-source, invalid or premature READY records."""
@@ -134,7 +142,13 @@ def full_reconcile(records,expected_counts=COUNTS):
         if st=="SILVER_READY" and not (
             row.get("g5_durable_readback") is True
             and isinstance(row.get("g5_certificate_sha256"),str)
-            and HEX.fullmatch(row["g5_certificate_sha256"])):
+            and HEX.fullmatch(row["g5_certificate_sha256"])
+            and isinstance(row.get("g5_certificate"),dict)
+            and row["g5_certificate"].get("source_id")==row["source_id"]
+            and row["g5_certificate"].get("source")==row["source"]
+            and row["g5_certificate"].get("source_sha256")==row.get("source_sha256")
+            and row["g5_certificate"].get("status")=="SILVER_READY"
+            and digest(row["g5_certificate"])==row["g5_certificate_sha256"]):
             raise ValueError("UNSIGNED_READY_PROMOTION")
         if st not in {"SILVER_READY","HOLD","EXCLUDED","NOT_APPLICABLE","PENDING","RETRY"}:
             raise ValueError("BAD_RECORD_STATUS")
