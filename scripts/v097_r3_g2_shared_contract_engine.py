@@ -16,6 +16,7 @@ from scripts.v097_r3_gate_core import digest
 HEX=re.compile(r"^[0-9a-fA-F]{64}$")
 REQUIRED_BINDING=("source_id","source","source_sha256","dataset","historical_era",
  "native_format","native_layout_id","source_document_sha256","source_path",
+ "source_data_date","source_data_date_verified","native_date_evidence_sha256",
  "publication_asof_verified","native_layout_verified",
  "dataset_origin_verified","independent_evidence_id","binding_version")
 def real_day(s):
@@ -98,8 +99,15 @@ def file_decision(row,approved_templates,native_binding):
         return {"status":"HOLD","reason":"G2_NATIVE_PROVENANCE_UNATTESTED"}
     if not native_binding["independent_evidence_id"]:
         return {"status":"HOLD","reason":"G2_NATIVE_EVIDENCE_ID_MISSING"}
-    day=real_day(row.get("data_date") or row.get("date"))
+    if native_binding["source_data_date_verified"] is not True:
+        return {"status":"HOLD","reason":"G2_NATIVE_DATA_DATE_NOT_ATTESTED"}
+    if not isinstance(native_binding["native_date_evidence_sha256"],str) or not HEX.fullmatch(native_binding["native_date_evidence_sha256"]):
+        return {"status":"HOLD","reason":"G2_NATIVE_DATE_EVIDENCE_SHA_MISSING"}
+    day=real_day(native_binding["source_data_date"])
     if not day:return {"status":"HOLD","reason":"G2_FILE_DATE_UNVERIFIED"}
+    baseline_date=row.get("data_date") or row.get("date")
+    if baseline_date and real_day(baseline_date)!=day:
+        return {"status":"HOLD","reason":"G2_DATE_CONFLICT_WITH_BASELINE"}
     matched=[t for t in approved_templates if
              native_binding["dataset"]==t["dataset"] and
              native_binding["historical_era"]==t["historical_era"] and
