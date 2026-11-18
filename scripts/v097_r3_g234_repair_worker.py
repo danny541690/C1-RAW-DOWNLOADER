@@ -13,6 +13,8 @@ from scripts.v097_acceptance_engine_r1 import get_contracts,CERT_G2,CERT_G3
 from scripts.v097_r3_gate_core import SOURCES, COHORT, digest
 from scripts.v097_r3_formal_release_contracts import certified_contract, validate_g3, validate_g4
 from scripts.v097_g2g3_formal_contracts_v2 import catalog
+from scripts.v097_r3_g4_seven_source_candidates import catalog as g4_catalog
+from pathlib import Path
 from scripts.v097_bronze_first_pipeline import match,put_once
 
 FOLDER="R3_G234_FORMAL_REPAIR_ISOLATED"
@@ -32,8 +34,13 @@ def evaluate_all(size):
     api,control,quality,match_fn,load_json,put_once_fn,_,call=source_api()
     # Catalog is candidate-only, never a proof; deliberately record its count.
     candidate_specs=catalog()
+    g4_candidates=g4_catalog()
+    official_references=json.loads(Path("docs/V097_R3_G2_OFFICIAL_REFERENCE_CANDIDATES.json").read_text())
+    if official_references.get("status")!="CANDIDATE_NOT_ATTESTED" or len(official_references["sources"])!=7:
+        raise RuntimeError("OFFICIAL_REFERENCE_SEED_NOT_CONSERVATIVE")
     report={"schema":VERSION,"size":size,"run":os.environ.get("GITHUB_RUN_ID","manual"),
-      "cohort":COHORT,"catalog_candidates":len(candidate_specs),"sources":[],
+      "cohort":COHORT,"catalog_candidates":len(candidate_specs),"g4_dataset_candidates":g4_candidates["count"],
+      "official_reference_seed_candidates":7,"sources":[],
       "official_verified_catalog_templates":0,"no_silver_gold":True,
       "created_at":datetime.datetime.now(datetime.timezone.utc).isoformat()}
     counts=collections.Counter();total=0;baseline_total=0
@@ -90,6 +97,16 @@ def evaluate_all(size):
     if folder.get("mimeType")!="application/vnd.google-apps.folder":
         raise RuntimeError("NOT_ISOLATED_FOLDER")
     fid=folder["id"]
+    if size==70:
+        seeds=[("g2_historical_template_candidates",{"schema":"R3_G2_GROUP_CANDIDATES_V1",
+                  "approval":"NOT_CERTIFIED","templates":candidate_specs}),
+               ("g2_official_reference_candidates",official_references),
+               ("g4_seven_source_input_candidates",g4_candidates)]
+        for tag,payload in seeds:
+            seed_name=tag+"_run_"+report["run"]+".json"
+            seed_id=put_once_fn(api,fid,seed_name,payload)
+            if load_json(api,seed_id)!=payload:raise RuntimeError("SEED_CATALOG_READBACK_MISMATCH_"+tag)
+        report["candidate_catalogs_written_and_readback"]=3
     # idempotent full receipts, exact readback after upload.
     out={"summary":report,"records":private_records}
     filename=f"r3_g234_{size}_run_{report['run']}.json"
