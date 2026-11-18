@@ -14,7 +14,7 @@ from scripts.v097_r3_gate_core import SOURCES,COHORT,digest
 RUN=os.getenv("GITHUB_RUN_ID","manual")
 DEST="R3_G2_SEVEN_SOURCE_OFFICIAL_QA_COMPOSITE_ISOLATED"
 PAIRS=(
- ("TWSE","R3_G2_TWSE_FIRST_SOURCE_VINTAGE_FORMAL_ISOLATED","r3_twse_margin_financing_g2_source_vintage_cert_44268565232.json","2026-11-18"),
+ ("TWSE","R3_G2_TWSE_FIRST_SOURCE_VINTAGE_FORMAL_ISOLATED","r3_twse_valuation_g2_source_vintage_cert_44268565232.json","2026-11-18"),
  ("TPEx","R3_G2_TPEX_FIRST_SOURCE_VINTAGE_FORMAL_ISOLATED","r3_tpex_valuation_g2_source_vintage_cert_44267841704.json","2026-11-18"))
 def main():
  api,control,quality,match,load,_,_,call=source_api()
