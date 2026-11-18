@@ -1,0 +1,32 @@
+name: JARVIS R3 G2 325 seven-source official source-vintage QA after MOPS
+on:
+  push:
+    branches: [r3-bronze-silver-ready-staging-20261118]
+    paths: ['.github/workflows/v097_r3_g2_325_mops_overlay.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-r3-g2-325-seven-source-immutable-qa
+  cancel-in-progress: false
+jobs:
+  verify-325-source-vintage-G2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib requests beautifulsoup4
+      - name: Merge independently certified original MOPS one source-vintage G2 with verified frozen 74750 prior 324 overlay
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/v097_r3_g2_325_mops_official_qa_overlay.py
+          PYTHONPATH=. python scripts/v097_r3_g2_325_mops_official_qa_overlay.py
+      - if: always()
+        run: echo 'QA only. MOPS 2025 original shares numeric unchanged; 2026 IPOs and renames held out of 2025 period. Bronze and production Master unchanged.' >> "$GITHUB_STEP_SUMMARY"
