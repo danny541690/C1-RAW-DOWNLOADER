@@ -1,4 +1,5 @@
 name: JARVIS R3 G2 143 FORMAL OFFICIAL TEMPLATE APPROVAL AUDIT
+# Full seven-source missing-evidence priority matrix rerun.
 on:
   push:
     branches:
