@@ -103,7 +103,9 @@ def evaluate(row,fmt,mp,v3,g2,g3,era=None):
                 g3state="PASS";evidence["G3"]=g3["contract_version"]
             else:reason="G3_FULL_NATIVE_SCHEMA_CERT_PENDING"
             if g3state=="PASS":
-                if (scope(row)=="IN_SCOPE" and g2.get("source_lineage_verified") is True and
+                if ((g3.get("stock_scope") or scope(row))=="IN_SCOPE" and
+                    g3.get("historical_scope_verified") is True and
+                    g2.get("source_lineage_verified") is True and
                     g3.get("official_numeric_verified") is True and g3.get("pit_verified") is True):
                     g4="READY";reason="FULL_CHAIN_CERTIFIED"
                 elif scope(row) in ("EXCLUDED_CONTROL","SCOPE_EXCLUDED_NONSTOCK","STOCK_SCOPE_EXCLUDED"):
@@ -337,14 +339,16 @@ def selftest():
         "publication_asof_verified":True,"source_lineage_verified":True}
     g3={**base,"schema":"R1_G3_SCHEMA_CERT_V1","dataset_contract_version":"dataset-v1",
         "full_file_scanned":True,"native_units_verified":True,"types_and_keys_verified":True,
-        "row_count":5,"validation_errors":0,"official_numeric_verified":True,"pit_verified":True}
+        "row_count":5,"validation_errors":0,"official_numeric_verified":True,"pit_verified":True,
+        "historical_scope_verified":True,"stock_scope":"IN_SCOPE"}
     assert evaluate(row,fmt,None,v3,g2,g3,"ERA")["status"]=="READY"
     assert evaluate(row,fmt,None,v3,g2,{**g3,"full_file_scanned":False},"ERA")["status"]=="PENDING"
+    assert evaluate(row,fmt,None,v3,g2,{**g3,"historical_scope_verified":False},"ERA")["status"]!="READY"
     assert evaluate(row,fmt,None,v3,{**g2,"sha":"x"*64},g3,"ERA")["gates"]["G2"]!="PASS"
     assert evaluate(row,fmt,None,{},g2,g3,"ERA")["status"]!="READY"
     assert evaluate({**row,"bronze_status":"BRONZE_INTEGRITY_HOLD"},fmt,None,v3,g2,g3,"ERA")["status"]!="READY"
     assert evaluate(row,fmt,None,v3,g2,g3,"OTHER_ERA")["status"]!="READY"
-    assert evaluate({**row,"stock_scope":"STOCK_SCOPE_EXCLUDED"},fmt,None,v3,g2,g3,"ERA")["status"]=="EXCLUDED"
+    assert evaluate({**row,"stock_scope":"STOCK_SCOPE_EXCLUDED"},fmt,None,v3,g2,{**g3,"stock_scope":"STOCK_SCOPE_EXCLUDED"},"ERA")["status"]=="EXCLUDED"
     zip_native={**v3,"new_native_evidence":{"format":"ZIP","member_schemas_verified":False}}
     assert evaluate(row,fmt,None,zip_native,g2,g3,"ERA")["status"]!="READY"
     assert all(0<=lane(str(i),src)<SHARDS[src] for src in SHARDS for i in range(10))
