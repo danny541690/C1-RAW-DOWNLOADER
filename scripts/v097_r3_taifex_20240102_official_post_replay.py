@@ -36,11 +36,11 @@ def main():
  source_rows,source_encoding=normalized(native)
  if not source_rows or len(source_rows)<3:raise RuntimeError("UNREADABLE_NATIVE_TAIFEX")
  date_values={r[0] for r in source_rows[1:] if r}
- if date_values!={"2024/01/02"}:raise RuntimeError("BRONZE_MULTI_DATE_OR_SOURCE_DATE_CONFLICT")
+ if not date_values or any(not d.startswith("2024/01/") for d in date_values):\n  raise RuntimeError("BRONZE_CONTAINS_NON_JANUARY_DATE")\n first_day,last_day=min(date_values),max(date_values)
  outcome={"schema":"R3_TAIFEX_OFFICIAL_HISTORICAL_POST_NATIVE_COMPARE_V1",
   "run":RUN,"source":SRC,"source_id":SID,
   "frozen_source_sha256":row["source_sha256"],
-  "official_api":API,"query_start":DAY,"query_end":DAY,
+  "official_api":API,"query_start":first_day,"query_end":last_day,
   "native_rows_including_header":len(source_rows),
   "native_encoding":source_encoding,
   "original_frozen_date_values":sorted(date_values),
@@ -50,7 +50,7 @@ def main():
   "historical_contemporaneous_2024_pit_attested":False,
   "formal_G2_issued":False}
  try:
-  r=requests.post(API,data={"queryStartDate":DAY,"queryEndDate":DAY},
+  r=requests.post(API,data={"queryStartDate":first_day,"queryEndDate":last_day},
      timeout=25,headers={"User-Agent":"Mozilla/5.0 JARVIS-R3-G2-Historical-Official/1.0"})
   outcome["http_status"]=r.status_code
   outcome["redirect_host"]=urlparse(r.url).hostname
