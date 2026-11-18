@@ -27,10 +27,11 @@ jobs:
           set -euo pipefail
           python -m py_compile scripts/v097_r3_gate_core.py scripts/v097_r3_snapshot_audit.py scripts/v097_r3_workflow_collision_audit.py scripts/v097_r3_prelaunch_readiness.py
           PYTHONPATH=. python scripts/v097_seven_historical_format_registry.py selftest
+          python -m py_compile scripts/v097_r3_formal_release_contracts.py
       - name: Combined 70 / 700 / 1000 / 74750 / G0-G5 regression
         run: |
           set -euo pipefail
-          for case in test_v097_r3_gate_core.py test_v097_r3_extended_bundle.py test_v097_r3_full_cohort.py test_v097_r3_snapshot_audit.py test_v097_r3_prelaunch_readiness.py; do
+          for case in test_v097_r3_gate_core.py test_v097_r3_extended_bundle.py test_v097_r3_full_cohort.py test_v097_r3_snapshot_audit.py test_v097_r3_prelaunch_readiness.py test_v097_r3_formal_release_contracts.py; do
             PYTHONPATH=. python -m unittest discover -s tests -p "$case" -v
           done
       - name: Inspect old dispatch and potential writers
