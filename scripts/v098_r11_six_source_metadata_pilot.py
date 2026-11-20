@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """JARVIS v0.98 R11: official source Drive metadata-only pilot scanner.
 
-NO Drive write, no raw download, no Bronze copy. The repository is PUBLIC:
+NO Drive write, no raw download, no Bronze copy.
+R11 live gate one-time GitHub Actions trigger, read-only bounded 2026-10. The repository is PUBLIC:
 the report includes ONLY aggregate counts, NEVER Drive IDs, names, MD5s or paths.
 Do not classify a missing month folder as missing market data before the
 Dataset Expected Coverage registry is certified.
