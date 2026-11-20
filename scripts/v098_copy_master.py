@@ -52,23 +52,37 @@ def ensure_target_source_directories(api):
         if any(v>1 for v in Counter(x["name"] for x in sources).values()):
             raise RuntimeError("Duplicate destination source directories")
 
-def target_duplicate_file_count(api):
-    """Only reads the year/source subtree; excludes test-only/control folders."""
-    years = [f for f in children(api,TARGET) if f["mimeType"]==FOLDER_MIME
-             and f["name"].isdigit() and len(f["name"])==4]
-    dup=0
+def target_inventory_issues(api, expected_by_id):
+    """Reconcile target IDs, paths, names; no source-content or schema QA."""
+    years=[f for f in children(api,TARGET) if f["mimeType"]==FOLDER_MIME
+           and f["name"].isdigit() and len(f["name"])==4]
+    duplicate=0
+    extra=0
+    misplaced=0
+    found=set()
     for year in years:
         sources=[x for x in children(api,year["id"])
                  if x["mimeType"]==FOLDER_MIME and x["name"] in OFFICIAL_SOURCES]
         for source in sources:
-            stack=[source["id"]]
+            stack=[(source["id"],f"{year['name']}/{source['name']}")]
             while stack:
-                parent=stack.pop()
+                parent,prefix=stack.pop()
                 entries=list(children(api,parent))
-                count=Counter((x["name"],x["mimeType"]==FOLDER_MIME) for x in entries)
-                dup+=sum(v-1 for v in count.values() if v>1)
-                stack.extend(x["id"] for x in entries if x["mimeType"]==FOLDER_MIME)
-    return dup
+                names=Counter((x["name"],x["mimeType"]==FOLDER_MIME) for x in entries)
+                duplicate+=sum(v-1 for v in names.values() if v>1)
+                for x in entries:
+                    path=f"{prefix}/{x['name']}"
+                    if x["mimeType"]==FOLDER_MIME:
+                        stack.append((x["id"],path))
+                    elif x["id"] not in expected_by_id:
+                        extra+=1
+                    else:
+                        found.add(x["id"])
+                        if expected_by_id[x["id"]]!=path:
+                            misplaced+=1
+    return {"duplicates":duplicate,"untracked_target_files":extra,
+            "wrong_target_paths":misplaced,
+            "missing_target_ids":len(set(expected_by_id)-found)}
 
 def activate(api):
     old, fid=fetch_master(api)
@@ -118,18 +132,34 @@ def finalize(api, report_dir):
                                    "holds":x.get("statuses",{}).get("HOLD",0)}
                        for x in rows}}
     if remaining==0:
-        dup=target_duplicate_file_count(api)
-        master["last_run_summary"]["duplicate_target_names"]=dup
-        if dup:
-            master["state"]="FINISHED_WITH_HOLD"
-        elif holds:
-            master["state"]="FINISHED_WITH_HOLD"
-        else:
-            master["state"]="COMPLETE"
+        expected={}
+        ledger_errors=0
+        for source in OFFICIAL_SOURCES:
+            receipts=read_checkpoint(api,source)
+            count=next(x["recorded_source_ids"] for x in rows if x["source"]==source)
+            if len(receipts)!=count:
+                ledger_errors+=1
+            for row in receipts:
+                if row.get("status")=="HOLD":
+                    continue
+                if not row.get("source_sha256") or row.get("source_sha256")!=row.get("target_sha256"):
+                    ledger_errors+=1
+                    continue
+                target_id=row.get("target_id")
+                if not target_id:
+                    ledger_errors+=1
+                elif target_id in expected and expected[target_id]!=row.get("path"):
+                    ledger_errors+=1
+                else:
+                    expected[target_id]=row.get("path")
+        issues=target_inventory_issues(api,expected)
+        issues["missing_sha_evidence_or_bad_ledger"]=ledger_errors
+        master["last_run_summary"]["target_reconciliation"]=issues
+        master["state"]="COMPLETE" if not holds and not any(issues.values()) else "FINISHED_WITH_HOLD"
     commit_master(api,master,fid)
     print(json.dumps({"state":master["state"],"source_files":total,
          "recorded":received,"remaining":remaining,"holds":holds,
-         "duplicates":master["last_run_summary"].get("duplicate_target_names")}))
+         "target_audit":master["last_run_summary"].get("target_reconciliation")}))
         
 def main():
     parser=argparse.ArgumentParser()
