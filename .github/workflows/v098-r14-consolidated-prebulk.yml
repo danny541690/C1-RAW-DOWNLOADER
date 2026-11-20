@@ -2,9 +2,6 @@ name: JARVIS v0.98 R14 Consolidated Pre-Bulk Hold Gate
 # READ ONLY: no Bronze migration, no Drive writes. Explicit fail-closed approval.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r14_staging_integrity.py'
 permissions:
   contents: read
 concurrency:
