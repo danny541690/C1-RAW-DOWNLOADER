@@ -1,0 +1,110 @@
+name: JARVIS v0.98 R17 Combined Manifest Identity and Pre-Bulk Gate
+# Read existing R16 private manifests, no raw source download or Drive writes.
+# Public GitHub artifacts contain counts and statuses ONLY.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v098-r17-single-controller
+  cancel-in-progress: false
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3'
+      - name: R17 identity, C8 count semantics and fail-closed gate
+        run: python scripts/v098_r17_manifest_audit.py --selftest --out r17_preflight/r17.json
+      - name: R16 12-way local parallel lease regression
+        run: python scripts/v098_r16_concurrency.py --out r17_preflight/concurrency.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: r17-preflight
+          path: r17_preflight/
+          if-no-files-found: error
+  six-source-audit:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3'
+      - name: Analyze 27 pre-existing private manifests per source (no raw downloads)
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r17_manifest_audit.py --source "${{ matrix.source }}" --out r17_sources/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r17-source-${{ matrix.source }}
+          path: r17_sources/
+          if-no-files-found: warn
+  reconcile:
+    needs: [preflight, six-source-audit]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: r17-preflight
+          path: r17_preflight/
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r17-source-*
+          path: r17_sources/
+          merge-multiple: true
+      - name: Single reconciler checks exact population and publishes open gates
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          prereq=[json.loads(f.read_text()) for f in pathlib.Path('r17_preflight').glob('*.json')]
+          if len(prereq)!=2 or any(r.get('status')!='PASS' for r in prereq):sys.exit('Regression failure')
+          data=[json.loads(f.read_text()) for f in pathlib.Path('r17_sources').glob('*.json')]
+          src={'TWSE','TPEx','MOPS','NDC','TDCC','TAIFEX'}
+          if len(data)!=6 or {r.get('source') for r in data}!=src:sys.exit('Missing source receipt')
+          if any(r.get('years')!=27 or r.get('status') not in ('PASS_IDENTITY_AND_CANDIDATE_SCAN','HOLD_IDENTITY_CONFLICT') for r in data):sys.exit('Incomplete manifest audit')
+          total=sum(r['records'] for r in data)
+          if total!=78281:sys.exit('R16 population drift - manual review required')
+          conflicts=sum(r['duplicate_file_id']+r['same_parent_filename_conflicts'] for r in data)
+          output={'status':'PASS_AUDIT_WITH_PRODUCTION_HOLDS' if conflicts==0 else 'HOLD_IDENTITY_CONFLICT',
+             'records':total,'source_years':162,
+             'duplicate_file_id':sum(r['duplicate_file_id'] for r in data),
+             'same_parent_filename_conflicts':sum(r['same_parent_filename_conflicts'] for r in data),
+             'same_md5_different_names_candidates':sum(r['same_md5_different_names_candidates'] for r in data),
+             'identical_content_candidates':sum(r['identical_content_candidates'] for r in data),
+             'zero_byte':sum(r['zero_byte'] for r in data),'missing_md5':sum(r['missing_md5'] for r in data),
+             'R16_vs_legacy_74750_count_delta':total-74750,
+             'legacy_74750_population_membership_verified':False,
+             'C8_216_planned_categories_not_162_verified_official_source_years':True,
+             'dataset_valid_periods_certified':False,'pit_next_day_certified':False,
+             'remote_cross_run_CAS_and_fencing_certified':False,
+             'real_Bronze_destination_canary_certified':False,
+             'bulk_migration_allowed':False,
+             'sources':data}
+          pathlib.Path('r17_final').mkdir(exist_ok=True)
+          pathlib.Path('r17_final/summary.json').write_text(json.dumps(output,indent=2))
+          print(json.dumps({k:v for k,v in output.items() if k!='sources'}))
+          if conflicts:sys.exit('Unsafe identity conflicts; migration remains HOLD')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r17-combined-audit-report
+          path: r17_final/
+          if-no-files-found: warn
