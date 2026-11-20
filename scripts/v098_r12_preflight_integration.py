@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """JARVIS v0.98 R12 pre-migration consolidated small-test gate.
 Synthetic-only and local/runner artifact ledger tests; no Drive writes or real copy.
-R12 second bounded smoke after adding CI google-api-python-client dependency.
+R12 third bounded smoke after fixing SQLite checkpoint parent directory.
 """
 import argparse
 import hashlib
