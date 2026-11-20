@@ -1,14 +1,8 @@
 name: JARVIS v0.97 R1 G0-G4 continuous acceptance
+# 2026-11-20 v0.98 preflight freeze: automated triggers disabled, preserve manual only.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097_acceptance_r1.yml'
-      - 'scripts/v097_acceptance_engine_r1.py'
-      - 'scripts/v097_seven_source_release_standard_v2.py'
   workflow_dispatch:
-  schedule:
-    - cron: '9,24,39,54 * * * *'
+
 permissions:
   contents: read
   actions: write
