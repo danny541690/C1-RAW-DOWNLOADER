@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """R17B targeted identical-path duplicate classification, READ ONLY.
-Only public-safe counts are returned. Never change/delete v0.93 originals.
+Only public-safe counts are returned.
+One bounded R17B source conflict classification run. Never change/delete v0.93 originals.
 """
 import argparse,collections,json,pathlib,sys
 from v098_r16_full_private_manifest import list_children,one_child
