@@ -1,12 +1,9 @@
 name: JARVIS v097 V3 Fifteen-Minute Recovery Watchdog
 # Source worker checkpoints are independent; never writes Bronze/Silver/Gold.
+# v0.98 preflight legacy freeze 2026-11-20: automated triggers removed; manual safe inspection only.
 on:
-  push:
-    paths:
-      - .github/workflows/v097_v3_watchdog.yml
-  schedule:
-    - cron: '*/15 * * * *'
   workflow_dispatch:
+
 permissions:
   contents: read
   actions: write
