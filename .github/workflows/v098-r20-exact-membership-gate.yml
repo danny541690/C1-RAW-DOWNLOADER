@@ -2,9 +2,6 @@ name: JARVIS v0.98 R20 Exact Frozen Membership and Pre-Bulk Gate
 # Read-only cross-ledger join. No source or Bronze mutations, no Silver/Gold.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r20_exact_population_join.py'
 permissions:
   contents: read
 concurrency:
