@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""R9 standalone combined fault-injection gate: synthetic only, no external writes."""
+"""R9 standalone combined fault-injection gate: synthetic only, no external writes.
+One-time bounded CI integration smoke verification.
+"""
 import json,sqlite3,hashlib,uuid,datetime as dt,tempfile,pathlib,argparse
 SOURCES=("TWSE","TPEx","MOPS","NDC","TDCC","TAIFEX")
 def now():return dt.datetime.now(dt.timezone.utc).isoformat()
