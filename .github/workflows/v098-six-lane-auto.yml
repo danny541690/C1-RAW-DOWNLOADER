@@ -14,9 +14,10 @@ on:
         required: false
         type: string
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '0 */4 * * *'
 permissions:
   contents: read
+  actions: write
 concurrency:
   group: jarvis-v098-six-lane-autonomous-copy
   cancel-in-progress: false
@@ -110,3 +111,15 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
         run: python scripts/v098_copy_master.py --mode finalize --reports-dir source_reports
+      - name: Trigger next GitHub Actions batch if and only if Master remains ACTIVE
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          STATE=$(python scripts/v098_copy_master.py --mode status | tail -n 1)
+          if [ "$STATE" = "ACTIVE" ]; then
+            gh workflow run v098-six-lane-auto.yml --ref main
+          fi
