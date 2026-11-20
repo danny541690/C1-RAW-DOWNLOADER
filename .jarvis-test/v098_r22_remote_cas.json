@@ -1,0 +1,7 @@
+{
+  "schema": "JARVIS_R22_SYNTHETIC_REMOTE_CAS",
+  "generation": 0,
+  "owner": "INIT",
+  "test_only": true,
+  "production_allowed": false
+}
