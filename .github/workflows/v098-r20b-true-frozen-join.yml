@@ -1,9 +1,6 @@
 name: JARVIS v0.98 R20B True Frozen 74750 vs 78281 Membership
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r20b_true_g2g3_membership_join.py'
 permissions:
   contents: read
 concurrency:
