@@ -1,9 +1,6 @@
 name: JARVIS v0.98 R22 Synthetic Remote GitHub CAS Concurrency
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r22_remote_cas_test.py'
 permissions:
   contents: write
 concurrency:
