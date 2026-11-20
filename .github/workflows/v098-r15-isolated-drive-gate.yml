@@ -3,9 +3,6 @@ name: JARVIS v0.98 R15 Isolated Drive Gate and 27-Year Folder Census
 # No Bronze, Silver, Gold, or original v0.93 writes. No real file names/IDs in artifacts.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r15_sandbox_gate.py'
 permissions:
   contents: read
 concurrency:
