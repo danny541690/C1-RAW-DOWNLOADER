@@ -46,7 +46,7 @@ def children(api, parent):
         if not token:
             break
 
-def source_manifest(api):
+def source_manifest(api, source=None):
     out = []
     stack = [(SOURCE, "")]
     while stack:
@@ -56,6 +56,8 @@ def source_manifest(api):
             if not prefix and not YEAR.fullmatch(item["name"]):
                 continue  # strict scope: year-based raw originals, not control/canary at root
             if EXCLUDED.search(path):
+                continue
+            if source and YEAR.fullmatch(prefix) and item["name"] != source:
                 continue
             if item["mimeType"] == FOLDER_MIME:
                 stack.append((item["id"], path))
@@ -162,6 +164,19 @@ def copy_one(item):
                 return dict(source_id=src["id"], path=path,
                             status="HOLD", error=str(exc))
             time.sleep(min(2 ** retry, 8))
+
+def read_checkpoint(api, run_name):
+    name = f"v098_copy_checkpoint_{run_name}.json"
+    matches = [f for f in children(api, CHECKPOINTS) if f["name"] == name]
+    if len(matches) > 1:
+        raise RuntimeError("Checkpoint duplicate name; refuse to choose")
+    if not matches:
+        return []
+    data = api.files().get_media(fileId=matches[0]["id"]).execute()
+    records = json.loads(data)
+    if not isinstance(records, list) or any("source_id" not in x for x in records):
+        raise RuntimeError("Checkpoint invalid")
+    return records
 
 def save_checkpoint(api, records, run_name):
     from googleapiclient.http import MediaIoBaseUpload
@@ -294,6 +309,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--mode", choices=["self-test", "preflight", "canary", "migrate"], required=True)
     p.add_argument("--workers", type=int, default=3)
+    p.add_argument("--source", choices=OFFICIAL_SOURCES)
     p.add_argument("--run-key", default=os.getenv("GITHUB_RUN_ID", "local"))
     a = p.parse_args()
     if a.mode == "self-test":
@@ -305,7 +321,7 @@ def main():
     if a.mode == "canary":
         live_canary(api, quick_canary_manifest(api), a.workers)
         return
-    files = source_manifest(api)
+    files = source_manifest(api, a.source)
     plan = planned_targets(api, files)
     print(json.dumps({"source_files": len(files), "planned_source_ids": len(plan),
                       "mode": a.mode, "target": TARGET}))
@@ -313,31 +329,37 @@ def main():
         return
     # One workflow is the only writer. GitHub workflow concurrency controls runs.
     cache = {}
+    ledger_key = a.source or a.run_key
+    prior = read_checkpoint(api, ledger_key)
+    prior_by_id = {r["source_id"]:r for r in prior}
     # Alias groups must NOT be submitted twice; parallel copies would race.
     unique = {}
     for src, path, canonical in plan:
         unique.setdefault(path, (src, path, canonical))
     tasks = [(src, path, canonical, folder_for(api, path, cache))
-             for src, path, canonical in unique.values()]
-    results = []
+             for src, path, canonical in unique.values()
+             if src["id"] not in prior_by_id or prior_by_id[src["id"]].get("status") not in
+             {"COPY_SHA_PASS","SKIP_VERIFIED","ALIAS_SHA_PASS","HOLD"}]
+    results = list(prior)
     with ThreadPoolExecutor(max_workers=a.workers) as pool:
         for future in as_completed([pool.submit(copy_one, task) for task in tasks]):
             results.append(future.result())
             if len(results) % 50 == 0:
-                save_checkpoint(api, results, a.run_key)
+                save_checkpoint(api, results, ledger_key)
     # Reconstruct one result for every source identity, including exact aliases.
-    by_path = {r['path']: r for r in results}
+    by_path = {r["path"]: r for r in results}
     alias_results = [dict(source_id=src['id'], canonical_id=canonical,
                           target_id=by_path[path].get('target_id'), path=path,
                           status=('ALIAS_SHA_PASS' if by_path[path]['status'] != 'HOLD' else 'HOLD'))
-                     for src, path, canonical in plan if src['id'] != canonical]
+                     for src, path, canonical in plan if src['id'] != canonical
+                     and src['id'] not in prior_by_id]
     results.extend(alias_results)
-    save_checkpoint(api, results, a.run_key)
+    save_checkpoint(api, results, ledger_key)
     tally = defaultdict(int)
     for r in results:
         tally[r["status"]] += 1
-    print(json.dumps({"run": a.run_key, "statuses": dict(tally),
-                      "source_ids": len(plan)}, ensure_ascii=False))
+    print(json.dumps({"run": a.run_key, "source": a.source, "statuses": dict(tally),
+                      "source_ids": len(plan), "checkpoint_count":len(results)}, ensure_ascii=False))
     if tally['HOLD']:
         raise SystemExit(2)
 
