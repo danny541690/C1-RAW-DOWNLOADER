@@ -335,7 +335,7 @@ def live_canary(api, files, workers):
         assert sum(x["name"] == os.path.basename(path) for x in present) == 1
     result = {"live_canary": "PASS", "source_files": 6, "min_bytes": min(int(f["size"]) for f in picks),
               "interrupted_first_batch": 3, "parallel_workers": workers,
-              "replayed_skips": 6, "duplicates": 0, "target_ids": ids}
+              "replayed_skips": 6, "duplicates": 0}
     print(json.dumps(result, ensure_ascii=False))
     return result
 
