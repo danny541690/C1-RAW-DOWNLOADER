@@ -173,11 +173,14 @@ def finalize(api, report_dir):
         
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument("--mode",required=True,choices=["activate","status","finalize"])
+    parser.add_argument("--mode",required=True,choices=["activate","status","finalize","prepare-only"])
     parser.add_argument("--reports-dir",default="source_reports")
     options=parser.parse_args()
     api=client()
     if options.mode=="activate":activate(api)
+    elif options.mode=="prepare-only":
+        ensure_target_source_directories(api)
+        print("PREPARED")
     elif options.mode=="status":status(api)
     else:finalize(api,options.reports_dir)
 
