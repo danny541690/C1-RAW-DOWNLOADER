@@ -15,20 +15,18 @@ def github_request(url):
         "Accept":"application/vnd.github+json",
         "User-Agent":"JARVIS-R13-read-only-contract"})
     with urllib.request.urlopen(req,timeout=30) as res:return res.read()
-def cross_run_checkpoint():
+def cross_run_checkpoint(snapshot_path=None):
     # Independent GitHub Actions RUN uses a completed predecessor's real artifact;
     # this is recovery verification, NOT a linearizable master/lease primitive.
     index=json.loads(github_request("https://api.github.com/repos/"+REPO+
                              f"/actions/runs/{PRIOR_RUN}/artifacts?per_page=100"))
     matches=[a for a in index.get("artifacts",[]) if a["name"]==SNAPSHOT_NAME and not a.get("expired")]
     if len(matches)!=1:raise RuntimeError("PRIOR_ARTIFACT_UNAVAILABLE")
-    data=github_request("https://api.github.com/repos/"+REPO+
-                        f"/actions/artifacts/{matches[0]['id']}/zip")
+    # Official actions/download-artifact retrieves and unpacks the selected prior Run.
+    # No manual zip redirect handling, which can fail with HTTP 401.
+    if not snapshot_path:raise RuntimeError("CROSS_RUN_SNAPSHOT_PATH_REQUIRED")
     import sqlite3
-    with zipfile.ZipFile(io.BytesIO(data)) as z:
-        members=[n for n in z.namelist() if n.endswith("state.sqlite") and not n.startswith("/")]
-        if len(members)!=1:raise RuntimeError("INVALID_SNAPSHOT_CONTENTS")
-        dbbytes=z.read(members[0])
+    dbbytes=pathlib.Path(snapshot_path).read_bytes()
     with tempfile.TemporaryDirectory() as folder:
         filename=pathlib.Path(folder)/"state.sqlite";filename.write_bytes(dbbytes)
         conn=sqlite3.connect(f"file:{filename}?mode=ro",uri=True)
@@ -88,8 +86,9 @@ def main():
     p.add_argument("--mode",choices=("cross-run","sample","selftest"),required=True)
     p.add_argument("--source",choices=SOURCES)
     p.add_argument("--out",required=True)
+    p.add_argument("--snapshot")
     args=p.parse_args()
-    if args.mode=="cross-run":res=cross_run_checkpoint()
+    if args.mode=="cross-run":res=cross_run_checkpoint(args.snapshot)
     elif args.mode=="sample":
         if not args.source:p.error("--source required")
         try:res=drive_small_samples(args.source)
