@@ -2,6 +2,7 @@
 """R19: corrected v097-v098 population scope and real ZIP member format pilot.
 Never promotes an unverified dataset contract. v0.93 and v0.98 immutable.
 All logs contain aggregate-only format shape; no file ID or content exported.
+One bounded R19 CI test invocation.
 """
 import argparse,collections,hashlib,io,json,pathlib,re,sys,zipfile
 from v098_r11_six_source_metadata_pilot import SOURCES,service,MIME
