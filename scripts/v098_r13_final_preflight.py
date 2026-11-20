@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """R13 final *small* pre-migration tests, read-only and public-safe reports.
-One bounded GitHub smoke invocation; no Drive mutation, no Bronze transfer, no
+Second bounded R13 smoke with official cross-run artifact restore; no Drive mutation, no Bronze transfer, no
 global complete dataset catalogue, no transactional cross-run lock.
 """
 import argparse, hashlib, io, json, os, pathlib, tempfile, urllib.request, zipfile
