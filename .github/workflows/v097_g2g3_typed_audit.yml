@@ -4,13 +4,10 @@ name: JARVIS V097 G2 G3 Typed Contract Evidence (No Conversion)
 # 2026-11-17: full-file native QA and per-source unresolved-cause diagnostics
 # Revalidate exact layout grouping and header fingerprint invalidation safety gates
 # HTML row safety correction verified in selftests
+# JARVIS v0.98 pre-migration freeze 2026-11-20: disable scheduled/push triggers.
 on:
-  push:
-    paths:
-      - .github/workflows/v097_g2g3_typed_audit.yml
-  schedule:
-    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
+
 permissions:
   contents: read
 concurrency:
