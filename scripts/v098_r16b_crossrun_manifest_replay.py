@@ -3,6 +3,7 @@
 Verifies all 27 per-source historical files were committed in Drive, readback
 and parsed, with no duplicate file identities. Never uploads/modifies anything.
 Source original remains untouched; public output is counters only.
+Single bounded independent-run manifest replay invocation.
 """
 import argparse,collections,hashlib,json,pathlib
 from v098_r11_six_source_metadata_pilot import SOURCES,service
