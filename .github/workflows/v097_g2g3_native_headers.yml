@@ -1,13 +1,10 @@
 name: JARVIS V097 G2 G3 Native Header Recovery (No Conversion)
 # 2026-11-17: distinguish TDCC HTML 16-tier total from separate ZIP 17-tier archive; native page metadata and stronger safety
 # Independent 7-source incremental lanes; original Bronze always read-only.
+# 2026-11-20 v0.98 preflight freeze: automated triggers disabled, preserve manual only.
 on:
-  push:
-    paths:
-      - .github/workflows/v097_g2g3_native_headers.yml
-  schedule:
-    - cron: '*/15 * * * *'
   workflow_dispatch:
+
 permissions:
   contents: read
 concurrency:
