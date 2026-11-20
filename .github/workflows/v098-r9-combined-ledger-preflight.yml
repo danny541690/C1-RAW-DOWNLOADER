@@ -2,9 +2,6 @@ name: JARVIS v0.98 R9 Combined Ledger Resilience (Synthetic)
 # Pre-migration only: synthetic inputs; no market downloads and no Google Drive mutations.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r9_ledger_fault_injection.py'
 permissions:
   contents: read
 concurrency:
