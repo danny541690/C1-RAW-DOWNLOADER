@@ -3,6 +3,7 @@
 has the real 74750 source_id cohort; R2_FROZEN is a DIFFERENT 82273 candidate
 population and must never be substituted. Read-only in Google Drive.
 Output only aggregate counts to public GitHub Actions; no source IDs published.
+Bounded R20B real source membership validation run.
 """
 import argparse,collections,json,pathlib,sys
 from v098_r11_six_source_metadata_pilot import SOURCES,service
