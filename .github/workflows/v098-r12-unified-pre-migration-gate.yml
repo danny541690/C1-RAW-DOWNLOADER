@@ -3,9 +3,6 @@ name: JARVIS v0.98 R12 Unified Pre-Migration Gate
 # No real market-byte reads, no Drive writes, NO Bronze migration. Manual-only after one live trigger.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r12_preflight_integration.py'
 permissions:
   contents: read
 concurrency:
