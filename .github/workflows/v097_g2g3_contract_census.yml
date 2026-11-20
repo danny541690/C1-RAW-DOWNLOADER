@@ -2,13 +2,10 @@ name: JARVIS V097 G2 G3 Contract Grouping Census (No Conversion)
 # 2026-11-18 three-day official-format QA: separate ZIP/HTML/XLSX missing headers and TPEx receipt data
 # Require exact ordered header-layout candidates; no-header groups not certifiable
 # Reconcile actual TDCC HTML 16-row body metadata and native ZIP 17-row separately
+# JARVIS v0.98 pre-migration freeze 2026-11-20: disable scheduled/push triggers.
 on:
-  push:
-    paths:
-      - .github/workflows/v097_g2g3_contract_census.yml
-  schedule:
-    - cron: '17,47 * * * *'
   workflow_dispatch:
+
 permissions:
   contents: read
 concurrency:
