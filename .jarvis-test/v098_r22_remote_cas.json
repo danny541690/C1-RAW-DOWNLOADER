@@ -1,7 +1,1 @@
-{
-  "schema": "JARVIS_R22_SYNTHETIC_REMOTE_CAS",
-  "generation": 0,
-  "owner": "INIT",
-  "test_only": true,
-  "production_allowed": false
-}
+{"generation": 1, "owner": "R22_44735524992_5", "production_allowed": false, "schema": "JARVIS_R22_SYNTHETIC_REMOTE_CAS", "test_only": true}
