@@ -18,10 +18,7 @@ def github_request(url):
 def cross_run_checkpoint(snapshot_path=None):
     # Independent GitHub Actions RUN uses a completed predecessor's real artifact;
     # this is recovery verification, NOT a linearizable master/lease primitive.
-    index=json.loads(github_request("https://api.github.com/repos/"+REPO+
-                             f"/actions/runs/{PRIOR_RUN}/artifacts?per_page=100"))
-    matches=[a for a in index.get("artifacts",[]) if a["name"]==SNAPSHOT_NAME and not a.get("expired")]
-    if len(matches)!=1:raise RuntimeError("PRIOR_ARTIFACT_UNAVAILABLE")
+    # Action downloads the artifact using github-token and pins run-id separately.
     # Official actions/download-artifact retrieves and unpacks the selected prior Run.
     # No manual zip redirect handling, which can fail with HTTP 401.
     if not snapshot_path:raise RuntimeError("CROSS_RUN_SNAPSHOT_PATH_REQUIRED")
