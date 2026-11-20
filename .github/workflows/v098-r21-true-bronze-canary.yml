@@ -1,9 +1,6 @@
 name: JARVIS v0.98 R21 True Bronze Test-Only Canary
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r21_true_bronze_test_canary.py'
 permissions:
   contents: read
 concurrency:
