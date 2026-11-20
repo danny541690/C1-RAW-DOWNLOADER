@@ -208,13 +208,57 @@ def self_test():
                       "copy": 1, "skips": 15, "real_drive_test": False}))
 
 
+
+OFFICIAL_SOURCES = ("TWSE", "TPEx", "MOPS", "NDC", "TDCC", "TAIFEX")
+
+def quick_canary_manifest(api):
+    """One file per official source from 2026. Does NOT inventory 78k files."""
+    roots = [x for x in children(api, SOURCE) if x["name"] == "2026"
+             and x["mimeType"] == FOLDER_MIME]
+    if len(roots) != 1:
+        raise RuntimeError("Expected exactly one source year 2026")
+    year = roots[0]["id"]
+    source_dirs = list(children(api, year))
+    selected = []
+    for source in OFFICIAL_SOURCES:
+        parents = [x for x in source_dirs if x["name"] == source and
+                   x["mimeType"] == FOLDER_MIME]
+        if len(parents) != 1:
+            raise RuntimeError(f"Source folder missing or duplicate: {source}")
+        months = [x for x in children(api, parents[0]["id"])
+                  if x["mimeType"] == FOLDER_MIME]
+        months.sort(key=lambda x: x["name"], reverse=True)
+        candidate = None
+        for month in months:
+            # Choose a source-specific *real* original; no numeric/format interpretation.
+            candidates = (x for x in children(api, month["id"])
+                          if x["mimeType"] != FOLDER_MIME and
+                          not x["mimeType"].startswith("application/vnd.google-apps.") and
+                          0 < int(x.get("size") or 0) <= 40_000_000)
+            if source == "TWSE":
+                eligible = [x for x in candidates if int(x.get("size") or 0) >= 1_000_000]
+                if not eligible:
+                    continue
+                candidate = sorted(eligible, key=lambda x: x["id"])[0]
+            else:
+                candidate = next(candidates, None)
+            if candidate:
+                candidate = dict(candidate, source=source,
+                                 path=f"2026/{source}/{month['name']}/{candidate['name']}")
+                break
+        if not candidate:
+            raise RuntimeError(f"No eligible binary 2026 canary source: {source}")
+        selected.append(candidate)
+    if len(selected) != 6 or max(int(x["size"]) for x in selected) < 1_000_000:
+        raise RuntimeError("Canary coverage invalid")
+    return selected
+
 def live_canary(api, files, workers):
     """Real Drive copy+SHA, parallel distinct files, interrupted batch then replay."""
-    candidates = [f for f in files if 1_000_000 <= int(f.get("size", 0)) <= 40_000_000]
-    if len(candidates) < 6:
-        raise RuntimeError("Need six real >=1MB originals for canary; do not claim PASS")
-    # Deterministic selection; same names on rerun => verified skip, not duplicates.
-    picks = candidates[:6]
+    # Exactly one real file from each of the six official source lanes.
+    picks = files
+    if len(picks) != 6 or len({f["source"] for f in picks}) != 6:
+        raise RuntimeError("Expected six distinct sources")
     dirname = "__V098_MIGRATION_CANARY_COPY_ONLY__"
     matching = [f for f in children(api, TARGET) if f["name"] == dirname]
     if len(matching) > 1:
@@ -258,14 +302,14 @@ def main():
     if not 1 <= a.workers <= 6:
         raise ValueError("workers must be 1..6")
     api = client()
+    if a.mode == "canary":
+        live_canary(api, quick_canary_manifest(api), a.workers)
+        return
     files = source_manifest(api)
     plan = planned_targets(api, files)
     print(json.dumps({"source_files": len(files), "planned_source_ids": len(plan),
                       "mode": a.mode, "target": TARGET}))
     if a.mode == "preflight":
-        return
-    if a.mode == "canary":
-        live_canary(api, files, a.workers)
         return
     # One workflow is the only writer. GitHub workflow concurrency controls runs.
     cache = {}
