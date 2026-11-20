@@ -62,7 +62,7 @@ jobs:
         with:
           name: r18-selftest
           path: r18_selftest/
-      - name: Fail closed: no bytes mismatch, all conflict groups accounted
+      - name: 'Fail closed: no bytes mismatch, all conflict groups accounted'
         run: |
           python - <<'PY'
           import json,pathlib,sys
