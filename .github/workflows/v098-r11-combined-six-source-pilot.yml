@@ -3,6 +3,9 @@ name: JARVIS v0.98 R11 Combined Gate and Six Official Source Metadata Pilot
 # Public artifacts contain aggregate counts only, NO Drive identifiers or original filenames.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v098_r11_six_source_metadata_pilot.py'
 permissions:
   contents: read
 concurrency:
