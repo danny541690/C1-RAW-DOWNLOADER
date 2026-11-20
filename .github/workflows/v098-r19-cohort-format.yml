@@ -16,6 +16,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install Drive API dependency for shared format module
+        run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3'
       - name: Verify v097 7-source and v098 6-official population arithmetic
         run: python scripts/v098_r19_cohort_and_native_format.py baseline --out r19_cohort/corrected_cohort.json
       - uses: actions/upload-artifact@v4
