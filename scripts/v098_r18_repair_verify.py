@@ -3,6 +3,7 @@
 Read-only on all original and target files. Save detailed lineage ONLY to
 C1_0.98/99_RECOVERY/R16_PRIVATE_MANIFEST_TEST_ONLY, NOT to public GitHub.
 No deletes, no Bronze/Silver/Gold, no bulk approval.
+Bounded real-source and sandbox byte comparison integration test.
 """
 import argparse,collections,hashlib,io,json,pathlib,sys,zipfile
 from v098_r11_six_source_metadata_pilot import service,MIME
