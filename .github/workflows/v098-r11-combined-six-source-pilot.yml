@@ -1,0 +1,97 @@
+name: JARVIS v0.98 R11 Combined Gate and Six Official Source Metadata Pilot
+# Synthetic ledger + official Drive metadata read-only; no source bytes, no Drive writes.
+# Public artifacts contain aggregate counts only, NO Drive identifiers or original filenames.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v098-r11-safe-scan
+  cancel-in-progress: false
+jobs:
+  contract-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: R8 central six-account lifecycle
+        run: python scripts/v098_r8_seven_ledger_contract.py selftest --report r11_preflight/r8.json
+      - name: R9 lease, fencing and idempotent replay
+        run: python scripts/v098_r9_ledger_fault_injection.py --out r11_preflight/r9.json
+      - name: R11 privacy and coverage preflight
+        run: python scripts/v098_r11_six_source_metadata_pilot.py --selftest --out r11_preflight/r11.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r11-combined-contract-gate
+          path: r11_preflight/
+          if-no-files-found: warn
+  six-source-pilot:
+    needs: contract-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive read-only library
+        run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Scan one period, full pagination, anonymized results only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r11_six_source_metadata_pilot.py --source "${{ matrix.source }}" --year 2026 --month 2026-10 --out r11_source_results/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r11-scan-${{ matrix.source }}
+          path: r11_source_results/
+          if-no-files-found: warn
+  summary:
+    needs: [contract-gate, six-source-pilot]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r11-scan-*
+          path: reports/
+          merge-multiple: true
+      - name: Aggregate six source summaries, forbid sensitive output and incomplete enumeration
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          root=pathlib.Path('reports')
+          files=list(root.glob('*.json'))
+          expected={'TWSE','TPEx','MOPS','NDC','TDCC','TAIFEX'}
+          data=[json.loads(p.read_text()) for p in files]
+          present={r.get('source') for r in data}
+          forbidden=('file_id','parent_id','md5Checksum','parent_folder_id','google_refresh_token')
+          if any(any(k in json.dumps(r) for k in forbidden) for r in data):
+              sys.exit('Privacy guard failed')
+          output={'sources':len(data),'total_files':sum(r.get('file_count',0) for r in data),
+                  'api_pages':sum(r.get('api_pages',0) for r in data),
+                  'details':[{k:v for k,v in r.items() if k in ('source','year','month','status','file_count','file_bytes','api_pages','folders_scanned','month_folder','empty_directories','zero_byte_files','duplicate_md5_candidates')} for r in data]}
+          root.mkdir(exist_ok=True)
+          (root/'aggregate.json').write_text(json.dumps(output,indent=2))
+          print(json.dumps(output))
+          if present!=expected or any(r.get('status')=='SCAN_ERROR' for r in data):
+              sys.exit('Incomplete or errored six source scan')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r11-six-source-aggregate
+          path: reports/aggregate.json
+          if-no-files-found: warn
