@@ -1,6 +1,9 @@
 name: JARVIS v0.98 R17B Targeted Conflict Classification
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v098_r17b_conflict_classification.py'
 permissions:
   contents: read
 concurrency:
