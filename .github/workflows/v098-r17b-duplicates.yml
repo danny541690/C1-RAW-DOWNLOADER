@@ -1,0 +1,68 @@
+name: JARVIS v0.98 R17B Targeted Conflict Classification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v098-r17b-single
+  cancel-in-progress: false
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3'
+      - name: Analyze two sources' private per-year manifests, no raw source reads or writes
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r17b_conflict_classification.py --source "${{ matrix.source }}" --out r17b/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r17b-${{ matrix.source }}
+          path: r17b/
+          if-no-files-found: warn
+  final:
+    needs: classify
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r17b-*
+          path: r17b/
+          merge-multiple: true
+      - name: Verify classification; never approve production copying
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          rows=[json.loads(f.read_text()) for f in pathlib.Path('r17b').glob('*.json')]
+          if len(rows)!=2 or {x.get('source') for x in rows}!={'TWSE','TPEx'}:sys.exit('Missing source receipt')
+          if any(r.get('status')!='PASS_CLASSIFIED_WITH_HOLD' for r in rows):sys.exit('Partial classification')
+          out={'status':'PASS_CLASSIFIED_WITH_HOLD',
+               'groups':sum(x['groups'] for x in rows),
+               'identical_content_groups':sum(x['same_content_groups'] for x in rows),
+               'different_content_groups':sum(x['different_content_groups'] for x in rows),
+               'same_size_different_hash_groups':sum(x['same_size_different_hash_groups'] for x in rows),
+               'source_groups':rows,'bulk_migration_allowed':False}
+          pathlib.Path('r17b_final').mkdir(exist_ok=True)
+          pathlib.Path('r17b_final/summary.json').write_text(json.dumps(out,indent=2))
+          print(json.dumps({k:v for k,v in out.items() if k!='source_groups'}))
+          if out['groups']!=7:sys.exit('R17 duplicate-group population drift')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r17b-classification-report
+          path: r17b_final/
+          if-no-files-found: warn
