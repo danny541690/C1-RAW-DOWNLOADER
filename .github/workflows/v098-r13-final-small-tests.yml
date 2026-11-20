@@ -2,6 +2,9 @@ name: JARVIS v0.98 R13 Final Combined Pre-Migration Small Tests
 # All read-only. No Drive writes, no Bronze transfer and no Silver/Gold work.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v098_r13_final_preflight.py'
 permissions:
   contents: read
   actions: read
