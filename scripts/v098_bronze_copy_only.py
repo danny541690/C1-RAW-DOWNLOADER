@@ -191,6 +191,14 @@ def copy_one(item):
                 run_id=os.getenv("GITHUB_RUN_ID"),attempt_errors=attempts)
         except Exception as exc:
             attempts.append({"attempt":retry+1,"error_type":type(exc).__name__})
+            # A pooled Drive connection can be invalid after OAuth refresh or broken pipe.
+            # A new client on retry avoids reusing the poisoned httplib2 transport.
+            if retry < 2 and not isinstance(exc, RuntimeError):
+                try:
+                    _THREAD_LOCAL.api = client()
+                    api = _THREAD_LOCAL.api
+                except Exception:
+                    pass
             if retry == 2:
                 return dict(source_id=src["id"], canonical_id=canonical,
                     path=path,source_sha256=source_sha,
