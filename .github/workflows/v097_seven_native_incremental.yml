@@ -1,12 +1,8 @@
 name: JARVIS v0.97 seven-source R3 evidence reuse and incremental native QA
+# v0.98 preflight legacy freeze 2026-11-20: automated triggers removed.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097_seven_native_incremental.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '5,20,35,50 * * * *'
+
 permissions:
   contents: read
 concurrency:
