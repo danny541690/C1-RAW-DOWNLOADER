@@ -2,9 +2,6 @@ name: JARVIS v0.98 R15 Cross-Run Sandbox Replay Gate
 # Test only. Reads prior sandbox Master and two small copies; no Bronze migration.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r15_sandbox_gate.py'
 permissions:
   contents: read
 concurrency:
