@@ -310,6 +310,8 @@ def main():
     p.add_argument("--mode", choices=["self-test", "preflight", "canary", "migrate"], required=True)
     p.add_argument("--workers", type=int, default=3)
     p.add_argument("--source", choices=OFFICIAL_SOURCES)
+    p.add_argument("--limit", type=int, default=0,
+                   help="Bounded live pilot: maximum original identities per source; 0 = all")
     p.add_argument("--run-key", default=os.getenv("GITHUB_RUN_ID", "local"))
     a = p.parse_args()
     if a.mode == "self-test":
@@ -323,6 +325,10 @@ def main():
         return
     files = source_manifest(api, a.source)
     plan = planned_targets(api, files)
+    if a.limit < 0:
+        raise ValueError("limit must be nonnegative")
+    if a.limit:
+        plan = plan[:a.limit]
     print(json.dumps({"source_files": len(files), "planned_source_ids": len(plan),
                       "mode": a.mode, "target": TARGET}))
     if a.mode == "preflight":
