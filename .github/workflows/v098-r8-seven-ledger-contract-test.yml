@@ -19,7 +19,7 @@ jobs:
       - run: python scripts/v098_r8_seven_ledger_contract.py selftest --report test_evidence/selftest.json
       - uses: actions/upload-artifact@v4
         with:
-          name: r8-ledger-selftest
+          name: r8-contract-selftest
           path: test_evidence/
   source-worker:
     needs: contract-selftest
