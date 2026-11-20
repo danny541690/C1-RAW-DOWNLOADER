@@ -2,6 +2,7 @@
 """R17 fail-closed source-manifest reconciliation. RE-USES 162 existing R16
 private manifests, no raw downloads, no Drive writes, no Bronze migration.
 All private IDs, filenames, checksums stay in process; public results only aggregates.
+One bounded production-HOLD preflight CI trigger, audit-only.
 """
 import argparse,collections,hashlib,json,pathlib,sys
 from v098_r16_full_private_manifest import list_children,one_child
