@@ -1,0 +1,65 @@
+name: JARVIS v0.98 R8 Seven-Ledger Contract Test (Manual, Synthetic)
+# No cron, no push, no Drive writes, no market download, no 0.93 or 0.98 data mutation.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v098-r8-controller-single
+  cancel-in-progress: false
+jobs:
+  contract-selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/v098_r8_seven_ledger_contract.py selftest --report test_evidence/selftest.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: r8-ledger-selftest
+          path: test_evidence/
+  source-worker:
+    needs: contract-selftest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/v098_r8_seven_ledger_contract.py worker --source "${{ matrix.source }}" --run-id "${{ github.run_id }}" --out "source_receipt/"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: r8-ledger-${{ matrix.source }}
+          path: source_receipt/
+          if-no-files-found: error
+  central-reconciler:
+    needs: source-worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r8-ledger-*
+          path: source_receipt
+          merge-multiple: true
+      - run: |
+          python scripts/v098_r8_seven_ledger_contract.py reconcile --inputs source_receipt --db r8_reports/master.sqlite --report r8_reports/summary.json
+          python scripts/v098_r8_seven_ledger_contract.py reconcile --inputs source_receipt --db r8_reports/master.sqlite --report r8_reports/replay_summary.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r8-seven-ledger-reconciliation
+          path: r8_reports/
+          if-no-files-found: warn
