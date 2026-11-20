@@ -1,0 +1,31 @@
+name: JARVIS v0.98 R9 Combined Ledger Resilience (Synthetic)
+# Pre-migration only: synthetic inputs; no market downloads and no Google Drive mutations.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v098_r9_ledger_fault_injection.py'
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v098-r9-combined-gate-single
+  cancel-in-progress: false
+jobs:
+  ledger-combined-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify legacy R8 1+6 contract
+        run: python scripts/v098_r8_seven_ledger_contract.py selftest --report r9_test_evidence/r8_contract.json
+      - name: Test central master claims, six-source leases and fencing
+        run: python scripts/v098_r9_ledger_fault_injection.py --out r9_test_evidence/r9_resilience.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v098-r9-combined-ledger-gate
+          path: r9_test_evidence/
+          if-no-files-found: warn
