@@ -2,13 +2,10 @@ name: JARVIS v097 V3 Formal G2 G3 Contracts Seven Sources
 # Seven-source source-isolated contract publication and 74750 unique-record accounting.
 # 2026-11-18 three-day historical format root-cause reconciled from new census.
 # QA evidence only. No original writes and no Silver/Gold materialization.
+# v0.98 preflight legacy freeze 2026-11-20: cron/push removed.
 on:
-  push:
-    paths:
-      - .github/workflows/v097_g2g3_formal_contracts.yml
-  schedule:
-    - cron: '26 * * * *'
   workflow_dispatch:
+
 permissions:
   contents: read
 concurrency:
