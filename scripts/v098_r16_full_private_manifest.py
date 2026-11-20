@@ -5,6 +5,7 @@ NOT certified. Original 0.93 is STRICTLY READ-ONLY. Each year's confidential
 metadata manifest goes ONLY to 0.98/99_RECOVERY/R16_PRIVATE_MANIFEST_TEST_ONLY;
 the PUBLIC GitHub artifacts/logs contain only aggregated counts and statuses.
 A source-year is committed only after Drive readback SHA256 verification.
+Bounded R16 live integrated test dispatch, raw originals read-only.
 """
 import argparse,collections,datetime as dt,hashlib,io,json,os,pathlib,random,sys,time
 from googleapiclient.discovery import build
