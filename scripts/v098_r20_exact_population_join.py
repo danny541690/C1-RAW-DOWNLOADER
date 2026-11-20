@@ -3,6 +3,7 @@
 Reads BOTH ORIGINAL LEDGERS through Google Drive, never v0.93 raw file payloads.
 No public original file IDs/names, no Drive writes, no Bronze/Silver/Gold changes.
 Not a G2/G3 semantic certificate. Fail-closed on frozen population/ID anomalies.
+One bounded integrated real Drive reconciliation.
 """
 import argparse, collections, json, pathlib, sys
 from v098_r16_full_private_manifest import list_children,one_child
