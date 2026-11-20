@@ -2,6 +2,9 @@ name: JARVIS v0.98 R8 Seven-Ledger Preflight (Synthetic, Manual)
 # PRE-MIGRATION SAFETY: synthetic only. No Drive credentials, no real records.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v098_r8_seven_ledger_contract.py'
 permissions:
   contents: read
 concurrency:
