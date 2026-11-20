@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install Drive API dependency used by pagination regression
+        run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3'
       - name: Six-account dispatch, central commit and replay regression
         run: python scripts/v098_r8_seven_ledger_contract.py selftest --report r12_gates/r8.json
       - name: Lease expiration, fencing and single-writer tests
