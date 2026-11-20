@@ -2,6 +2,7 @@
 """JARVIS v0.98 R8: centrally issued synthetic six-source ledger contract.
 
 SAFETY: no external API, no Drive access, no real market data, no migration.
+Live smoke test is synthetic only; this source change triggers one bounded Action.
 Production requires a durable transactional ledger, CAS/fencing across runs,
 validated source coverage, real workers and source/target SHA256 evidence.
 """
