@@ -83,11 +83,11 @@ jobs:
           merge-multiple: true
       - name: Single writer commit and replay
         run: |
-          python scripts/v098_r8_seven_ledger_contract.py reconcile --dispatch dispatch --receipts receipts --db reports/master.sqlite --report reports/summary.json
-          python scripts/v098_r8_seven_ledger_contract.py reconcile --dispatch dispatch --receipts receipts --db reports/master.sqlite --report reports/replay.json
+          python scripts/v098_r8_seven_ledger_contract.py reconcile --dispatch dispatch --receipts receipts --db r8_preflight_evidence/master.sqlite --report r8_preflight_evidence/summary.json
+          python scripts/v098_r8_seven_ledger_contract.py reconcile --dispatch dispatch --receipts receipts --db r8_preflight_evidence/master.sqlite --report r8_preflight_evidence/replay.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: r8-seven-ledger-preflight-report
-          path: reports/
+          path: r8_preflight_evidence/
           if-no-files-found: warn
