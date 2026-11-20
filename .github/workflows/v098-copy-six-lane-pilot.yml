@@ -1,0 +1,38 @@
+name: JARVIS v0.98 Six Official Lanes Bounded Pilot
+# Only 0.93 source -> 0.98 Bronze original file copy and SHA.
+on:
+  push:
+    branches: [jarvis-v098-bronze-copy-only-20261120]
+    paths:
+      - .github/workflows/v098-copy-six-lane-pilot.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v098-six-lane-pilot-one-generation
+  cancel-in-progress: false
+jobs:
+  source-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check source lane code
+        run: python -m py_compile scripts/v098_bronze_copy_only.py
+      - name: Install Google API
+        run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3'
+      - name: Real bounded 2 originals per source with permanent per-source checkpoint
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          SOURCE: ${{ matrix.source }}
+        run: python scripts/v098_bronze_copy_only.py --mode migrate --source "$SOURCE" --limit 2 --workers 1
