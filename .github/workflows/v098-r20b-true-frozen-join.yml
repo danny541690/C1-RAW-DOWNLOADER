@@ -1,0 +1,82 @@
+name: JARVIS v0.98 R20B True Frozen 74750 vs 78281 Membership
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v098-r20b-single-controller
+  cancel-in-progress: false
+jobs:
+  seven-source-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC, FinMind]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Read one true frozen v097 G2G3 source detail against 27 v098 raw-year manifests
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r20b_true_g2g3_membership_join.py --source "${{ matrix.source }}" --out r20b_sources/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r20b-membership-${{ matrix.source }}
+          path: r20b_sources/
+          if-no-files-found: warn
+  central-reconcile:
+    needs: seven-source-identity
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r20b-membership-*
+          path: r20b_sources/
+          merge-multiple: true
+      - name: Reconcile exactly 74750 legacy source IDs vs 78281 official IDs, no pass promotion
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          rows=[json.loads(f.read_text()) for f in pathlib.Path('r20b_sources').glob('*.json')]
+          names={'TWSE','TPEx','MOPS','TDCC','TAIFEX','NDC','FinMind'}
+          if len(rows)!=7 or {r.get('source') for r in rows}!=names:sys.exit('Missing one source')
+          if any(r.get('status')!='PASS_EXACT_SOURCE_ID_MEMBERSHIP_WITH_CONTRACT_HOLD' for r in rows):
+              sys.exit('Incomplete source membership evidence')
+          by={r['source']:r for r in rows}
+          if sum(r['old_count'] for r in rows)!=74750:sys.exit('Legacy census mismatch')
+          if sum(r['new_count'] for r in rows)!=78281:sys.exit('New census mismatch')
+          if by['FinMind']['old_count']!=3700 or by['FinMind']['new_count']!=0:
+              sys.exit('FinMind not separated')
+          official=[r for r in rows if r['source']!='FinMind']
+          retained=sum(r['matched_same_file_id'] for r in official)
+          old_only=sum(r['old_only'] for r in official)
+          new_only=sum(r['new_only'] for r in official)
+          assert retained+old_only==71050 and retained+new_only==78281
+          result={'status':'PASS_REAL_SEVEN_SOURCE_MEMBERSHIP_RECONCILIATION',
+             'legacy_seven_source_cohort':74750,'legacy_official':71050,'legacy_finmind':3700,
+             'current_official':78281,'exact_id_matched':retained,
+             'legacy_official_not_current':old_only,'current_not_legacy_official':new_only,
+             'official_count_delta':new_only-old_only,'unverified_dataset_contracts':True,
+             'remote_cas_unverified':True,'formal_bronze_canary_unverified':True,
+             'production_bulk_migration_allowed':False,'sources':rows}
+          pathlib.Path('r20b_final').mkdir(exist_ok=True)
+          pathlib.Path('r20b_final/summary.json').write_text(json.dumps(result,indent=2))
+          print(json.dumps({k:v for k,v in result.items() if k!='sources'}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r20b-central-membership-report
+          path: r20b_final/
+          if-no-files-found: warn
