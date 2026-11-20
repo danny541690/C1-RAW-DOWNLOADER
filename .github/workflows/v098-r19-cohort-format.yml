@@ -2,6 +2,9 @@ name: JARVIS v0.98 R19 Cohort Scope and Native Format Combined Gate
 # Original 0.93 and Bronze 0.98 immutable. R16 manifests reused. Aggregate-only public outputs.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v098_r19_cohort_and_native_format.py'
 permissions:
   contents: read
 concurrency:
