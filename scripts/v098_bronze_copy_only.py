@@ -327,46 +327,61 @@ def main():
     plan = planned_targets(api, files)
     if a.limit < 0:
         raise ValueError("limit must be nonnegative")
-    if a.limit:
-        plan = plan[:a.limit]
-    print(json.dumps({"source_files": len(files), "planned_source_ids": len(plan),
-                      "mode": a.mode, "target": TARGET}))
     if a.mode == "preflight":
+        print(json.dumps({"source_files":len(files),"planned_source_ids":len(plan),
+                          "mode":a.mode,"source":a.source}))
         return
-    # One workflow is the only writer. GitHub workflow concurrency controls runs.
     cache = {}
     ledger_key = a.source or a.run_key
     prior = read_checkpoint(api, ledger_key)
-    prior_by_id = {r["source_id"]:r for r in prior}
-    # Alias groups must NOT be submitted twice; parallel copies would race.
-    unique = {}
-    for src, path, canonical in plan:
-        unique.setdefault(path, (src, path, canonical))
-    tasks = [(src, path, canonical, folder_for(api, path, cache))
-             for src, path, canonical in unique.values()
-             if src["id"] not in prior_by_id or prior_by_id[src["id"]].get("status") not in
-             {"COPY_SHA_PASS","SKIP_VERIFIED","ALIAS_SHA_PASS","HOLD"}]
+    prior_by_id = {r["source_id"]: r for r in prior}
+    if len(prior_by_id) != len(prior):
+        raise RuntimeError("Ledger has duplicate source file ID")
+    all_by_path = defaultdict(list)
+    for record in plan:
+        all_by_path[record[1]].append(record)
+    pending = [p for p in plan if p[0]["id"] not in prior_by_id]
+    if a.limit:
+        pending = pending[:a.limit]
+    requested_paths = set(p[1] for p in pending)
+    copy_candidates = []
+    for path in sorted(requested_paths):
+        group = all_by_path[path]
+        canonical = group[0]
+        if canonical[0]["id"] not in prior_by_id:
+            copy_candidates.append(canonical)
+    tasks = [(src, path, canonical_id, folder_for(api, path, cache))
+             for src, path, canonical_id in copy_candidates]
     results = list(prior)
-    with ThreadPoolExecutor(max_workers=a.workers) as pool:
-        for future in as_completed([pool.submit(copy_one, task) for task in tasks]):
-            results.append(future.result())
-            if len(results) % 50 == 0:
-                save_checkpoint(api, results, ledger_key)
-    # Reconstruct one result for every source identity, including exact aliases.
-    by_path = {r["path"]: r for r in results}
-    alias_results = [dict(source_id=src['id'], canonical_id=canonical,
-                          target_id=by_path[path].get('target_id'), path=path,
-                          status=('ALIAS_SHA_PASS' if by_path[path]['status'] != 'HOLD' else 'HOLD'))
-                     for src, path, canonical in plan if src['id'] != canonical
-                     and src['id'] not in prior_by_id]
-    results.extend(alias_results)
+    for start in range(0, len(tasks), 50):
+        batch = tasks[start:start+50]
+        with ThreadPoolExecutor(max_workers=a.workers) as pool:
+            for row in pool.map(copy_one, batch):
+                results.append(row)
+        save_checkpoint(api, results, ledger_key)
+    by_path = {r["path"]:r for r in results}
+    completed_ids = {r["source_id"] for r in results}
+    for path in sorted(requested_paths):
+        status = by_path.get(path)
+        if not status:
+            raise RuntimeError("Missing canonical receipt for target path")
+        for src, _, canonical in all_by_path[path]:
+            if src["id"] not in completed_ids:
+                results.append({"source_id":src["id"], "canonical_id":canonical,
+                    "target_id":status.get("target_id"),"path":path,
+                    "status":"ALIAS_SHA_PASS" if status["status"] != "HOLD" else "HOLD"})
+                completed_ids.add(src["id"])
+    if len(completed_ids) != len(results):
+        raise RuntimeError("Duplicate ledger source IDs")
     save_checkpoint(api, results, ledger_key)
     tally = defaultdict(int)
-    for r in results:
-        tally[r["status"]] += 1
-    print(json.dumps({"run": a.run_key, "source": a.source, "statuses": dict(tally),
-                      "source_ids": len(plan), "checkpoint_count":len(results)}, ensure_ascii=False))
-    if tally['HOLD']:
+    for row in results:
+        tally[row["status"]] += 1
+    summary = {"run":a.run_key,"source":a.source,"source_ids":len(plan),
+               "recorded_source_ids":len(results), "remaining":len(plan)-len(results),
+               "statuses":dict(tally)}
+    print(json.dumps(summary,ensure_ascii=False))
+    if tally["HOLD"]:
         raise SystemExit(2)
 
 if __name__ == "__main__":
