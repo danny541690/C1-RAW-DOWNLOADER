@@ -1,0 +1,149 @@
+name: JARVIS v0.98 R14 Consolidated Pre-Bulk Hold Gate
+# READ ONLY: no Bronze migration, no Drive writes. Explicit fail-closed approval.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v098-r14-pre-bulk-single
+  cancel-in-progress: false
+jobs:
+  control-and-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3'
+      - name: R8 central ledger contract
+        run: python scripts/v098_r8_seven_ledger_contract.py selftest --report r14_contract/r8.json
+      - name: R9 leasing and fencing
+        run: python scripts/v098_r9_ledger_fault_injection.py --out r14_contract/r9.json
+      - name: R12 corruption, coverage and pagination
+        run: python scripts/v098_r12_preflight_integration.py test --out r14_contract/r12.json
+      - name: R14 local staging integrity
+        run: python scripts/v098_r14_staging_integrity.py --mode selftest --out r14_contract/r14.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: r14-contract-tests
+          path: r14_contract/
+          if-no-files-found: error
+  historical-probe:
+    needs: control-and-integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX]
+        period: ['2000-01','2010-01']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Scan source period metadata with complete pagination
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r11_six_source_metadata_pilot.py --source "${{ matrix.source }}" --year "${{ matrix.period == '2000-01' && '2000' || '2010' }}" --month "${{ matrix.period }}" --out r14_historical/${{ matrix.source }}_${{ matrix.period }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r14-history-${{ matrix.source }}-${{ matrix.period }}
+          path: r14_historical/
+          if-no-files-found: warn
+  local-stage:
+    needs: control-and-integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Verify one real source file copy to temporary local staging and SHA256
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r14_staging_integrity.py --mode sample --source "${{ matrix.source }}" --out r14_staging/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r14-stage-${{ matrix.source }}
+          path: r14_staging/
+          if-no-files-found: warn
+  reconcile:
+    needs: [control-and-integrity, historical-probe, local-stage]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r14-history-*
+          path: r14_history_results/
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r14-stage-*
+          path: r14_stage_results/
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: r14-contract-tests
+          path: r14_contract/
+      - name: Reconcile partitions with explicit G3-G5 incomplete gate
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          history=[json.loads(f.read_text()) for f in pathlib.Path('r14_history_results').glob('*.json')]
+          stages=[json.loads(f.read_text()) for f in pathlib.Path('r14_stage_results').glob('*.json')]
+          sources={'TWSE','TPEx','MOPS','NDC','TDCC','TAIFEX'}
+          periods={'2000-01','2010-01'}
+          expected={(s,m) for s in sources for m in periods}
+          for gate in ('r8','r9','r12','r14'):
+              if json.loads((pathlib.Path('r14_contract')/(gate+'.json')).read_text())['status']!='PASS':
+                  sys.exit('Contract gate failure: '+gate)
+          if len(history)!=12 or {(r.get('source'),r.get('month')) for r in history}!=expected:
+              sys.exit('Historical partition return mismatch')
+          if len(stages)!=6 or {r.get('source') for r in stages}!=sources:
+              sys.exit('Six local staging receipts mismatch')
+          if any(r.get('status')=='SCAN_ERROR' for r in history):sys.exit('Historical scan error')
+          if any(r.get('status')=='TEST_ERROR' for r in stages):sys.exit('Local staging integrity error')
+          result={
+              'status':'PASS_BOUNDED_PREBULK_TESTS',
+              'historical_partitions':12,
+              'historical_file_entries':sum(x.get('file_count',0) for x in history),
+              'real_sampled_sources':sum(x.get('sampled',0)>0 for x in stages),
+              'local_staging_SHA256_pass':sum(x.get('hash_pass',0) for x in stages),
+              'source_coverage_unknown':[x['source']+':'+x['month'] for x in history if x['status']!='METADATA_SCAN_COMPLETED_COVERAGE_UNVERIFIED'],
+              'source_stage_hold':[x['source'] for x in stages if x['status']!='LOCAL_STAGING_SHA256_PASS'],
+              'G3_cross_run_atomic_lease':'BLOCKED',
+              'G4_full_2000_to_2026_inventory':'BLOCKED',
+              'G5_real_Drive_target_copy_SHA256':'BLOCKED',
+              'bulk_migration_allowed':False,
+              'historical_results':history,'staging_results':stages}
+          # Do not print source filenames, Drive IDs, hashes, or original bytes.
+          folder=pathlib.Path('r14_final');folder.mkdir(exist_ok=True)
+          (folder/'summary.json').write_text(json.dumps(result,indent=2))
+          print(json.dumps({k:v for k,v in result.items() if not k.endswith('_results')}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r14-pre-bulk-reconciliation
+          path: r14_final/
+          if-no-files-found: warn
