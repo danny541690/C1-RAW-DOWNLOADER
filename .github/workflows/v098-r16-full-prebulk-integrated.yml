@@ -1,0 +1,119 @@
+name: JARVIS v0.98 R16 Unified Full-Manifest and Concurrency Gate
+# One combined bounded pre-bulk test. v0.93 READ ONLY. Only confidential
+# manifests are stored in C1_0.98/99_RECOVERY/R16_PRIVATE_MANIFEST_TEST_ONLY.
+# Public GitHub artifacts contain counts ONLY. No Bronze/Silver/Gold writes.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v098-r16-single-controller
+  cancel-in-progress: false
+jobs:
+  combined-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Drive pager and six-ledger dependency
+        run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3'
+      - name: Prior central dispatch and 6 ledger contract
+        run: python scripts/v098_r8_seven_ledger_contract.py selftest --report r16_gate/r8.json
+      - name: Prior lease/fencing fault injection
+        run: python scripts/v098_r9_ledger_fault_injection.py --out r16_gate/r9.json
+      - name: Prior MD5/SHA256/CRC/coverage/pagination faults
+        run: python scripts/v098_r12_preflight_integration.py test --out r16_gate/r12.json
+      - name: 12 live parallel simulated claimants, failed lease takeover, stale reject
+        run: python scripts/v098_r16_concurrency.py --out r16_gate/concurrent.json
+      - name: Private manifest strict metadata schema
+        run: python scripts/v098_r16_full_private_manifest.py --selftest --out r16_gate/manifest_contract.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r16-preflight-tests
+          path: r16_gate/
+          if-no-files-found: warn
+  six-source-complete-metadata:
+    needs: combined-preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Drive client
+        run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Every source file, every year 2000-2026, private per-year manifests and readback
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r16_full_private_manifest.py --source "${{ matrix.source }}" --out r16_counts/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r16-public-counts-${{ matrix.source }}
+          path: r16_counts/
+          if-no-files-found: warn
+  central-reconcile:
+    needs: [combined-preflight, six-source-complete-metadata]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: r16-preflight-tests
+          path: r16_gate/
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r16-public-counts-*
+          path: r16_counts/
+          merge-multiple: true
+      - name: Fail closed on unfinished source, inconsistent private manifest or unsafe claim
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          sources={'TWSE','TPEx','MOPS','NDC','TDCC','TAIFEX'}
+          g={}
+          for file in pathlib.Path('r16_gate').glob('*.json'):
+              g[file.stem]=json.loads(file.read_text())
+          if set(g)!={'r8','r9','r12','concurrent','manifest_contract'} or any(v.get('status')!='PASS' for v in g.values()):
+              sys.exit('Preflight regression failure')
+          data=[json.loads(p.read_text()) for p in pathlib.Path('r16_counts').glob('*.json')]
+          if len(data)!=6 or {r.get('source') for r in data}!=sources:sys.exit('Missing source ledger')
+          if any(r.get('status')!='PASS_COMPLETE_RAW_METADATA_CENSUS' or r.get('years')!=27
+                 or r.get('verified_manifests')!=27 for r in data):
+              sys.exit('Source-year raw metadata census incomplete')
+          report={'status':'PASS_RAW_METADATA_ONLY','sources':6,'years':27,
+              'source_year_manifests':sum(r['verified_manifests'] for r in data),
+              'file_entries':sum(r['files'] for r in data),
+              'api_pages':sum(r['api_pages'] for r in data),
+              'bytes_from_drive_metadata':sum(r['bytes'] for r in data),
+              'without_drive_md5':sum(r['without_md5'] for r in data),
+              'parallel_claim_test':'PASS_LOCAL_SQLITE_ONLY',
+              'private_drive_manifest_readback':'PASS',
+              'dataset_coverage_certified':False,
+              'production_CAS_linearizable':False,
+              'real_Bronze_target_approved':False,
+              'production_bulk_migration_allowed':False,
+              'source_counts':[{k:r[k] for k in ('source','years','files','bytes','api_pages','verified_manifests','new_manifests','reused_manifests','without_md5')} for r in data]}
+          pathlib.Path('r16_final').mkdir(exist_ok=True)
+          pathlib.Path('r16_final/summary.json').write_text(json.dumps(report,indent=2))
+          print(json.dumps({k:v for k,v in report.items() if k!='source_counts'}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r16-raw-inventory-central-report
+          path: r16_final/
+          if-no-files-found: warn
