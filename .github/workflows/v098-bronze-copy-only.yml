@@ -1,4 +1,4 @@
-name: JARVIS v0.98 0.93-to-Bronze COPY ONLY
+name: JARVIS v0.98 Copy-Only Diagnostic Canary
 # 0.93 source read-only. No data download, schema, numeric/PIT QA, Silver or Gold.
 on:
   push:
@@ -11,7 +11,7 @@ on:
       mode:
         type: choice
         description: 'auto = verify live canary, then copy all; self-test/preflight/canary also available'
-        options: [self-test, preflight, canary, auto]
+        options: [self-test, preflight, canary]
         default: self-test
       workers:
         type: choice
@@ -43,13 +43,13 @@ jobs:
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode != 'self-test')
         run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3'
       - name: Refuse auto without explicit release
-        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'auto'
+        if: false
         env:
           ACK: ${{ inputs.production_ack }}
         run: |
           test "$ACK" = "COPY_093_TO_098" || { echo 'Missing copy-only release acknowledgement'; exit 1; }
       - name: Real Drive 6 MB-scale copies / interruption / parallel replay
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.mode == 'auto' || inputs.mode == 'canary'))
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.mode == 'canary'))
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -57,7 +57,7 @@ jobs:
           WORKERS: ${{ inputs.workers || '3' }}
         run: python scripts/v098_bronze_copy_only.py --mode canary --workers "$WORKERS"
       - name: Complete original-only full copy
-        if: github.event_name == 'workflow_dispatch' && (inputs.mode == 'auto' || inputs.mode == 'preflight')
+        if: github.event_name == 'workflow_dispatch' && (inputs.mode == 'preflight')
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
