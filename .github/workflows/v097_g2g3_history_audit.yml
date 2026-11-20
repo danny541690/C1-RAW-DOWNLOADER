@@ -1,12 +1,9 @@
 name: JARVIS v097 V3 G2G3 History and Schema Logic Audit
 # Independent post-processing QA receipt; never writes Bronze, Silver or Gold.
+# JARVIS v0.98 pre-migration freeze 2026-11-20: disable scheduled/push triggers.
 on:
-  push:
-    paths:
-      - .github/workflows/v097_g2g3_history_audit.yml
-  schedule:
-    - cron: '53 * * * *'
   workflow_dispatch:
+
 permissions:
   contents: read
 concurrency:
