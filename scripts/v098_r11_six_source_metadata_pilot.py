@@ -28,7 +28,8 @@ def service():
                       token_uri="https://oauth2.googleapis.com/token",
                       client_id=os.environ["GOOGLE_CLIENT_ID"],
                       client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
-                      scopes=["https://www.googleapis.com/auth/drive.readonly"])
+                      scopes=["https://www.googleapis.com/auth/drive"])
+    # Refresh at the ORIGINAL authorized scope; all operations below are files.list only.
     creds.refresh(Request())
     return build("drive","v3",credentials=creds,cache_discovery=False)
 
