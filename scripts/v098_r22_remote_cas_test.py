@@ -4,7 +4,7 @@ Only touches public .jarvis-test/v098_r22_remote_cas.json, no private IDs,
 Drive, market data, Bronze, Silver or Gold. Multiple concurrent stale-SHA
 updates must produce exactly one winner. Separate GitHub Run can replay with
 the latest remote SHA. Does not implement a production lease by itself.
-One bounded real remote GitHub optimistic CAS integration run.
+Second independent GitHub Run checks persisted remote generation and stale writes.
 """
 import argparse,base64,concurrent.futures,json,os,pathlib,urllib.request,urllib.error
 REPO="danny541690/C1-RAW-DOWNLOADER"
