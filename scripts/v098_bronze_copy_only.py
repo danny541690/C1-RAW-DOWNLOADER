@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import time
+import datetime as dt
 import threading
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -149,10 +150,14 @@ def copy_one(item):
     supplied_existing = item[4] if len(item) > 4 else None
     name = os.path.basename(path)
     source_sha = None
+    attempts = []
     for retry in range(3):
         try:
             if not source_sha:
                 source_sha = digest_media(api, canonical)
+            # Retry MUST re-list Drive: copy may have succeeded before an API timeout.
+            if retry > 0:
+                supplied_existing = None
             existing = supplied_existing if supplied_existing is not None else [
                 x for x in children(api, parent) if x["name"] == name
                 and x["mimeType"] != FOLDER_MIME]
@@ -166,7 +171,9 @@ def copy_one(item):
                     target_id=existing[0]["id"], path=path,
                     source_sha256=source_sha, target_sha256=target_sha,
                     source_bytes=int(src.get("size") or 0),
-                    status="SKIP_VERIFIED", attempt=retry + 1)
+                    status="SKIP_VERIFIED",attempt=retry+1,
+                    verified_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
+                    run_id=os.getenv("GITHUB_RUN_ID"),attempt_errors=attempts)
             created = api.files().copy(fileId=canonical,
                 body={"name":name,"parents":[parent]},
                 fields="id,name,size", supportsAllDrives=True).execute()
@@ -179,12 +186,16 @@ def copy_one(item):
                 target_id=created["id"], path=path,
                 source_sha256=source_sha, target_sha256=target_sha,
                 source_bytes=int(src.get("size") or 0),
-                status="COPY_SHA_PASS", attempt=retry + 1)
+                status="COPY_SHA_PASS",attempt=retry+1,
+                verified_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
+                run_id=os.getenv("GITHUB_RUN_ID"),attempt_errors=attempts)
         except Exception as exc:
+            attempts.append({"attempt":retry+1,"error_type":type(exc).__name__})
             if retry == 2:
                 return dict(source_id=src["id"], canonical_id=canonical,
-                    path=path, source_sha256=source_sha,
-                    status="HOLD",attempt=3,error_type=type(exc).__name__)
+                    path=path,source_sha256=source_sha,
+                    status="HOLD",attempt=3,error_type=type(exc).__name__,
+                    run_id=os.getenv("GITHUB_RUN_ID"),attempt_errors=attempts)
             time.sleep(min(2 ** retry, 8))
 
 
