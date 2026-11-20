@@ -1,0 +1,139 @@
+name: JARVIS v0.98 R15 Isolated Drive Gate and 27-Year Folder Census
+# Explicitly TEST ONLY: all Drive writes restricted to 99_RECOVERY/R15_ISOLATED_TEST_ONLY.
+# No Bronze, Silver, Gold, or original v0.93 writes. No real file names/IDs in artifacts.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v098-r15-isolated-single
+  cancel-in-progress: false
+jobs:
+  sandbox-master:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Commit synthetic master only in R15 recovery sandbox and read back
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r15_sandbox_gate.py ledger --out r15_ledger/ledger.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: r15-sandbox-master
+          path: r15_ledger/
+          if-no-files-found: error
+  original-to-sandbox:
+    needs: sandbox-master
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        source: [TWSE, TPEx]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Copy one at-most-256KB original sample to R15 test-only folder and verify SHA256 readback
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r15_sandbox_gate.py copy --source "${{ matrix.source }}" --out r15_copy/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r15-test-copy-${{ matrix.source }}
+          path: r15_copy/
+          if-no-files-found: warn
+  full-years-folder-census:
+    needs: sandbox-master
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Six official sources 2000-2026 yearly/monthly folder presence only
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r15_sandbox_gate.py inventory --source "${{ matrix.source }}" --out r15_inventory/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r15-year-census-${{ matrix.source }}
+          path: r15_inventory/
+          if-no-files-found: warn
+  reconciler:
+    needs: [sandbox-master, original-to-sandbox, full-years-folder-census]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: r15-sandbox-master
+          path: r15_ledger
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r15-test-copy-*
+          path: r15_copy
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r15-year-census-*
+          path: r15_inventory
+          merge-multiple: true
+      - name: Central reconciliation, fail closed on partial/error
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          L=json.loads(pathlib.Path('r15_ledger/ledger.json').read_text())
+          C=[json.loads(p.read_text()) for p in pathlib.Path('r15_copy').glob('*.json')]
+          D=[json.loads(p.read_text()) for p in pathlib.Path('r15_inventory').glob('*.json')]
+          expected={'TWSE','TPEx','MOPS','NDC','TDCC','TAIFEX'}
+          if L.get('status')!='PASS_SANDBOX_DRIVE_READBACK' or L.get('verified')!=1:sys.exit('Sandbox master not verified')
+          if len(C)!=2 or {x.get('source') for x in C}!={'TWSE','TPEx'}:sys.exit('Copy account mismatch')
+          if any(x.get('status')!='PASS_SOURCE_TARGET_SHA256' for x in C):sys.exit('Sandbox real file copy failed')
+          if len(D)!=6 or {x.get('source') for x in D}!=expected:sys.exit('Directory account mismatch')
+          if any(x.get('status')!='PASS_DIRECTORY_PRESENCE_ONLY' for x in D):sys.exit('Directory census incomplete')
+          report={'status':'PASS_ISOLATED_TESTS_NOT_BULK_READY',
+                  'sandbox_master':{k:L[k] for k in ('verified','new_upload','replayed','committed_test_tasks')},
+                  'source_target_test_copies':sum(x['verified'] for x in C),
+                  'new_sandbox_files':sum(x['new_upload'] for x in C),
+                  'year_source_folders':sum(x['source_years'] for x in D),
+                  'month_folders':sum(x['month_folders'] for x in D),
+                  'six_source_census':D,
+                  'G3_atomic_across_separate_workers':'HOLD',
+                  'G4_full_file_coverage_by_dataset':'HOLD',
+                  'G5_real_Bronze_destination_SHA256':'HOLD',
+                  'production_bulk_migration_allowed':False}
+          pathlib.Path('r15_final').mkdir(exist_ok=True)
+          pathlib.Path('r15_final/summary.json').write_text(json.dumps(report,indent=2))
+          print(json.dumps({k:v for k,v in report.items() if k!='six_source_census'}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r15-central-reconciliation
+          path: r15_final/
+          if-no-files-found: warn
