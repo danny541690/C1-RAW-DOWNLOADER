@@ -320,6 +320,8 @@ def main():
     p.add_argument("--mode", choices=["self-test", "preflight", "canary", "migrate"], required=True)
     p.add_argument("--workers", type=int, default=3)
     p.add_argument("--source", choices=OFFICIAL_SOURCES)
+    p.add_argument("--deadline-seconds", type=int, default=0)
+    p.add_argument("--report-file", default="")
     p.add_argument("--limit", type=int, default=0,
                    help="Bounded live pilot: maximum original identities per source; 0 = all")
     p.add_argument("--run-key", default=os.getenv("GITHUB_RUN_ID", "local"))
@@ -374,8 +376,11 @@ def main():
               list(target_index[parent].get(os.path.basename(path), [])))
              for src,path,canonical_id,parent in folders]
     results = list(prior)
-    for start in range(0, len(tasks), 50):
-        batch = tasks[start:start+50]
+    started = time.monotonic()
+    for start in range(0, len(tasks), 200):
+        if a.deadline_seconds and time.monotonic() - started >= a.deadline_seconds:
+            break
+        batch = tasks[start:start+200]
         with ThreadPoolExecutor(max_workers=a.workers) as pool:
             for row in pool.map(copy_one, batch):
                 results.append(row)
@@ -401,6 +406,10 @@ def main():
     summary = {"run":a.run_key,"source":a.source,"source_ids":len(plan),
                "recorded_source_ids":len(results), "remaining":len(plan)-len(results),
                "statuses":dict(tally)}
+    if a.report_file:
+        path = Path(a.report_file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(summary, ensure_ascii=False, sort_keys=True), encoding="utf-8")
     print(json.dumps(summary,ensure_ascii=False))
     if tally["HOLD"]:
         raise SystemExit(2)
