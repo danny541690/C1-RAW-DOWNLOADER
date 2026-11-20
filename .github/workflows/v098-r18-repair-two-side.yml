@@ -3,6 +3,9 @@ name: JARVIS v0.98 R18 Repair and Two-Side Byte Format Verification
 # isolated targets are read, up to 12 MB each. Detailed IDs remain private Drive.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v098_r18_repair_verify.py'
 permissions:
   contents: read
 concurrency:
