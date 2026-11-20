@@ -2,9 +2,6 @@ name: JARVIS v0.98 R16B Cross-Run Private Manifest Replay Gate
 # Separate GitHub Run from R16. Strict read-only: no Drive uploads, no migrations.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r16b_crossrun_manifest_replay.py'
 permissions:
   contents: read
 concurrency:
