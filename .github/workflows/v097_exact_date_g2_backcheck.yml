@@ -1,14 +1,8 @@
 name: JARVIS v0.97 TDCC TAIFEX canonical diagnostic and exact-date audit
+# 2026-11-20 v0.98 preflight freeze: automated triggers disabled, preserve manual only.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/v097_exact_date_g2_backcheck.yml'
-      - 'scripts/v097_two_source_exact_date_backcheck.py'
-      - 'scripts/v097_v3_contract_registry.py'
   workflow_dispatch:
-  schedule:
-    - cron: '13 * * * *'
+
 permissions:
   contents: read
 concurrency:
