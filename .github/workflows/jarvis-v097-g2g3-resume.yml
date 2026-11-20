@@ -1,15 +1,8 @@
 name: JARVIS v0.97 G2 G3 incremental resume
+# 2026-11-20 v0.98 preflight freeze: automated triggers disabled, preserve manual only.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/jarvis-v097-g2g3-resume.yml'
-      - 'scripts/v097_v3_contract_registry.py'
-      - 'scripts/v097_v3_source_worker.py'
-      - 'scripts/v097_v3_unified_master.py'
   workflow_dispatch:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
+
 permissions:
   contents: read
 concurrency:
