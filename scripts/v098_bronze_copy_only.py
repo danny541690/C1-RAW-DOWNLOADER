@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import time
+import threading
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -16,6 +17,7 @@ SOURCE = "1hKq9jYgmM2oJa8GqWwTENKKayELg2yDn"
 TARGET = "13DY2S3TuC4KYr8JKiptzUeXG9xZyIzam"
 CHECKPOINTS = "1LEZ9fFFBgvy-w-Ataen7JpEpoUn9inUA"
 FOLDER_MIME = "application/vnd.google-apps.folder"
+_THREAD_LOCAL = threading.local()
 YEAR = re.compile(r"^(200[0-9]|201[0-9]|202[0-6])$")
 EXCLUDED = re.compile(r"(^|/)(?:_?jarvis.*canary|.*checkpoint_canary.*|__pycache__)(?:/|$)", re.I)
 
@@ -33,6 +35,11 @@ def client():
                     scopes=["https://www.googleapis.com/auth/drive"])
     c.refresh(Request())
     return build("drive", "v3", credentials=c, cache_discovery=False)
+
+def worker_client():
+    if not hasattr(_THREAD_LOCAL, "api"):
+        _THREAD_LOCAL.api = client()
+    return _THREAD_LOCAL.api
 
 def children(api, parent):
     token = None
@@ -136,13 +143,15 @@ def verify_copy(api, src_id, dst_id):
     return digest_media(api, src_id) == digest_media(api, dst_id)
 
 def copy_one(item):
-    src, path, canonical, parent = item
-    api = client()
+    src, path, canonical, parent = item[:4]
+    api = worker_client()
+    supplied_existing = item[4] if len(item) > 4 else None
     name = os.path.basename(path)
     for retry in range(3):
         try:
-            existing = [x for x in children(api, parent) if x["name"] == name
-                        and x["mimeType"] != FOLDER_MIME]
+            existing = supplied_existing if supplied_existing is not None else [
+                x for x in children(api, parent) if x["name"] == name
+                and x["mimeType"] != FOLDER_MIME]
             same = [x for x in existing if verify_copy(api, canonical, x["id"])]
             if len(existing) > 1:
                 # Existing duplicate copies must be reported, not silently deleted.
@@ -155,6 +164,7 @@ def copy_one(item):
             created = api.files().copy(fileId=canonical,
                 body={"name": name, "parents": [parent]},
                 fields="id,name,size", supportsAllDrives=True).execute()
+            existing.append({"id":created["id"], "name":name, "mimeType":"application/octet-stream"})
             if not verify_copy(api, canonical, created["id"]):
                 raise RuntimeError(f"SHA256 mismatch, retain target for inspection: {path}")
             return dict(source_id=src["id"], canonical_id=canonical,
@@ -350,8 +360,19 @@ def main():
         canonical = group[0]
         if canonical[0]["id"] not in prior_by_id:
             copy_candidates.append(canonical)
-    tasks = [(src, path, canonical_id, folder_for(api, path, cache))
-             for src, path, canonical_id in copy_candidates]
+    folders = [(src, path, canonical_id, folder_for(api, path, cache))
+               for src, path, canonical_id in copy_candidates]
+    # One target folder listing per folder (not one listing for every file).
+    target_index = {}
+    for parent in {p for _, _, _, p in folders}:
+        mapping = defaultdict(list)
+        for item in children(api, parent):
+            if item["mimeType"] != FOLDER_MIME:
+                mapping[item["name"]].append(item)
+        target_index[parent] = mapping
+    tasks = [(src,path,canonical_id,parent,
+              list(target_index[parent].get(os.path.basename(path), [])))
+             for src,path,canonical_id,parent in folders]
     results = list(prior)
     for start in range(0, len(tasks), 50):
         batch = tasks[start:start+50]
