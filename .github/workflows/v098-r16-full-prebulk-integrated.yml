@@ -4,9 +4,6 @@ name: JARVIS v0.98 R16 Unified Full-Manifest and Concurrency Gate
 # Public GitHub artifacts contain counts ONLY. No Bronze/Silver/Gold writes.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/v098_r16_full_private_manifest.py'
 permissions:
   contents: read
 concurrency:
