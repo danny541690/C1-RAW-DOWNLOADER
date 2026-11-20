@@ -4,6 +4,7 @@ Only writes into 20_BRONZE/_PILOT_PENDING_G01/R21_TEST_ONLY_NO_SILVER_INGEST.
 One immutable source original per official source (max 1MB); SHA256 readback,
 MD5 source metadata, ZIP CRC where relevant; replay reuses exact file contents.
 No real Bronze production cohort, Silver, Gold, or release marker is written.
+One bounded R21 isolated six-source live test.
 """
 import argparse,hashlib,io,json,pathlib,sys,zipfile
 from googleapiclient.http import MediaIoBaseUpload
