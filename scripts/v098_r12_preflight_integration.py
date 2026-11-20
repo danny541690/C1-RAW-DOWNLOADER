@@ -63,6 +63,7 @@ def internal_checks():
             "Expected Coverage: N/A, unknown, not scheduled separated"]
 
 def init_checkpoint(path):
+    pathlib.Path(path).parent.mkdir(parents=True,exist_ok=True)
     c=db(path)
     seed(c)
     for src in SOURCES:
