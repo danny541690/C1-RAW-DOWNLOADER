@@ -110,16 +110,26 @@ def finalize(api, report_dir):
         print("INACTIVE")
         return
     rows=[]
+    missing=[]
     for source in OFFICIAL_SOURCES:
         path=Path(report_dir)/(source+".json")
         if not path.is_file():
-            print(json.dumps({"state":"ACTIVE","reason":"source_report_missing",
-                              "reports_received":len(rows)}))
-            return
+            missing.append(source)
+            continue
         value=json.loads(path.read_text(encoding="utf8"))
         if value.get("source")!=source:
             raise RuntimeError("Source report identity mismatch")
         rows.append(value)
+    if missing:
+        counters=master.setdefault("missing_report_retries",{})
+        for source in missing:
+            counters[source]=counters.get(source,0)+1
+        master["state"]="FINISHED_WITH_HOLD" if any(counters[x]>=3 for x in missing) else "ACTIVE"
+        master["last_error"]={"type":"MISSING_SOURCE_REPORT","sources":missing}
+        commit_master(api,master,fid)
+        print(json.dumps({"state":master["state"],"missing_source_reports":len(missing)}))
+        return
+    master["missing_report_retries"]={}
     total=sum(int(x["source_ids"]) for x in rows)
     received=sum(int(x["recorded_source_ids"]) for x in rows)
     remaining=sum(int(x["remaining"]) for x in rows)
