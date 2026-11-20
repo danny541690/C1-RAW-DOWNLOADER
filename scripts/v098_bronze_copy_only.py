@@ -143,37 +143,50 @@ def verify_copy(api, src_id, dst_id):
     return digest_media(api, src_id) == digest_media(api, dst_id)
 
 def copy_one(item):
+    """Copy a single unique destination path, recording actual source/dest SHA."""
     src, path, canonical, parent = item[:4]
     api = worker_client()
     supplied_existing = item[4] if len(item) > 4 else None
     name = os.path.basename(path)
+    source_sha = None
     for retry in range(3):
         try:
+            if not source_sha:
+                source_sha = digest_media(api, canonical)
             existing = supplied_existing if supplied_existing is not None else [
                 x for x in children(api, parent) if x["name"] == name
                 and x["mimeType"] != FOLDER_MIME]
-            same = [x for x in existing if verify_copy(api, canonical, x["id"])]
             if len(existing) > 1:
-                # Existing duplicate copies must be reported, not silently deleted.
-                raise RuntimeError(f"Duplicate target name: {path}, count={len(existing)}")
-            if same:
-                return dict(source_id=src["id"], canonical_id=canonical,
-                            target_id=same[0]["id"], path=path, status="SKIP_VERIFIED")
+                raise RuntimeError("Duplicate target file name")
             if existing:
-                raise RuntimeError(f"Target name exists with different bytes: {path}")
+                target_sha = digest_media(api, existing[0]["id"])
+                if source_sha != target_sha:
+                    raise RuntimeError("Existing target byte mismatch; no overwrite")
+                return dict(source_id=src["id"], canonical_id=canonical,
+                    target_id=existing[0]["id"], path=path,
+                    source_sha256=source_sha, target_sha256=target_sha,
+                    source_bytes=int(src.get("size") or 0),
+                    status="SKIP_VERIFIED", attempt=retry + 1)
             created = api.files().copy(fileId=canonical,
-                body={"name": name, "parents": [parent]},
+                body={"name":name,"parents":[parent]},
                 fields="id,name,size", supportsAllDrives=True).execute()
-            existing.append({"id":created["id"], "name":name, "mimeType":"application/octet-stream"})
-            if not verify_copy(api, canonical, created["id"]):
-                raise RuntimeError(f"SHA256 mismatch, retain target for inspection: {path}")
+            existing.append({"id":created["id"],"name":name,
+                             "mimeType":"application/octet-stream"})
+            target_sha = digest_media(api, created["id"])
+            if source_sha != target_sha:
+                raise RuntimeError("Copied file SHA mismatch; original target retained")
             return dict(source_id=src["id"], canonical_id=canonical,
-                        target_id=created["id"], path=path, status="COPY_SHA_PASS")
+                target_id=created["id"], path=path,
+                source_sha256=source_sha, target_sha256=target_sha,
+                source_bytes=int(src.get("size") or 0),
+                status="COPY_SHA_PASS", attempt=retry + 1)
         except Exception as exc:
             if retry == 2:
-                return dict(source_id=src["id"], path=path,
-                            status="HOLD", error=str(exc))
+                return dict(source_id=src["id"], canonical_id=canonical,
+                    path=path, source_sha256=source_sha,
+                    status="HOLD",attempt=3,error_type=type(exc).__name__)
             time.sleep(min(2 ** retry, 8))
+
 
 def read_checkpoint(api, run_name):
     name = f"v098_copy_checkpoint_{run_name}.json"
@@ -345,7 +358,10 @@ def main():
         return
     cache = {}
     ledger_key = a.source or a.run_key
-    prior = read_checkpoint(api, ledger_key)
+    prior_all = read_checkpoint(api, ledger_key)
+    # Upgrade older test receipts lacking written hashes by byte-verifying again.
+    prior = [r for r in prior_all if (r.get("status") == "HOLD" or
+               (r.get("source_sha256") and r.get("source_sha256") == r.get("target_sha256")))]
     prior_by_id = {r["source_id"]: r for r in prior}
     if len(prior_by_id) != len(prior):
         raise RuntimeError("Ledger has duplicate source file ID")
@@ -393,8 +409,11 @@ def main():
             raise RuntimeError("Missing canonical receipt for target path")
         for src, _, canonical in all_by_path[path]:
             if src["id"] not in completed_ids:
-                results.append({"source_id":src["id"], "canonical_id":canonical,
+                results.append({"source_id":src["id"],"canonical_id":canonical,
                     "target_id":status.get("target_id"),"path":path,
+                    "source_sha256":status.get("source_sha256"),
+                    "target_sha256":status.get("target_sha256"),
+                    "source_bytes":int(src.get("size") or 0),
                     "status":"ALIAS_SHA_PASS" if status["status"] != "HOLD" else "HOLD"})
                 completed_ids.add(src["id"])
     if len(completed_ids) != len(results):
