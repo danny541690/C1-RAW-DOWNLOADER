@@ -1,0 +1,75 @@
+name: JARVIS v0.98 R21 True Bronze Test-Only Canary
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-v098-r21-test-only-single-writer
+  cancel-in-progress: false
+jobs:
+  six-canaries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        source: [TWSE, TPEx, MOPS, TDCC, TAIFEX, NDC]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3' 'google-auth-oauthlib>=1.2,<2'
+      - name: Copy one <=1MB real source original to Bronze test-only subfolder and verify SHA256 readback
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_r21_true_bronze_test_canary.py --source "${{ matrix.source }}" --out r21_canaries/${{ matrix.source }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r21-canary-${{ matrix.source }}
+          path: r21_canaries/
+          if-no-files-found: warn
+  reconcile:
+    needs: six-canaries
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: r21-canary-*
+          path: r21_canaries/
+          merge-multiple: true
+      - name: Verify all six verified, full release remains denied
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          rows=[json.loads(p.read_text()) for p in pathlib.Path('r21_canaries').glob('*.json')]
+          expected={'TWSE','TPEx','MOPS','TDCC','TAIFEX','NDC'}
+          if len(rows)!=6 or {r.get('source') for r in rows}!=expected:sys.exit('Missing source canary receipts')
+          if any(r['status']!='PASS_TEST_ONLY_BRONZE_PATH_SHA256' for r in rows):sys.exit('A source canary did not pass')
+          if sum(r['new_upload']+r['reused'] for r in rows)!=6:sys.exit('Incomplete six-source canary')
+          result={'status':'PASS_BOUNDED_BRONZE_TEST_PATH_ONLY','source_count':6,
+                  'verified':sum(r['verified'] for r in rows),
+                  'new_uploads':sum(r['new_upload'] for r in rows),
+                  'reused_uploads':sum(r['reused'] for r in rows),
+                  'bytes_copied_or_reused':sum(r['payload_size'] for r in rows),
+                  'destination':'20_BRONZE/_PILOT_PENDING_G01/R21_TEST_ONLY_NO_SILVER_INGEST',
+                  'real_production_Bronze_files_approved':False,
+                  'dataset_pit_verified':False,
+                  'cross_run_remote_lease_certified':False,
+                  'bulk_migration_allowed':False,
+                  'sources':rows}
+          pathlib.Path('r21_final').mkdir(exist_ok=True)
+          pathlib.Path('r21_final/summary.json').write_text(json.dumps(result,indent=2))
+          print(json.dumps({k:v for k,v in result.items() if k!='sources'}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r21-six-source-bronze-test-canary-final
+          path: r21_final/
+          if-no-files-found: warn
