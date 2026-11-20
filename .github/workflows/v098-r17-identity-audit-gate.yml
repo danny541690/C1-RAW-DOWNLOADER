@@ -3,6 +3,9 @@ name: JARVIS v0.98 R17 Combined Manifest Identity and Pre-Bulk Gate
 # Public GitHub artifacts contain counts and statuses ONLY.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/v098_r17_manifest_audit.py'
 permissions:
   contents: read
 concurrency:
