@@ -5,6 +5,7 @@ Never modifies v0.93, v0.98 Bronze, Silver or Gold. PUBLIC repo output is
 aggregate only: no original IDs, titles, bytes, hashes or private filenames.
 Production atomic CAS/Lease and full dataset file coverage are NOT certified.
 One-time bounded R15 isolated readback and directory presence test.
+Cross-run replay verifies unchanged synthetic state and source-copy identities.
 """
 import argparse,hashlib,io,json,os,pathlib,sys,datetime as dt
 from v098_r11_six_source_metadata_pilot import SOURCES,service,children,unique_folder,unique_global_folder,MIME
