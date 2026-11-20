@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """R14 bounded, fail-closed pre-bulk test. No Google Drive mutation.
+One-time bounded historical probe and source-to-local staging verification.
 For PUBLIC GitHub repository, outputs only safe counters and test statuses.
 """
 import argparse, hashlib, io, json, os, pathlib, tempfile, zipfile
