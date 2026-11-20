@@ -1,0 +1,84 @@
+name: JARVIS v0.98 TDCC Recovery Only
+# Never re-run TWSE, TPEx, MOPS, NDC or TAIFEX. Only source 0.93 TDCC originals.
+on:
+  push:
+    branches: [main, jarvis-v098-tdcc-recovery-20261121]
+    paths:
+      - .github/workflows/v098-tdcc-recovery.yml
+  workflow_dispatch:
+  schedule:
+    - cron: '15 */2 * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: v098-tdcc-recovery-single-writer
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check copy and Master syntax
+        run: python -m py_compile scripts/v098_bronze_copy_only.py scripts/v098_copy_master.py
+      - name: Synthetic SHA and safe retry test
+        run: python scripts/v098_bronze_copy_only.py --mode self-test
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3'
+      - name: Development branch real 3-original bounded TDCC recovery smoke test
+        if: github.ref_name == 'jarvis-v098-tdcc-recovery-20261121'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_bronze_copy_only.py --mode migrate --source TDCC --workers 1 --limit 3 --deadline-seconds 900
+  copy-remaining-tdcc:
+    if: github.ref_name == 'main'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check 'google-api-python-client>=2.140,<3' 'google-auth>=2.30,<3'
+      - name: Resume TDCC in Master without disturbing other five ledgers
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_copy_master.py --mode resume-tdcc
+      - name: Resume original TDCC data from verified checkpoint
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_bronze_copy_only.py --mode migrate --source TDCC --workers 2 --deadline-seconds 16000 --report-file source_reports/TDCC.json
+      - name: Finish six-ledger and target reconciliation if all originals copied
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python scripts/v098_copy_master.py --mode finalize-tdcc
+      - name: Immediately launch next TDCC-only batch when unfinished
+        if: always()
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          STATE=$(python scripts/v098_copy_master.py --mode status | tail -n 1)
+          if [ "$STATE" = "INACTIVE" ]; then
+            # status is intentionally INACTIVE during TDCC_RESUMING; use master snapshot
+            python scripts/v098_copy_master.py --mode finalize-tdcc > /tmp/tdcc_finalization.json
+            if grep -q '"state": "TDCC_RESUMING"' /tmp/tdcc_finalization.json; then
+              gh workflow run v098-tdcc-recovery.yml --ref main
+            fi
+          fi

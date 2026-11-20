@@ -191,6 +191,14 @@ def copy_one(item):
                 run_id=os.getenv("GITHUB_RUN_ID"),attempt_errors=attempts)
         except Exception as exc:
             attempts.append({"attempt":retry+1,"error_type":type(exc).__name__})
+            # A pooled Drive connection can be invalid after OAuth refresh or broken pipe.
+            # A new client on retry avoids reusing the poisoned httplib2 transport.
+            if retry < 2 and not isinstance(exc, RuntimeError):
+                try:
+                    _THREAD_LOCAL.api = client()
+                    api = _THREAD_LOCAL.api
+                except Exception:
+                    pass
             if retry == 2:
                 return dict(source_id=src["id"], canonical_id=canonical,
                     path=path,source_sha256=source_sha,
@@ -213,20 +221,40 @@ def read_checkpoint(api, run_name):
     return records
 
 def save_checkpoint(api, records, run_name):
+    """Retry transient Drive I/O with a NEW connection, keeping one canonical ledger ID.
+
+    A failed upload can already have reached Drive. Repeating update by the same
+    file ID is idempotent; never create a second same-name checkpoint.
+    """
     from googleapiclient.http import MediaIoBaseUpload
     name = f"v098_copy_checkpoint_{run_name}.json"
     blob = json.dumps(records, ensure_ascii=False, sort_keys=True).encode("utf-8")
-    matches = [f for f in children(api, CHECKPOINTS) if f["name"] == name]
-    if len(matches) > 1:
-        raise RuntimeError("Checkpoint duplicate name; refuse update")
-    media = MediaIoBaseUpload(io.BytesIO(blob), mimetype="application/json", resumable=True)
-    if matches:
-        api.files().update(fileId=matches[0]["id"], media_body=media,
-                           supportsAllDrives=True).execute()
-    else:
-        api.files().create(body={"name": name, "parents": [CHECKPOINTS]},
-                           media_body=media, fields="id",
-                           supportsAllDrives=True).execute()
+    last_error = None
+    for attempt in range(8):
+        try:
+            # Stale OAuth + httplib2 connections caused BrokenPipeError after ~2h.
+            fresh_api = client() if attempt else api
+            matches = [f for f in children(fresh_api, CHECKPOINTS) if f["name"] == name]
+            if len(matches) > 1:
+                raise RuntimeError("Duplicate checkpoint name; refuse update")
+            media = MediaIoBaseUpload(io.BytesIO(blob), mimetype="application/json",
+                                      resumable=True)
+            if matches:
+                fid = matches[0]["id"]
+                fresh_api.files().update(fileId=fid, media_body=media,
+                                         supportsAllDrives=True).execute(num_retries=3)
+            else:
+                fresh_api.files().create(body={"name": name,"parents":[CHECKPOINTS]},
+                    media_body=media,fields="id",supportsAllDrives=True).execute(num_retries=3)
+            return
+        except RuntimeError:
+            raise
+        except Exception as exc:
+            last_error = exc
+            print(json.dumps({"checkpoint_retry":attempt+1,
+                "source":run_name,"error_type":type(exc).__name__}), flush=True)
+            time.sleep(min(2**attempt,30))
+    raise RuntimeError(f"Checkpoint could not be committed after 8 attempts: {type(last_error).__name__}") from last_error
 
 def self_test():
     import tempfile
@@ -371,8 +399,8 @@ def main():
     ledger_key = a.source or a.run_key
     prior_all = read_checkpoint(api, ledger_key)
     # Upgrade older test receipts lacking written hashes by byte-verifying again.
-    prior = [r for r in prior_all if (r.get("status") == "HOLD" or
-               (r.get("source_sha256") and r.get("source_sha256") == r.get("target_sha256")))]
+    prior = [r for r in prior_all if r.get("status") != "HOLD" and
+               r.get("source_sha256") and r.get("source_sha256") == r.get("target_sha256")]
     prior_by_id = {r["source_id"]: r for r in prior}
     if len(prior_by_id) != len(prior):
         raise RuntimeError("Ledger has duplicate source file ID")
@@ -404,10 +432,12 @@ def main():
              for src,path,canonical_id,parent in folders]
     results = list(prior)
     started = time.monotonic()
-    for start in range(0, len(tasks), 200):
+    print(json.dumps({"source":a.source,"originals":len(plan),"verified_prior":len(prior),
+        "pending":len(pending),"batch_size":100}),flush=True)
+    for start in range(0, len(tasks), 100):
         if a.deadline_seconds and time.monotonic() - started >= a.deadline_seconds:
             break
-        batch = tasks[start:start+200]
+        batch = tasks[start:start+100]
         with ThreadPoolExecutor(max_workers=a.workers) as pool:
             for row in pool.map(copy_one, batch):
                 results.append(row)
@@ -417,7 +447,7 @@ def main():
     for path in sorted(requested_paths):
         status = by_path.get(path)
         if not status:
-            raise RuntimeError("Missing canonical receipt for target path")
+            continue  # time-budgeted run: this path has not been copied yet
         for src, _, canonical in all_by_path[path]:
             if src["id"] not in completed_ids:
                 results.append({"source_id":src["id"],"canonical_id":canonical,

@@ -171,13 +171,96 @@ def finalize(api, report_dir):
          "recorded":received,"remaining":remaining,"holds":holds,
          "target_audit":master["last_run_summary"].get("target_reconciliation")}))
         
+def resume_tdcc(api):
+    """Explicit TDCC-only recovery, preserving source and all six ledgers."""
+    master,fid=fetch_master(api)
+    if not master:
+        raise RuntimeError("Cannot recover: Master missing")
+    if master.get("state")=="COMPLETE":
+        print("COMPLETE")
+        return
+    if master.get("state") not in {"FINISHED_WITH_HOLD","TDCC_RESUMING"}:
+        raise RuntimeError("Refuse recovery from unexpected Master state")
+    tdcc=read_checkpoint(api,"TDCC")
+    good=[x for x in tdcc if x.get("status")!="HOLD"
+          and x.get("source_sha256")
+          and x.get("source_sha256")==x.get("target_sha256")]
+    if len({x["source_id"] for x in good})!=len(good):
+        raise RuntimeError("Duplicate source IDs in TDCC ledger")
+    if len(good)>45439:
+        raise RuntimeError("TDCC ledger larger than approved source manifest")
+    master["state"]="TDCC_RESUMING"
+    master["recovery"]={"source":"TDCC","verified_before":len(good),
+                        "remaining_before":45439-len(good),
+                        "previous_error":master.get("last_error"),
+                        "started_utc":dt.datetime.now(dt.timezone.utc).isoformat()}
+    master["missing_report_retries"]={}
+    commit_master(api,master,fid)
+    print(json.dumps({"state":"TDCC_RESUMING","verified":len(good),
+                      "remaining":45439-len(good)}))
+
+def finalize_tdcc(api):
+    """Reconcile all six ledgers and source/target IDs; report unresolved issues."""
+    master,fid=fetch_master(api)
+    if not master or master.get("state") not in ("TDCC_RESUMING","COMPLETE"):
+        raise RuntimeError("Master not in TDCC recovery mode")
+    if master.get("state")=="COMPLETE":
+        print("COMPLETE")
+        return
+    counts={"TWSE":12346,"TPEx":14383,"MOPS":2594,
+            "NDC":320,"TDCC":45439,"TAIFEX":3199}
+    expected={}
+    broken=0
+    by_source={}
+    for source,total in counts.items():
+        receipts=read_checkpoint(api,source)
+        good={}
+        held=0
+        for row in receipts:
+            if row.get("status")=="HOLD":
+                held+=1
+                continue
+            fid1=row.get("source_id")
+            if fid1 in good or not fid1 or not row.get("target_id") or not row.get("source_sha256") or row.get("source_sha256")!=row.get("target_sha256"):
+                broken+=1
+                continue
+            good[fid1]=row
+            target_id=row["target_id"]
+            if target_id in expected and expected[target_id]!=row.get("path"):
+                broken+=1
+            expected[target_id]=row.get("path")
+        if len(good)>total:
+            broken+=1
+        by_source[source]={"verified":len(good),"total":total,
+                           "remaining":max(0,total-len(good)),"hold":held}
+    remaining=sum(x["remaining"] for x in by_source.values())
+    master["last_run_summary"]={"source_ids":sum(counts.values()),
+        "recorded_source_ids":sum(x["verified"] for x in by_source.values()),
+        "remaining":remaining,"per_source":by_source,"ledger_issues":broken}
+    if remaining==0 and broken==0:
+        audit=target_inventory_issues(api,expected)
+        master["last_run_summary"]["target_reconciliation"]=audit
+        master["state"]="COMPLETE" if not any(audit.values()) else "FINISHED_WITH_HOLD"
+    elif broken:
+        master["state"]="FINISHED_WITH_HOLD"
+    else:
+        master["state"]="TDCC_RESUMING"
+    commit_master(api,master,fid)
+    print(json.dumps({"state":master["state"],"remaining":remaining,
+        "verified":master["last_run_summary"]["recorded_source_ids"],
+        "by_source":by_source,"ledger_issues":broken,
+        "target_reconciliation":master["last_run_summary"].get("target_reconciliation")},
+        ensure_ascii=False))
+
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument("--mode",required=True,choices=["activate","status","finalize","prepare-only"])
+    parser.add_argument("--mode",required=True,choices=["activate","status","finalize","prepare-only","resume-tdcc","finalize-tdcc"])
     parser.add_argument("--reports-dir",default="source_reports")
     options=parser.parse_args()
     api=client()
-    if options.mode=="activate":activate(api)
+    if options.mode=="resume-tdcc":resume_tdcc(api)
+    elif options.mode=="finalize-tdcc":finalize_tdcc(api)
+    elif options.mode=="activate":activate(api)
     elif options.mode=="prepare-only":
         ensure_target_source_directories(api)
         print("PREPARED")
