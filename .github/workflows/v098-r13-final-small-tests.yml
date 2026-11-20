@@ -25,10 +25,18 @@ jobs:
         run: python scripts/v098_r9_ledger_fault_injection.py --out r13_gate/r9.json
       - name: SHA256, ZIP CRC, dataset validity, paged directory regression
         run: python scripts/v098_r12_preflight_integration.py test --out r13_gate/r12.json
-      - name: Cross-independent GitHub Run checkpoint restore, no cross-run CAS claim
+      - name: Restore synthetic checkpoint from R12 independent GitHub Run
+        uses: actions/download-artifact@v4
+        with:
+          name: r12-synthetic-ledger-snapshot
+          repository: danny541690/C1-RAW-DOWNLOADER
+          run-id: 44674769210
+          github-token: ${{ github.token }}
+          path: r13_prior_snapshot/
+      - name: Cross-independent GitHub Run checkpoint validation (not CAS)
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/v098_r13_final_preflight.py --mode cross-run --out r13_gate/cross_run.json
+        run: python scripts/v098_r13_final_preflight.py --mode cross-run --snapshot r13_prior_snapshot/state.sqlite --out r13_gate/cross_run.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
