@@ -1,6 +1,10 @@
 name: JARVIS v0.98 TDCC bounded format sample
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/v098-tdcc-deep-sample.yml
+      - scripts/v098_tdcc_deep_sample.py
 permissions:
   contents: read
 jobs:
