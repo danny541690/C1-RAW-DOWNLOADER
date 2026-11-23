@@ -1,0 +1,36 @@
+name: JARVIS v0.98 seven FREE source lanes - five-day schema and history inventory
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/v098_eight_lane_free_audit.py
+      - .github/workflows/v098-seven-free-source-lanes.yml
+permissions:
+  contents: read
+jobs:
+  source-audit:
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        source: [TWSE, TPEx, MOPS, NDC, TDCC, TAIFEX, FinMind_Free]
+    name: Source ${{ matrix.source }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    env:
+      JARVIS_AUDIT_SOURCE: ${{ matrix.source }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read source official contracts and 5-day real raw samples
+        run: python3 scripts/v098_eight_lane_free_audit.py
+      - name: Store per-source immutable report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-${{ matrix.source }}-five-day
+          path: eight_source_5days/${{ matrix.source }}/
+          retention-days: 60
+          if-no-files-found: warn
