@@ -1,0 +1,29 @@
+name: JARVIS v0.98 six-official Bronze era source evidence audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/v098_six_official_era_evidence.py
+      - .github/workflows/v098-six-official-era-evidence.yml
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read six official source original Bronze year partitions
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+        run: python3 scripts/v098_six_official_era_evidence.py
+      - name: Keep native format and source/year evidence report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-v098-six-official-era-evidence
+          path: v098_eight_source_audit/
+          retention-days: 90
+          if-no-files-found: warn
