@@ -23,7 +23,14 @@ def query(q,t):
   rows.extend(d.get("files",[]));next_token=d.get("nextPageToken")
   if not next_token:return rows
  raise RuntimeError("TOO_MANY_PAGES")
-def children(parent,t):return query("'"+parent+"' in parents and trashed = false",t)
+def children(parent,t):
+ # One page only: source may contain tens of thousands of files.
+ # Never imply the sample page is the full inventory.
+ params={"q":"'"+parent+"' in parents and trashed = false",
+         "pageSize":1000,"fields":"nextPageToken,files(id,name,mimeType,size,md5Checksum,parents)"}
+ with urllib.request.urlopen(urllib.request.Request(BASE+"?"+urllib.parse.urlencode(params),
+      headers={"Authorization":"Bearer "+t}),timeout=35) as r:data=json.load(r)
+ return data.get("files",[])
 def unique(parent,name,t):
  rows=[x for x in children(parent,t) if x.get("name")==name and x.get("mimeType")==FOLDER]
  if len(rows)>1:raise RuntimeError("DUPLICATE_FOLDER")
