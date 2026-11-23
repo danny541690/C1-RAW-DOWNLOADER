@@ -1,0 +1,27 @@
+name: JARVIS v0.98 FinMind FREE matched historical schema audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/v098_finmind_matched_schema_audit.py
+      - .github/workflows/v098-finmind-matched-schema-audit.yml
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify FinMind FREE historical fields and observed data
+        env:
+          FINMIND_AUDIT_PLAN: FREE
+        run: python3 scripts/v098_finmind_matched_schema_audit.py
+      - name: Archive FinMind audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-v098-finmind-free-matched
+          path: v098_finmind_matched_audit/
+          retention-days: 60
+          if-no-files-found: warn
