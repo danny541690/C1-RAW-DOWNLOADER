@@ -1,0 +1,27 @@
+name: JARVIS v0.98 FinMind Free five-trading-day audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/finmind-five-day-audit.yml"
+      - "scripts/finmind_5day_audit.py"
+permissions:
+  contents: read
+jobs:
+  five-day:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read five sessions and record observed fields
+        env:
+          JARVIS_FINMIND_PLAN: FREE
+        run: python3 scripts/finmind_5day_audit.py
+      - name: Publish audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: finmind-free-five-day-audit
+          path: finmind_5day_audit/
+          retention-days: 7
+          if-no-files-found: warn
