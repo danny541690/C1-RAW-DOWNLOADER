@@ -56,7 +56,7 @@ def classify(b,filename):
   with zipfile.ZipFile(io.BytesIO(b)) as z:
    members=[y for y in z.infolist() if not y.is_dir()]
    x.update(format="ZIP",zip_member_count=len(members),state="ZIP_STRUCTURE_OBSERVED",
-      zip_member_name_extensions":sorted({pathlib.Path(y.filename).suffix.lower() for y in members}),
+      zip_member_name_extensions=sorted({pathlib.Path(y.filename).suffix.lower() for y in members}),
       zip_uncompressed_bytes=sum(y.file_size for y in members))
    if any(y.file_size>5000000 for y in members) or sum(y.file_size for y in members)>12000000:
     x["state"]="ZIP_RESOURCE_HOLD"
